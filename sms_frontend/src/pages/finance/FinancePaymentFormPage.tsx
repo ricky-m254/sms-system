@@ -1,0 +1,343 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { apiClient } from '../../api/client'
+import { normalizePaginatedResponse } from '../../api/pagination'
+
+type FinanceStudent = {
+  id: number
+  admission_number: string
+  first_name: string
+  last_name: string
+}
+
+type Guardian = {
+  id: number
+  name: string
+  relationship?: string
+  phone?: string
+  email?: string
+}
+
+type StudentDetail = FinanceStudent & {
+  guardians?: Guardian[]
+}
+
+type EnrollmentRef = {
+  id: number
+  student: number
+  class_name?: string
+  term_name?: string
+  school_class?: number
+  term?: number
+}
+
+const mockStudentDetail: StudentDetail = {
+  id: 0,
+  admission_number: 'N/A',
+  first_name: 'Student',
+  last_name: 'Not Found',
+  guardians: [
+    { id: 1, name: 'Guardian Name', relationship: 'Parent', phone: 'N/A', email: 'N/A' },
+  ],
+}
+
+export default function FinancePaymentFormPage() {
+  const navigate = useNavigate()
+  const [students, setStudents] = useState<FinanceStudent[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [studentDetail, setStudentDetail] = useState<StudentDetail | null>(null)
+  const [studentEnrollment, setStudentEnrollment] = useState<EnrollmentRef | null>(null)
+  const [studentInfoNotice, setStudentInfoNotice] = useState<string | null>(null)
+  const [formState, setFormState] = useState({
+    student: '',
+    amount: '',
+    payment_method: '',
+    reference_number: '',
+    notes: '',
+  })
+
+  useEffect(() => {
+    let isMounted = true
+    const loadStudents = async () => {
+      try {
+        const response = await apiClient.get<FinanceStudent[] | { results: FinanceStudent[]; count: number }>(
+          '/finance/ref/students/',
+        )
+        if (isMounted) {
+          setStudents(normalizePaginatedResponse(response.data).items)
+        }
+      } catch (err) {
+        if (isMounted) {
+          const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+          setFormError(detail ?? 'Unable to load student references.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+    loadStudents()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!formState.student) {
+      setStudentDetail(null)
+      setStudentEnrollment(null)
+      setStudentInfoNotice(null)
+      return
+    }
+    let isMounted = true
+    const loadStudentInfo = async () => {
+      try {
+        const [detailRes, enrollmentRes] = await Promise.all([
+          apiClient.get<StudentDetail>(`/students/${formState.student}/`),
+          apiClient.get<EnrollmentRef[] | { results: EnrollmentRef[]; count: number }>(
+            '/finance/ref/enrollments/',
+            { params: { student_id: formState.student, active: true } },
+          ),
+        ])
+        if (isMounted) {
+          setStudentDetail(detailRes.data)
+          const enrollments = Array.isArray(enrollmentRes.data)
+            ? enrollmentRes.data
+            : enrollmentRes.data.results ?? []
+          setStudentEnrollment(enrollments[0] ?? null)
+          setStudentInfoNotice(null)
+        }
+      } catch {
+        if (!isMounted) return
+        setStudentDetail({ ...mockStudentDetail, id: Number(formState.student) || 0 })
+        setStudentEnrollment(null)
+        setStudentInfoNotice('Student contact or class info not available. Using fallback data.')
+      }
+    }
+    loadStudentInfo()
+    return () => {
+      isMounted = false
+    }
+  }, [formState.student])
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setFormError(null)
+    setFieldErrors({})
+
+    const nextErrors: Record<string, string> = {}
+    if (!formState.student) nextErrors.student = 'Select a student.'
+    const amountValue = Number(formState.amount)
+    if (!formState.amount || Number.isNaN(amountValue) || amountValue <= 0) {
+      nextErrors.amount = 'Enter a valid amount.'
+    }
+    if (!formState.payment_method.trim()) nextErrors.payment_method = 'Enter a payment method.'
+    if (!formState.reference_number.trim()) nextErrors.reference_number = 'Enter a reference number.'
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors)
+      setFormError('Please correct the highlighted fields.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await apiClient.post('/finance/payments/', {
+        student: Number(formState.student),
+        amount: Number(formState.amount),
+        payment_method: formState.payment_method,
+        reference_number: formState.reference_number,
+        notes: formState.notes,
+      })
+      navigate('/modules/finance/payments', { state: { flash: 'Payment recorded.' } })
+    } catch (err) {
+      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
+      if (data && typeof data === 'object') {
+        const nextErrors: Record<string, string> = {}
+        const assign = (key: string) => {
+          const value = data[key]
+          if (Array.isArray(value)) {
+            nextErrors[key] = value.join(' ')
+          } else if (typeof value === 'string') {
+            nextErrors[key] = value
+          }
+        }
+        ;['student', 'amount', 'payment_method', 'reference_number'].forEach(assign)
+        if (Object.keys(nextErrors).length > 0) {
+          setFieldErrors(nextErrors)
+          setFormError('Please correct the highlighted fields.')
+          return
+        }
+      }
+      const detail = (err as { response?: { data?: { error?: string; detail?: string } } })?.response?.data
+      setFormError(detail?.error ?? detail?.detail ?? 'Unable to record payment.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-12 gap-6">
+      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
+        <h1 className="mt-2 text-2xl font-display font-semibold">Record Payment</h1>
+        <p className="mt-2 text-sm text-slate-400">Add a new payment entry.</p>
+      </header>
+
+      {isLoading ? (
+        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-sm text-slate-300">Loading students...</p>
+        </div>
+      ) : null}
+
+      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <label className="block text-sm">
+            Student
+            <select
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={formState.student}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, student: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, student: '' }))
+              }}
+            >
+              <option value="">Select student</option>
+              {students.map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.admission_number} - {student.first_name} {student.last_name}
+                </option>
+              ))}
+            </select>
+            {fieldErrors.student ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.student}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Amount
+            <input
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.amount}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, amount: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, amount: '' }))
+              }}
+              placeholder="500.00"
+            />
+            {fieldErrors.amount ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.amount}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Payment Method
+            <input
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.payment_method}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, payment_method: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, payment_method: '' }))
+              }}
+              placeholder="Cash"
+            />
+            {fieldErrors.payment_method ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.payment_method}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Reference Number
+            <input
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.reference_number}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, reference_number: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, reference_number: '' }))
+              }}
+              placeholder="RCPT-1001"
+            />
+            {fieldErrors.reference_number ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.reference_number}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Notes
+            <textarea
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.notes}
+              onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
+              rows={3}
+            />
+          </label>
+          {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
+          <div className="flex gap-2">
+            <button
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : 'Record payment'}
+            </button>
+            <button
+              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              type="button"
+              onClick={() => navigate('/modules/finance/payments')}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-5">
+        <h3 className="text-sm font-semibold text-slate-200">Student context</h3>
+        <div className="mt-3 grid gap-3 text-xs text-slate-300 md:grid-cols-2">
+          <div>
+            <p className="text-[11px] uppercase text-slate-400">Name</p>
+            <p>
+              {studentDetail
+                ? `${studentDetail.first_name} ${studentDetail.last_name}`
+                : 'Select a student'}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase text-slate-400">Admission #</p>
+            <p>{studentDetail?.admission_number ?? '--'}</p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase text-slate-400">Class</p>
+            <p>{studentEnrollment?.class_name ?? '--'}</p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase text-slate-400">Term</p>
+            <p>{studentEnrollment?.term_name ?? '--'}</p>
+          </div>
+        </div>
+        {studentInfoNotice ? (
+          <p className="mt-2 text-[11px] text-amber-200">{studentInfoNotice}</p>
+        ) : null}
+        <div className="mt-4">
+          <p className="text-[11px] uppercase text-slate-400">Parents / Guardians</p>
+          <div className="mt-2 space-y-2">
+            {(studentDetail?.guardians ?? []).length > 0 ? (
+              studentDetail?.guardians?.map((guardian) => (
+                <div key={guardian.id} className="rounded-xl border border-slate-800 p-3 text-xs">
+                  <p className="text-sm text-white">{guardian.name}</p>
+                  <p className="text-[11px] text-slate-400">
+                    {guardian.relationship ?? 'Guardian'}
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    {guardian.phone ?? '--'} | {guardian.email ?? '--'}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-[11px] text-slate-400">No guardian records found.</p>
+            )}
+          </div>
+        </div>
+      </aside>
+    </div>
+  )
+}
