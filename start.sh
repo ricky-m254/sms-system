@@ -1,10 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -e
 
 echo "Starting backend..."
 
-cd sms_backend || exit 1
+cd sms_backend
 
-pip install -r requirements.txt
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput || true
 
-python main.py
-
+gunicorn config.wsgi:application \
+  --bind 0.0.0.0:${PORT:-8000} \
+  --workers 3
