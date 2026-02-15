@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AcademicYear, Term, SchoolClass
+from .models import AcademicYear, Term, SchoolClass, GradeLevel
 
 
 @admin.register(AcademicYear)
@@ -18,3 +18,9 @@ class TermAdmin(admin.ModelAdmin):
 class SchoolClassAdmin(admin.ModelAdmin):
     list_display = ["name", "stream", "academic_year", "is_active"]
     list_filter = ["academic_year", "is_active"]
+
+
+@admin.register(GradeLevel)
+class GradeLevelAdmin(admin.ModelAdmin):
+    list_display = ["name", "order", "is_active"]
+    list_filter = ["is_active"]

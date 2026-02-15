@@ -10,6 +10,42 @@ type DashboardSummary = {
   summary: Record<string, Record<string, number>>
 }
 
+const MODULE_OPERATIONAL_ROUTES: Record<string, string> = {
+  STUDENTS: '/modules/students',
+  ADMISSIONS: '/modules/admissions/dashboard',
+  FINANCE: '/modules/finance',
+  ACADEMICS: '/modules/academics/dashboard',
+  HR: '/modules/hr/dashboard',
+  STAFF: '/modules/staff/dashboard',
+  COMMUNICATION: '/modules/communication/dashboard',
+  LIBRARY: '/modules/library/dashboard',
+  PARENTS: '/modules/parent-portal/dashboard',
+}
+
+const MODULE_LABELS: Record<string, string> = {
+  STUDENTS: 'Students',
+  ADMISSIONS: 'Admissions',
+  FINANCE: 'Finance',
+  ACADEMICS: 'Academics',
+  HR: 'Human Resources',
+  STAFF: 'Staff Management',
+  COMMUNICATION: 'Communication',
+  LIBRARY: 'Library',
+  PARENTS: 'Parent Portal',
+}
+
+const MODULE_DISPLAY_ORDER = [
+  'STUDENTS',
+  'ADMISSIONS',
+  'ACADEMICS',
+  'FINANCE',
+  'PARENTS',
+  'COMMUNICATION',
+  'STAFF',
+  'HR',
+  'LIBRARY',
+]
+
 export default function DashboardPage() {
   const navigate = useNavigate()
   const logout = useAuthStore((state) => state.logout)
@@ -49,6 +85,30 @@ export default function DashboardPage() {
     logout()
     navigate('/login')
   }
+
+  const moduleButtons = data
+    ? Array.from(
+        new Set([
+          ...data.modules,
+          'STUDENTS',
+          'ADMISSIONS',
+          'FINANCE',
+          'ACADEMICS',
+          'HR',
+          'STAFF',
+          'COMMUNICATION',
+          'LIBRARY',
+          'PARENTS',
+        ]),
+      ).sort((a, b) => {
+        const ai = MODULE_DISPLAY_ORDER.indexOf(a)
+        const bi = MODULE_DISPLAY_ORDER.indexOf(b)
+        if (ai === -1 && bi === -1) return a.localeCompare(b)
+        if (ai === -1) return 1
+        if (bi === -1) return -1
+        return ai - bi
+      })
+    : []
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -131,13 +191,16 @@ export default function DashboardPage() {
                 Use module dashboards for operational work.
               </p>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {data.modules.map((moduleKey) => (
+                {moduleButtons.map((moduleKey) => (
                   <button
                     key={moduleKey}
                     className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition hover:border-emerald-400"
-                    onClick={() => navigate(`/modules/${moduleKey.toLowerCase()}`)}
+                    onClick={() => {
+                      const route = MODULE_OPERATIONAL_ROUTES[moduleKey]
+                      navigate(route ?? `/modules/${moduleKey.toLowerCase()}`)
+                    }}
                   >
-                    Open {moduleKey} dashboard
+                    Open {MODULE_LABELS[moduleKey] ?? moduleKey}
                   </button>
                 ))}
               </div>

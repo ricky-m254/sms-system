@@ -43,8 +43,12 @@ SHARED_APPS = [
 # 2. TENANT_APPS (Tenant Schema)
 TENANT_APPS = [
     'school',
+    'admissions',
     'academics',
+    'library',
+    'parent_portal',
     'hr',
+    'staff_mgmt',
     'assets',
     'communication',
     'reporting',
@@ -164,5 +168,30 @@ CORS_ALLOW_HEADERS = list(default_headers) + ['x-tenant-id']
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ==========================================
+# COMMUNICATION PROVIDER PLACEHOLDERS
+# ==========================================
+COMMUNICATION_SMS_API_KEY = os.getenv("COMMUNICATION_SMS_API_KEY", "")
+COMMUNICATION_WHATSAPP_API_KEY = os.getenv("COMMUNICATION_WHATSAPP_API_KEY", "")
+COMMUNICATION_PUSH_SERVER_KEY = os.getenv("COMMUNICATION_PUSH_SERVER_KEY", "")
+COMMUNICATION_WEBHOOK_TOKEN = os.getenv("COMMUNICATION_WEBHOOK_TOKEN", "")
+COMMUNICATION_WEBHOOK_SHARED_SECRET = os.getenv("COMMUNICATION_WEBHOOK_SHARED_SECRET", "")
+
+# ==========================================
+# FINANCE GATEWAY PLACEHOLDERS
+# ==========================================
+FINANCE_PAYMENT_GATEWAY_PROVIDER = os.getenv("FINANCE_PAYMENT_GATEWAY_PROVIDER", "placeholder")
+FINANCE_PAYMENT_GATEWAY_API_KEY = os.getenv("FINANCE_PAYMENT_GATEWAY_API_KEY", "")
+FINANCE_WEBHOOK_TOKEN = os.getenv("FINANCE_WEBHOOK_TOKEN", "")
+FINANCE_WEBHOOK_SHARED_SECRET = os.getenv("FINANCE_WEBHOOK_SHARED_SECRET", "")
+
+# Parent Portal linkage behavior:
+# False -> use explicit ParentStudentLink records only (recommended production setting)
+# True  -> fallback to guardian name/email matching when no explicit link exists (migration phase)
+PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK = os.getenv("PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK", "true").lower() == "true"
 

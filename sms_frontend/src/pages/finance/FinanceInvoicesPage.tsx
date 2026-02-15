@@ -29,6 +29,7 @@ type Payment = {
   payment_method: string
   reference_number: string
   payment_date: string
+  unallocated_amount?: number
 }
 
 type FinanceStudent = {
@@ -59,14 +60,31 @@ type EnrollmentRef = {
   term?: number
 }
 
-const mockStudentDetail: StudentDetail = {
-  id: 0,
-  admission_number: 'N/A',
-  first_name: 'Student',
-  last_name: 'Not Found',
-  guardians: [
-    { id: 1, name: 'Guardian Name', relationship: 'Parent', phone: 'N/A', email: 'N/A' },
-  ],
+type Installment = {
+  id: number
+  sequence: number
+  due_date: string
+  amount: number
+  collected_amount?: number
+  outstanding_amount?: number
+  status: string
+  paid_at?: string | null
+  late_fee_applied: boolean
+}
+
+type InstallmentPlan = {
+  id?: number
+  invoice: number
+  installment_count: number
+  installments: Installment[]
+}
+
+const formatMoney = (value: number | string | undefined) =>
+  Number(value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const parseDateValue = (value: string) => {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
 }
 
 export default function FinanceInvoicesPage() {
@@ -82,6 +100,9 @@ export default function FinanceInvoicesPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [invoiceQuery, setInvoiceQuery] = useState('')
   const [invoiceStatus, setInvoiceStatus] = useState('all')
+  const [studentFilter, setStudentFilter] = useState('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [invoicePage, setInvoicePage] = useState(1)
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null)
   const [invoiceDetail, setInvoiceDetail] = useState<Invoice | null>(null)
@@ -89,6 +110,7 @@ export default function FinanceInvoicesPage() {
   const [allocationAmount, setAllocationAmount] = useState('')
   const [allocationDate, setAllocationDate] = useState('')
   const [allocationNotes, setAllocationNotes] = useState('')
+  const [allocationInstallmentId, setAllocationInstallmentId] = useState('')
   const [allocationError, setAllocationError] = useState<string | null>(null)
   const [isAllocating, setIsAllocating] = useState(false)
   const [studentDetail, setStudentDetail] = useState<StudentDetail | null>(null)
@@ -99,6 +121,11 @@ export default function FinanceInvoicesPage() {
   const [studentDetails, setStudentDetails] = useState<Record<number, StudentDetail>>({})
   const [studentEnrollments, setStudentEnrollments] = useState<Record<number, EnrollmentRef | null>>({})
   const [studentContextNotice, setStudentContextNotice] = useState<string | null>(null)
+  const [installmentPlan, setInstallmentPlan] = useState<InstallmentPlan | null>(null)
+  const [installmentCountInput, setInstallmentCountInput] = useState('3')
+  const [installmentDatesInput, setInstallmentDatesInput] = useState('')
+  const [installmentMessage, setInstallmentMessage] = useState<string | null>(null)
+  const [isSavingInstallmentPlan, setIsSavingInstallmentPlan] = useState(false)
   const [totalCount, setTotalCount] = useState(0)
   const [isServerPaginated, setIsServerPaginated] = useState(false)
   const [flash, setFlash] = useState<string | null>(
@@ -118,6 +145,15 @@ export default function FinanceInvoicesPage() {
   useEffect(() => {
     let isMounted = true
     const loadData = async () => {
+      if (dateFrom && dateTo && dateFrom > dateTo) {
+        if (isMounted) {
+          setError('Invalid filter: Date From cannot be later than Date To.')
+          setIsLoading(false)
+          setInvoices([])
+          setTotalCount(0)
+        }
+        return
+      }
       try {
         const [invoiceRes, paymentRes, studentRes] = await Promise.all([
           apiClient.get<Invoice[] | { results: Invoice[]; count: number }>('/finance/invoices/', {
@@ -125,6 +161,9 @@ export default function FinanceInvoicesPage() {
               page: invoicePage,
               search: invoiceQuery.trim() || undefined,
               status: invoiceStatus !== 'all' ? invoiceStatus : undefined,
+              student: studentFilter !== 'all' ? studentFilter : undefined,
+              date_from: dateFrom || undefined,
+              date_to: dateTo || undefined,
             },
           }),
           apiClient.get<Payment[] | { results: Payment[]; count: number }>('/finance/payments/'),
@@ -133,6 +172,7 @@ export default function FinanceInvoicesPage() {
           ),
         ])
         if (isMounted) {
+          setError(null)
           const normalized = normalizePaginatedResponse(invoiceRes.data)
           setInvoices(normalized.items)
           setTotalCount(normalized.totalCount)
@@ -164,7 +204,7 @@ export default function FinanceInvoicesPage() {
     return () => {
       isMounted = false
     }
-  }, [invoicePage, invoiceQuery, invoiceStatus])
+  }, [invoicePage, invoiceQuery, invoiceStatus, studentFilter, dateFrom, dateTo])
 
   useEffect(() => {
     if (!selectedInvoiceId) {
@@ -173,6 +213,7 @@ export default function FinanceInvoicesPage() {
       setAllocationAmount('')
       setAllocationDate('')
       setAllocationNotes('')
+      setAllocationInstallmentId('')
       setStudentDetail(null)
       setStudentEnrollment(null)
       setStudentInfoNotice(null)
@@ -193,6 +234,29 @@ export default function FinanceInvoicesPage() {
       }
     }
     loadInvoiceDetail()
+    return () => {
+      isMounted = false
+    }
+  }, [selectedInvoiceId])
+
+  useEffect(() => {
+    if (!selectedInvoiceId) {
+      setInstallmentPlan(null)
+      setInstallmentMessage(null)
+      return
+    }
+    let isMounted = true
+    const loadInstallments = async () => {
+      try {
+        const response = await apiClient.get<InstallmentPlan>(`/finance/invoices/${selectedInvoiceId}/installments/`)
+        if (!isMounted) return
+        setInstallmentPlan(response.data)
+      } catch {
+        if (!isMounted) return
+        setInstallmentPlan(null)
+      }
+    }
+    void loadInstallments()
     return () => {
       isMounted = false
     }
@@ -223,9 +287,9 @@ export default function FinanceInvoicesPage() {
         }
       } catch {
         if (!isMounted) return
-        setStudentDetail({ ...mockStudentDetail, id: invoiceDetail.student })
-        setStudentEnrollment(null)
-        setStudentInfoNotice('Student contact or class info not available. Using fallback data.')
+      setStudentDetail(null)
+      setStudentEnrollment(null)
+      setStudentInfoNotice('Student contact or class info not available.')
       }
     }
     loadStudentInfo()
@@ -240,23 +304,139 @@ export default function FinanceInvoicesPage() {
       setAllocationError('Payment and amount are required.')
       return
     }
+    const amountValue = Number(allocationAmount)
+    if (!Number.isFinite(amountValue) || amountValue <= 0) {
+      setAllocationError('Allocation amount must be greater than zero.')
+      return
+    }
+    const selectedPayment = filteredPayments.find((payment) => String(payment.id) === allocationPaymentId)
+    if (!selectedPayment) {
+      setAllocationError('Selected payment is not valid for this invoice.')
+      return
+    }
+    const unallocated = Number(selectedPayment.unallocated_amount ?? selectedPayment.amount ?? 0)
+    if (amountValue > unallocated) {
+      setAllocationError(`Allocation cannot exceed unallocated payment amount (${formatMoney(unallocated)}).`)
+      return
+    }
+    const invoiceBalance = Number(invoiceDetail?.balance_due ?? 0)
+    if (invoiceBalance > 0 && amountValue > invoiceBalance) {
+      setAllocationError(`Allocation cannot exceed invoice balance (${formatMoney(invoiceBalance)}).`)
+      return
+    }
+    if (allocationInstallmentId) {
+      const installment = installmentPlan?.installments?.find(
+        (item) => String(item.id) === allocationInstallmentId,
+      )
+      if (!installment) {
+        setAllocationError('Selected installment is invalid.')
+        return
+      }
+      const outstanding = Number(installment.outstanding_amount ?? installment.amount ?? 0)
+      if (outstanding > 0 && amountValue > outstanding) {
+        setAllocationError(
+          `Allocation cannot exceed selected installment outstanding amount (${formatMoney(outstanding)}).`,
+        )
+        return
+      }
+    }
     setAllocationError(null)
     setIsAllocating(true)
     try {
       await apiClient.post(`/finance/payments/${allocationPaymentId}/allocate/`, {
         invoice_id: selectedInvoiceId,
-        amount: Number(allocationAmount),
+        amount: amountValue,
+        installment_id: allocationInstallmentId ? Number(allocationInstallmentId) : undefined,
       })
       const response = await apiClient.get<Invoice>(`/finance/invoices/${selectedInvoiceId}/`)
       setInvoiceDetail(response.data)
       setAllocationAmount('')
       setAllocationDate('')
       setAllocationNotes('')
+      setAllocationInstallmentId('')
     } catch (err) {
-      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      const data = (err as { response?: { data?: { error?: string; detail?: string; non_field_errors?: string[] } } })
+        ?.response?.data
+      const message = data?.error ?? data?.detail ?? data?.non_field_errors?.[0]
       setAllocationError(message ?? 'Allocation failed. Check balance and payment availability.')
     } finally {
       setIsAllocating(false)
+    }
+  }
+
+  const handleAutoAllocatePayment = async () => {
+    if (!allocationPaymentId || !selectedInvoiceId) {
+      setAllocationError('Select a payment first.')
+      return
+    }
+    setAllocationError(null)
+    setIsAllocating(true)
+    try {
+      await apiClient.post(`/finance/payments/${allocationPaymentId}/auto-allocate/`, {})
+      const response = await apiClient.get<Invoice>(`/finance/invoices/${selectedInvoiceId}/`)
+      setInvoiceDetail(response.data)
+      const planResponse = await apiClient.get<InstallmentPlan>(`/finance/invoices/${selectedInvoiceId}/installments/`)
+      setInstallmentPlan(planResponse.data)
+      setAllocationAmount('')
+      setAllocationNotes('')
+      setAllocationInstallmentId('')
+    } catch {
+      setAllocationError('Unable to auto-allocate payment.')
+    } finally {
+      setIsAllocating(false)
+    }
+  }
+
+  const handleCreateInstallmentPlan = async () => {
+    if (!selectedInvoiceId) return
+    const count = Number(installmentCountInput)
+    const dueDates = installmentDatesInput
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+    if (!Number.isInteger(count) || count <= 0 || count > 24) {
+      setInstallmentMessage('Installment count must be a whole number between 1 and 24.')
+      return
+    }
+    if (dueDates.length !== count) {
+      setInstallmentMessage('Installment count must match number of comma-separated due dates.')
+      return
+    }
+    const parsedDates = dueDates.map(parseDateValue)
+    if (parsedDates.some((date) => !date)) {
+      setInstallmentMessage('All installment due dates must use valid YYYY-MM-DD format.')
+      return
+    }
+    if (new Set(dueDates).size !== dueDates.length) {
+      setInstallmentMessage('Installment due dates must be unique.')
+      return
+    }
+    const isAscending = dueDates.every((date, index) => index === 0 || date >= dueDates[index - 1])
+    if (!isAscending) {
+      setInstallmentMessage('Installment due dates must be in ascending order.')
+      return
+    }
+    const invoiceDueDate = invoiceDetail?.due_date
+    if (invoiceDueDate && dueDates[dueDates.length - 1] > invoiceDueDate) {
+      setInstallmentMessage('Last installment due date cannot be later than invoice due date.')
+      return
+    }
+    setInstallmentMessage(null)
+    setIsSavingInstallmentPlan(true)
+    try {
+      const response = await apiClient.post<InstallmentPlan>(`/finance/invoices/${selectedInvoiceId}/installments/`, {
+        installment_count: count,
+        due_dates: dueDates,
+      })
+      setInstallmentPlan(response.data)
+      setInstallmentMessage('Installment plan saved.')
+    } catch (err) {
+      const data = (err as { response?: { data?: { error?: string; detail?: string; non_field_errors?: string[] } } })
+        ?.response?.data
+      const message = data?.error ?? data?.detail ?? data?.non_field_errors?.[0]
+      setInstallmentMessage(message ?? 'Failed to save installment plan.')
+    } finally {
+      setIsSavingInstallmentPlan(false)
     }
   }
 
@@ -269,6 +449,16 @@ export default function FinanceInvoicesPage() {
     if (!invoiceDetail) return payments
     return payments.filter((payment) => payment.student === invoiceDetail.student)
   }, [invoiceDetail, payments])
+
+  const outstandingInvoices = useMemo(() => {
+    if (!invoiceDetail) return []
+    return invoices.filter(
+      (invoice) =>
+        invoice.student === invoiceDetail.student &&
+        invoice.id !== invoiceDetail.id &&
+        Number(invoice.balance_due ?? 0) > 0,
+    )
+  }, [invoiceDetail, invoices])
 
   useEffect(() => {
     if (!allocationPaymentId) return
@@ -283,11 +473,42 @@ export default function FinanceInvoicesPage() {
     const term = invoiceQuery.trim().toLowerCase()
     return invoices.filter((invoice) => {
       if (invoiceStatus !== 'all' && invoice.status !== invoiceStatus) return false
+      if (studentFilter !== 'all' && String(invoice.student) !== studentFilter) return false
+      if (dateFrom && invoice.invoice_date && invoice.invoice_date < dateFrom) return false
+      if (dateTo && invoice.invoice_date && invoice.invoice_date > dateTo) return false
       if (!term) return true
       const admission = invoice.student_admission_number?.toLowerCase() ?? ''
-      return admission.includes(term) || `inv-${invoice.id}`.includes(term)
+      const name = invoice.student_full_name?.toLowerCase() ?? ''
+      return (
+        admission.includes(term) ||
+        name.includes(term) ||
+        `inv-${invoice.id}`.includes(term)
+      )
     })
-  }, [invoiceQuery, invoiceStatus, invoices, isServerPaginated])
+  }, [invoiceQuery, invoiceStatus, invoices, isServerPaginated, studentFilter, dateFrom, dateTo])
+
+  const statusBadge = (status: string, balanceDue?: number, totalAmount?: number) => {
+    const normalized = status?.toLowerCase?.() ?? ''
+    const balance = Number(balanceDue ?? 0)
+    const total = Number(totalAmount ?? 0)
+    let label = status || 'Unknown'
+    if (!status) {
+      if (balance <= 0 && total > 0) label = 'Paid'
+      else if (balance < total && total > 0) label = 'Partially Paid'
+      else label = 'Unpaid'
+    }
+    const color =
+      normalized.includes('paid') || label.toLowerCase().includes('paid')
+        ? 'border-emerald-400/40 text-emerald-200'
+        : normalized.includes('overdue')
+          ? 'border-rose-400/40 text-rose-200'
+          : normalized.includes('draft') || normalized.includes('void')
+            ? 'border-slate-500/40 text-slate-300'
+            : 'border-amber-400/40 text-amber-200'
+    return (
+      <span className={`rounded-full border px-2 py-1 text-xs ${color}`}>{label}</span>
+    )
+  }
 
   const pagedInvoices = useMemo(() => {
     if (isServerPaginated) return filteredInvoices
@@ -340,12 +561,13 @@ export default function FinanceInvoicesPage() {
       setStudentDetails((prev) => ({ ...prev, [studentId]: detailRes.data }))
       setStudentEnrollments((prev) => ({ ...prev, [studentId]: enrollments[0] ?? null }))
     } catch {
-      setStudentDetails((prev) => ({
-        ...prev,
-        [studentId]: { ...mockStudentDetail, id: studentId },
-      }))
+      setStudentDetails((prev) => {
+        const next = { ...prev }
+        delete next[studentId]
+        return next
+      })
       setStudentEnrollments((prev) => ({ ...prev, [studentId]: null }))
-      setStudentContextNotice('Student contact or class info not available. Using fallback data.')
+      setStudentContextNotice('Student contact or class info not available.')
     } finally {
       setDetailLoadingId(null)
     }
@@ -402,10 +624,48 @@ export default function FinanceInvoicesPage() {
               }}
             >
               <option value="all">All statuses</option>
-              <option value="CONFIRMED">Confirmed</option>
               <option value="DRAFT">Draft</option>
+              <option value="SENT">Sent</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="PAID">Paid</option>
+              <option value="PARTIALLY_PAID">Partially Paid</option>
+              <option value="OVERDUE">Overdue</option>
+              <option value="CANCELLED">Cancelled</option>
               <option value="VOID">Void</option>
             </select>
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={studentFilter}
+              onChange={(event) => {
+                setStudentFilter(event.target.value)
+                setInvoicePage(1)
+              }}
+            >
+              <option value="all">All students</option>
+              {students.map((student) => (
+                <option key={student.id} value={String(student.id)}>
+                  {student.first_name} {student.last_name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="date"
+              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={dateFrom}
+              onChange={(event) => {
+                setDateFrom(event.target.value)
+                setInvoicePage(1)
+              }}
+            />
+            <input
+              type="date"
+              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={dateTo}
+              onChange={(event) => {
+                setDateTo(event.target.value)
+                setInvoicePage(1)
+              }}
+            />
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
               onClick={() => navigate('/modules/finance/invoices/new')}
@@ -446,14 +706,20 @@ export default function FinanceInvoicesPage() {
                       {invoice.invoice_date ?? invoice.created_at ?? '--'}
                     </td>
                     <td className="px-4 py-3">{invoice.due_date ?? '--'}</td>
-                    <td className="px-4 py-3">{invoice.status}</td>
+                    <td className="px-4 py-3">
+                      {statusBadge(
+                        invoice.status,
+                        invoice.balance_due,
+                        invoice.total_amount,
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       {Number(
                         (invoice.total_amount ?? 0) - (invoice.balance_due ?? 0),
                       ).toLocaleString()}
                     </td>
                     <td className="px-4 py-3">
-                      {Number(invoice.balance_due ?? 0).toLocaleString()}
+                      {formatMoney(invoice.balance_due ?? 0)}
                     </td>
                     <td className="px-4 py-3">
                       <button
@@ -571,12 +837,14 @@ export default function FinanceInvoicesPage() {
           <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-display font-semibold">Invoice detail</h3>
-              <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
-                onClick={() => setSelectedInvoiceId(null)}
-              >
-                Close
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                  onClick={() => setSelectedInvoiceId(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
             <div className="mt-4 grid gap-6 lg:grid-cols-3">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
@@ -598,7 +866,7 @@ export default function FinanceInvoicesPage() {
                       </div>
                       <div>
                         <p className="text-xs uppercase text-slate-400">Balance</p>
-                        <p>{invoiceDetail.balance_due ?? '--'}</p>
+                        <p>{formatMoney(invoiceDetail.balance_due ?? 0)}</p>
                       </div>
                     </div>
                     <div className="mt-4 grid gap-3 text-xs text-slate-300 md:grid-cols-3">
@@ -652,7 +920,7 @@ export default function FinanceInvoicesPage() {
                           {(invoiceDetail.line_items ?? []).map((item) => (
                             <tr key={item.id}>
                               <td className="px-3 py-2">{item.description}</td>
-                              <td className="px-3 py-2">{Number(item.amount).toLocaleString()}</td>
+                              <td className="px-3 py-2">{formatMoney(item.amount)}</td>
                             </tr>
                           ))}
                           {(invoiceDetail.line_items ?? []).length === 0 ? (
@@ -664,6 +932,28 @@ export default function FinanceInvoicesPage() {
                           ) : null}
                         </tbody>
                       </table>
+                    </div>
+                    <div className="mt-4 rounded-xl border border-slate-800 p-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs uppercase text-slate-400">Installment Plan</p>
+                        <span className="text-xs text-slate-400">
+                          {installmentPlan?.installment_count ? `${installmentPlan.installment_count} installments` : 'Not configured'}
+                        </span>
+                      </div>
+                      {(installmentPlan?.installments ?? []).length > 0 ? (
+                        <div className="mt-2 space-y-2 text-xs text-slate-300">
+                          {installmentPlan?.installments?.map((inst) => (
+                            <div key={inst.id} className="flex items-center justify-between rounded-lg border border-slate-800 p-2">
+                              <span>#{inst.sequence} • Due {inst.due_date}</span>
+                              <span>
+                                {Number(inst.collected_amount ?? 0).toLocaleString()} / {Number(inst.amount).toLocaleString()} • {inst.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-slate-400">No installment plan configured.</p>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -684,7 +974,7 @@ export default function FinanceInvoicesPage() {
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="uppercase text-slate-400">Current balance</span>
-                      <span>{invoiceDetail?.balance_due ?? '--'}</span>
+                      <span>{formatMoney(invoiceDetail?.balance_due ?? 0)}</span>
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="uppercase text-slate-400">Class / Term</span>
@@ -708,7 +998,7 @@ export default function FinanceInvoicesPage() {
                       <option value="">Select payment</option>
                       {filteredPayments.map((payment) => (
                         <option key={payment.id} value={payment.id}>
-                          {payment.reference_number} - {Number(payment.amount).toLocaleString()}
+                          {payment.reference_number} - {formatMoney(payment.amount)}
                         </option>
                       ))}
                     </select>
@@ -717,6 +1007,23 @@ export default function FinanceInvoicesPage() {
                         No payments found for this student.
                       </p>
                     ) : null}
+                  </label>
+                  <label className="block">
+                    Installment (optional)
+                    <select
+                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      value={allocationInstallmentId}
+                      onChange={(event) => setAllocationInstallmentId(event.target.value)}
+                    >
+                      <option value="">Auto by due order</option>
+                      {(installmentPlan?.installments ?? [])
+                        .filter((inst) => inst.status !== 'PAID' && inst.status !== 'WAIVED')
+                        .map((inst) => (
+                          <option key={inst.id} value={inst.id}>
+                            #{inst.sequence} • Due {inst.due_date} • Outstanding {Number(inst.outstanding_amount ?? 0).toLocaleString()}
+                          </option>
+                        ))}
+                    </select>
                   </label>
                   <label className="block">
                     Payment date
@@ -755,6 +1062,58 @@ export default function FinanceInvoicesPage() {
                   >
                     {isAllocating ? 'Allocating...' : 'Allocate payment'}
                   </button>
+                  <button
+                    className="w-full rounded-lg border border-emerald-500/40 px-3 py-2 text-sm font-semibold text-emerald-200 disabled:cursor-not-allowed disabled:opacity-70"
+                    disabled={isAllocating}
+                    onClick={handleAutoAllocatePayment}
+                  >
+                    {isAllocating ? 'Working...' : 'Auto-allocate payment'}
+                  </button>
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+                    <p className="text-[11px] uppercase text-slate-400">Installment setup</p>
+                    <div className="mt-2 space-y-2">
+                      <input
+                        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white"
+                        value={installmentCountInput}
+                        onChange={(event) => setInstallmentCountInput(event.target.value)}
+                        placeholder="Installment count"
+                      />
+                      <input
+                        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white"
+                        value={installmentDatesInput}
+                        onChange={(event) => setInstallmentDatesInput(event.target.value)}
+                        placeholder="YYYY-MM-DD, YYYY-MM-DD, ..."
+                      />
+                      <button
+                        className="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200 disabled:opacity-70"
+                        onClick={handleCreateInstallmentPlan}
+                        disabled={isSavingInstallmentPlan}
+                      >
+                        {isSavingInstallmentPlan ? 'Saving...' : 'Save installment plan'}
+                      </button>
+                      {installmentMessage ? <p className="text-[11px] text-amber-200">{installmentMessage}</p> : null}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+                    <p className="text-[11px] uppercase text-slate-400">Outstanding invoices</p>
+                    {outstandingInvoices.length > 0 ? (
+                      <div className="mt-2 space-y-2">
+                        {outstandingInvoices.map((invoice) => (
+                          <div key={invoice.id} className="flex items-center justify-between">
+                            <span>INV-{invoice.id}</span>
+                            <span>
+                              Due {invoice.due_date ?? '--'} | Balance{' '}
+                              {formatMoney(invoice.balance_due ?? 0)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-[11px] text-slate-400">
+                        No other outstanding invoices for this student.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

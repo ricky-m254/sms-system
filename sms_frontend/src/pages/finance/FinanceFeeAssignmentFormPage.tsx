@@ -6,6 +6,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 type FeeStructure = {
   id: number
   name: string
+  amount?: number
 }
 
 type FinanceStudent = {
@@ -40,22 +41,29 @@ type EnrollmentRef = {
   is_active?: boolean
 }
 
-const mockStudentDetail: StudentDetail = {
-  id: 0,
-  admission_number: 'N/A',
-  first_name: 'Student',
-  last_name: 'Not Found',
-  guardians: [
-    { id: 1, name: 'Guardian Name', relationship: 'Parent', phone: 'N/A', email: 'N/A' },
-  ],
-}
-
 type FeeAssignment = {
   id: number
   student: number
   fee_structure: number
   discount_amount: number
   is_active: boolean
+  start_date?: string
+  end_date?: string
+}
+
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
 }
 
 export default function FinanceFeeAssignmentFormPage() {
@@ -76,6 +84,8 @@ export default function FinanceFeeAssignmentFormPage() {
     student: '',
     fee_structure: '',
     discount_amount: '',
+    start_date: '',
+    end_date: '',
     is_active: true,
   })
   const isFormDisabled = isSubmitting || isLoading
@@ -84,15 +94,16 @@ export default function FinanceFeeAssignmentFormPage() {
     let isMounted = true
     const loadData = async () => {
       try {
+        if (isMounted) setFormError(null)
         const [studentRes, feeRes] = await Promise.all([
           apiClient.get<FinanceStudent[] | { results: FinanceStudent[]; count: number }>(
             '/finance/ref/students/',
           ),
-          apiClient.get<FeeStructure[]>('/finance/fees/'),
+          apiClient.get<FeeStructure[] | { results: FeeStructure[]; count: number }>('/finance/fees/'),
         ])
         if (isMounted) {
           setStudents(normalizePaginatedResponse(studentRes.data).items)
-          setFees(feeRes.data)
+          setFees(normalizePaginatedResponse(feeRes.data).items)
         }
         if (isEdit && id) {
           const assignmentRes = await apiClient.get<FeeAssignment>(`/finance/fee-assignments/${id}/`)
@@ -101,14 +112,15 @@ export default function FinanceFeeAssignmentFormPage() {
               student: String(assignmentRes.data.student),
               fee_structure: String(assignmentRes.data.fee_structure),
               discount_amount: String(assignmentRes.data.discount_amount ?? 0),
+              start_date: assignmentRes.data.start_date ?? '',
+              end_date: assignmentRes.data.end_date ?? '',
               is_active: assignmentRes.data.is_active,
             })
           }
         }
       } catch (err) {
         if (isMounted) {
-          const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-          setFormError(detail ?? 'Unable to load assignment data.')
+          setFormError(extractApiError(err, 'Unable to load assignment data.'))
         }
       } finally {
         if (isMounted) {
@@ -148,9 +160,9 @@ export default function FinanceFeeAssignmentFormPage() {
         }
       } catch {
         if (!isMounted) return
-        setStudentDetail({ ...mockStudentDetail, id: Number(formState.student) || 0 })
+        setStudentDetail(null)
         setStudentEnrollment(null)
-        setStudentInfoNotice('Student contact or class info not available. Using fallback data.')
+        setStudentInfoNotice('Student contact or class info not available.')
       }
     }
     loadStudentInfo()
@@ -171,6 +183,20 @@ export default function FinanceFeeAssignmentFormPage() {
     if (formState.discount_amount && (Number.isNaN(discountValue) || discountValue < 0)) {
       nextErrors.discount_amount = 'Enter a valid discount amount.'
     }
+    const selectedFee = fees.find((fee) => String(fee.id) === formState.fee_structure)
+    if (selectedFee && Number.isFinite(selectedFee.amount)) {
+      const feeAmount = Number(selectedFee.amount)
+      if (discountValue > feeAmount) {
+        nextErrors.discount_amount = 'Discount cannot exceed selected fee amount.'
+      }
+    }
+    if (
+      formState.start_date &&
+      formState.end_date &&
+      formState.end_date < formState.start_date
+    ) {
+      nextErrors.end_date = 'End date cannot be before start date.'
+    }
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors)
       setFormError('Please correct the highlighted fields.')
@@ -181,6 +207,8 @@ export default function FinanceFeeAssignmentFormPage() {
       student: Number(formState.student),
       fee_structure: Number(formState.fee_structure),
       discount_amount: Number(formState.discount_amount || 0),
+      start_date: formState.start_date || undefined,
+      end_date: formState.end_date || undefined,
       is_active: formState.is_active,
     }
 
@@ -206,7 +234,7 @@ export default function FinanceFeeAssignmentFormPage() {
             nextErrors[key] = value
           }
         }
-        ;['student', 'fee_structure', 'discount_amount', 'is_active'].forEach(assign)
+        ;['student', 'fee_structure', 'discount_amount', 'start_date', 'end_date', 'is_active'].forEach(assign)
         if (Object.keys(nextErrors).length > 0) {
           setFieldErrors(nextErrors)
           setFormError('Please correct the highlighted fields.')
@@ -214,7 +242,7 @@ export default function FinanceFeeAssignmentFormPage() {
         }
       }
       const detail = (err as { response?: { data?: { detail?: string; error?: string } } })?.response?.data
-      setFormError(detail?.error ?? detail?.detail ?? 'Unable to save fee assignment.')
+      setFormError(detail?.error ?? detail?.detail ?? extractApiError(err, 'Unable to save fee assignment.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -287,6 +315,9 @@ export default function FinanceFeeAssignmentFormPage() {
           <label className="block text-sm">
             Discount Amount
             <input
+              type="number"
+              min="0"
+              step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.discount_amount}
               onChange={(event) => {
@@ -298,6 +329,38 @@ export default function FinanceFeeAssignmentFormPage() {
             />
             {fieldErrors.discount_amount ? (
               <p className="mt-1 text-xs text-rose-300">{fieldErrors.discount_amount}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Start Date
+            <input
+              type="date"
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.start_date}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, start_date: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, start_date: '' }))
+              }}
+              disabled={isFormDisabled}
+            />
+            {fieldErrors.start_date ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.start_date}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            End Date
+            <input
+              type="date"
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.end_date}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, end_date: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, end_date: '' }))
+              }}
+              disabled={isFormDisabled}
+            />
+            {fieldErrors.end_date ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.end_date}</p>
             ) : null}
           </label>
           <label className="flex items-center gap-2 text-sm">

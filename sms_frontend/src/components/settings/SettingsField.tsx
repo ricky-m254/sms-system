@@ -56,7 +56,15 @@ export default function SettingsField({
   }
 
   const inputId = `setting-${definition.key}`
-  const displayValue = isStringValue(value) || isNumberValue(value) ? value : definition.defaultValue
+  //const displayValue = isStringValue(value) || isNumberValue(value) ? value : definition.defaultValue
+
+
+  const displayValue =
+  isStringValue(value) || isNumberValue(value)
+    ? value
+    : typeof definition.defaultValue === 'boolean'
+   ? ''
+    : definition.defaultValue
 
   return (
     <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">

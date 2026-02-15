@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { downloadBlob } from '../../utils/download'
 import { format, parseISO } from 'date-fns'
 import {
   Bar,
@@ -21,6 +22,10 @@ type Expense = {
   amount: number
   expense_date: string
   description?: string
+  vendor?: string
+  payment_method?: string
+  invoice_number?: string
+  approval_status?: string
 }
 
 type AcademicYear = {
@@ -31,37 +36,40 @@ type AcademicYear = {
 type Term = {
   id: number
   name: string
-  academic_year_id: number
+  academic_year?: number
+  academic_year_id?: number
 }
 
 type Budget = {
   id?: number
-  academic_year: string
+  academic_year: number
   term: number
   monthly_budget: number
   quarterly_budget: number
   annual_budget: number
+  term_name?: string
+  created_at?: string
+  updated_at?: string
   categories?: Array<{
     category: string
     limit: number
   }>
 }
 
-const mockBudgets: Budget[] = [
-  {
-    id: 1,
-    academic_year: '2025',
-    term: 1,
-    monthly_budget: 15000,
-    quarterly_budget: 45000,
-    annual_budget: 180000,
-    categories: [
-      { category: 'Utilities', limit: 5000 },
-      { category: 'Maintenance', limit: 4000 },
-      { category: 'Supplies', limit: 3000 },
-    ],
-  },
-]
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
+}
 
 export default function FinanceExpensesPage() {
   const navigate = useNavigate()
@@ -75,19 +83,26 @@ export default function FinanceExpensesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [expenseQuery, setExpenseQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [approvalFilter, setApprovalFilter] = useState('all')
+  const [vendorQuery, setVendorQuery] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [expensePage, setExpensePage] = useState(1)
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
   const [terms, setTerms] = useState<Term[]>([])
   const [selectedAcademicYear, setSelectedAcademicYear] = useState('')
   const [selectedTerm, setSelectedTerm] = useState('')
   const [budgets, setBudgets] = useState<Budget[]>([])
-  const [budgetSource, setBudgetSource] = useState<'api' | 'mock'>('api')
   const [monthlyBudget, setMonthlyBudget] = useState('')
   const [quarterlyBudget, setQuarterlyBudget] = useState('')
   const [annualBudget, setAnnualBudget] = useState('')
   const [budgetTouched, setBudgetTouched] = useState(false)
   const [isSavingBudget, setIsSavingBudget] = useState(false)
   const [budgetNotice, setBudgetNotice] = useState<string | null>(null)
+  const [budgetQuery, setBudgetQuery] = useState('')
+  const [budgetDateFrom, setBudgetDateFrom] = useState('')
+  const [budgetDateTo, setBudgetDateTo] = useState('')
   const [trendGranularity, setTrendGranularity] = useState<'monthly' | 'weekly' | 'daily'>(
     'monthly',
   )
@@ -97,6 +112,10 @@ export default function FinanceExpensesPage() {
   )
 
   const pageSize = 8
+  const hasInvalidExpenseDateRange = Boolean(dateFrom && dateTo && dateFrom > dateTo)
+  const hasInvalidBudgetDateRange = Boolean(
+    budgetDateFrom && budgetDateTo && budgetDateFrom > budgetDateTo,
+  )
 
   useEffect(() => {
     const state = location.state as { flash?: string } | null
@@ -122,7 +141,7 @@ export default function FinanceExpensesPage() {
           setAcademicYears(yearItems)
           setTerms(termItems)
           if (!selectedAcademicYear && yearItems.length > 0) {
-            setSelectedAcademicYear(yearItems[0].name)
+            setSelectedAcademicYear(String(yearItems[0].id))
           }
           if (!selectedTerm && termItems.length > 0) {
             setSelectedTerm(String(termItems[0].id))
@@ -130,12 +149,11 @@ export default function FinanceExpensesPage() {
         }
       } catch {
         if (isMounted) {
-          if (!selectedAcademicYear) {
-            setSelectedAcademicYear(String(new Date().getFullYear()))
-          }
-          if (!selectedTerm) {
-            setSelectedTerm('1')
-          }
+          setAcademicYears([])
+          setTerms([])
+          setSelectedAcademicYear('')
+          setSelectedTerm('')
+          setBudgetNotice('Academic references unavailable. Budget planner is disabled until references load.')
         }
       }
     }
@@ -146,68 +164,35 @@ export default function FinanceExpensesPage() {
   }, [])
 
   useEffect(() => {
-    setMonthlyBudget(localStorage.getItem('finance:budget:monthly') ?? '')
-    setQuarterlyBudget(localStorage.getItem('finance:budget:quarterly') ?? '')
-    setAnnualBudget(localStorage.getItem('finance:budget:annual') ?? '')
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('finance:budget:monthly', monthlyBudget)
-  }, [monthlyBudget])
-
-  useEffect(() => {
-    localStorage.setItem('finance:budget:quarterly', quarterlyBudget)
-  }, [quarterlyBudget])
-
-  useEffect(() => {
-    localStorage.setItem('finance:budget:annual', annualBudget)
-  }, [annualBudget])
-
-  useEffect(() => {
     if (!selectedAcademicYear || !selectedTerm) return
     let isMounted = true
     const loadBudgets = async () => {
       setBudgetNotice(null)
       try {
         const response = await apiClient.get<Budget[] | { results: Budget[]; count: number }>(
-          '/v1/finance/budgets',
+          '/finance/budgets/',
           {
-            params: { academicYear: selectedAcademicYear, term: selectedTerm },
+            params: { academic_year: selectedAcademicYear, term: selectedTerm },
           },
         )
         const items = normalizePaginatedResponse(response.data).items
-        if (items.length === 0) {
-          throw new Error('empty')
-        }
         if (isMounted) {
           setBudgets(items)
-          setBudgetSource('api')
+          if (items.length === 0) {
+            setBudgetNotice('No saved budget for this academic year yet.')
+          }
         }
-      } catch {
+      } catch (err) {
         if (!isMounted) return
-        const storedMonthly = Number(localStorage.getItem('finance:budget:monthly') ?? 0)
-        const storedQuarterly = Number(localStorage.getItem('finance:budget:quarterly') ?? 0)
-        const storedAnnual = Number(localStorage.getItem('finance:budget:annual') ?? 0)
-        if (storedMonthly || storedQuarterly || storedAnnual) {
-          setBudgets([
-            {
-              academic_year: selectedAcademicYear,
-              term: Number(selectedTerm),
-              monthly_budget: storedMonthly,
-              quarterly_budget: storedQuarterly,
-              annual_budget: storedAnnual,
-            },
-          ])
+        const status = (err as { response?: { status?: number } })?.response?.status
+        setBudgets([])
+        if (status === 403) {
+          setBudgetNotice('Budget API access denied.')
+        } else if (status === 404) {
+          setBudgetNotice('Budget API endpoint not found.')
         } else {
-          const fallback = mockBudgets.filter(
-            (budget) =>
-              budget.academic_year === selectedAcademicYear &&
-              String(budget.term) === String(selectedTerm),
-          )
-          setBudgets(fallback.length > 0 ? fallback : mockBudgets)
+          setBudgetNotice(extractApiError(err, 'Budget API unavailable.'))
         }
-        setBudgetSource('mock')
-        setBudgetNotice('Budget API unavailable. Using mock/local values.')
       }
     }
     loadBudgets()
@@ -218,20 +203,43 @@ export default function FinanceExpensesPage() {
 
   useEffect(() => {
     if (budgetTouched) return
-    const budget = budgets[0]
-    if (!budget) return
+    const budget = budgets.find((item) => String(item.term) === String(selectedTerm)) ?? budgets[0]
+    if (!budget) {
+      setMonthlyBudget('')
+      setQuarterlyBudget('')
+      setAnnualBudget('')
+      return
+    }
     setMonthlyBudget(budget.monthly_budget ? String(budget.monthly_budget) : '')
     setQuarterlyBudget(budget.quarterly_budget ? String(budget.quarterly_budget) : '')
     setAnnualBudget(budget.annual_budget ? String(budget.annual_budget) : '')
-  }, [budgets, budgetTouched])
+  }, [budgets, budgetTouched, selectedTerm])
 
   useEffect(() => {
     let isMounted = true
     const loadData = async () => {
+      if (hasInvalidExpenseDateRange) {
+        if (isMounted) {
+          setError('Invalid expense date range: From date cannot be after To date.')
+          setIsLoading(false)
+        }
+        return
+      }
       try {
+        if (isMounted) setError(null)
         const response = await apiClient.get<Expense[] | { results: Expense[]; count: number }>(
           '/finance/expenses/',
-          { params: { page: expensePage, search: expenseQuery.trim() || undefined } },
+          {
+            params: {
+              page: expensePage,
+              search: expenseQuery.trim() || undefined,
+              category: categoryFilter !== 'all' ? categoryFilter : undefined,
+              approval_status: approvalFilter !== 'all' ? approvalFilter : undefined,
+              vendor: vendorQuery.trim() || undefined,
+              date_from: dateFrom || undefined,
+              date_to: dateTo || undefined,
+            },
+          },
         )
         if (isMounted) {
           const normalized = normalizePaginatedResponse(response.data)
@@ -249,7 +257,7 @@ export default function FinanceExpensesPage() {
           } else if (status === 404) {
             setError('Finance endpoints not found (404). Verify tenant routing.')
           } else {
-            setError('Unable to load expenses. Please try again.')
+            setError(extractApiError(err, 'Unable to load expenses. Please try again.'))
           }
         }
       } finally {
@@ -263,16 +271,37 @@ export default function FinanceExpensesPage() {
     return () => {
       isMounted = false
     }
-  }, [expensePage, expenseQuery])
+  }, [
+    expensePage,
+    expenseQuery,
+    categoryFilter,
+    approvalFilter,
+    vendorQuery,
+    dateFrom,
+    dateTo,
+    hasInvalidExpenseDateRange,
+  ])
 
   const filteredExpenses = useMemo(() => {
     if (isServerPaginated) return expenses
     const term = expenseQuery.trim().toLowerCase()
-    if (!term) return expenses
-    return expenses.filter((expense) =>
-      expense.category.toLowerCase().includes(term),
-    )
-  }, [expenseQuery, expenses])
+    return expenses.filter((expense) => {
+      if (categoryFilter !== 'all' && expense.category !== categoryFilter) return false
+      if (approvalFilter !== 'all' && expense.approval_status !== approvalFilter) return false
+      if (vendorQuery.trim()) {
+        const vendor = expense.vendor?.toLowerCase() ?? ''
+        if (!vendor.includes(vendorQuery.trim().toLowerCase())) return false
+      }
+      if (dateFrom && expense.expense_date && expense.expense_date < dateFrom) return false
+      if (dateTo && expense.expense_date && expense.expense_date > dateTo) return false
+      if (!term) return true
+      return (
+        expense.category.toLowerCase().includes(term) ||
+        (expense.description ?? '').toLowerCase().includes(term)
+      )
+    })
+  }, [expenseQuery, expenses, categoryFilter, approvalFilter, vendorQuery, dateFrom, dateTo])
+
 
   const totalSpend = useMemo(
     () => expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0),
@@ -298,9 +327,58 @@ export default function FinanceExpensesPage() {
   const monthlyBudgetValue = Number(monthlyBudget) || 0
   const quarterlyBudgetValue = Number(quarterlyBudget) || 0
   const annualBudgetValue = Number(annualBudget) || 0
+  const budgetValidationError = useMemo(() => {
+    if (!selectedAcademicYear || !selectedTerm) {
+      return 'Select academic year and term before saving budget.'
+    }
+    if (!monthlyBudget.trim() || !quarterlyBudget.trim() || !annualBudget.trim()) {
+      return 'Monthly, quarterly, and annual budget values are required.'
+    }
+    const monthly = Number(monthlyBudget)
+    const quarterly = Number(quarterlyBudget)
+    const annual = Number(annualBudget)
+    if ([monthly, quarterly, annual].some((value) => Number.isNaN(value))) {
+      return 'Budget values must be valid numbers.'
+    }
+    if ([monthly, quarterly, annual].some((value) => value < 0)) {
+      return 'Budget values cannot be negative.'
+    }
+    if (monthly > quarterly) {
+      return 'Monthly budget cannot exceed quarterly budget.'
+    }
+    if (quarterly > annual) {
+      return 'Quarterly budget cannot exceed annual budget.'
+    }
+    return null
+  }, [annualBudget, monthlyBudget, quarterlyBudget, selectedAcademicYear, selectedTerm])
   const remainingMonthly = monthlyBudgetValue - spendThisMonth
   const utilization =
     monthlyBudgetValue > 0 ? Math.min(100, (spendThisMonth / monthlyBudgetValue) * 100) : 0
+  const selectedBudget = useMemo(
+    () => budgets.find((budget) => String(budget.term) === String(selectedTerm)),
+    [budgets, selectedTerm],
+  )
+  const filteredBudgets = useMemo(() => {
+    if (hasInvalidBudgetDateRange) return []
+    const query = budgetQuery.trim().toLowerCase()
+    return budgets.filter((budget) => {
+      const termLabel =
+        budget.term_name ??
+        terms.find((term) => term.id === budget.term)?.name ??
+        String(budget.term)
+      const matchesQuery =
+        query.length === 0 ||
+        termLabel.toLowerCase().includes(query) ||
+        String(budget.monthly_budget).includes(query) ||
+        String(budget.quarterly_budget).includes(query) ||
+        String(budget.annual_budget).includes(query)
+
+      const stamp = (budget.updated_at ?? budget.created_at ?? '').slice(0, 10)
+      const matchesFrom = !budgetDateFrom || (stamp && stamp >= budgetDateFrom)
+      const matchesTo = !budgetDateTo || (stamp && stamp <= budgetDateTo)
+      return matchesQuery && matchesFrom && matchesTo
+    })
+  }, [budgets, budgetDateFrom, budgetDateTo, budgetQuery, terms, hasInvalidBudgetDateRange])
 
   const trendExpenses = useMemo(() => {
     if (trendCategory === 'all') return expenses
@@ -363,37 +441,42 @@ export default function FinanceExpensesPage() {
       setExpenses((prev) => prev.filter((expense) => expense.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setDeleteError(detail ?? 'Unable to delete expense.')
+      setDeleteError(extractApiError(err, 'Unable to delete expense.'))
     } finally {
       setIsDeleting(false)
     }
   }
 
   const handleSaveBudget = async () => {
-    if (!selectedAcademicYear || !selectedTerm) return
+    if (budgetValidationError) {
+      setBudgetNotice(budgetValidationError)
+      return
+    }
     setIsSavingBudget(true)
     setBudgetNotice(null)
     const payload = {
-      academic_year: selectedAcademicYear,
+      academic_year: Number(selectedAcademicYear),
       term: Number(selectedTerm),
       monthly_budget: Number(monthlyBudget) || 0,
       quarterly_budget: Number(quarterlyBudget) || 0,
       annual_budget: Number(annualBudget) || 0,
     }
     try {
-      if (budgets[0]?.id) {
-        await apiClient.put(`/v1/finance/budgets/${budgets[0].id}/`, payload)
+      if (selectedBudget?.id) {
+        await apiClient.put(`/finance/budgets/${selectedBudget.id}/`, payload)
       } else {
-        await apiClient.post('/v1/finance/budgets/', payload)
+        await apiClient.post('/finance/budgets/', payload)
       }
-      setBudgets([{ ...payload, id: budgets[0]?.id ?? undefined }])
-      setBudgetSource('api')
+      await (async () => {
+        const response = await apiClient.get<Budget[] | { results: Budget[]; count: number }>(
+          '/finance/budgets/',
+          { params: { academic_year: selectedAcademicYear } },
+        )
+        setBudgets(normalizePaginatedResponse(response.data).items)
+      })()
       setBudgetNotice('Budget saved successfully.')
-    } catch {
-      setBudgets([{ ...payload, id: budgets[0]?.id ?? undefined }])
-      setBudgetSource('mock')
-      setBudgetNotice('Budget API unavailable. Saved locally only.')
+    } catch (err) {
+      setBudgetNotice(extractApiError(err, 'Budget API unavailable. Save failed.'))
     } finally {
       setIsSavingBudget(false)
     }
@@ -401,14 +484,7 @@ export default function FinanceExpensesPage() {
 
   const downloadFile = (content: string, filename: string, type: string) => {
     const blob = new Blob([content], { type })
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(url)
+    downloadBlob(blob, filename)
   }
 
   const handleExportCsv = () => {
@@ -417,9 +493,23 @@ export default function FinanceExpensesPage() {
       expense.category,
       expense.amount,
       expense.expense_date,
+      expense.vendor ?? '',
+      expense.payment_method ?? '',
+      expense.invoice_number ?? '',
+      expense.approval_status ?? '',
       expense.description ?? '',
     ])
-    const header = ['id', 'category', 'amount', 'expense_date', 'description']
+    const header = [
+      'id',
+      'category',
+      'amount',
+      'expense_date',
+      'vendor',
+      'payment_method',
+      'invoice_number',
+      'approval_status',
+      'description',
+    ]
     const csv = [header, ...rows]
       .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
       .join('\n')
@@ -443,6 +533,55 @@ export default function FinanceExpensesPage() {
       totals_by_category: totalsByCategory,
     }
     downloadFile(JSON.stringify(payload, null, 2), 'expenses-summary.json', 'application/json')
+  }
+
+  const handleExportBudgetCsv = () => {
+    const rows = filteredBudgets.map((budget) => [
+      budget.id ?? '',
+      budget.term_name ?? terms.find((term) => term.id === budget.term)?.name ?? budget.term,
+      budget.monthly_budget,
+      budget.quarterly_budget,
+      budget.annual_budget,
+      budget.created_at ?? '',
+      budget.updated_at ?? '',
+    ])
+    const header = [
+      'id',
+      'term',
+      'monthly_budget',
+      'quarterly_budget',
+      'annual_budget',
+      'created_at',
+      'updated_at',
+    ]
+    const csv = [header, ...rows]
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    downloadFile(csv, 'budget-list.csv', 'text/csv')
+  }
+
+  const handleExportBudgetSummary = () => {
+    const payload = {
+      generated_at: new Date().toISOString(),
+      academic_year: selectedAcademicYear || null,
+      term: selectedTerm || null,
+      records: filteredBudgets.length,
+      total_monthly: filteredBudgets.reduce((sum, item) => sum + Number(item.monthly_budget || 0), 0),
+      total_quarterly: filteredBudgets.reduce(
+        (sum, item) => sum + Number(item.quarterly_budget || 0),
+        0,
+      ),
+      total_annual: filteredBudgets.reduce((sum, item) => sum + Number(item.annual_budget || 0), 0),
+    }
+    downloadFile(JSON.stringify(payload, null, 2), 'budget-summary.json', 'application/json')
+  }
+
+  const openBudgetPlanner = () => {
+    setMonthlyBudget('')
+    setQuarterlyBudget('')
+    setAnnualBudget('')
+    setBudgetTouched(true)
+    document.getElementById('budget-planner')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
   return (
@@ -472,7 +611,7 @@ export default function FinanceExpensesPage() {
       ) : null}
 
       <section className="col-span-12 grid gap-6 lg:grid-cols-12">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
+        <div id="budget-planner" className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
           <p className="text-xs uppercase text-slate-400">Total spend</p>
           <p className="mt-2 text-2xl font-semibold">{totalSpend.toLocaleString()}</p>
           <p className="mt-1 text-xs text-slate-400">Based on loaded expenses.</p>
@@ -499,18 +638,17 @@ export default function FinanceExpensesPage() {
               <select
                 className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-sm text-white"
                 value={selectedAcademicYear}
+                disabled={academicYears.length === 0}
                 onChange={(event) => {
                   setSelectedAcademicYear(event.target.value)
                   setBudgetTouched(false)
                 }}
               >
                 {academicYears.length === 0 ? (
-                  <option value={selectedAcademicYear || '2025'}>
-                    {selectedAcademicYear || '2025'}
-                  </option>
+                  <option value="">No academic years available</option>
                 ) : null}
                 {academicYears.map((year) => (
-                  <option key={year.id} value={year.name}>
+                  <option key={year.id} value={String(year.id)}>
                     {year.name}
                   </option>
                 ))}
@@ -521,19 +659,19 @@ export default function FinanceExpensesPage() {
               <select
                 className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-sm text-white"
                 value={selectedTerm}
+                disabled={terms.length === 0}
                 onChange={(event) => {
                   setSelectedTerm(event.target.value)
                   setBudgetTouched(false)
                 }}
               >
                 {terms.length === 0 ? (
-                  <option value={selectedTerm || '1'}>{selectedTerm || '1'}</option>
+                  <option value="">No terms available</option>
                 ) : null}
                 {terms
                   .filter((term) =>
                     selectedAcademicYear
-                      ? academicYears.find((year) => year.name === selectedAcademicYear)?.id ===
-                        term.academic_year_id
+                      ? Number(selectedAcademicYear) === Number(term.academic_year_id ?? term.academic_year)
                       : true,
                   )
                   .map((term) => (
@@ -586,10 +724,13 @@ export default function FinanceExpensesPage() {
             <button
               className="mt-2 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900 disabled:opacity-70"
               onClick={handleSaveBudget}
-              disabled={isSavingBudget}
+              disabled={isSavingBudget || Boolean(budgetValidationError)}
             >
               {isSavingBudget ? 'Saving...' : 'Save budget'}
             </button>
+            {budgetValidationError ? (
+              <p className="text-[11px] text-amber-300">{budgetValidationError}</p>
+            ) : null}
             {budgetNotice ? (
               <p className="text-[11px] text-slate-400">{budgetNotice}</p>
             ) : null}
@@ -661,10 +802,65 @@ export default function FinanceExpensesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <input
               className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
-              placeholder="Search category"
+              placeholder="Search category or description"
               value={expenseQuery}
               onChange={(event) => {
                 setExpenseQuery(event.target.value)
+                setExpensePage(1)
+              }}
+            />
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={categoryFilter}
+              onChange={(event) => {
+                setCategoryFilter(event.target.value)
+                setExpensePage(1)
+              }}
+            >
+              <option value="all">All categories</option>
+              {expenseCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={approvalFilter}
+              onChange={(event) => {
+                setApprovalFilter(event.target.value)
+                setExpensePage(1)
+              }}
+            >
+              <option value="all">All status</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            <input
+              className="w-full max-w-[160px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              placeholder="Vendor"
+              value={vendorQuery}
+              onChange={(event) => {
+                setVendorQuery(event.target.value)
+                setExpensePage(1)
+              }}
+            />
+            <input
+              type="date"
+              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={dateFrom}
+              onChange={(event) => {
+                setDateFrom(event.target.value)
+                setExpensePage(1)
+              }}
+            />
+            <input
+              type="date"
+              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={dateTo}
+              onChange={(event) => {
+                setDateTo(event.target.value)
                 setExpensePage(1)
               }}
             />
@@ -689,12 +885,16 @@ export default function FinanceExpensesPage() {
           </div>
         </div>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
-          <table className="min-w-[720px] w-full text-left text-sm">
+          <table className="min-w-[980px] w-full text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Amount</th>
                 <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Vendor</th>
+                <th className="px-4 py-3">Method</th>
+                <th className="px-4 py-3">Receipt #</th>
+                <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Description</th>
                 <th className="px-4 py-3">Action</th>
               </tr>
@@ -705,6 +905,10 @@ export default function FinanceExpensesPage() {
                   <td className="px-4 py-3 font-semibold">{expense.category}</td>
                   <td className="px-4 py-3">{Number(expense.amount).toLocaleString()}</td>
                   <td className="px-4 py-3">{expense.expense_date}</td>
+                  <td className="px-4 py-3">{expense.vendor ?? '--'}</td>
+                  <td className="px-4 py-3">{expense.payment_method ?? '--'}</td>
+                  <td className="px-4 py-3">{expense.invoice_number ?? '--'}</td>
+                  <td className="px-4 py-3">{expense.approval_status ?? '--'}</td>
                   <td className="px-4 py-3">{expense.description ?? '--'}</td>
                   <td className="px-4 py-3">
                     <button
@@ -724,7 +928,7 @@ export default function FinanceExpensesPage() {
               ))}
               {pagedExpenses.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={5}>
+                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={9}>
                     No expenses found.
                   </td>
                 </tr>
@@ -752,6 +956,95 @@ export default function FinanceExpensesPage() {
               Next
             </button>
           </div>
+        </div>
+      </section>
+
+      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-display font-semibold">Budget list</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Saved budget records for the selected academic year.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              placeholder="Search term or amount"
+              value={budgetQuery}
+              onChange={(event) => setBudgetQuery(event.target.value)}
+            />
+            <input
+              type="date"
+              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={budgetDateFrom}
+              onChange={(event) => setBudgetDateFrom(event.target.value)}
+            />
+            <input
+              type="date"
+              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={budgetDateTo}
+              onChange={(event) => setBudgetDateTo(event.target.value)}
+            />
+            <button
+              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              onClick={handleExportBudgetCsv}
+            >
+              Export CSV
+            </button>
+            <button
+              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              onClick={handleExportBudgetSummary}
+            >
+              Export summary
+            </button>
+            <button
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
+              onClick={openBudgetPlanner}
+            >
+              Create budget
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+          {hasInvalidBudgetDateRange ? (
+            <p className="px-4 py-3 text-xs text-amber-300">
+              Invalid budget date range: From date cannot be after To date.
+            </p>
+          ) : null}
+          <table className="min-w-[920px] w-full text-left text-sm">
+            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <tr>
+                <th className="px-4 py-3">Term</th>
+                <th className="px-4 py-3">Monthly</th>
+                <th className="px-4 py-3">Quarterly</th>
+                <th className="px-4 py-3">Annual</th>
+                <th className="px-4 py-3">Created</th>
+                <th className="px-4 py-3">Updated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {filteredBudgets.map((budget) => (
+                <tr key={`${budget.id ?? 'local'}-${budget.term}`} className="bg-slate-950/60">
+                  <td className="px-4 py-3">
+                    {budget.term_name ?? terms.find((term) => term.id === budget.term)?.name ?? budget.term}
+                  </td>
+                  <td className="px-4 py-3">{Number(budget.monthly_budget || 0).toLocaleString()}</td>
+                  <td className="px-4 py-3">{Number(budget.quarterly_budget || 0).toLocaleString()}</td>
+                  <td className="px-4 py-3">{Number(budget.annual_budget || 0).toLocaleString()}</td>
+                  <td className="px-4 py-3">{budget.created_at ? budget.created_at.replace('T', ' ').slice(0, 16) : '--'}</td>
+                  <td className="px-4 py-3">{budget.updated_at ? budget.updated_at.replace('T', ' ').slice(0, 16) : '--'}</td>
+                </tr>
+              ))}
+              {filteredBudgets.length === 0 ? (
+                <tr className="bg-slate-950/60">
+                  <td className="px-4 py-3 text-slate-400" colSpan={6}>
+                    No budget records found.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
         </div>
       </section>
 

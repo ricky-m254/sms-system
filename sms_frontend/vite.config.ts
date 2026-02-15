@@ -10,12 +10,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-
   server: {
-    allowedHosts: [
-      'glycolytically-unsuited-merissa.ngrok-free.dev',
-      '.ngrok-free.dev',
-      '.ngrok.io',
-    ],
+    host: true,
+    port: 3000,
   },
 })

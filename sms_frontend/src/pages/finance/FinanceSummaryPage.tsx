@@ -46,62 +46,92 @@ type Expense = {
   expense_date: string
 }
 
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
+}
+
+const safeMonthKey = (value?: string) => {
+  if (!value) return null
+  try {
+    const date = parseISO(value)
+    if (Number.isNaN(date.getTime())) return null
+    return format(date, 'MMM yyyy')
+  } catch {
+    return null
+  }
+}
+
+const safeDate = (value?: string) => {
+  if (!value) return null
+  try {
+    const parsed = parseISO(value)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  } catch {
+    return null
+  }
+}
+
 export default function FinanceSummaryPage() {
   const [summary, setSummary] = useState<FinanceSummary | null>(null)
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let isMounted = true
-    const loadData = async () => {
-      try {
-        const [summaryRes, invoicesRes, paymentsRes, expensesRes] = await Promise.all([
-          apiClient.get<FinanceSummary>('/finance/summary/'),
-          apiClient.get<Invoice[] | { results: Invoice[]; count: number }>('/finance/invoices/'),
-          apiClient.get<Payment[] | { results: Payment[]; count: number }>('/finance/payments/'),
-          apiClient.get<Expense[] | { results: Expense[]; count: number }>('/finance/expenses/'),
-        ])
-        if (isMounted) {
-          setSummary(summaryRes.data)
-          setInvoices(normalizePaginatedResponse(invoicesRes.data).items)
-          setPayments(normalizePaginatedResponse(paymentsRes.data).items)
-          setExpenses(normalizePaginatedResponse(expensesRes.data).items)
-        }
-      } catch (err) {
-        if (isMounted) {
-          const status = (err as { response?: { status?: number } })?.response?.status
-          if (status === 401) {
-            setError('Session expired. Please log in again.')
-          } else if (status === 403) {
-            setError('Access denied. Ensure this user has the FINANCE module and proper role.')
-          } else if (status === 404) {
-            setError('Finance endpoints not found (404). Verify tenant routing.')
-          } else {
-            setError('Unable to load finance data. Please try again.')
-          }
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+  const loadData = async (isInitial = false) => {
+    if (isInitial) setIsLoading(true)
+    else setIsRefreshing(true)
+    setError(null)
+    try {
+      const [summaryRes, invoicesRes, paymentsRes, expensesRes] = await Promise.all([
+        apiClient.get<FinanceSummary>('/finance/summary/'),
+        apiClient.get<Invoice[] | { results: Invoice[]; count: number }>('/finance/invoices/'),
+        apiClient.get<Payment[] | { results: Payment[]; count: number }>('/finance/payments/'),
+        apiClient.get<Expense[] | { results: Expense[]; count: number }>('/finance/expenses/'),
+      ])
+      setSummary(summaryRes.data)
+      setInvoices(normalizePaginatedResponse(invoicesRes.data).items)
+      setPayments(normalizePaginatedResponse(paymentsRes.data).items)
+      setExpenses(normalizePaginatedResponse(expensesRes.data).items)
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 401) {
+        setError('Session expired. Please log in again.')
+      } else if (status === 403) {
+        setError('Access denied. Ensure this user has the FINANCE module and proper role.')
+      } else if (status === 404) {
+        setError('Finance endpoints not found (404). Verify tenant routing.')
+      } else {
+        setError(extractApiError(err, 'Unable to load finance data. Please try again.'))
       }
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
     }
+  }
 
-    loadData()
-    return () => {
-      isMounted = false
-    }
+  useEffect(() => {
+    void loadData(true)
   }, [])
 
   const paymentsByMonth = useMemo(() => {
     const bucket = new Map<string, number>()
     for (const payment of payments) {
-      if (!payment.payment_date) continue
-      const date = parseISO(payment.payment_date)
-      const key = format(date, 'MMM yyyy')
+      const key = safeMonthKey(payment.payment_date)
+      if (!key) continue
       bucket.set(key, (bucket.get(key) ?? 0) + Number(payment.amount))
     }
     return Array.from(bucket.entries()).map(([month, total]) => ({
@@ -113,17 +143,15 @@ export default function FinanceSummaryPage() {
   const operatingCashflow = useMemo(() => {
     const bucket = new Map<string, { inflow: number; outflow: number }>()
     for (const payment of payments) {
-      if (!payment.payment_date) continue
-      const date = parseISO(payment.payment_date)
-      const key = format(date, 'MMM yyyy')
+      const key = safeMonthKey(payment.payment_date)
+      if (!key) continue
       const current = bucket.get(key) ?? { inflow: 0, outflow: 0 }
       current.inflow += Number(payment.amount)
       bucket.set(key, current)
     }
     for (const expense of expenses) {
-      if (!expense.expense_date) continue
-      const date = parseISO(expense.expense_date)
-      const key = format(date, 'MMM yyyy')
+      const key = safeMonthKey(expense.expense_date)
+      if (!key) continue
       const current = bucket.get(key) ?? { inflow: 0, outflow: 0 }
       current.outflow += Number(expense.amount)
       bucket.set(key, current)
@@ -145,12 +173,13 @@ export default function FinanceSummaryPage() {
     ]
     const today = new Date()
     invoices.forEach((invoice) => {
-      if (!invoice.due_date) return
+      const due = safeDate(invoice.due_date)
+      if (!due) return
       const balance = Number(
         invoice.balance_due ?? invoice.total_amount ?? 0,
       )
       if (balance <= 0) return
-      const daysPastDue = differenceInCalendarDays(today, parseISO(invoice.due_date))
+      const daysPastDue = differenceInCalendarDays(today, due)
       if (daysPastDue <= 30) buckets[0].value += balance
       else if (daysPastDue <= 60) buckets[1].value += balance
       else if (daysPastDue <= 90) buckets[2].value += balance
@@ -174,9 +203,20 @@ export default function FinanceSummaryPage() {
   return (
     <div className="space-y-8">
       <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance Dashboard</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Summary Overview</h1>
-        <p className="mt-2 text-sm text-slate-400">High-level financial health and trends.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance Dashboard</p>
+            <h1 className="mt-2 text-2xl font-display font-semibold">Summary Overview</h1>
+            <p className="mt-2 text-sm text-slate-400">High-level financial health and trends.</p>
+          </div>
+          <button
+            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+            onClick={() => void loadData(false)}
+            disabled={isLoading || isRefreshing}
+          >
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </header>
 
       {isLoading ? (

@@ -5,6 +5,7 @@ import studentSettings from './schemas/students'
 import parentSettings from './schemas/parents'
 import academicsSettings from './schemas/academics'
 import staffSettings from './schemas/staff'
+import communicationSettings from './schemas/communication'
 
 export const settingsSchemas: Record<string, SettingsSchema> = {
   global: globalSettings,
@@ -13,6 +14,7 @@ export const settingsSchemas: Record<string, SettingsSchema> = {
   parents: parentSettings,
   academics: academicsSettings,
   staff: staffSettings,
+  communication: communicationSettings,
 }
 
 export const settingsSidebar = [
@@ -22,4 +24,5 @@ export const settingsSidebar = [
   { key: 'parents', label: 'Parent Settings' },
   { key: 'academics', label: 'Academics Settings' },
   { key: 'staff', label: 'Staff Settings' },
+  { key: 'communication', label: 'Communication Settings' },
 ]

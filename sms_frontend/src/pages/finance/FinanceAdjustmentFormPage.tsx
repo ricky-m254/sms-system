@@ -35,14 +35,19 @@ type EnrollmentRef = {
   term?: number
 }
 
-const mockStudentDetail: StudentDetail = {
-  id: 0,
-  admission_number: 'N/A',
-  first_name: 'Student',
-  last_name: 'Not Found',
-  guardians: [
-    { id: 1, name: 'Guardian Name', relationship: 'Parent', phone: 'N/A', email: 'N/A' },
-  ],
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
 }
 
 export default function FinanceAdjustmentFormPage() {
@@ -59,12 +64,14 @@ export default function FinanceAdjustmentFormPage() {
     invoice: '',
     amount: '',
     reason: '',
+    notes: '',
   })
 
   useEffect(() => {
     let isMounted = true
     const loadInvoices = async () => {
       try {
+        if (isMounted) setFormError(null)
         const response = await apiClient.get<Invoice[] | { results: Invoice[]; count: number }>(
           '/finance/invoices/',
         )
@@ -73,8 +80,7 @@ export default function FinanceAdjustmentFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-          setFormError(detail ?? 'Unable to load invoices.')
+          setFormError(extractApiError(err, 'Unable to load invoices.'))
         }
       } finally {
         if (isMounted) {
@@ -121,9 +127,9 @@ export default function FinanceAdjustmentFormPage() {
         }
       } catch {
         if (!isMounted) return
-        setStudentDetail({ ...mockStudentDetail, id: studentId })
+        setStudentDetail(null)
         setStudentEnrollment(null)
-        setStudentInfoNotice('Student contact or class info not available. Using fallback data.')
+        setStudentInfoNotice('Student contact or class info not available.')
       }
     }
     loadStudentInfo()
@@ -144,6 +150,8 @@ export default function FinanceAdjustmentFormPage() {
       nextErrors.amount = 'Enter a valid amount.'
     }
     if (!formState.reason.trim()) nextErrors.reason = 'Enter a reason.'
+    if (!formState.notes.trim()) nextErrors.notes = 'Notes are required.'
+    if (formState.notes.trim().length < 5) nextErrors.notes = 'Notes must be at least 5 characters.'
     const selectedInvoice = invoices.find((inv) => String(inv.id) === formState.invoice)
     if (
       selectedInvoice &&
@@ -164,8 +172,11 @@ export default function FinanceAdjustmentFormPage() {
         invoice: Number(formState.invoice),
         amount: Number(formState.amount),
         reason: formState.reason.trim(),
+        notes: formState.notes.trim(),
       })
-      navigate('/modules/finance/adjustments')
+      navigate('/modules/finance/adjustments', {
+        state: { flash: 'Adjustment submitted for review.' },
+      })
     } catch (err) {
       const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
       if (data && typeof data === 'object') {
@@ -178,7 +189,7 @@ export default function FinanceAdjustmentFormPage() {
             nextErrors[key] = value
           }
         }
-        ;['invoice', 'amount', 'reason'].forEach(assign)
+        ;['invoice', 'amount', 'reason', 'notes'].forEach(assign)
         if (Object.keys(nextErrors).length > 0) {
           setFieldErrors(nextErrors)
           setFormError('Please correct the highlighted fields.')
@@ -186,7 +197,7 @@ export default function FinanceAdjustmentFormPage() {
         }
       }
       const detail = (err as { response?: { data?: { error?: string; detail?: string } } })?.response?.data
-      setFormError(detail?.error ?? detail?.detail ?? 'Unable to create adjustment.')
+      setFormError(detail?.error ?? detail?.detail ?? extractApiError(err, 'Unable to create adjustment.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -235,6 +246,9 @@ export default function FinanceAdjustmentFormPage() {
           <label className="block text-sm">
             Amount
             <input
+              type="number"
+              min="0.01"
+              step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
               onChange={(event) => {
@@ -249,17 +263,38 @@ export default function FinanceAdjustmentFormPage() {
           </label>
           <label className="block text-sm">
             Reason
-            <textarea
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            <select
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.reason}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, reason: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, reason: '' }))
               }}
-              rows={3}
-            />
+            >
+              <option value="">Select reason</option>
+              <option value="Late Fee">Late Fee</option>
+              <option value="Scholarship">Scholarship</option>
+              <option value="Refund">Refund</option>
+              <option value="Correction">Correction</option>
+              <option value="Other">Other</option>
+            </select>
             {fieldErrors.reason ? (
               <p className="mt-1 text-xs text-rose-300">{fieldErrors.reason}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Notes
+            <textarea
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.notes}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, notes: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, notes: '' }))
+              }}
+              rows={3}
+            />
+            {fieldErrors.notes ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.notes}</p>
             ) : null}
           </label>
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}

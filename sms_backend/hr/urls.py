@@ -1,11 +1,84 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import StaffRefView, StaffViewSet
+
+from .views import (
+    AttendanceViewSet,
+    DepartmentViewSet,
+    EmployeeDocumentViewSet,
+    EmployeeViewSet,
+    EmergencyContactViewSet,
+    HrAnalyticsSummaryView,
+    HrAnalyticsHeadcountView,
+    HrAnalyticsTurnoverView,
+    HrAnalyticsAttendanceView,
+    HrAnalyticsLeaveView,
+    HrAnalyticsDiversityView,
+    HrAnalyticsPayrollCostsView,
+    LeaveBalanceView,
+    LeaveCalendarView,
+    LeavePolicyViewSet,
+    LeaveRequestViewSet,
+    LeaveTypeViewSet,
+    JobApplicationViewSet,
+    JobPostingViewSet,
+    InterviewViewSet,
+    OnboardingChecklistView,
+    OnboardingTaskViewSet,
+    PerformanceGoalViewSet,
+    PerformanceReviewViewSet,
+    PayrollBatchViewSet,
+    PayrollItemViewSet,
+    PositionViewSet,
+    SalaryComponentViewSet,
+    SalaryStructureViewSet,
+    StaffRefView,
+    StaffViewSet,
+    TrainingEnrollmentViewSet,
+    TrainingProgramViewSet,
+    WorkScheduleViewSet,
+)
 
 router = DefaultRouter()
 router.register(r"staff", StaffViewSet, basename="hr_staff")
+router.register(r"employees", EmployeeViewSet, basename="hr_employee")
+router.register(r"emergency-contacts", EmergencyContactViewSet, basename="hr_emergency_contact")
+router.register(r"documents", EmployeeDocumentViewSet, basename="hr_document")
+router.register(r"departments", DepartmentViewSet, basename="hr_department")
+router.register(r"positions", PositionViewSet, basename="hr_position")
+router.register(r"attendance", AttendanceViewSet, basename="hr_attendance")
+router.register(r"schedules", WorkScheduleViewSet, basename="hr_schedule")
+router.register(r"leave-types", LeaveTypeViewSet, basename="hr_leave_type")
+router.register(r"leave-policies", LeavePolicyViewSet, basename="hr_leave_policy")
+router.register(r"leave-requests", LeaveRequestViewSet, basename="hr_leave_request")
+router.register(r"salary-structures", SalaryStructureViewSet, basename="hr_salary_structure")
+router.register(r"salary-components", SalaryComponentViewSet, basename="hr_salary_component")
+router.register(r"payrolls", PayrollBatchViewSet, basename="hr_payroll")
+router.register(r"payslips", PayrollItemViewSet, basename="hr_payslip")
+router.register(r"job-postings", JobPostingViewSet, basename="hr_job_posting")
+router.register(r"applications", JobApplicationViewSet, basename="hr_application")
+router.register(r"interviews", InterviewViewSet, basename="hr_interview")
+router.register(r"onboarding", OnboardingTaskViewSet, basename="hr_onboarding")
+router.register(r"performance-goals", PerformanceGoalViewSet, basename="hr_performance_goal")
+router.register(r"performance-reviews", PerformanceReviewViewSet, basename="hr_performance_review")
+router.register(r"training-programs", TrainingProgramViewSet, basename="hr_training_program")
+router.register(r"training-enrollments", TrainingEnrollmentViewSet, basename="hr_training_enrollment")
 
 urlpatterns = [
     path("ref/staff/", StaffRefView.as_view(), name="hr_ref_staff"),
+    path("analytics/summary/", HrAnalyticsSummaryView.as_view(), name="hr_analytics_summary"),
+    path("analytics/headcount/", HrAnalyticsHeadcountView.as_view(), name="hr_analytics_headcount"),
+    path("analytics/turnover/", HrAnalyticsTurnoverView.as_view(), name="hr_analytics_turnover"),
+    path("analytics/attendance/", HrAnalyticsAttendanceView.as_view(), name="hr_analytics_attendance"),
+    path("analytics/leave/", HrAnalyticsLeaveView.as_view(), name="hr_analytics_leave"),
+    path("analytics/diversity/", HrAnalyticsDiversityView.as_view(), name="hr_analytics_diversity"),
+    path("analytics/payroll-costs/", HrAnalyticsPayrollCostsView.as_view(), name="hr_analytics_payroll_costs"),
+    path("leave-balance/<int:employee_id>/", LeaveBalanceView.as_view(), name="hr_leave_balance"),
+    path("leave-calendar/", LeaveCalendarView.as_view(), name="hr_leave_calendar"),
+    path("onboarding/<int:employee_id>/", OnboardingChecklistView.as_view(), name="hr_onboarding_checklist"),
+    path(
+        "documents/upload/",
+        EmployeeDocumentViewSet.as_view({"post": "create"}),
+        name="hr_document_upload",
+    ),
     path("", include(router.urls)),
 ]

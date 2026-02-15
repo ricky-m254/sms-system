@@ -7,10 +7,32 @@ type FeeStructure = {
   id: number
   name: string
   amount: number
+  category?: string
   academic_year: number
   term: number
+  grade_level?: number | string | null
   is_active: boolean
 }
+
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
+}
+
+const statusBadgeClass = (isActive: boolean) =>
+  isActive
+    ? 'border-emerald-400/40 text-emerald-200'
+    : 'border-slate-600 text-slate-300'
 
 export default function FinanceFeeStructuresPage() {
   const navigate = useNavigate()
@@ -24,6 +46,8 @@ export default function FinanceFeeStructuresPage() {
   const [deleteTarget, setDeleteTarget] = useState<FeeStructure | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [query, setQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [page, setPage] = useState(1)
   const pageSize = 8
   const [flash, setFlash] = useState<string | null>(
@@ -42,9 +66,18 @@ export default function FinanceFeeStructuresPage() {
     let isMounted = true
     const loadData = async () => {
       try {
+        if (isMounted) setError(null)
         const feeRes = await apiClient.get<FeeStructure[] | { results: FeeStructure[]; count: number }>(
           '/finance/fees/',
-          { params: { page, search: query.trim() || undefined } },
+          {
+            params: {
+              page,
+              search: query.trim() || undefined,
+              category: categoryFilter !== 'all' ? categoryFilter : undefined,
+              is_active:
+                statusFilter === 'all' ? undefined : statusFilter === 'active' ? true : false,
+            },
+          },
         )
         if (isMounted) {
           const normalized = normalizePaginatedResponse(feeRes.data)
@@ -62,7 +95,7 @@ export default function FinanceFeeStructuresPage() {
           } else if (status === 404) {
             setError('Fee structure endpoints not found (404). Verify tenant routing.')
           } else {
-            setError('Unable to load fee structures. Please try again.')
+            setError(extractApiError(err, 'Unable to load fee structures. Please try again.'))
           }
         }
       } finally {
@@ -76,14 +109,26 @@ export default function FinanceFeeStructuresPage() {
     return () => {
       isMounted = false
     }
-  }, [page, query])
+  }, [page, query, categoryFilter, statusFilter])
 
   const filteredFees = useMemo(() => {
     if (isServerPaginated) return fees
     const term = query.trim().toLowerCase()
-    if (!term) return fees
-    return fees.filter((fee) => fee.name.toLowerCase().includes(term))
-  }, [fees, query, isServerPaginated])
+    return fees.filter((fee) => {
+      if (categoryFilter !== 'all' && fee.category !== categoryFilter) return false
+      if (statusFilter !== 'all' && fee.is_active !== (statusFilter === 'active')) return false
+      if (!term) return true
+      return fee.name.toLowerCase().includes(term)
+    })
+  }, [fees, query, isServerPaginated, categoryFilter, statusFilter])
+
+  const feeCategories = useMemo(() => {
+    const set = new Set<string>()
+    fees.forEach((fee) => {
+      if (fee.category) set.add(fee.category)
+    })
+    return Array.from(set).sort()
+  }, [fees])
 
   const pagedFees = useMemo(() => {
     if (isServerPaginated) return filteredFees
@@ -105,8 +150,7 @@ export default function FinanceFeeStructuresPage() {
       setFees((prev) => prev.filter((fee) => fee.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setDeleteError(detail ?? 'Unable to delete fee structure.')
+      setDeleteError(extractApiError(err, 'Unable to delete fee structure.'))
     } finally {
       setIsDeleting(false)
     }
@@ -154,6 +198,44 @@ export default function FinanceFeeStructuresPage() {
                 setPage(1)
               }}
             />
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={categoryFilter}
+              onChange={(event) => {
+                setCategoryFilter(event.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="all">All categories</option>
+              {feeCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as 'all' | 'active' | 'inactive')
+                setPage(1)
+              }}
+            >
+              <option value="all">All status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <button
+              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              onClick={() => {
+                setQuery('')
+                setCategoryFilter('all')
+                setStatusFilter('all')
+                setPage(1)
+              }}
+            >
+              Reset
+            </button>
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
               onClick={() => navigate('/modules/finance/fee-structures/new')}
@@ -163,13 +245,15 @@ export default function FinanceFeeStructuresPage() {
           </div>
         </div>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
-          <table className="min-w-[720px] w-full text-left text-sm">
+          <table className="min-w-[900px] w-full text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Amount</th>
                 <th className="px-4 py-3">Academic Year</th>
                 <th className="px-4 py-3">Term</th>
+                <th className="px-4 py-3">Grade</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Action</th>
               </tr>
@@ -178,11 +262,13 @@ export default function FinanceFeeStructuresPage() {
               {pagedFees.map((fee) => (
                 <tr key={fee.id} className="bg-slate-950/60">
                   <td className="px-4 py-3 font-semibold">{fee.name}</td>
+                  <td className="px-4 py-3">{fee.category ?? '--'}</td>
                   <td className="px-4 py-3">{Number(fee.amount).toLocaleString()}</td>
                   <td className="px-4 py-3">{fee.academic_year}</td>
                   <td className="px-4 py-3">{fee.term}</td>
+                  <td className="px-4 py-3">{fee.grade_level ?? '--'}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full border border-emerald-400/40 px-2 py-1 text-xs text-emerald-200">
+                    <span className={`rounded-full border px-2 py-1 text-xs ${statusBadgeClass(fee.is_active)}`}>
                       {fee.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -204,7 +290,7 @@ export default function FinanceFeeStructuresPage() {
               ))}
               {pagedFees.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={6}>
+                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={8}>
                     No fee structures found.
                   </td>
                 </tr>

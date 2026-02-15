@@ -5,7 +5,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from clients.models import Tenant, Domain
 from .models import (
     Role, UserProfile, Module, UserModuleAssignment,
-    Student, Enrollment
+    Student, Enrollment, Budget
 )
 from academics.models import AcademicYear, Term, SchoolClass
 from communication.models import Message
@@ -13,7 +13,7 @@ from reporting.models import AuditLog
 from hr.models import Staff
 from .views import (
     DashboardRoutingView, DashboardSummaryView,
-    FinanceStudentRefView, FinanceEnrollmentRefView
+    FinanceStudentRefView, FinanceEnrollmentRefView, BudgetViewSet
 )
 from academics.views import AcademicYearsRefView, TermsRefView, ClassesRefView
 from hr.views import StaffRefView
@@ -189,6 +189,51 @@ class FinanceReferenceTests(TenantTestBase):
         self.assertEqual(len(response.data["results"]), 200)
         self.assertEqual(response.data["next_offset"], 200)
 
+
+class FinanceBudgetApiTests(TenantTestBase):
+    def setUp(self):
+        super().setUp()
+        self.factory = APIRequestFactory()
+        self.user = User.objects.create_user(username="budget_user", password="pass1234")
+        role = Role.objects.create(name="ACCOUNTANT", description="Finance Manager")
+        UserProfile.objects.create(user=self.user, role=role)
+        finance = Module.objects.create(key="FINANCE", name="Finance")
+        UserModuleAssignment.objects.create(user=self.user, module=finance)
+
+        self.year = AcademicYear.objects.create(
+            name="2026-2027", start_date="2026-01-01", end_date="2026-12-31"
+        )
+        self.term = Term.objects.create(
+            academic_year=self.year, name="Term 1", start_date="2026-01-01", end_date="2026-04-30"
+        )
+
+    def test_create_and_filter_budgets(self):
+        create_request = self.factory.post(
+            "/api/finance/budgets/",
+            {
+                "academic_year": self.year.id,
+                "term": self.term.id,
+                "monthly_budget": "10000.00",
+                "quarterly_budget": "30000.00",
+                "annual_budget": "120000.00",
+                "categories": [],
+                "is_active": True,
+            },
+            format="json",
+        )
+        force_authenticate(create_request, user=self.user)
+        create_response = BudgetViewSet.as_view({"post": "create"})(create_request)
+        self.assertEqual(create_response.status_code, 201)
+        self.assertEqual(Budget.objects.count(), 1)
+
+        list_request = self.factory.get(
+            f"/api/finance/budgets/?academic_year={self.year.id}&term={self.term.id}"
+        )
+        force_authenticate(list_request, user=self.user)
+        list_response = BudgetViewSet.as_view({"get": "list"})(list_request)
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(list_response.data["count"], 1)
+        self.assertEqual(len(list_response.data["results"]), 1)
 
 class ModuleContractsTests(TenantTestBase):
     def setUp(self):

@@ -2,10 +2,30 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { normalizePaginatedResponse } from '../api/pagination'
 
 type StudentsSummary = {
   students_active: number
   enrollments_active: number
+}
+
+type StudentsDashboardPayload = {
+  kpis: {
+    students_active: number
+    enrollments_active: number
+    attendance_rate: number
+    pending_admissions: number
+  }
+  alerts: {
+    low_attendance_students: number
+    critical_behavior_incidents: number
+  }
+  recent_activity: Array<{
+    type: string
+    date: string
+    label: string
+    student_id?: number | null
+  }>
 }
 
 type Student = {
@@ -22,10 +42,9 @@ export default function StudentsDashboardPage() {
   const navigate = useNavigate()
   const username = useAuthStore((state) => state.username)
   const tenantId = useAuthStore((state) => state.tenantId)
-  const accessToken = useAuthStore((state) => state.accessToken)
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://demo.localhost:8000'
 
   const [summary, setSummary] = useState<StudentsSummary | null>(null)
+  const [dashboard, setDashboard] = useState<StudentsDashboardPayload | null>(null)
   const [students, setStudents] = useState<Student[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -35,13 +54,17 @@ export default function StudentsDashboardPage() {
     let isMounted = true
     const loadData = async () => {
       try {
-        const [summaryResponse, studentsResponse] = await Promise.all([
-          apiClient.get<StudentsSummary>('/students/summary/'),
-          apiClient.get<Student[]>('/students/'),
+        const [dashboardResponse, studentsResponse] = await Promise.all([
+          apiClient.get<StudentsDashboardPayload>('/students/dashboard/'),
+          apiClient.get<Student[] | { results: Student[]; count: number }>('/students/', { params: { page_size: 100 } }),
         ])
         if (isMounted) {
-          setSummary(summaryResponse.data)
-          setStudents(studentsResponse.data)
+          setDashboard(dashboardResponse.data)
+          setSummary({
+            students_active: dashboardResponse.data.kpis.students_active,
+            enrollments_active: dashboardResponse.data.kpis.enrollments_active,
+          })
+          setStudents(normalizePaginatedResponse(studentsResponse.data).items)
         }
       } catch (err) {
         if (isMounted) {
@@ -84,124 +107,164 @@ export default function StudentsDashboardPage() {
   }, [query, students])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students Module</p>
-            <h1 className="text-2xl font-display font-semibold">Students Dashboard</h1>
-            <p className="text-sm text-slate-400">Tenant: {tenantId ?? 'public'}</p>
-          </div>
-          <button
-            className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-emerald-400 sm:w-auto"
-            onClick={() => navigate('/dashboard')}
-          >
-            Back to main dashboard
-          </button>
-        </div>
+    <div className="grid grid-cols-12 gap-6">
+      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
+        <h1 className="mt-2 text-2xl font-display font-semibold">Dashboard</h1>
+        <p className="mt-2 text-sm text-slate-400">Tenant: {tenantId ?? 'public'}</p>
       </header>
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-300">
-          <div className="flex flex-wrap gap-4">
-            <span>
-              <strong>API Base:</strong> {apiBaseUrl}
-            </span>
-            <span>
-              <strong>Tenant:</strong> {tenantId ?? 'none'}
-            </span>
-            <span>
-              <strong>Auth:</strong> {accessToken ? 'Bearer token present' : 'Missing token'}
-            </span>
-          </div>
-        </section>
-        {isLoading ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <p className="text-sm text-slate-300">Loading students data...</p>
-          </div>
-        ) : null}
+      {isLoading ? (
+        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-sm text-slate-300">Loading students data...</p>
+        </div>
+      ) : null}
 
-        {error ? (
-          <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-6">
-            <p className="text-sm text-rose-300">{error}</p>
-          </div>
-        ) : null}
+      {error ? (
+        <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-6">
+          <p className="text-sm text-rose-300">{error}</p>
+        </div>
+      ) : null}
 
-        <section className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active students</p>
-            <p className="mt-3 text-3xl font-display font-semibold">
-              {summary?.students_active ?? 0}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active enrollments</p>
-            <p className="mt-3 text-3xl font-display font-semibold">
-              {summary?.enrollments_active ?? 0}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Signed in</p>
-            <p className="mt-3 text-lg font-semibold text-emerald-200">
-              {username ?? 'user'}
-            </p>
-          </div>
-        </section>
+      <section className="col-span-12 grid gap-6 md:grid-cols-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active students</p>
+          <p className="mt-3 text-3xl font-display font-semibold">
+            {summary?.students_active ?? 0}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active enrollments</p>
+          <p className="mt-3 text-3xl font-display font-semibold">
+            {summary?.enrollments_active ?? 0}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Signed in</p>
+          <p className="mt-3 text-lg font-semibold text-emerald-200">
+            {username ?? 'user'}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Attendance rate</p>
+          <p className="mt-3 text-3xl font-display font-semibold">
+            {dashboard?.kpis.attendance_rate ?? 0}%
+          </p>
+          <p className="mt-1 text-xs text-slate-400">All recorded attendance</p>
+        </div>
+      </section>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-display font-semibold">Student roster</h2>
-              <p className="mt-1 text-sm text-slate-400">
-                Pulled from `/api/students/` using real backend data.
+      <section className="col-span-12 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <h2 className="text-lg font-display font-semibold">Operational alerts</h2>
+          <div className="mt-4 space-y-3 text-sm text-slate-300">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <p className="text-slate-400">Pending admissions</p>
+              <p className="text-xl font-semibold text-amber-200">{dashboard?.kpis.pending_admissions ?? 0}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <p className="text-slate-400">Students below 85% attendance</p>
+              <p className="text-xl font-semibold text-rose-200">{dashboard?.alerts.low_attendance_students ?? 0}</p>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <p className="text-slate-400">High/Critical behavior incidents (14 days)</p>
+              <p className="text-xl font-semibold text-rose-200">
+                {dashboard?.alerts.critical_behavior_incidents ?? 0}
               </p>
             </div>
-            <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
-              placeholder="Search by name or admission number"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
           </div>
-          <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-800">
-            <table className="min-w-[720px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
-                <tr>
-                  <th className="px-4 py-3">Admission #</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Gender</th>
-                  <th className="px-4 py-3">DOB</th>
-                  <th className="px-4 py-3">Status</th>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <h2 className="text-lg font-display font-semibold">Recent activity</h2>
+          <div className="mt-4 space-y-2">
+            {(dashboard?.recent_activity ?? []).map((item, idx) => (
+              <div key={`${item.type}-${item.date}-${idx}`} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-400">{item.type}</p>
+                <p className="mt-1 text-sm text-slate-200">{item.label}</p>
+                <p className="mt-1 text-xs text-slate-500">{item.date}</p>
+              </div>
+            ))}
+            {(dashboard?.recent_activity ?? []).length === 0 ? (
+              <p className="text-sm text-slate-400">No recent activity available.</p>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-display font-semibold">Student roster</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Pulled from `/api/students/` using real backend data.
+            </p>
+          </div>
+          <input
+            className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            placeholder="Search by name or admission number"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-800">
+          <table className="min-w-[720px] w-full text-left text-sm">
+            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <tr>
+                <th className="px-4 py-3">Admission #</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Gender</th>
+                <th className="px-4 py-3">DOB</th>
+                <th className="px-4 py-3">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {filteredStudents.map((student) => (
+                <tr key={student.id} className="bg-slate-950/60">
+                  <td className="px-4 py-3 font-semibold">{student.admission_number}</td>
+                  <td className="px-4 py-3">
+                    {student.first_name} {student.last_name}
+                  </td>
+                  <td className="px-4 py-3">{student.gender}</td>
+                  <td className="px-4 py-3">{student.date_of_birth}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-full border border-emerald-400/40 px-2 py-1 text-xs text-emerald-200">
+                      {student.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {filteredStudents.map((student) => (
-                  <tr key={student.id} className="bg-slate-950/60">
-                    <td className="px-4 py-3 font-semibold">{student.admission_number}</td>
-                    <td className="px-4 py-3">
-                      {student.first_name} {student.last_name}
-                    </td>
-                    <td className="px-4 py-3">{student.gender}</td>
-                    <td className="px-4 py-3">{student.date_of_birth}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full border border-emerald-400/40 px-2 py-1 text-xs text-emerald-200">
-                        {student.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-                {filteredStudents.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-6 text-sm text-slate-400" colSpan={5}>
-                      No students found.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
+              ))}
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={5}>
+                    No students found.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+            onClick={() => navigate('/modules/admissions/applications')}
+          >
+            View admissions
+          </button>
+          <button
+            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+            onClick={() => navigate('/modules/students/attendance')}
+          >
+            Record attendance
+          </button>
+          <button
+            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+            onClick={() => navigate('/modules/students/reports')}
+          >
+            Open reports
+          </button>
+        </div>
+      </section>
     </div>
   )
 }

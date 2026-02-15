@@ -39,3 +39,15 @@ Start here for system intent and guardrails.
 
 ## API Contracts
 - docs/API_CONTRACTS.md
+
+## Communication Provider Setup
+- docs/COMMUNICATION_PROVIDER_SETUP.md
+
+## Next Team Start Here
+- docs/NEXT_TEAM_PLAYBOOK.md
+
+## Academics Build Matrix
+- docs/ACADEMICS_IMPLEMENTATION_MATRIX.md
+
+## Admissions Readiness
+- docs/ADMISSIONS_READINESS.md

@@ -36,16 +36,6 @@ type EnrollmentRef = {
   is_active?: boolean
 }
 
-const mockStudentDetail: StudentDetail = {
-  id: 0,
-  admission_number: 'N/A',
-  first_name: 'Student',
-  last_name: 'Not Found',
-  guardians: [
-    { id: 1, name: 'Guardian Name', relationship: 'Parent', phone: 'N/A', email: 'N/A' },
-  ],
-}
-
 type Term = {
   id: number
   name: string
@@ -61,6 +51,12 @@ type InvoiceLineItem = {
   fee_structure: string
   amount: string
   description: string
+}
+
+type InvoiceLineItemError = {
+  fee_structure?: string
+  amount?: string
+  description?: string
 }
 
 type InvoiceDetail = {
@@ -96,6 +92,7 @@ export default function FinanceInvoiceFormPage() {
   const [formSuccess, setFormSuccess] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasUserTouched, setHasUserTouched] = useState(false)
   const [submitMode, setSubmitMode] = useState<'default' | 'add_another'>('default')
   const [studentDetail, setStudentDetail] = useState<StudentDetail | null>(null)
   const [studentEnrollment, setStudentEnrollment] = useState<EnrollmentRef | null>(null)
@@ -116,7 +113,7 @@ export default function FinanceInvoiceFormPage() {
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([
     { fee_structure: '', amount: '', description: '' },
   ])
-  const [lineItemErrors, setLineItemErrors] = useState<Array<{ fee_structure?: string; amount?: string }>>([])
+  const [lineItemErrors, setLineItemErrors] = useState<InvoiceLineItemError[]>([])
 
   useEffect(() => {
     let isMounted = true
@@ -135,6 +132,7 @@ export default function FinanceInvoiceFormPage() {
           setStudents(normalizePaginatedResponse(studentRes.data).items)
           setTerms(normalizePaginatedResponse(termRes.data).items)
           setFees(normalizePaginatedResponse(feeRes.data).items)
+          setHasUserTouched(false)
         }
         if (isEdit && id) {
           const invoiceRes = await apiClient.get<InvoiceDetail>(`/finance/invoices/${id}/`)
@@ -164,6 +162,7 @@ export default function FinanceInvoiceFormPage() {
                 })),
               )
             }
+            setHasUserTouched(false)
           }
         }
       } catch (err) {
@@ -208,9 +207,9 @@ export default function FinanceInvoiceFormPage() {
         }
       } catch {
         if (!isMounted) return
-        setStudentDetail({ ...mockStudentDetail, id: Number(formState.student) || 0 })
+        setStudentDetail(null)
         setStudentEnrollment(null)
-        setStudentInfoNotice('Student contact or class info not available. Using fallback data.')
+        setStudentInfoNotice('Student contact or class info not available.')
       }
     }
     loadStudentInfo()
@@ -234,9 +233,21 @@ export default function FinanceInvoiceFormPage() {
     }))
   }, [isEdit, totalAmount])
 
+  useEffect(() => {
+    if (isEdit) return
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUserTouched || isSubmitting) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [hasUserTouched, isEdit, isSubmitting])
+
   const updateLineItem = (index: number, patch: Partial<InvoiceLineItem>) => {
     setLineItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, ...patch } : item)))
     setLineItemErrors((prev) => prev.map((item, idx) => (idx === index ? {} : item)))
+    setHasUserTouched(true)
   }
 
   const handleFeeSelect = (index: number, feeId: string) => {
@@ -253,20 +264,24 @@ export default function FinanceInvoiceFormPage() {
       ),
     )
     setLineItemErrors((prev) => prev.map((item, idx) => (idx === index ? {} : item)))
+    setHasUserTouched(true)
   }
 
   const addLineItem = () => {
     setLineItems((prev) => [...prev, { fee_structure: '', amount: '', description: '' }])
     setLineItemErrors((prev) => [...prev, {}])
+    setHasUserTouched(true)
   }
 
   const removeLineItem = (index: number) => {
     setLineItems((prev) => prev.filter((_, idx) => idx !== index))
     setLineItemErrors((prev) => prev.filter((_, idx) => idx !== index))
+    setHasUserTouched(true)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (isSubmitting) return
     setFormError(null)
     setFormSuccess(null)
     setFieldErrors({})
@@ -286,17 +301,35 @@ export default function FinanceInvoiceFormPage() {
       return
     }
 
+    if (lineItems.length === 0) {
+      setFormError('Add at least one line item.')
+      return
+    }
+
+    const selectedFees = lineItems
+      .map((item) => item.fee_structure)
+      .filter((value) => value !== '')
+    const duplicateFees = new Set(
+      selectedFees.filter((value, index) => selectedFees.indexOf(value) !== index),
+    )
+
     const nextLineErrors = lineItems.map((item) => {
-      const errors: { fee_structure?: string; amount?: string } = {}
+      const errors: InvoiceLineItemError = {}
       if (!item.fee_structure) errors.fee_structure = 'Select a fee.'
+      if (item.fee_structure && duplicateFees.has(item.fee_structure)) {
+        errors.fee_structure = 'This fee has already been added.'
+      }
       const amountValue = Number(item.amount)
       if (!item.amount || Number.isNaN(amountValue) || amountValue <= 0) {
         errors.amount = 'Enter a valid amount.'
       }
+      if (!item.description.trim()) {
+        errors.description = 'Enter a description.'
+      }
       return errors
     })
     const hasLineErrors = nextLineErrors.some(
-      (errors) => errors.fee_structure || errors.amount,
+      (errors) => errors.fee_structure || errors.amount || errors.description,
     )
     if (hasLineErrors) {
       setLineItemErrors(nextLineErrors)
@@ -326,6 +359,7 @@ export default function FinanceInvoiceFormPage() {
         setFormState({ student: '', term: '', due_date: '' })
         setLineItems([{ fee_structure: '', amount: '', description: '' }])
         setLineItemErrors([])
+        setHasUserTouched(false)
         setMetaState((prev) => ({
           ...prev,
           status: 'DRAFT',
@@ -391,6 +425,7 @@ export default function FinanceInvoiceFormPage() {
                 onChange={(event) => {
                   setFormState((prev) => ({ ...prev, student: event.target.value }))
                   setFieldErrors((prev) => ({ ...prev, student: '' }))
+                  setHasUserTouched(true)
                 }}
                 disabled={isEdit}
               >
@@ -413,6 +448,7 @@ export default function FinanceInvoiceFormPage() {
                 onChange={(event) => {
                   setFormState((prev) => ({ ...prev, term: event.target.value }))
                   setFieldErrors((prev) => ({ ...prev, term: '' }))
+                  setHasUserTouched(true)
                 }}
                 disabled={isEdit}
               >
@@ -436,6 +472,7 @@ export default function FinanceInvoiceFormPage() {
                 onChange={(event) => {
                   setFormState((prev) => ({ ...prev, due_date: event.target.value }))
                   setFieldErrors((prev) => ({ ...prev, due_date: '' }))
+                  setHasUserTouched(true)
                 }}
                 disabled={isEdit}
               />
@@ -510,9 +547,10 @@ export default function FinanceInvoiceFormPage() {
               <select
                 className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
                 value={metaState.status}
-                onChange={(event) =>
+                onChange={(event) => {
                   setMetaState((prev) => ({ ...prev, status: event.target.value }))
-                }
+                  setHasUserTouched(true)
+                }}
                 disabled={!canEditAdminFields}
               >
                 <option value="DRAFT">Draft</option>
@@ -524,9 +562,10 @@ export default function FinanceInvoiceFormPage() {
               <input
                 type="checkbox"
                 checked={metaState.is_active}
-                onChange={(event) =>
+                onChange={(event) => {
                   setMetaState((prev) => ({ ...prev, is_active: event.target.checked }))
-                }
+                  setHasUserTouched(true)
+                }}
                 disabled={!canEditAdminFields}
               />
               Is active
@@ -609,6 +648,11 @@ export default function FinanceInvoiceFormPage() {
                     placeholder="Description"
                     disabled={isEdit}
                   />
+                  {lineItemErrors[index]?.description ? (
+                    <p className="col-span-12 text-xs text-rose-300 md:col-span-4">
+                      {lineItemErrors[index]?.description}
+                    </p>
+                  ) : null}
                   <button
                     className="col-span-12 rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-200 md:col-span-1"
                     type="button"
@@ -649,7 +693,13 @@ export default function FinanceInvoiceFormPage() {
             <button
               className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
               type="button"
-              onClick={() => navigate('/modules/finance/invoices')}
+              onClick={() => {
+                if (!isEdit && hasUserTouched && !isSubmitting) {
+                  const shouldLeave = window.confirm('You have unsaved changes. Discard and leave?')
+                  if (!shouldLeave) return
+                }
+                navigate('/modules/finance/invoices')
+              }}
             >
               Cancel
             </button>

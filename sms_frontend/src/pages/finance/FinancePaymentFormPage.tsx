@@ -31,14 +31,20 @@ type EnrollmentRef = {
   term?: number
 }
 
-const mockStudentDetail: StudentDetail = {
-  id: 0,
-  admission_number: 'N/A',
-  first_name: 'Student',
-  last_name: 'Not Found',
-  guardians: [
-    { id: 1, name: 'Guardian Name', relationship: 'Parent', phone: 'N/A', email: 'N/A' },
-  ],
+const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Card', 'Mobile Money', 'Cheque', 'Other'] as const
+
+const todayDate = () => new Date().toISOString().slice(0, 10)
+
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
+  if (!data || typeof data !== 'object') return fallback
+  const keys = ['detail', 'error', 'message', 'non_field_errors'] as const
+  for (const key of keys) {
+    const value = data[key]
+    if (Array.isArray(value) && value.length > 0) return String(value[0])
+    if (typeof value === 'string' && value.trim().length > 0) return value
+  }
+  return fallback
 }
 
 export default function FinancePaymentFormPage() {
@@ -54,6 +60,7 @@ export default function FinancePaymentFormPage() {
   const [formState, setFormState] = useState({
     student: '',
     amount: '',
+    payment_date: todayDate(),
     payment_method: '',
     reference_number: '',
     notes: '',
@@ -71,8 +78,7 @@ export default function FinancePaymentFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-          setFormError(detail ?? 'Unable to load student references.')
+          setFormError(extractApiError(err, 'Unable to load student references.'))
         }
       } finally {
         if (isMounted) {
@@ -113,9 +119,9 @@ export default function FinancePaymentFormPage() {
         }
       } catch {
         if (!isMounted) return
-        setStudentDetail({ ...mockStudentDetail, id: Number(formState.student) || 0 })
+        setStudentDetail(null)
         setStudentEnrollment(null)
-        setStudentInfoNotice('Student contact or class info not available. Using fallback data.')
+        setStudentInfoNotice('Student contact or class info not available.')
       }
     }
     loadStudentInfo()
@@ -135,7 +141,15 @@ export default function FinancePaymentFormPage() {
     if (!formState.amount || Number.isNaN(amountValue) || amountValue <= 0) {
       nextErrors.amount = 'Enter a valid amount.'
     }
-    if (!formState.payment_method.trim()) nextErrors.payment_method = 'Enter a payment method.'
+    if (!formState.payment_date) nextErrors.payment_date = 'Select a payment date.'
+    if (formState.payment_date > todayDate()) {
+      nextErrors.payment_date = 'Payment date cannot be in the future.'
+    }
+    if (!formState.payment_method.trim()) {
+      nextErrors.payment_method = 'Select a payment method.'
+    } else if (!PAYMENT_METHODS.includes(formState.payment_method as (typeof PAYMENT_METHODS)[number])) {
+      nextErrors.payment_method = 'Select a valid payment method.'
+    }
     if (!formState.reference_number.trim()) nextErrors.reference_number = 'Enter a reference number.'
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors)
@@ -148,6 +162,7 @@ export default function FinancePaymentFormPage() {
       await apiClient.post('/finance/payments/', {
         student: Number(formState.student),
         amount: Number(formState.amount),
+        payment_date: formState.payment_date,
         payment_method: formState.payment_method,
         reference_number: formState.reference_number,
         notes: formState.notes,
@@ -165,15 +180,14 @@ export default function FinancePaymentFormPage() {
             nextErrors[key] = value
           }
         }
-        ;['student', 'amount', 'payment_method', 'reference_number'].forEach(assign)
+        ;['student', 'amount', 'payment_date', 'payment_method', 'reference_number'].forEach(assign)
         if (Object.keys(nextErrors).length > 0) {
           setFieldErrors(nextErrors)
-          setFormError('Please correct the highlighted fields.')
+          setFormError(extractApiError(err, 'Please correct the highlighted fields.'))
           return
         }
       }
-      const detail = (err as { response?: { data?: { error?: string; detail?: string } } })?.response?.data
-      setFormError(detail?.error ?? detail?.detail ?? 'Unable to record payment.')
+      setFormError(extractApiError(err, 'Unable to record payment.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -219,6 +233,9 @@ export default function FinancePaymentFormPage() {
           <label className="block text-sm">
             Amount
             <input
+              type="number"
+              min="0.01"
+              step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
               onChange={(event) => {
@@ -232,16 +249,37 @@ export default function FinancePaymentFormPage() {
             ) : null}
           </label>
           <label className="block text-sm">
-            Payment Method
+            Payment Date
             <input
+              type="date"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.payment_date}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, payment_date: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, payment_date: '' }))
+              }}
+            />
+            {fieldErrors.payment_date ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.payment_date}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Payment Method
+            <select
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.payment_method}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, payment_method: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, payment_method: '' }))
               }}
-              placeholder="Cash"
-            />
+            >
+              <option value="">Select method</option>
+              {PAYMENT_METHODS.map((method) => (
+                <option key={method} value={method}>
+                  {method}
+                </option>
+              ))}
+            </select>
             {fieldErrors.payment_method ? (
               <p className="mt-1 text-xs text-rose-300">{fieldErrors.payment_method}</p>
             ) : null}

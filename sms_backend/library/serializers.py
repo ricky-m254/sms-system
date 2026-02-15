@@ -1,0 +1,102 @@
+from rest_framework import serializers
+
+from .models import (
+    CirculationRule,
+    CirculationTransaction,
+    FineRecord,
+    LibraryCategory,
+    LibraryMember,
+    LibraryResource,
+    Reservation,
+    ResourceCopy,
+)
+
+
+class LibraryCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LibraryCategory
+        fields = "__all__"
+
+
+class LibraryResourceSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
+
+    class Meta:
+        model = LibraryResource
+        fields = "__all__"
+        read_only_fields = ["total_copies", "available_copies", "created_at"]
+
+
+class ResourceCopySerializer(serializers.ModelSerializer):
+    resource_title = serializers.CharField(source="resource.title", read_only=True)
+
+    class Meta:
+        model = ResourceCopy
+        fields = "__all__"
+        read_only_fields = ["created_at", "resource_title"]
+
+
+class LibraryMemberSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = LibraryMember
+        fields = "__all__"
+        read_only_fields = ["created_at", "user_name", "total_fines"]
+
+
+class CirculationRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CirculationRule
+        fields = "__all__"
+
+
+class CirculationTransactionSerializer(serializers.ModelSerializer):
+    copy_accession_number = serializers.CharField(source="copy.accession_number", read_only=True)
+    resource_title = serializers.CharField(source="copy.resource.title", read_only=True)
+    member_member_id = serializers.CharField(source="member.member_id", read_only=True)
+    member_name = serializers.CharField(source="member.user.username", read_only=True)
+
+    class Meta:
+        model = CirculationTransaction
+        fields = "__all__"
+        read_only_fields = [
+            "created_at",
+            "is_overdue",
+            "overdue_days",
+            "fine_amount",
+            "copy_accession_number",
+            "resource_title",
+            "member_member_id",
+            "member_name",
+        ]
+
+
+class ReservationSerializer(serializers.ModelSerializer):
+    resource_title = serializers.CharField(source="resource.title", read_only=True)
+    member_member_id = serializers.CharField(source="member.member_id", read_only=True)
+
+    class Meta:
+        model = Reservation
+        fields = "__all__"
+        read_only_fields = [
+            "reserved_at",
+            "ready_at",
+            "pickup_deadline",
+            "picked_at",
+            "cancelled_at",
+            "queue_position",
+            "resource_title",
+            "member_member_id",
+        ]
+
+
+class FineRecordSerializer(serializers.ModelSerializer):
+    member_member_id = serializers.CharField(source="member.member_id", read_only=True)
+    transaction_copy = serializers.CharField(source="transaction.copy.accession_number", read_only=True)
+
+    class Meta:
+        model = FineRecord
+        fields = "__all__"
+        read_only_fields = ["created_at", "paid_at", "member_member_id", "transaction_copy"]
+

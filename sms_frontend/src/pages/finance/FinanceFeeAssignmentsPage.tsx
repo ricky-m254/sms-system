@@ -15,10 +15,43 @@ type FeeAssignment = {
   end_date?: string
 }
 
+type FinanceStudent = {
+  id: number
+  first_name: string
+  last_name: string
+}
+
+type FeeStructure = {
+  id: number
+  name: string
+}
+
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
+}
+
+const statusBadgeClass = (isActive: boolean) =>
+  isActive
+    ? 'border-emerald-400/40 text-emerald-200'
+    : 'border-slate-600 text-slate-300'
+
 export default function FinanceFeeAssignmentsPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [assignments, setAssignments] = useState<FeeAssignment[]>([])
+  const [students, setStudents] = useState<FinanceStudent[]>([])
+  const [fees, setFees] = useState<FeeStructure[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [isServerPaginated, setIsServerPaginated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -27,6 +60,9 @@ export default function FinanceFeeAssignmentsPage() {
   const [deleteTarget, setDeleteTarget] = useState<FeeAssignment | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [query, setQuery] = useState('')
+  const [studentFilter, setStudentFilter] = useState('all')
+  const [feeFilter, setFeeFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [page, setPage] = useState(1)
   const pageSize = 8
   const [flash, setFlash] = useState<string | null>(
@@ -45,15 +81,35 @@ export default function FinanceFeeAssignmentsPage() {
     let isMounted = true
     const loadData = async () => {
       try {
-        const response = await apiClient.get<FeeAssignment[] | { results: FeeAssignment[]; count: number }>(
-          '/finance/fee-assignments/',
-          { params: { page, search: query.trim() || undefined } },
-        )
+        if (isMounted) setError(null)
+        const [assignmentRes, studentRes, feeRes] = await Promise.all([
+          apiClient.get<FeeAssignment[] | { results: FeeAssignment[]; count: number }>(
+            '/finance/fee-assignments/',
+            {
+              params: {
+                page,
+                search: query.trim() || undefined,
+                student: studentFilter !== 'all' ? studentFilter : undefined,
+                fee_structure: feeFilter !== 'all' ? feeFilter : undefined,
+                is_active:
+                  statusFilter === 'all' ? undefined : statusFilter === 'active' ? true : false,
+              },
+            },
+          ),
+          apiClient.get<FinanceStudent[] | { results: FinanceStudent[]; count: number }>(
+            '/finance/ref/students/',
+          ),
+          apiClient.get<FeeStructure[] | { results: FeeStructure[]; count: number }>(
+            '/finance/fees/',
+          ),
+        ])
         if (isMounted) {
-          const normalized = normalizePaginatedResponse(response.data)
+          const normalized = normalizePaginatedResponse(assignmentRes.data)
           setAssignments(normalized.items)
           setTotalCount(normalized.totalCount)
           setIsServerPaginated(normalized.isPaginated)
+          setStudents(normalizePaginatedResponse(studentRes.data).items)
+          setFees(normalizePaginatedResponse(feeRes.data).items)
         }
       } catch (err) {
         if (isMounted) {
@@ -67,7 +123,7 @@ export default function FinanceFeeAssignmentsPage() {
               'Fee assignments endpoint not found (404). Backend route is likely missing; register FeeAssignmentViewSet.',
             )
           } else {
-            setError('Unable to load fee assignments. Please try again.')
+            setError(extractApiError(err, 'Unable to load fee assignments. Please try again.'))
           }
         }
       } finally {
@@ -81,18 +137,23 @@ export default function FinanceFeeAssignmentsPage() {
     return () => {
       isMounted = false
     }
-  }, [page, query])
+  }, [page, query, studentFilter, feeFilter, statusFilter])
 
   const filteredAssignments = useMemo(() => {
     if (isServerPaginated) return assignments
     const term = query.trim().toLowerCase()
-    if (!term) return assignments
     return assignments.filter((assignment) => {
+      if (studentFilter !== 'all' && String(assignment.student) !== studentFilter) return false
+      if (feeFilter !== 'all' && String(assignment.fee_structure) !== feeFilter) return false
+      if (statusFilter !== 'all' && assignment.is_active !== (statusFilter === 'active')) {
+        return false
+      }
+      if (!term) return true
       const studentName = assignment.student_name?.toLowerCase() ?? ''
       const feeName = assignment.fee_name?.toLowerCase() ?? ''
       return studentName.includes(term) || feeName.includes(term) || String(assignment.student).includes(term)
     })
-  }, [assignments, query, isServerPaginated])
+  }, [assignments, query, isServerPaginated, studentFilter, feeFilter, statusFilter])
 
   const pagedAssignments = useMemo(() => {
     if (isServerPaginated) return filteredAssignments
@@ -114,8 +175,7 @@ export default function FinanceFeeAssignmentsPage() {
       setAssignments((prev) => prev.filter((assignment) => assignment.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setDeleteError(detail ?? 'Unable to delete fee assignment.')
+      setDeleteError(extractApiError(err, 'Unable to delete fee assignment.'))
     } finally {
       setIsDeleting(false)
     }
@@ -165,6 +225,60 @@ export default function FinanceFeeAssignmentsPage() {
                 setPage(1)
               }}
             />
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={studentFilter}
+              onChange={(event) => {
+                setStudentFilter(event.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="all">All students</option>
+              {students.map((student) => (
+                <option key={student.id} value={String(student.id)}>
+                  {student.first_name} {student.last_name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={feeFilter}
+              onChange={(event) => {
+                setFeeFilter(event.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="all">All fee structures</option>
+              {fees.map((fee) => (
+                <option key={fee.id} value={String(fee.id)}>
+                  {fee.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as 'all' | 'active' | 'inactive')
+                setPage(1)
+              }}
+            >
+              <option value="all">All status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <button
+              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              onClick={() => {
+                setQuery('')
+                setStudentFilter('all')
+                setFeeFilter('all')
+                setStatusFilter('all')
+                setPage(1)
+              }}
+            >
+              Reset
+            </button>
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
               onClick={() => navigate('/modules/finance/fee-assignments/new')}
@@ -197,7 +311,7 @@ export default function FinanceFeeAssignmentsPage() {
                   <td className="px-4 py-3">{assignment.start_date ?? '--'}</td>
                   <td className="px-4 py-3">{assignment.end_date ?? '--'}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full border border-emerald-400/40 px-2 py-1 text-xs text-emerald-200">
+                    <span className={`rounded-full border px-2 py-1 text-xs ${statusBadgeClass(assignment.is_active)}`}>
                       {assignment.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>

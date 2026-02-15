@@ -1,20 +1,59 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { useAuthStore } from '../../store/auth'
 
 type InvoiceAdjustment = {
   id: number
   invoice: number
+  adjustment_type: 'CREDIT' | 'DEBIT'
   amount: number
   reason: string
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
   adjusted_by?: number
   adjusted_by_name?: string
+  reviewed_by_name?: string
+  review_notes?: string
   created_at: string
+}
+
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
+}
+
+const formatMoney = (value: number | string | undefined) =>
+  Number(value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const formatDateTime = (value: string | undefined) => {
+  if (!value) return '--'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString()
+}
+
+const statusBadgeClass = (status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
+  if (status === 'APPROVED') return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+  if (status === 'REJECTED') return 'border-rose-500/40 bg-rose-500/10 text-rose-200'
+  return 'border-amber-500/40 bg-amber-500/10 text-amber-200'
 }
 
 export default function FinanceAdjustmentsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const role = useAuthStore((state) => state.role)
+  const canReview = role === 'ADMIN' || role === 'TENANT_SUPER_ADMIN'
   const [adjustments, setAdjustments] = useState<InvoiceAdjustment[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [isServerPaginated, setIsServerPaginated] = useState(false)
@@ -26,57 +65,107 @@ export default function FinanceAdjustmentsPage() {
   const [maxAmount, setMaxAmount] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [reviewingId, setReviewingId] = useState<number | null>(null)
   const [page, setPage] = useState(1)
   const pageSize = 8
+  const [flash, setFlash] = useState<string | null>(
+    (location.state as { flash?: string } | null)?.flash ?? null,
+  )
+  const hasInvalidDateRange = Boolean(dateFrom && dateTo && dateFrom > dateTo)
+  const hasInvalidAmountRange = Boolean(
+    minAmount &&
+      maxAmount &&
+      !Number.isNaN(Number(minAmount)) &&
+      !Number.isNaN(Number(maxAmount)) &&
+      Number(minAmount) > Number(maxAmount),
+  )
+
+  const loadData = async (currentMountedRef?: { current: boolean }) => {
+    try {
+      if (!currentMountedRef || currentMountedRef.current) setError(null)
+      const response = await apiClient.get<
+        InvoiceAdjustment[] | { results: InvoiceAdjustment[]; count: number }
+      >('/finance/invoice-adjustments/', {
+        params: {
+          page,
+          search: query.trim() || undefined,
+          invoice: invoiceFilter.trim() || undefined,
+          min_amount: minAmount || undefined,
+          max_amount: maxAmount || undefined,
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+          status: statusFilter || undefined,
+        },
+      })
+      if (!currentMountedRef || currentMountedRef.current) {
+        const normalized = normalizePaginatedResponse(response.data)
+        setAdjustments(normalized.items)
+        setTotalCount(normalized.totalCount)
+        setIsServerPaginated(normalized.isPaginated)
+      }
+    } catch (err) {
+      if (!currentMountedRef || currentMountedRef.current) {
+        const status = (err as { response?: { status?: number } })?.response?.status
+        if (status === 401) {
+          setError('Session expired. Please log in again.')
+        } else if (status === 403) {
+          setError('Access denied. Ensure this user has the FINANCE module and proper role.')
+        } else if (status === 404) {
+          setError('Adjustments endpoint not found (404). Verify tenant routing.')
+        } else {
+          setError(extractApiError(err, 'Unable to load adjustments. Please try again.'))
+        }
+      }
+    } finally {
+      if (!currentMountedRef || currentMountedRef.current) {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  useEffect(() => {
+    const state = location.state as { flash?: string } | null
+    if (state?.flash) {
+      setFlash(state.flash)
+      navigate(location.pathname, { replace: true })
+    }
+  }, [location.state, location.pathname, navigate])
 
   useEffect(() => {
     let isMounted = true
-    const loadData = async () => {
-      try {
-        const response = await apiClient.get<
-          InvoiceAdjustment[] | { results: InvoiceAdjustment[]; count: number }
-        >('/finance/invoice-adjustments/', {
-          params: {
-            page,
-            search: query.trim() || undefined,
-            invoice: invoiceFilter.trim() || undefined,
-            min_amount: minAmount || undefined,
-            max_amount: maxAmount || undefined,
-            date_from: dateFrom || undefined,
-            date_to: dateTo || undefined,
-          },
-        })
-        if (isMounted) {
-          const normalized = normalizePaginatedResponse(response.data)
-          setAdjustments(normalized.items)
-          setTotalCount(normalized.totalCount)
-          setIsServerPaginated(normalized.isPaginated)
-        }
-      } catch (err) {
-        if (isMounted) {
-          const status = (err as { response?: { status?: number } })?.response?.status
-          if (status === 401) {
-            setError('Session expired. Please log in again.')
-          } else if (status === 403) {
-            setError('Access denied. Ensure this user has the FINANCE module and proper role.')
-          } else if (status === 404) {
-            setError('Adjustments endpoint not found (404). Verify tenant routing.')
-          } else {
-            setError('Unable to load adjustments. Please try again.')
-          }
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+    const mountedRef = { current: isMounted }
+    if (hasInvalidDateRange) {
+      setError('Invalid date range: From date cannot be after To date.')
+      setIsLoading(false)
+      return () => {
+        mountedRef.current = false
       }
     }
-
-    loadData()
-    return () => {
-      isMounted = false
+    if (hasInvalidAmountRange) {
+      setError('Invalid amount range: Min amount cannot be greater than Max amount.')
+      setIsLoading(false)
+      return () => {
+        mountedRef.current = false
+      }
     }
-  }, [page, query, invoiceFilter, minAmount, maxAmount, dateFrom, dateTo])
+    void loadData(mountedRef)
+    return () => {
+      mountedRef.current = false
+    }
+  }, [
+    page,
+    query,
+    invoiceFilter,
+    minAmount,
+    maxAmount,
+    dateFrom,
+    dateTo,
+    statusFilter,
+    hasInvalidDateRange,
+    hasInvalidAmountRange,
+  ])
 
   const filteredAdjustments = useMemo(() => {
     const term = query.trim().toLowerCase()
@@ -87,6 +176,7 @@ export default function FinanceAdjustmentsPage() {
 
     return adjustments.filter((adj) => {
       if (invoiceFilter && String(adj.invoice) !== invoiceFilter) return false
+      if (statusFilter && adj.status !== statusFilter) return false
       if (term) {
         const reason = adj.reason.toLowerCase()
         if (
@@ -107,7 +197,22 @@ export default function FinanceAdjustmentsPage() {
       }
       return true
     })
-  }, [adjustments, dateFrom, dateTo, invoiceFilter, maxAmount, minAmount, query])
+  }, [adjustments, dateFrom, dateTo, invoiceFilter, maxAmount, minAmount, query, statusFilter])
+
+  const runReviewAction = async (id: number, action: 'approve' | 'reject') => {
+    if (reviewingId !== null) return
+    setActionMessage(null)
+    setReviewingId(id)
+    try {
+      await apiClient.post(`/finance/invoice-adjustments/${id}/${action}/`, {})
+      setActionMessage(`Adjustment ${action}d.`)
+      await loadData()
+    } catch (err) {
+      setActionMessage(extractApiError(err, `Unable to ${action} adjustment.`))
+    } finally {
+      setReviewingId(null)
+    }
+  }
 
   const pagedAdjustments = useMemo(() => {
     if (isServerPaginated) return filteredAdjustments
@@ -154,6 +259,16 @@ export default function FinanceAdjustmentsPage() {
           <p className="text-sm text-rose-300">{error}</p>
         </div>
       ) : null}
+      {actionMessage ? (
+        <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+          <p className="text-xs text-emerald-200">{actionMessage}</p>
+        </div>
+      ) : null}
+      {flash ? (
+        <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4">
+          <p className="text-xs text-emerald-200">{flash}</p>
+        </div>
+      ) : null}
 
       <section className="col-span-12 grid grid-cols-12 gap-4">
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-3">
@@ -163,13 +278,13 @@ export default function FinanceAdjustmentsPage() {
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Total Amount</p>
           <p className="mt-2 text-xl font-display font-semibold">
-            {summary.total.toLocaleString()}
+            {formatMoney(summary.total)}
           </p>
         </div>
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Avg Adjustment</p>
           <p className="mt-2 text-xl font-display font-semibold">
-            {summary.average.toLocaleString()}
+            {formatMoney(summary.average)}
           </p>
         </div>
         <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-slate-900/60 p-4 md:col-span-3">
@@ -204,6 +319,9 @@ export default function FinanceAdjustmentsPage() {
               }}
             />
             <input
+              type="number"
+              min="0"
+              step="0.01"
               className="w-24 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Min"
               value={minAmount}
@@ -213,6 +331,9 @@ export default function FinanceAdjustmentsPage() {
               }}
             />
             <input
+              type="number"
+              min="0"
+              step="0.01"
               className="w-24 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Max"
               value={maxAmount}
@@ -239,6 +360,34 @@ export default function FinanceAdjustmentsPage() {
                 setPage(1)
               }}
             />
+            <select
+              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="">All statuses</option>
+              <option value="PENDING">PENDING</option>
+              <option value="APPROVED">APPROVED</option>
+              <option value="REJECTED">REJECTED</option>
+            </select>
+            <button
+              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              onClick={() => {
+                setQuery('')
+                setInvoiceFilter('')
+                setMinAmount('')
+                setMaxAmount('')
+                setDateFrom('')
+                setDateTo('')
+                setStatusFilter('')
+                setPage(1)
+              }}
+            >
+              Reset
+            </button>
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
               onClick={() => navigate('/modules/finance/adjustments/new')}
@@ -257,25 +406,56 @@ export default function FinanceAdjustmentsPage() {
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Invoice</th>
+                <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Amount</th>
+                <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Reason</th>
                 <th className="px-4 py-3">Adjusted By</th>
                 <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {pagedAdjustments.map((adj) => (
                 <tr key={adj.id} className="bg-slate-950/60">
                   <td className="px-4 py-3 font-semibold">INV-{adj.invoice}</td>
-                  <td className="px-4 py-3">{Number(adj.amount).toLocaleString()}</td>
+                  <td className="px-4 py-3">{adj.adjustment_type}</td>
+                  <td className="px-4 py-3">{formatMoney(adj.amount)}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs ${statusBadgeClass(adj.status)}`}>
+                      {adj.status}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">{adj.reason}</td>
                   <td className="px-4 py-3">{adj.adjusted_by_name ?? adj.adjusted_by ?? '--'}</td>
-                  <td className="px-4 py-3">{adj.created_at}</td>
+                  <td className="px-4 py-3">{formatDateTime(adj.created_at)}</td>
+                  <td className="px-4 py-3">
+                    {canReview && adj.status === 'PENDING' ? (
+                      <div className="flex gap-2">
+                        <button
+                          className="rounded border border-emerald-600 px-2 py-1 text-xs text-emerald-200 disabled:opacity-70"
+                          onClick={() => void runReviewAction(adj.id, 'approve')}
+                          disabled={reviewingId !== null}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="rounded border border-rose-600 px-2 py-1 text-xs text-rose-200 disabled:opacity-70"
+                          onClick={() => void runReviewAction(adj.id, 'reject')}
+                          disabled={reviewingId !== null}
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-500">-</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {pagedAdjustments.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={5}>
+                  <td className="px-4 py-6 text-sm text-slate-400" colSpan={8}>
                     No adjustments found.
                   </td>
                 </tr>

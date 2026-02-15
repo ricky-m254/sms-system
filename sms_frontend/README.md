@@ -113,3 +113,12 @@ If you want mock data for a new screen, add it near the component and tag it wit
   - `GET /api/students/` (guardian data derived from student records).
   - Summary + Directory pages are scaffolded under `/modules/parents`.
 - Budget persistence depends on `/api/v1/finance/budgets`; mock data is used until backend is ready.
+
+
+
+
+
+
+
+
+

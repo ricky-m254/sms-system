@@ -66,6 +66,7 @@ class Command(BaseCommand):
             modules = [
                 ("CORE", "Core Administration"),
                 ("STUDENTS", "Students"),
+                ("ADMISSIONS", "Admissions"),
                 ("FINANCE", "Finance"),
                 ("ACADEMICS", "Academics"),
                 ("HR", "Human Resources"),

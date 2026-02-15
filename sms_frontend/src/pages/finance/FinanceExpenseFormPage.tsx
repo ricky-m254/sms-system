@@ -8,6 +8,10 @@ type Expense = {
   amount: number
   expense_date: string
   description?: string
+  vendor?: string
+  payment_method?: string
+  invoice_number?: string
+  approval_status?: string
 }
 
 export default function FinanceExpenseFormPage() {
@@ -24,6 +28,10 @@ export default function FinanceExpenseFormPage() {
     amount: '',
     expense_date: '',
     description: '',
+    vendor: '',
+    payment_method: '',
+    invoice_number: '',
+    approval_status: '',
   })
   const isFormDisabled = isSubmitting || isLoading
 
@@ -42,6 +50,10 @@ export default function FinanceExpenseFormPage() {
             amount: String(response.data.amount),
             expense_date: response.data.expense_date,
             description: response.data.description ?? '',
+            vendor: response.data.vendor ?? '',
+            payment_method: response.data.payment_method ?? '',
+            invoice_number: response.data.invoice_number ?? '',
+            approval_status: response.data.approval_status ?? '',
           })
         }
       } catch (err) {
@@ -85,6 +97,10 @@ export default function FinanceExpenseFormPage() {
       amount: Number(formState.amount),
       expense_date: formState.expense_date,
       description: formState.description.trim(),
+      vendor: formState.vendor.trim() || undefined,
+      payment_method: formState.payment_method.trim() || undefined,
+      invoice_number: formState.invoice_number.trim() || undefined,
+      approval_status: formState.approval_status.trim() || undefined,
     }
 
     setIsSubmitting(true)
@@ -109,7 +125,15 @@ export default function FinanceExpenseFormPage() {
             nextErrors[key] = value
           }
         }
-        ;['category', 'amount', 'expense_date'].forEach(assign)
+        ;[
+          'category',
+          'amount',
+          'expense_date',
+          'vendor',
+          'payment_method',
+          'invoice_number',
+          'approval_status',
+        ].forEach(assign)
         if (Object.keys(nextErrors).length > 0) {
           setFieldErrors(nextErrors)
           setFormError('Please correct the highlighted fields.')
@@ -189,6 +213,81 @@ export default function FinanceExpenseFormPage() {
             />
             {fieldErrors.expense_date ? (
               <p className="mt-1 text-xs text-rose-300">{fieldErrors.expense_date}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Vendor / Payee
+            <input
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.vendor}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, vendor: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, vendor: '' }))
+              }}
+              placeholder="Vendor name"
+              disabled={isFormDisabled}
+            />
+            {fieldErrors.vendor ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.vendor}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Payment Method
+            <select
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={formState.payment_method}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, payment_method: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, payment_method: '' }))
+              }}
+              disabled={isFormDisabled}
+            >
+              <option value="">Select method</option>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Mobile Money">Mobile Money</option>
+              <option value="Other">Other</option>
+            </select>
+            {fieldErrors.payment_method ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.payment_method}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Invoice / Receipt Number
+            <input
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.invoice_number}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, invoice_number: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, invoice_number: '' }))
+              }}
+              placeholder="INV-0001"
+              disabled={isFormDisabled}
+            />
+            {fieldErrors.invoice_number ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.invoice_number}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Approval Status
+            <select
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={formState.approval_status}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, approval_status: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, approval_status: '' }))
+              }}
+              disabled={isFormDisabled}
+            >
+              <option value="">Select status</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            {fieldErrors.approval_status ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.approval_status}</p>
             ) : null}
           </label>
           <label className="block text-sm">

@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 # This file handles TENANT ROUTES (School Data)
 # Public Routes are now handled by config/public_urls.py
@@ -11,3 +13,6 @@ urlpatterns = [
     # 2. School API Modules (Students, Finance, etc.)
     path("api/", include("school.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

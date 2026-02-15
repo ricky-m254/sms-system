@@ -15,6 +15,7 @@ sms/
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL
+- Pillow (for image uploads)
 
 ## Backend (sms_backend)
 
@@ -33,6 +34,8 @@ Note: current `sms_backend/config/settings.py` uses hardcoded values; wire env w
 
 python manage.py migrate
 python manage.py runserver
+
+Media uploads are served at `/media/` in development (configured in settings + urls).
 
 ## Frontend (sms_frontend)
 

@@ -4,6 +4,7 @@ import SettingsField from '../../components/settings/SettingsField'
 import { settingsSchemas } from '../../settings'
 import { hasPermission, useCurrentUser } from '../../settings/permissions'
 import { useModuleSettings } from '../../settings/useModuleSettings'
+import { apiClient } from '../../api/client'
 
 export default function ModuleSettingsPage() {
   const params = useParams<{ module: string }>()
@@ -13,6 +14,8 @@ export default function ModuleSettingsPage() {
   const [showRestricted, setShowRestricted] = useState(false)
   const canDebugPermissions = hasPermission(user, 'settings:debug')
   const debugStorageKey = 'settings:debug_show_hidden'
+  const [maintenanceStatus, setMaintenanceStatus] = useState<string | null>(null)
+  const [isResettingSequences, setIsResettingSequences] = useState(false)
 
   const { values, setValue, reset, storageKey } = useModuleSettings(moduleKey)
 
@@ -67,6 +70,22 @@ export default function ModuleSettingsPage() {
     if (showRestricted) return true
     return hasPermission(user, setting.requiredPermission)
   })
+
+  const canSeeMaintenance = moduleKey === 'global' && canDebugPermissions
+
+  const handleSequenceReset = async () => {
+    setMaintenanceStatus(null)
+    setIsResettingSequences(true)
+    try {
+      const response = await apiClient.post('/admin/maintenance/reset-sequences/')
+      const resetCount = Array.isArray(response.data?.reset) ? response.data.reset.length : 0
+      setMaintenanceStatus(`Sequences reset for ${resetCount} tables.`)
+    } catch {
+      setMaintenanceStatus('Unable to reset sequences. Check permissions and backend logs.')
+    } finally {
+      setIsResettingSequences(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -142,6 +161,30 @@ export default function ModuleSettingsPage() {
           Reset module settings
         </button>
       </div>
+
+      {canSeeMaintenance ? (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-100">Maintenance</p>
+              <p className="mt-1 text-xs text-slate-400">
+                Reset tenant sequences if inserts fail due to duplicate primary keys.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSequenceReset}
+              disabled={isResettingSequences}
+              className="rounded-xl border border-amber-400/60 px-4 py-2 text-xs font-semibold text-amber-200 transition hover:border-amber-300 disabled:opacity-60"
+            >
+              {isResettingSequences ? 'Resetting...' : 'Reset sequences'}
+            </button>
+          </div>
+          {maintenanceStatus ? (
+            <p className="mt-3 text-xs text-slate-300">{maintenanceStatus}</p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }

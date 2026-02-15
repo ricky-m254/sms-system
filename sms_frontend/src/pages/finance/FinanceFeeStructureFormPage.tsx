@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import { normalizePaginatedResponse } from '../../api/pagination'
 
 type FeeStructure = {
   id: number
   name: string
   amount: number
+  category?: string
   academic_year: number
   term: number
+  grade_level?: number | string | null
   is_active: boolean
 }
 
@@ -20,6 +23,21 @@ type Term = {
   id: number
   name: string
   academic_year_id: number
+}
+
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail
+    if (typeof detail === 'string' && detail.trim()) return detail
+    const first = Object.values(data as Record<string, unknown>).find((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
+    )
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+    if (typeof first === 'string') return first
+  }
+  return fallback
 }
 
 export default function FinanceFeeStructureFormPage() {
@@ -36,8 +54,10 @@ export default function FinanceFeeStructureFormPage() {
   const [formState, setFormState] = useState({
     name: '',
     amount: '',
+    category: '',
     academic_year: '',
     term: '',
+    grade_level: '',
     is_active: true,
   })
   const isFormDisabled = isSubmitting || isLoading
@@ -50,12 +70,14 @@ export default function FinanceFeeStructureFormPage() {
     const loadData = async () => {
       try {
         const [yearRes, termRes] = await Promise.all([
-          apiClient.get<AcademicYear[]>('/academics/ref/academic-years/'),
-          apiClient.get<Term[]>('/academics/ref/terms/'),
+          apiClient.get<AcademicYear[] | { results: AcademicYear[]; count: number }>(
+            '/academics/ref/academic-years/',
+          ),
+          apiClient.get<Term[] | { results: Term[]; count: number }>('/academics/ref/terms/'),
         ])
         if (isMounted) {
-          setYears(yearRes.data)
-          setTerms(termRes.data)
+          setYears(normalizePaginatedResponse(yearRes.data).items)
+          setTerms(normalizePaginatedResponse(termRes.data).items)
         }
         if (isEdit && id) {
           const feeRes = await apiClient.get<FeeStructure>(`/finance/fees/${id}/`)
@@ -63,16 +85,20 @@ export default function FinanceFeeStructureFormPage() {
             setFormState({
               name: feeRes.data.name,
               amount: String(feeRes.data.amount),
+              category: feeRes.data.category ?? '',
               academic_year: String(feeRes.data.academic_year),
               term: String(feeRes.data.term),
+              grade_level:
+                feeRes.data.grade_level !== undefined && feeRes.data.grade_level !== null
+                  ? String(feeRes.data.grade_level)
+                  : '',
               is_active: feeRes.data.is_active,
             })
           }
         }
       } catch (err) {
         if (isMounted) {
-          const status = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-          setFormError(status ?? 'Unable to load fee structure data.')
+          setFormError(extractApiError(err, 'Unable to load fee structure data.'))
         }
       } finally {
         if (isMounted) {
@@ -100,6 +126,21 @@ export default function FinanceFeeStructureFormPage() {
     }
     if (!formState.academic_year) nextErrors.academic_year = 'Select an academic year.'
     if (!formState.term) nextErrors.term = 'Select a term.'
+    const selectedTerm = terms.find((term) => String(term.id) === formState.term)
+    if (
+      formState.term &&
+      formState.academic_year &&
+      selectedTerm &&
+      String(selectedTerm.academic_year_id) !== formState.academic_year
+    ) {
+      nextErrors.term = 'Selected term does not belong to selected academic year.'
+    }
+    if (formState.grade_level) {
+      const grade = Number(formState.grade_level)
+      if (Number.isNaN(grade) || grade <= 0) {
+        nextErrors.grade_level = 'Grade/Class level must be a positive number.'
+      }
+    }
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors)
       setFormError('Please correct the highlighted fields.')
@@ -109,8 +150,10 @@ export default function FinanceFeeStructureFormPage() {
     const payload = {
       name: formState.name.trim(),
       amount: Number(formState.amount),
+      category: formState.category.trim() || undefined,
       academic_year: Number(formState.academic_year),
       term: Number(formState.term),
+      grade_level: formState.grade_level ? Number(formState.grade_level) : undefined,
       is_active: formState.is_active,
     }
 
@@ -136,7 +179,7 @@ export default function FinanceFeeStructureFormPage() {
             nextErrors[key] = value
           }
         }
-        ;['name', 'amount', 'academic_year', 'term'].forEach(assign)
+        ;['name', 'amount', 'category', 'academic_year', 'term', 'grade_level'].forEach(assign)
         if (Object.keys(nextErrors).length > 0) {
           setFieldErrors(nextErrors)
           setFormError('Please correct the highlighted fields.')
@@ -144,7 +187,7 @@ export default function FinanceFeeStructureFormPage() {
         }
       }
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setFormError(detail ?? 'Unable to save fee structure.')
+      setFormError(detail ?? extractApiError(err, 'Unable to save fee structure.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -189,6 +232,9 @@ export default function FinanceFeeStructureFormPage() {
           <label className="block text-sm">
             Amount
             <input
+              type="number"
+              min="0"
+              step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
               onChange={(event) => {
@@ -200,6 +246,30 @@ export default function FinanceFeeStructureFormPage() {
             />
             {fieldErrors.amount ? (
               <p className="mt-1 text-xs text-rose-300">{fieldErrors.amount}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Category
+            <select
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              value={formState.category}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, category: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, category: '' }))
+              }}
+              disabled={isFormDisabled}
+            >
+              <option value="">Select category</option>
+              <option value="Tuition">Tuition</option>
+              <option value="Transport">Transport</option>
+              <option value="Meals">Meals</option>
+              <option value="Activities">Activities</option>
+              <option value="Exam Fees">Exam Fees</option>
+              <option value="Technology">Technology</option>
+              <option value="Other">Other</option>
+            </select>
+            {fieldErrors.category ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.category}</p>
             ) : null}
           </label>
           <label className="block text-sm">
@@ -248,6 +318,25 @@ export default function FinanceFeeStructureFormPage() {
             </select>
             {fieldErrors.term ? (
               <p className="mt-1 text-xs text-rose-300">{fieldErrors.term}</p>
+            ) : null}
+          </label>
+          <label className="block text-sm">
+            Grade / Class Level (optional)
+            <input
+              type="number"
+              min="1"
+              step="1"
+              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              value={formState.grade_level}
+              onChange={(event) => {
+                setFormState((prev) => ({ ...prev, grade_level: event.target.value }))
+                setFieldErrors((prev) => ({ ...prev, grade_level: '' }))
+              }}
+              placeholder="Grade ID"
+              disabled={isFormDisabled}
+            />
+            {fieldErrors.grade_level ? (
+              <p className="mt-1 text-xs text-rose-300">{fieldErrors.grade_level}</p>
             ) : null}
           </label>
           <label className="flex items-center gap-2 text-sm">

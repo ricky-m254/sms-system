@@ -16,9 +16,9 @@ This plan explains how we will keep legacy endpoints stable while transitioning 
 
 ## Current Preferred Endpoints
 
-### HR
-- Preferred: /api/hr/staff/
-- Legacy: /api/staff/
+### Staff Management
+- Preferred: /api/staff/
+- Compatibility: /api/hr/staff/ (HR module lightweight staff alias)
 
 ### Communication
 - Preferred: /api/communication/messages/
@@ -37,5 +37,4 @@ This plan explains how we will keep legacy endpoints stable while transitioning 
 - Server-side proxy forwarding (read-only) when needed
 
 ## Current Warnings
-- /api/staff/ returns `Warning: 299 - Deprecated; use /api/hr/staff/`
 - /api/messages/ returns `Warning: 299 - Deprecated; use /api/communication/messages/`

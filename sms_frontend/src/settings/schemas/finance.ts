@@ -59,6 +59,28 @@ const financeSettings: SettingsSchema = {
       type: 'string',
       defaultValue: 'RCT-{YYYY}-{SEQ}',
     },
+    {
+      key: 'paymentGatewayProvider',
+      label: 'Payment Gateway Provider',
+      description: 'Placeholder mode until live gateway keys are approved.',
+      type: 'select',
+      defaultValue: 'placeholder',
+      options: [
+        { value: 'placeholder', label: 'Placeholder' },
+        { value: 'stripe', label: 'Stripe' },
+        { value: 'flutterwave', label: 'Flutterwave' },
+        { value: 'paystack', label: 'Paystack' },
+      ],
+      requiredPermission: 'finance:configure_gateway',
+    },
+    {
+      key: 'paymentGatewayApiKey',
+      label: 'Payment Gateway API Key',
+      description: 'Store in backend env for production; keep empty in development.',
+      type: 'string',
+      defaultValue: '',
+      requiredPermission: 'finance:configure_gateway',
+    },
   ],
 }
 

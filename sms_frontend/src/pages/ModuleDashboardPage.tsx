@@ -4,10 +4,13 @@ import { useAuthStore } from '../store/auth'
 
 const MODULE_LABELS: Record<string, string> = {
   STUDENTS: 'Students',
+  ADMISSIONS: 'Admissions',
   FINANCE: 'Finance',
   ACADEMICS: 'Academics',
   HR: 'Human Resources',
+  STAFF: 'Staff Management',
   COMMUNICATION: 'Communication',
+  LIBRARY: 'Library Management',
   REPORTING: 'Reporting & Analytics',
   CORE: 'Core Administration',
   ASSETS: 'Assets & Inventory',

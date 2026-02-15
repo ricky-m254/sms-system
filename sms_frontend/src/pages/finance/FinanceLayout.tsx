@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
 
 const navItems = [
@@ -10,13 +10,28 @@ const navItems = [
   { label: 'Fee Structures', to: '/modules/finance/fee-structures' },
   { label: 'Fee Assignments', to: '/modules/finance/fee-assignments' },
   { label: 'Adjustments', to: '/modules/finance/adjustments' },
+  { label: 'Accounts', to: '/modules/finance/accounts' },
+  { label: 'Reconciliation', to: '/modules/finance/reconciliation' },
+  { label: 'Reports', to: '/modules/finance/reports' },
+  { label: 'Scholarships', to: '/modules/finance/scholarships' },
+  { label: 'Refunds', to: '/modules/finance/refunds' },
   { label: 'Settings', to: '/settings/finance' },
 ]
 
 export default function FinanceLayout() {
   const tenantId = useAuthStore((state) => state.tenantId)
   const username = useAuthStore((state) => state.username)
+  const location = useLocation()
   const [isNavOpen, setIsNavOpen] = useState(false)
+  const [navQuery, setNavQuery] = useState('')
+
+  const filteredNavItems = navItems.filter((item) =>
+    item.label.toLowerCase().includes(navQuery.trim().toLowerCase()),
+  )
+
+  useEffect(() => {
+    setIsNavOpen(false)
+  }, [location.pathname])
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -30,8 +45,14 @@ export default function FinanceLayout() {
           >
             {isNavOpen ? 'Hide menu' : 'Show menu'}
           </button>
+          <input
+            className="mt-4 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            placeholder="Find section"
+            value={navQuery}
+            onChange={(event) => setNavQuery(event.target.value)}
+          />
           <div className={`mt-4 space-y-2 text-sm ${isNavOpen ? 'block' : 'hidden'} md:block`}>
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -48,6 +69,11 @@ export default function FinanceLayout() {
                 {item.label}
               </NavLink>
             ))}
+            {filteredNavItems.length === 0 ? (
+              <p className="rounded-xl border border-slate-800 px-4 py-2 text-xs text-slate-400">
+                No matching sections.
+              </p>
+            ) : null}
           </div>
           <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-xs text-slate-300">
             <p>
