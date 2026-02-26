@@ -9,6 +9,9 @@ const navItems = [
   { label: 'Reservations', to: '/modules/library/reservations' },
   { label: 'Members', to: '/modules/library/members' },
   { label: 'Fines & Fees', to: '/modules/library/fines' },
+  { label: 'Inventory', to: '/modules/library/inventory' },
+  { label: 'Acquisition', to: '/modules/library/acquisition' },
+  { label: 'Reports', to: '/modules/library/reports' },
 ]
 
 export default function LibraryLayout() {
@@ -60,4 +63,3 @@ export default function LibraryLayout() {
     </div>
   )
 }
-

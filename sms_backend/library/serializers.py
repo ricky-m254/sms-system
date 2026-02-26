@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
 from .models import (
+    AcquisitionRequest,
     CirculationRule,
     CirculationTransaction,
     FineRecord,
+    InventoryAudit,
     LibraryCategory,
     LibraryMember,
     LibraryResource,
@@ -100,3 +102,28 @@ class FineRecordSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["created_at", "paid_at", "member_member_id", "transaction_copy"]
 
+
+class InventoryAuditSerializer(serializers.ModelSerializer):
+    conducted_by_name = serializers.CharField(source="conducted_by.username", read_only=True)
+
+    class Meta:
+        model = InventoryAudit
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at", "conducted_by", "conducted_by_name"]
+
+
+class AcquisitionRequestSerializer(serializers.ModelSerializer):
+    requested_by_name = serializers.CharField(source="requested_by.username", read_only=True)
+    approved_by_name = serializers.CharField(source="approved_by.username", read_only=True)
+
+    class Meta:
+        model = AcquisitionRequest
+        fields = "__all__"
+        read_only_fields = [
+            "created_at",
+            "updated_at",
+            "requested_by",
+            "requested_by_name",
+            "approved_by",
+            "approved_by_name",
+        ]

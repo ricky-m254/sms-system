@@ -18,6 +18,66 @@ from datetime import timedelta
 
 class FinanceService:
     @staticmethod
+    def post_library_fine_accrual(*, fine_id: int, amount, entry_date=None, posted_by=None):
+        amount_value = Decimal(str(amount or 0))
+        if amount_value <= 0:
+            return None
+        entry_date = entry_date or timezone.now().date()
+        accounts = FinanceService._get_default_accounts()
+        return FinanceService._post_journal(
+            entry_date=entry_date,
+            memo=f"Library fine accrual #{fine_id}",
+            lines=[
+                {"account": accounts["1100"], "debit": amount_value, "credit": 0, "description": "Library fine receivable"},
+                {"account": accounts["4000"], "debit": 0, "credit": amount_value, "description": "Library fine revenue"},
+            ],
+            source_type="LibraryFineAccrual",
+            source_id=fine_id,
+            posted_by=posted_by,
+            entry_key=f"library_fine_accrual:{fine_id}",
+        )
+
+    @staticmethod
+    def post_library_fine_payment(*, fine_id: int, amount, payment_marker: str, entry_date=None, posted_by=None):
+        amount_value = Decimal(str(amount or 0))
+        if amount_value <= 0:
+            return None
+        entry_date = entry_date or timezone.now().date()
+        accounts = FinanceService._get_default_accounts()
+        return FinanceService._post_journal(
+            entry_date=entry_date,
+            memo=f"Library fine payment #{fine_id}",
+            lines=[
+                {"account": accounts["1000"], "debit": amount_value, "credit": 0, "description": "Cash received for library fine"},
+                {"account": accounts["1100"], "debit": 0, "credit": amount_value, "description": "Library fine receivable settlement"},
+            ],
+            source_type="LibraryFinePayment",
+            source_id=fine_id,
+            posted_by=posted_by,
+            entry_key=f"library_fine_payment:{fine_id}:{payment_marker}",
+        )
+
+    @staticmethod
+    def post_library_fine_waiver(*, fine_id: int, amount, entry_date=None, posted_by=None):
+        amount_value = Decimal(str(amount or 0))
+        if amount_value <= 0:
+            return None
+        entry_date = entry_date or timezone.now().date()
+        accounts = FinanceService._get_default_accounts()
+        return FinanceService._post_journal(
+            entry_date=entry_date,
+            memo=f"Library fine waiver #{fine_id}",
+            lines=[
+                {"account": accounts["5000"], "debit": amount_value, "credit": 0, "description": "Library fine waiver expense"},
+                {"account": accounts["1100"], "debit": 0, "credit": amount_value, "description": "Library fine receivable write-off"},
+            ],
+            source_type="LibraryFineWaiver",
+            source_id=fine_id,
+            posted_by=posted_by,
+            entry_key=f"library_fine_waiver:{fine_id}",
+        )
+
+    @staticmethod
     def _active_scholarships_for_student(student, as_of_date):
         scholarships = ScholarshipAward.objects.filter(
             student=student,

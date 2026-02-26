@@ -2,14 +2,21 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    AcquisitionRequestViewSet,
     CirculationMemberBorrowingsView,
     CirculationOverdueView,
     CirculationRuleView,
     CirculationTransactionsView,
     FineViewSet,
     IssueResourceView,
+    InventoryAuditViewSet,
     LibraryCategoryViewSet,
     LibraryMemberViewSet,
+    LibraryReportsCirculationView,
+    LibraryReportsFinesView,
+    LibraryReportsMemberActivityView,
+    LibraryReportsOverdueView,
+    LibraryReportsPopularView,
     LibraryResourceViewSet,
     RenewResourceView,
     ReservationViewSet,
@@ -24,6 +31,8 @@ router.register(r"categories", LibraryCategoryViewSet, basename="library_categor
 router.register(r"members", LibraryMemberViewSet, basename="library_members")
 router.register(r"reservations", ReservationViewSet, basename="library_reservations")
 router.register(r"fines", FineViewSet, basename="library_fines")
+router.register(r"inventory/audits", InventoryAuditViewSet, basename="library_inventory_audits")
+router.register(r"acquisition/requests", AcquisitionRequestViewSet, basename="library_acquisition_requests")
 
 urlpatterns = [
     path("circulation/issue/", IssueResourceView.as_view(), name="library_issue"),
@@ -33,6 +42,10 @@ urlpatterns = [
     path("circulation/overdue/", CirculationOverdueView.as_view(), name="library_overdue"),
     path("circulation/member/<int:member_id>/", CirculationMemberBorrowingsView.as_view(), name="library_member_borrowings"),
     path("circulation/rules/", CirculationRuleView.as_view(), name="library_rules"),
+    path("reports/circulation/", LibraryReportsCirculationView.as_view(), name="library_reports_circulation"),
+    path("reports/popular/", LibraryReportsPopularView.as_view(), name="library_reports_popular"),
+    path("reports/overdue/", LibraryReportsOverdueView.as_view(), name="library_reports_overdue"),
+    path("reports/fines/", LibraryReportsFinesView.as_view(), name="library_reports_fines"),
+    path("reports/member-activity/", LibraryReportsMemberActivityView.as_view(), name="library_reports_member_activity"),
     path("", include(router.urls)),
 ]
-

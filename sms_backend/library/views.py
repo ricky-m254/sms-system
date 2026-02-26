@@ -1,7 +1,9 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.db.models import Count, F, Max, Q, Sum
+from django.db.models.functions import TruncMonth
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -9,10 +11,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from school.permissions import HasModuleAccess
+from school.services import FinanceService
 from .models import (
+    AcquisitionRequest,
     CirculationRule,
     CirculationTransaction,
     FineRecord,
+    InventoryAudit,
     LibraryCategory,
     LibraryMember,
     LibraryResource,
@@ -20,9 +25,11 @@ from .models import (
     ResourceCopy,
 )
 from .serializers import (
+    AcquisitionRequestSerializer,
     CirculationRuleSerializer,
     CirculationTransactionSerializer,
     FineRecordSerializer,
+    InventoryAuditSerializer,
     LibraryCategorySerializer,
     LibraryMemberSerializer,
     LibraryResourceSerializer,
@@ -34,6 +41,35 @@ from .serializers import (
 class LibraryAccessMixin:
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
     module_key = "LIBRARY"
+
+
+def _is_admin(user):
+    if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False):
+        return True
+    try:
+        return hasattr(user, "userprofile") and user.userprofile.role.name in ["ADMIN", "TENANT_SUPER_ADMIN"]
+    except Exception:
+        return False
+
+
+def _create_library_notification(user, title: str, message: str, created_by=None):
+    if not user:
+        return
+    try:
+        from communication.models import Notification
+
+        Notification.objects.create(
+            recipient=user,
+            notification_type="System",
+            title=title,
+            message=message,
+            priority="Informational",
+            created_by=created_by,
+            delivery_status="Sent",
+        )
+    except Exception:
+        # Keep library workflows non-blocking when communication is unavailable.
+        return
 
 
 def recalc_resource_counts(resource_id: int) -> None:
@@ -133,6 +169,103 @@ class LibraryMemberViewSet(LibraryAccessMixin, viewsets.ModelViewSet):
             qs = qs.filter(status=status_value)
         return qs
 
+    @action(detail=False, methods=["post"], url_path="sync")
+    def sync(self, request):
+        if not _is_admin(request.user):
+            return Response({"error": "Only admins can run member sync."}, status=status.HTTP_403_FORBIDDEN)
+
+        created = 0
+        reactivated = 0
+        unchanged = 0
+
+        try:
+            from school.models import Student
+
+            for student in Student.objects.filter(is_active=True).only("id", "admission_number"):
+                member_code = f"LIB-STU-{student.id}"
+                member, was_created = LibraryMember.objects.get_or_create(
+                    member_id=member_code,
+                    defaults={
+                        "member_type": "Student",
+                        "status": "Active",
+                    },
+                )
+                if was_created:
+                    created += 1
+                elif not member.is_active or member.status != "Active":
+                    member.is_active = True
+                    member.status = "Active"
+                    member.member_type = "Student"
+                    member.save(update_fields=["is_active", "status", "member_type"])
+                    reactivated += 1
+                else:
+                    unchanged += 1
+        except Exception:
+            pass
+
+        try:
+            from hr.models import Employee
+
+            for employee in Employee.objects.filter(is_active=True, status="Active").select_related("user").only("id", "user", "employee_id"):
+                member_code = f"LIB-HR-{employee.id}"
+                member, was_created = LibraryMember.objects.get_or_create(
+                    member_id=member_code,
+                    defaults={
+                        "member_type": "Staff",
+                        "status": "Active",
+                        "user": employee.user,
+                    },
+                )
+                if was_created:
+                    created += 1
+                elif not member.is_active or member.status != "Active" or member.user_id != employee.user_id:
+                    member.is_active = True
+                    member.status = "Active"
+                    member.member_type = "Staff"
+                    member.user = employee.user
+                    member.save(update_fields=["is_active", "status", "member_type", "user"])
+                    reactivated += 1
+                else:
+                    unchanged += 1
+        except Exception:
+            pass
+
+        try:
+            from staff_mgmt.models import StaffMember
+
+            for staff_member in StaffMember.objects.filter(is_active=True, status="Active").select_related("user").only("id", "user", "staff_id"):
+                member_code = f"LIB-SM-{staff_member.id}"
+                member, was_created = LibraryMember.objects.get_or_create(
+                    member_id=member_code,
+                    defaults={
+                        "member_type": "Staff",
+                        "status": "Active",
+                        "user": staff_member.user,
+                    },
+                )
+                if was_created:
+                    created += 1
+                elif not member.is_active or member.status != "Active" or member.user_id != staff_member.user_id:
+                    member.is_active = True
+                    member.status = "Active"
+                    member.member_type = "Staff"
+                    member.user = staff_member.user
+                    member.save(update_fields=["is_active", "status", "member_type", "user"])
+                    reactivated += 1
+                else:
+                    unchanged += 1
+        except Exception:
+            pass
+
+        return Response(
+            {
+                "created": created,
+                "reactivated": reactivated,
+                "unchanged": unchanged,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     @action(detail=True, methods=["post"], url_path="suspend")
     def suspend(self, request, pk=None):
         row = self.get_object()
@@ -231,27 +364,92 @@ class FineViewSet(LibraryAccessMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="pay")
     def pay(self, request, pk=None):
-        row = self.get_object()
-        amount = Decimal(str(request.data.get("amount") or row.amount - row.amount_paid))
-        if amount <= 0:
-            return Response({"error": "Payment amount must be greater than zero."}, status=status.HTTP_400_BAD_REQUEST)
-        row.amount_paid = min(row.amount, row.amount_paid + amount)
-        if row.amount_paid >= row.amount:
-            row.status = "Paid"
-            row.paid_at = timezone.now()
-        row.save(update_fields=["amount_paid", "status", "paid_at"])
-        recompute_member_fines(row.member_id)
-        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+        try:
+            with transaction.atomic():
+                row = self.get_object()
+                previous_paid = Decimal(str(row.amount_paid or 0))
+                amount = Decimal(str(request.data.get("amount") or row.amount - row.amount_paid))
+                if amount <= 0:
+                    return Response({"error": "Payment amount must be greater than zero."}, status=status.HTTP_400_BAD_REQUEST)
+                row.amount_paid = min(row.amount, row.amount_paid + amount)
+                if row.amount_paid >= row.amount:
+                    row.status = "Paid"
+                    row.paid_at = timezone.now()
+                row.save(update_fields=["amount_paid", "status", "paid_at"])
+                paid_delta = Decimal(str(row.amount_paid or 0)) - previous_paid
+                if paid_delta > 0:
+                    payment_marker = str(Decimal(str(row.amount_paid)).quantize(Decimal("0.01")))
+                    FinanceService.post_library_fine_payment(
+                        fine_id=row.id,
+                        amount=paid_delta,
+                        payment_marker=payment_marker,
+                        posted_by=request.user,
+                    )
+                recompute_member_fines(row.member_id)
+                return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+        except ValueError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["post"], url_path="waive")
     def waive(self, request, pk=None):
-        row = self.get_object()
-        row.status = "Waived"
-        row.waiver_reason = (request.data.get("reason") or "").strip()
-        row.waived_by = request.user
-        row.save(update_fields=["status", "waiver_reason", "waived_by"])
-        recompute_member_fines(row.member_id)
-        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+        try:
+            with transaction.atomic():
+                row = self.get_object()
+                if row.status == "Waived":
+                    return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+                outstanding_before_waive = max(Decimal("0.00"), Decimal(str(row.amount or 0)) - Decimal(str(row.amount_paid or 0)))
+                row.status = "Waived"
+                row.waiver_reason = (request.data.get("reason") or "").strip()
+                row.waived_by = request.user
+                row.save(update_fields=["status", "waiver_reason", "waived_by"])
+                if outstanding_before_waive > 0:
+                    FinanceService.post_library_fine_waiver(
+                        fine_id=row.id,
+                        amount=outstanding_before_waive,
+                        posted_by=request.user,
+                    )
+                recompute_member_fines(row.member_id)
+                return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+        except ValueError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["get"], url_path="finance-postings")
+    def finance_postings(self, request, pk=None):
+        try:
+            from school.models import JournalEntry
+
+            entries = (
+                JournalEntry.objects.filter(
+                    source_id=int(pk),
+                    source_type__in=["LibraryFineAccrual", "LibraryFinePayment", "LibraryFineWaiver"],
+                )
+                .prefetch_related("lines", "lines__account")
+                .order_by("-entry_date", "-id")
+            )
+            payload = []
+            for entry in entries:
+                payload.append(
+                    {
+                        "id": entry.id,
+                        "entry_date": entry.entry_date,
+                        "memo": entry.memo,
+                        "source_type": entry.source_type,
+                        "entry_key": entry.entry_key,
+                        "lines": [
+                            {
+                                "account_code": line.account.code,
+                                "account_name": line.account.name,
+                                "debit": line.debit,
+                                "credit": line.credit,
+                                "description": line.description,
+                            }
+                            for line in entry.lines.all()
+                        ],
+                    }
+                )
+            return Response(payload, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=["get"], url_path=r"summary/(?P<member_id>\d+)")
     def summary(self, request, member_id=None):
@@ -282,6 +480,110 @@ def recompute_member_fines(member_id: int) -> None:
         or Decimal("0.00")
     )
     LibraryMember.objects.filter(id=member_id).update(total_fines=outstanding)
+
+
+class InventoryAuditViewSet(LibraryAccessMixin, viewsets.ModelViewSet):
+    serializer_class = InventoryAuditSerializer
+    queryset = InventoryAudit.objects.filter(is_active=True).order_by("-audit_date", "-id")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_value = (self.request.query_params.get("status") or "").strip()
+        if status_value:
+            qs = qs.filter(status=status_value)
+        return qs
+
+    def perform_create(self, serializer):
+        total_expected = ResourceCopy.objects.filter(is_active=True).count()
+        total_found = int(self.request.data.get("total_found") or 0)
+        missing_count = max(0, total_expected - total_found)
+        serializer.save(
+            audit_date=date.today(),
+            conducted_by=self.request.user,
+            total_expected=total_expected,
+            missing_count=missing_count,
+        )
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        missing_count = max(0, int(instance.total_expected or 0) - int(instance.total_found or 0))
+        if missing_count != instance.missing_count:
+            instance.missing_count = missing_count
+            instance.save(update_fields=["missing_count"])
+
+    @action(detail=True, methods=["post"], url_path="complete")
+    def complete(self, request, pk=None):
+        row = self.get_object()
+        total_expected = ResourceCopy.objects.filter(is_active=True).count()
+        total_found = int(request.data.get("total_found") or row.total_found or 0)
+        row.total_expected = total_expected
+        row.total_found = total_found
+        row.missing_count = max(0, total_expected - total_found)
+        row.status = "Completed"
+        row.notes = (request.data.get("notes") or row.notes or "").strip()
+        row.save(update_fields=["total_expected", "total_found", "missing_count", "status", "notes", "updated_at"])
+        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save(update_fields=["is_active"])
+
+
+class AcquisitionRequestViewSet(LibraryAccessMixin, viewsets.ModelViewSet):
+    serializer_class = AcquisitionRequestSerializer
+    queryset = AcquisitionRequest.objects.filter(is_active=True).order_by("-created_at", "-id")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_value = (self.request.query_params.get("status") or "").strip()
+        if status_value:
+            qs = qs.filter(status=status_value)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(requested_by=self.request.user)
+
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, pk=None):
+        row = self.get_object()
+        if row.status in ["Rejected", "Received"]:
+            return Response({"error": f"Cannot approve a {row.status.lower()} request."}, status=status.HTTP_400_BAD_REQUEST)
+        row.status = "Approved"
+        row.approved_by = request.user
+        row.save(update_fields=["status", "approved_by", "updated_at"])
+        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        row = self.get_object()
+        if row.status == "Received":
+            return Response({"error": "Cannot reject a received request."}, status=status.HTTP_400_BAD_REQUEST)
+        row.status = "Rejected"
+        row.approved_by = request.user
+        row.save(update_fields=["status", "approved_by", "updated_at"])
+        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="mark-ordered")
+    def mark_ordered(self, request, pk=None):
+        row = self.get_object()
+        if row.status not in ["Approved", "Ordered"]:
+            return Response({"error": "Only approved requests can be marked ordered."}, status=status.HTTP_400_BAD_REQUEST)
+        row.status = "Ordered"
+        row.save(update_fields=["status", "updated_at"])
+        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="mark-received")
+    def mark_received(self, request, pk=None):
+        row = self.get_object()
+        if row.status not in ["Ordered", "Received"]:
+            return Response({"error": "Only ordered requests can be marked received."}, status=status.HTTP_400_BAD_REQUEST)
+        row.status = "Received"
+        row.save(update_fields=["status", "updated_at"])
+        return Response(self.get_serializer(row).data, status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save(update_fields=["is_active"])
 
 
 class CirculationRuleView(LibraryAccessMixin, APIView):
@@ -398,14 +700,29 @@ class ReturnResourceView(LibraryAccessMixin, APIView):
             ]
         )
         if fine_amount > 0:
-            FineRecord.objects.create(
+            fine = FineRecord.objects.create(
                 member=row.member,
                 transaction=row,
                 fine_type="Overdue",
                 amount=fine_amount,
                 status="Pending",
             )
+            try:
+                FinanceService.post_library_fine_accrual(
+                    fine_id=fine.id,
+                    amount=fine_amount,
+                    posted_by=request.user,
+                )
+            except Exception:
+                # Keep return workflow non-blocking; operations can replay postings via finance tooling if needed.
+                pass
             recompute_member_fines(row.member_id)
+            _create_library_notification(
+                row.member.user,
+                "Library fine created",
+                f"An overdue fine of {fine_amount} has been added to your library account.",
+                created_by=request.user,
+            )
         next_reservation = (
             Reservation.objects.filter(resource=row.copy.resource, status="Waiting", is_active=True).order_by("queue_position", "id").first()
         )
@@ -415,6 +732,12 @@ class ReturnResourceView(LibraryAccessMixin, APIView):
             next_reservation.ready_at = now
             next_reservation.pickup_deadline = (now + timedelta(days=3)).date()
             next_reservation.save(update_fields=["status", "ready_at", "pickup_deadline"])
+            _create_library_notification(
+                next_reservation.member.user,
+                "Library reservation ready",
+                f"Your reservation for '{row.copy.resource.title}' is ready for pickup.",
+                created_by=request.user,
+            )
         else:
             row.copy.status = "Available"
         row.copy.save(update_fields=["status"])
@@ -481,3 +804,138 @@ class CirculationMemberBorrowingsView(LibraryAccessMixin, APIView):
             is_active=True,
         ).order_by("due_date", "-id")
         return Response(CirculationTransactionSerializer(rows, many=True).data, status=status.HTTP_200_OK)
+
+
+class LibraryReportsCirculationView(LibraryAccessMixin, APIView):
+    def get(self, request):
+        now = timezone.now()
+        six_months_ago = now - timedelta(days=180)
+        monthly = (
+            CirculationTransaction.objects.filter(is_active=True, issue_date__gte=six_months_ago)
+            .annotate(month=TruncMonth("issue_date"))
+            .values("month")
+            .annotate(
+                total=Count("id"),
+                issues=Count("id", filter=Q(transaction_type="Issue")),
+                returns=Count("id", filter=Q(transaction_type="Return")),
+                renewals=Count("id", filter=Q(transaction_type="Renew")),
+            )
+            .order_by("month")
+        )
+        payload = [
+            {
+                "month": row["month"].date().isoformat() if row["month"] else "",
+                "total": row["total"],
+                "issues": row["issues"],
+                "returns": row["returns"],
+                "renewals": row["renewals"],
+            }
+            for row in monthly
+        ]
+        return Response(
+            {
+                "active_borrowings": CirculationTransaction.objects.filter(
+                    transaction_type="Issue", return_date__isnull=True, is_active=True
+                ).count(),
+                "overdue_count": CirculationTransaction.objects.filter(
+                    transaction_type="Issue", return_date__isnull=True, due_date__lt=timezone.now().date(), is_active=True
+                ).count(),
+                "monthly": payload,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class LibraryReportsPopularView(LibraryAccessMixin, APIView):
+    def get(self, request):
+        limit = int(request.query_params.get("limit") or 10)
+        rows = (
+            CirculationTransaction.objects.filter(is_active=True, transaction_type="Issue")
+            .values("copy__resource_id", "copy__resource__title")
+            .annotate(borrow_count=Count("id"))
+            .order_by("-borrow_count", "copy__resource__title")[: max(1, min(limit, 100))]
+        )
+        return Response(
+            [
+                {
+                    "resource_id": row["copy__resource_id"],
+                    "title": row["copy__resource__title"],
+                    "borrow_count": row["borrow_count"],
+                }
+                for row in rows
+            ],
+            status=status.HTTP_200_OK,
+        )
+
+
+class LibraryReportsOverdueView(LibraryAccessMixin, APIView):
+    def get(self, request):
+        today = timezone.now().date()
+        rows = (
+            CirculationTransaction.objects.filter(
+                transaction_type="Issue",
+                return_date__isnull=True,
+                due_date__lt=today,
+                is_active=True,
+            )
+            .select_related("copy", "copy__resource", "member")
+            .order_by("due_date", "-id")
+        )
+        payload = []
+        for row in rows:
+            overdue_days = (today - row.due_date).days if row.due_date else 0
+            payload.append(
+                {
+                    "transaction_id": row.id,
+                    "member_id": row.member_id,
+                    "member_code": row.member.member_id,
+                    "resource_id": row.copy.resource_id,
+                    "resource_title": row.copy.resource.title,
+                    "copy_accession_number": row.copy.accession_number,
+                    "due_date": row.due_date.isoformat() if row.due_date else None,
+                    "overdue_days": overdue_days,
+                }
+            )
+        return Response(payload, status=status.HTTP_200_OK)
+
+
+class LibraryReportsFinesView(LibraryAccessMixin, APIView):
+    def get(self, request):
+        rows = FineRecord.objects.filter(is_active=True)
+        totals = rows.aggregate(total=Sum("amount"), paid=Sum("amount_paid"))
+        total = totals.get("total") or Decimal("0.00")
+        paid = totals.get("paid") or Decimal("0.00")
+        by_status = list(rows.values("status").annotate(count=Count("id"), amount=Sum("amount")).order_by("status"))
+        return Response(
+            {
+                "total_fines": total,
+                "total_paid": paid,
+                "outstanding": total - paid,
+                "pending_count": rows.filter(status="Pending").count(),
+                "breakdown": by_status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class LibraryReportsMemberActivityView(LibraryAccessMixin, APIView):
+    def get(self, request):
+        limit = int(request.query_params.get("limit") or 20)
+        rows = (
+            CirculationTransaction.objects.filter(is_active=True, transaction_type="Issue")
+            .values("member_id", "member__member_id")
+            .annotate(issues=Count("id"), last_issue=Max("issue_date"))
+            .order_by("-issues", "-last_issue")[: max(1, min(limit, 100))]
+        )
+        return Response(
+            [
+                {
+                    "member_id": row["member_id"],
+                    "member_code": row["member__member_id"],
+                    "issues": row["issues"],
+                    "last_issue": row["last_issue"],
+                }
+                for row in rows
+            ],
+            status=status.HTTP_200_OK,
+        )
