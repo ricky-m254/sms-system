@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
@@ -49,6 +50,31 @@ from .services import (
 )
 
 User = get_user_model()
+EMAIL_WEBHOOK_STATUS_MAP = {
+    "sent": "Sent",
+    "processed": "Sent",
+    "queued": "Sent",
+    "delivered": "Delivered",
+    "open": "Opened",
+    "opened": "Opened",
+    "click": "Clicked",
+    "clicked": "Clicked",
+    "bounce": "Bounced",
+    "bounced": "Bounced",
+    "dropped": "Failed",
+    "deferred": "Failed",
+    "failed": "Failed",
+}
+SMS_WEBHOOK_STATUS_MAP = {
+    "queued": "Sent",
+    "sent": "Sent",
+    "submitted": "Sent",
+    "accepted": "Sent",
+    "delivered": "Delivered",
+    "failed": "Failed",
+    "undelivered": "Failed",
+    "rejected": "Failed",
+}
 
 
 class CommunicationAccessMixin:
@@ -439,27 +465,32 @@ class EmailWebhookView(APIView):
 
     def post(self, request):
         verified, reason = verify_webhook_request(request.body, request.headers)
-        if not verified:
+        strict_mode = bool(getattr(settings, "COMMUNICATION_WEBHOOK_STRICT_MODE", True))
+        verification_unconfigured = reason == "Webhook verification is not configured."
+        if not verified and not (verification_unconfigured and not strict_mode):
             return Response({"error": reason}, status=status.HTTP_403_FORBIDDEN)
         provider_id = request.data.get("provider_id")
-        status_value = request.data.get("status")
+        status_value = str(request.data.get("status") or "").strip()
         if not provider_id or not status_value:
             return Response({"error": "provider_id and status are required"}, status=status.HTTP_400_BAD_REQUEST)
         row = EmailRecipient.objects.filter(provider_id=provider_id).order_by("-id").first()
         if not row:
             return Response({"error": "recipient record not found"}, status=status.HTTP_404_NOT_FOUND)
-        if status_value in ["Delivered", "Opened", "Clicked", "Bounced", "Failed", "Sent"]:
-            row.status = status_value
-            if status_value == "Delivered":
-                row.delivered_at = now_ts()
-            if status_value == "Opened":
-                row.opened_at = row.opened_at or now_ts()
-                row.open_count += 1
-            if status_value == "Clicked":
-                row.click_count += 1
-            if status_value in ["Bounced", "Failed"]:
-                row.bounce_reason = request.data.get("reason", row.bounce_reason)
-            row.save()
+        normalized = EMAIL_WEBHOOK_STATUS_MAP.get(status_value.lower())
+        if not normalized:
+            return Response({"error": f"Unsupported email status: {status_value}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        row.status = normalized
+        if normalized == "Delivered":
+            row.delivered_at = now_ts()
+        if normalized == "Opened":
+            row.opened_at = row.opened_at or now_ts()
+            row.open_count += 1
+        if normalized == "Clicked":
+            row.click_count += 1
+        if normalized in ["Bounced", "Failed"]:
+            row.bounce_reason = request.data.get("reason", row.bounce_reason)
+        row.save()
         return Response({"message": "Email webhook processed."}, status=status.HTTP_200_OK)
 
 
@@ -468,22 +499,27 @@ class SmsWebhookView(APIView):
 
     def post(self, request):
         verified, reason = verify_webhook_request(request.body, request.headers)
-        if not verified:
+        strict_mode = bool(getattr(settings, "COMMUNICATION_WEBHOOK_STRICT_MODE", True))
+        verification_unconfigured = reason == "Webhook verification is not configured."
+        if not verified and not (verification_unconfigured and not strict_mode):
             return Response({"error": reason}, status=status.HTTP_403_FORBIDDEN)
         provider_id = request.data.get("provider_id")
-        status_value = request.data.get("status")
+        status_value = str(request.data.get("status") or "").strip()
         if not provider_id or not status_value:
             return Response({"error": "provider_id and status are required"}, status=status.HTTP_400_BAD_REQUEST)
         row = SmsMessage.objects.filter(provider_id=provider_id).order_by("-id").first()
         if not row:
             return Response({"error": "sms record not found"}, status=status.HTTP_404_NOT_FOUND)
-        if status_value in ["Sent", "Delivered", "Failed"]:
-            row.status = status_value
-            if status_value == "Delivered":
-                row.delivered_at = now_ts()
-            if status_value == "Failed":
-                row.failure_reason = request.data.get("reason", row.failure_reason)
-            row.save()
+        normalized = SMS_WEBHOOK_STATUS_MAP.get(status_value.lower())
+        if not normalized:
+            return Response({"error": f"Unsupported sms status: {status_value}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        row.status = normalized
+        if normalized == "Delivered":
+            row.delivered_at = now_ts()
+        if normalized == "Failed":
+            row.failure_reason = request.data.get("reason", row.failure_reason)
+        row.save()
         return Response({"message": "SMS webhook processed."}, status=status.HTTP_200_OK)
 
 

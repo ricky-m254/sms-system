@@ -87,20 +87,9 @@ export default function DashboardPage() {
   }
 
   const moduleButtons = data
-    ? Array.from(
-        new Set([
-          ...data.modules,
-          'STUDENTS',
-          'ADMISSIONS',
-          'FINANCE',
-          'ACADEMICS',
-          'HR',
-          'STAFF',
-          'COMMUNICATION',
-          'LIBRARY',
-          'PARENTS',
-        ]),
-      ).sort((a, b) => {
+    ? data.modules
+        .filter((key) => Boolean(MODULE_OPERATIONAL_ROUTES[key]))
+        .sort((a, b) => {
         const ai = MODULE_DISPLAY_ORDER.indexOf(a)
         const bi = MODULE_DISPLAY_ORDER.indexOf(b)
         if (ai === -1 && bi === -1) return a.localeCompare(b)
@@ -197,7 +186,7 @@ export default function DashboardPage() {
                     className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-left text-sm font-semibold text-slate-200 transition hover:border-emerald-400"
                     onClick={() => {
                       const route = MODULE_OPERATIONAL_ROUTES[moduleKey]
-                      navigate(route ?? `/modules/${moduleKey.toLowerCase()}`)
+                      if (route) navigate(route)
                     }}
                   >
                     Open {MODULE_LABELS[moduleKey] ?? moduleKey}

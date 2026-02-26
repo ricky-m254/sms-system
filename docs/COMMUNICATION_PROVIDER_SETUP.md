@@ -23,6 +23,11 @@ Set in backend environment (or `.env` if used by your runtime):
 COMMUNICATION_SMS_API_KEY=
 COMMUNICATION_WHATSAPP_API_KEY=
 COMMUNICATION_PUSH_SERVER_KEY=
+COMMUNICATION_WEBHOOK_TOKEN=
+COMMUNICATION_WEBHOOK_SHARED_SECRET=
+COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP=true
+COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS=300
+COMMUNICATION_WEBHOOK_STRICT_MODE=true
 ```
 
 Optional production SMTP variables (example):
@@ -80,6 +85,10 @@ Verification headers (at least one configured method must pass):
 - Signature mode (HMAC SHA-256 over raw request body):
   - Header: `X-Webhook-Signature: <hex>` or `sha256=<hex>`
   - Secret: `COMMUNICATION_WEBHOOK_SHARED_SECRET`
+
+Strict mode:
+- `COMMUNICATION_WEBHOOK_STRICT_MODE=true` (recommended): reject all callbacks unless token/signature verification passes.
+- `COMMUNICATION_WEBHOOK_STRICT_MODE=false` (development only): allows callbacks only when verification is not configured; invalid provided token/signature is still rejected.
 
 Supported status values:
 - Email: `Sent`, `Delivered`, `Opened`, `Clicked`, `Bounced`, `Failed`

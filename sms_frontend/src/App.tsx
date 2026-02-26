@@ -35,7 +35,6 @@ const FinanceScholarshipsPage = lazy(() => import('./pages/finance/FinanceSchola
 const FinanceRefundsPage = lazy(() => import('./pages/finance/FinanceRefundsPage'))
 const SettingsLayout = lazy(() => import('./pages/settings/SettingsLayout'))
 const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPage'))
-const ModuleDashboardPage = lazy(() => import('./pages/ModuleDashboardPage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
 const ParentsDirectoryPage = lazy(() => import('./pages/parents/ParentsDirectoryPage'))
@@ -97,6 +96,9 @@ const LibraryCirculationPage = lazy(() => import('./pages/library/LibraryCircula
 const LibraryReservationsPage = lazy(() => import('./pages/library/LibraryReservationsPage'))
 const LibraryMembersPage = lazy(() => import('./pages/library/LibraryMembersPage'))
 const LibraryFinesPage = lazy(() => import('./pages/library/LibraryFinesPage'))
+const LibraryInventoryPage = lazy(() => import('./pages/library/LibraryInventoryPage'))
+const LibraryAcquisitionPage = lazy(() => import('./pages/library/LibraryAcquisitionPage'))
+const LibraryReportsPage = lazy(() => import('./pages/library/LibraryReportsPage'))
 const AdmissionsLayout = lazy(() => import('./pages/admissions/AdmissionsLayout'))
 const AdmissionsDashboardPage = lazy(() => import('./pages/admissions/AdmissionsDashboardPage'))
 const AdmissionsApplicationsPage = lazy(() => import('./pages/admissions/AdmissionsApplicationsPage'))
@@ -289,6 +291,9 @@ function App() {
           <Route path="reservations" element={<LibraryReservationsPage />} />
           <Route path="members" element={<LibraryMembersPage />} />
           <Route path="fines" element={<LibraryFinesPage />} />
+          <Route path="inventory" element={<LibraryInventoryPage />} />
+          <Route path="acquisition" element={<LibraryAcquisitionPage />} />
+          <Route path="reports" element={<LibraryReportsPage />} />
         </Route>
         <Route
           path="/settings"
@@ -297,10 +302,7 @@ function App() {
           <Route index element={<Navigate to="/settings/global" replace />} />
           <Route path=":module" element={<ModuleSettingsPage />} />
         </Route>
-        <Route
-          path="/modules/:moduleKey"
-          element={isAuthenticated ? <ModuleDashboardPage /> : <Navigate to="/login" replace />}
-        />
+        <Route path="/modules/:moduleKey" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

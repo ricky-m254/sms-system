@@ -181,6 +181,15 @@ COMMUNICATION_WHATSAPP_API_KEY = os.getenv("COMMUNICATION_WHATSAPP_API_KEY", "")
 COMMUNICATION_PUSH_SERVER_KEY = os.getenv("COMMUNICATION_PUSH_SERVER_KEY", "")
 COMMUNICATION_WEBHOOK_TOKEN = os.getenv("COMMUNICATION_WEBHOOK_TOKEN", "")
 COMMUNICATION_WEBHOOK_SHARED_SECRET = os.getenv("COMMUNICATION_WEBHOOK_SHARED_SECRET", "")
+COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP = os.getenv(
+    "COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP",
+    "false" if DEBUG else "true",
+).lower() == "true"
+COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS = int(os.getenv("COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS", "300"))
+COMMUNICATION_WEBHOOK_STRICT_MODE = os.getenv(
+    "COMMUNICATION_WEBHOOK_STRICT_MODE",
+    "false" if DEBUG else "true",
+).lower() == "true"
 
 # ==========================================
 # FINANCE GATEWAY PLACEHOLDERS
@@ -193,5 +202,8 @@ FINANCE_WEBHOOK_SHARED_SECRET = os.getenv("FINANCE_WEBHOOK_SHARED_SECRET", "")
 # Parent Portal linkage behavior:
 # False -> use explicit ParentStudentLink records only (recommended production setting)
 # True  -> fallback to guardian name/email matching when no explicit link exists (migration phase)
-PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK = os.getenv("PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK", "true").lower() == "true"
+PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK = os.getenv(
+    "PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK",
+    "true" if DEBUG else "false",
+).lower() == "true"
 

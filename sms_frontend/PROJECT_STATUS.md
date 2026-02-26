@@ -1514,6 +1514,73 @@ Reference matrix: `docs/ACADEMICS_IMPLEMENTATION_MATRIX.md`
 - Finance integration for fine payment posting is pending.
 - Communication-triggered overdue and reservation-ready alerts are pending.
 
+## Library P0 Reports + Integration Slice (2026-02-16)
+
+### Completed
+- Backend library reports endpoints added:
+  - `GET /api/library/reports/circulation/`
+  - `GET /api/library/reports/popular/`
+  - `GET /api/library/reports/overdue/`
+  - `GET /api/library/reports/fines/`
+  - `GET /api/library/reports/member-activity/`
+- Backend member sync integration endpoint added:
+  - `POST /api/library/members/sync/` (admin only)
+  - Syncs active members from:
+    - Students (`school.Student`)
+    - HR employees (`hr.Employee`)
+    - Staff management staff (`staff_mgmt.StaffMember`)
+- Communication integration added in circulation return workflow:
+  - Overdue fine creation now triggers in-app notification for linked member user.
+  - Reservation-ready transition now triggers in-app notification for next member user.
+
+### Frontend completed
+- Added Library reports page and route:
+  - `sms_frontend/src/pages/library/LibraryReportsPage.tsx`
+  - `/modules/library/reports`
+- Added Library nav entry for Reports:
+  - `sms_frontend/src/pages/library/LibraryLayout.tsx`
+- Added members sync action to Library Members page:
+  - `sms_frontend/src/pages/library/LibraryMembersPage.tsx`
+  - Button: `Sync from Students/Staff`
+
+### Validation
+- Backend tests:
+  - `python manage.py test library.tests --keepdb`
+- Frontend build:
+  - `npm run build`
+
+### Remaining gaps
+- Inventory audit, acquisition/procurement, and digital resources remain pending.
+- Finance posting integration for fine payment receivables is completed in the next slice.
+
+## Library P0 Finance Posting Integration (2026-02-16)
+
+### Completed
+- Added finance journal posting integration for library fines:
+  - File: `sms_backend/school/services.py`
+  - New service methods:
+    - `FinanceService.post_library_fine_accrual(...)`
+    - `FinanceService.post_library_fine_payment(...)`
+    - `FinanceService.post_library_fine_waiver(...)`
+- Integrated posting into Library workflows:
+  - File: `sms_backend/library/views.py`
+  - On overdue fine creation (return flow):
+    - posts accrual entry (AR debit, revenue credit) with idempotent key `library_fine_accrual:{fine_id}`
+  - On fine payment:
+    - posts settlement entry (cash debit, AR credit) with marker-based idempotent key
+  - On fine waiver:
+    - posts write-off entry (expense debit, AR credit) with idempotent key `library_fine_waiver:{fine_id}`
+- Added finance audit endpoint on fines:
+  - `GET /api/library/fines/{id}/finance-postings/`
+  - Returns linked journal entries and journal lines for that fine.
+- Added frontend visibility for finance linkage:
+  - File: `sms_frontend/src/pages/library/LibraryFinesPage.tsx`
+  - New `Finance` action per fine row to view postings.
+
+### Notes
+- Return flow remains non-blocking if accrual posting fails (to avoid blocking circulation operations).
+- Payment/waiver flows are transactional and return validation errors when accounting period rules reject posting.
+
 ## Provider Configuration Reminder (Deferred by request)
 - You asked to configure providers later. Keep these pending before production:
   - Communication:
@@ -1522,6 +1589,9 @@ Reference matrix: `docs/ACADEMICS_IMPLEMENTATION_MATRIX.md`
     - `COMMUNICATION_PUSH_SERVER_KEY`
     - `COMMUNICATION_WEBHOOK_TOKEN`
     - `COMMUNICATION_WEBHOOK_SHARED_SECRET`
+    - `COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP`
+    - `COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS`
+    - `COMMUNICATION_WEBHOOK_STRICT_MODE`
   - Finance:
     - `FINANCE_PAYMENT_GATEWAY_PROVIDER`
     - `FINANCE_PAYMENT_GATEWAY_API_KEY`
@@ -1613,6 +1683,9 @@ Reference matrix: `docs/ACADEMICS_IMPLEMENTATION_MATRIX.md`
   - `PATCH/DELETE /api/parent-portal/admin/links/{id}/`
 - Recommended production setting:
   - `PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK=false` after links are populated.
+- Current backend defaults:
+  - `PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK=true` in debug/dev, `false` otherwise.
+  - `COMMUNICATION_WEBHOOK_STRICT_MODE=false` in debug/dev, `true` otherwise.
 
 ## Admissions cleanup and readiness (2026-02-14)
 
@@ -1682,6 +1755,178 @@ Reference matrix: `docs/ACADEMICS_IMPLEMENTATION_MATRIX.md`
 - Supports:
   - `--dry-run` for preview
   - `--all-tenants` for bulk execution
+
+## Library Inventory + Acquisition Baseline Slice (2026-02-16)
+
+### Completed
+- Backend models/migration added in `sms_backend/library`:
+  - `InventoryAudit`
+  - `AcquisitionRequest`
+  - Migration: `sms_backend/library/migrations/0002_inventoryaudit_acquisitionrequest.py`
+- Backend endpoints added under `/api/library/`:
+  - Inventory:
+    - `GET/POST /api/library/inventory/audits/`
+    - `POST /api/library/inventory/audits/{id}/complete/`
+  - Acquisition:
+    - `GET/POST /api/library/acquisition/requests/`
+    - `POST /api/library/acquisition/requests/{id}/approve/`
+    - `POST /api/library/acquisition/requests/{id}/reject/`
+    - `POST /api/library/acquisition/requests/{id}/mark-ordered/`
+    - `POST /api/library/acquisition/requests/{id}/mark-received/`
+- Frontend pages/routes added:
+  - `sms_frontend/src/pages/library/LibraryInventoryPage.tsx`
+  - `sms_frontend/src/pages/library/LibraryAcquisitionPage.tsx`
+  - Routes:
+    - `/modules/library/inventory`
+    - `/modules/library/acquisition`
+  - Library sidebar updated in `sms_frontend/src/pages/library/LibraryLayout.tsx`.
+- Backend tests expanded:
+  - `sms_backend/library/tests.py` includes inventory + acquisition baseline endpoint coverage.
+
+### Remaining library gaps
+- Inventory line-level scan reconciliation (per-copy found/missing) is not yet implemented.
+- Acquisition vendor records, purchase orders, and budget commit linkage are pending.
+
+## Communication Webhook Strictness Slice (2026-02-16)
+
+### Completed
+- Webhook verification path supports stricter production behavior:
+  - token via `X-Webhook-Token` or `Authorization: Bearer <token>`
+  - optional timestamp requirement and replay-window enforcement
+  - signature accepted for raw body and `timestamp.body` formats
+- Communication webhook endpoints now enforce strict status handling:
+  - Email webhook normalizes provider statuses (`processed/open/click/bounce/...`) to internal enum
+  - SMS webhook normalizes provider statuses (`queued/submitted/undelivered/...`) to internal enum
+  - Unknown status values now return `400` instead of silent no-op success
+- Test coverage expanded in `sms_backend/communication/tests.py`:
+  - signed webhook with timestamp success path
+  - invalid/unknown status rejection path
+  - continued coverage for token auth fallback behavior
+
+### Validation
+- `python manage.py test communication.tests --keepdb` passes.
+
+### Deferred provider config reminder
+- Keep these pending before production:
+  - `COMMUNICATION_WEBHOOK_TOKEN`
+  - `COMMUNICATION_WEBHOOK_SHARED_SECRET`
+  - `COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP=true`
+  - `COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS=300`
+
+## Admissions P0-A Functional Hardening (2026-02-16)
+
+### Completed
+- Interview scheduling/calendar time handling hardened in frontend:
+  - File: `sms_frontend/src/pages/admissions/AdmissionsInterviewsPage.tsx`
+  - Added datetime normalization for create/reschedule flows so `datetime-local` values are posted in consistent API-compatible format (`YYYY-MM-DDTHH:MM:SS`).
+  - Added safer seed conversion when loading existing interview datetimes into editable `datetime-local` fields.
+  - Added explicit validation for required application/date/time before submit actions.
+- Assessment scheduling time handling hardened:
+  - File: `sms_frontend/src/pages/admissions/AdmissionsAssessmentsPage.tsx`
+  - Added datetime normalization and required field validation to reduce avoidable 400s from schedule payload format.
+
+### Validation
+- Frontend build passes:
+  - `npm run build`
+- Backend admissions regression tests pass:
+  - `python manage.py test admissions.tests --keepdb`
+
+## Admissions P0-B Action Reliability Hardening (2026-02-16)
+
+### Completed
+- Decisions page hardening:
+  - File: `sms_frontend/src/pages/admissions/AdmissionsDecisionsPage.tsx`
+  - Added in-flight locks for create/respond/offer-letter actions to prevent duplicate submissions.
+  - Added richer backend error extraction so field/api errors surface clearly to operators.
+  - Added client-side guards for required fields and decision/offer deadline consistency.
+- Enrollment page hardening:
+  - File: `sms_frontend/src/pages/admissions/AdmissionsEnrollmentPage.tsx`
+  - Added in-flight locks for eligibility checks and enrollment completion.
+  - Added stronger required-field checks before submit.
+  - Added richer backend error extraction for clearer failure messages.
+
+### Validation
+- Frontend build passes:
+  - `npm run build`
+
+## Admissions P0-C UX Consistency Sweep (2026-02-16)
+
+### Completed
+- Admissions pages UX standardized for operator consistency:
+  - Files:
+    - `sms_frontend/src/pages/admissions/AdmissionsInquiriesPage.tsx`
+    - `sms_frontend/src/pages/admissions/AdmissionsReviewsPage.tsx`
+    - `sms_frontend/src/pages/admissions/AdmissionsAssessmentsPage.tsx`
+    - `sms_frontend/src/pages/admissions/AdmissionsInterviewsPage.tsx`
+    - `sms_frontend/src/pages/admissions/AdmissionsDecisionsPage.tsx`
+    - `sms_frontend/src/pages/admissions/AdmissionsEnrollmentPage.tsx`
+    - `sms_frontend/src/pages/admissions/AdmissionsAnalyticsPage.tsx`
+- Added consistent loading indicators on pages that fetch API data.
+- Added flash-message auto-dismiss behavior (3s) across operational admissions pages.
+- Ensured error paths clear stale success messages for clearer user feedback.
+- Kept existing behavior and endpoint contracts intact while improving UI state reliability.
+
+### Validation
+- Frontend build passes:
+  - `npm run build`
+
+## Admissions P0 Contract-Level Hardening (2026-02-16)
+
+### Completed
+- Added stricter client-side contract validation before API calls across admissions pages:
+  - `sms_frontend/src/pages/admissions/AdmissionsInquiriesPage.tsx`
+    - inquiry source enum validation
+    - optional parent email format validation
+    - status enum validation before patch update
+  - `sms_frontend/src/pages/admissions/AdmissionsReviewsPage.tsx`
+    - required application validation
+    - recommendation enum validation
+    - overall score numeric range validation (decimal-compatible upper bound)
+  - `sms_frontend/src/pages/admissions/AdmissionsAssessmentsPage.tsx`
+    - status enum validation
+    - pass-state enum validation
+    - score numeric range validation
+  - `sms_frontend/src/pages/admissions/AdmissionsInterviewsPage.tsx`
+    - interview type/status enum validation
+    - interview score numeric range validation for feedback and completion actions
+  - `sms_frontend/src/pages/admissions/AdmissionsDecisionsPage.tsx`
+    - decision enum validation before submit
+- Objective: reduce avoidable 400 responses by aligning frontend payload constraints with backend serializer/model choices.
+
+### Validation
+- Frontend build passes:
+  - `npm run build`
+
+## Admissions Backend Contract Hardening (2026-02-16)
+
+### Completed
+- Added serializer-level backend validations in `sms_backend/admissions/serializers.py`:
+  - Inquiry:
+    - no future `inquiry_date`
+    - `child_dob` cannot be after `inquiry_date`
+    - `child_age` range enforcement (1-25) when provided
+  - Review:
+    - `academic_score`, `test_score`, `interview_score`, `overall_score` constrained to 0-100
+  - Assessment:
+    - `score` constrained to 0-100
+    - `score` required when status is `Completed`
+    - basic `scheduled_at` floor-date guard
+  - Interview:
+    - `score` constrained to 0-100
+    - `panel` must be a list of integer user IDs
+    - very-far-future/out-of-range datetime guard
+    - `Completed` interviews require score or feedback
+  - Decision:
+    - `offer_deadline >= decision_date`
+    - `offer_deadline` only valid for `Accept` decisions
+    - initial `response_status` must be `Pending`
+- Added negative contract tests in `sms_backend/admissions/tests.py`:
+  - score range validation failures
+  - decision payload consistency failures
+
+### Validation
+- Backend tests pass:
+  - `python manage.py test admissions.tests --keepdb`
 
 ## Finance mock cleanup step 1 (2026-02-15)
 
@@ -3209,4 +3454,81 @@ Reference matrix: `docs/ACADEMICS_IMPLEMENTATION_MATRIX.md`
   - Strengthened amount input controls:
     - numeric input (`type=number`, `min=0.01`, `step=0.01`).
   - Improved submit error feedback to surface backend detail consistently.
+
+## Parent Portal Hardening Slice (2026-02-16)
+
+### Implemented
+- Parent portal finance download endpoints are now operational (file download responses):
+  - File: `sms_backend/parent_portal/views.py`
+  - `GET /api/parent-portal/finance/invoices/{id}/download/` now returns invoice CSV attachment.
+  - `GET /api/parent-portal/finance/payments/{id}/receipt/` now returns receipt CSV attachment.
+- Parent portal timetable export endpoint is now operational:
+  - File: `sms_backend/parent_portal/views.py`
+  - `GET /api/parent-portal/timetable/export/` now returns timetable CSV attachment.
+- Parent portal library baseline linkage improved:
+  - File: `sms_backend/parent_portal/views.py`
+  - `GET /api/parent-portal/library/borrowings/` now resolves current borrowings from library circulation records using child/member ID candidates.
+  - `GET /api/parent-portal/library/history/` now resolves borrowing history from library circulation records using child/member ID candidates.
+
+## Module Seeding Alignment (2026-02-16)
+
+### Implemented
+- Added missing operational module keys to tenant seed commands:
+  - Files:
+    - `sms_backend/school/management/commands/seed_modules.py`
+    - `sms_backend/school/management/commands/seed_demo.py`
+  - Added module keys:
+    - `STAFF`
+    - `PARENTS`
+    - `LIBRARY`
+  - Purpose: keep seeded module registry aligned with active module permission checks/routes.
+
+## Communication + Routing Hardening (2026-02-16)
+
+### Implemented
+- Communication webhook verification hardening:
+  - File: `sms_backend/communication/services.py`
+  - Added case-insensitive header parsing.
+  - Added bearer-token support via `Authorization: Bearer <token>`.
+  - Added optional timestamp verification with replay window control:
+    - `X-Webhook-Timestamp` / `X-Timestamp`
+    - `COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP`
+    - `COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS`
+  - Signature verification now accepts:
+    - raw-body HMAC SHA256
+    - timestamped payload HMAC SHA256 (`<timestamp>.<body>`)
+- Communication config placeholders expanded:
+  - Files:
+    - `sms_backend/config/settings.py`
+    - `sms_backend/.env.example`
+  - Added:
+    - `COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP`
+    - `COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS`
+- Frontend module routing cleanup:
+  - Files:
+    - `sms_frontend/src/pages/DashboardPage.tsx`
+    - `sms_frontend/src/App.tsx`
+  - Main dashboard now shows buttons only for assigned modules with active operational routes.
+  - Removed user path to generic placeholder shell:
+    - `/modules/:moduleKey` now redirects to `/dashboard`.
+
+## Continuation Stabilization (2026-02-26)
+
+### Completed
+- Library backend regression suite stabilized in tenant context:
+  - File: `sms_backend/library/tests.py`
+  - Migrated from URL-coupled client calls to authenticated `APIRequestFactory` + direct DRF view invocation.
+  - Added tenant role/module assignment fixture setup to satisfy `HasModuleAccess` contract.
+  - Corrected fine-flow assertion logic to only branch when `fine_amount > 0`.
+- Library inventory audit create-flow bug fixed:
+  - File: `sms_backend/library/views.py`
+  - `InventoryAuditViewSet.perform_create` now sets `audit_date` with `date.today()` to guarantee `DateField` serialization safety under both timezone-aware and naive test settings.
+
+### Validation (2026-02-26)
+- Backend tests pass:
+  - `python manage.py test library.tests --keepdb --noinput`
+  - `python manage.py test admissions.tests --keepdb --noinput`
+  - `python manage.py test communication.tests --keepdb --noinput`
+- Frontend build passes:
+  - `npm run build` (from `sms_frontend`)
 
