@@ -16,11 +16,13 @@ type Review = {
 type Application = { id: number; application_number?: string; student_first_name: string; student_last_name: string }
 
 const recommendationOptions = ['Accept', 'Reject', 'Waitlist', 'Further Review']
+const MAX_SCORE = 9999.99
 
 export default function AdmissionsReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [applications, setApplications] = useState<Application[]>([])
   const [shortlistedIds, setShortlistedIds] = useState<Set<number>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
   const [form, setForm] = useState({
@@ -31,6 +33,7 @@ export default function AdmissionsReviewsPage() {
   })
 
   const load = async () => {
+    setIsLoading(true)
     setError(null)
     try {
       const [reviewsRes, applicationsRes, shortlistedRes] = await Promise.all([
@@ -44,6 +47,9 @@ export default function AdmissionsReviewsPage() {
       setShortlistedIds(new Set(shortlistItems.map((item) => item.id)))
     } catch {
       setError('Unable to load reviews data.')
+      setFlash(null)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -51,8 +57,29 @@ export default function AdmissionsReviewsPage() {
     load()
   }, [])
 
+  useEffect(() => {
+    if (!flash) return
+    const timer = window.setTimeout(() => setFlash(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [flash])
+
   const createReview = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (!form.application) {
+      setError('Select an application first.')
+      return
+    }
+    if (!recommendationOptions.includes(form.recommendation)) {
+      setError('Invalid recommendation selected.')
+      return
+    }
+    if (form.overall_score.trim()) {
+      const parsed = Number(form.overall_score)
+      if (Number.isNaN(parsed) || parsed < 0 || parsed > MAX_SCORE) {
+        setError(`Overall score must be between 0 and ${MAX_SCORE}.`)
+        return
+      }
+    }
     try {
       setError(null)
       await apiClient.post('/admissions/reviews/', {
@@ -69,6 +96,7 @@ export default function AdmissionsReviewsPage() {
       if (detail?.application?.[0]) setError(String(detail.application[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to create review.')
+      setFlash(null)
     }
   }
 
@@ -82,6 +110,7 @@ export default function AdmissionsReviewsPage() {
       const detail = err?.response?.data
       if (detail?.error) setError(String(detail.error))
       else setError('Unable to shortlist application.')
+      setFlash(null)
     }
   }
 
@@ -142,6 +171,7 @@ export default function AdmissionsReviewsPage() {
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
+        {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading reviews...</p> : null}
         <div className="overflow-x-auto rounded-2xl border border-slate-800">
           <table className="w-full min-w-[920px] text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">

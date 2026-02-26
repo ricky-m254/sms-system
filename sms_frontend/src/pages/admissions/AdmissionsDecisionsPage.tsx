@@ -19,13 +19,19 @@ type WaitlistRow = {
   decision_date: string
 }
 
+const decisionOptions = ['Accept', 'Reject', 'Waitlist']
+
 export default function AdmissionsDecisionsPage() {
   const [applications, setApplications] = useState<Application[]>([])
   const [rows, setRows] = useState<Decision[]>([])
   const [waitlistRows, setWaitlistRows] = useState<WaitlistRow[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [decidedApplicationIds, setDecidedApplicationIds] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [respondingById, setRespondingById] = useState<Record<number, boolean>>({})
+  const [downloadingById, setDownloadingById] = useState<Record<number, boolean>>({})
   const [form, setForm] = useState({
     application: '',
     decision: 'Accept',
@@ -34,7 +40,22 @@ export default function AdmissionsDecisionsPage() {
     decision_notes: '',
   })
 
+  const extractApiError = (detail: any, fallback: string) => {
+    if (!detail) return fallback
+    if (typeof detail === 'string') return detail
+    if (detail.error) return String(detail.error)
+    if (detail.detail) return String(detail.detail)
+    if (typeof detail === 'object') {
+      for (const value of Object.values(detail)) {
+        if (Array.isArray(value) && value[0]) return String(value[0])
+        if (typeof value === 'string' && value) return value
+      }
+    }
+    return fallback
+  }
+
   const load = async () => {
+    setIsLoading(true)
     setError(null)
     try {
       const [appRes, decRes] = await Promise.all([
@@ -50,6 +71,9 @@ export default function AdmissionsDecisionsPage() {
       setWaitlistRows((queueRes.data?.items ?? []) as WaitlistRow[])
     } catch {
       setError('Unable to load decisions.')
+      setFlash(null)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -57,14 +81,38 @@ export default function AdmissionsDecisionsPage() {
     load()
   }, [])
 
+  useEffect(() => {
+    if (!flash) return
+    const timer = window.setTimeout(() => setFlash(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [flash])
+
   const create = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (!form.application) {
+      setError('Select an application first.')
+      return
+    }
     if (decidedApplicationIds.has(Number(form.application))) {
       setError('This application already has a decision. Use the existing decision record instead.')
       return
     }
+    if (!form.decision_date) {
+      setError('Decision date is required.')
+      return
+    }
+    if (!decisionOptions.includes(form.decision)) {
+      setError('Invalid decision selected.')
+      return
+    }
+    if (form.decision === 'Accept' && form.offer_deadline && form.offer_deadline < form.decision_date) {
+      setError('Offer deadline cannot be before decision date.')
+      return
+    }
     try {
+      setIsCreating(true)
       setError(null)
+      setFlash(null)
       await apiClient.post('/admissions/decisions/', {
         application: Number(form.application),
         decision: form.decision,
@@ -83,44 +131,33 @@ export default function AdmissionsDecisionsPage() {
       await load()
     } catch (err: any) {
       const detail = err?.response?.data
-      if (typeof detail === 'string') {
-        setError(detail)
-      } else if (detail?.detail) {
-        setError(String(detail.detail))
-      } else if (detail && typeof detail === 'object') {
-        const firstKey = Object.keys(detail)[0]
-        const firstValue = firstKey ? detail[firstKey] : null
-        if (Array.isArray(firstValue) && firstValue[0]) {
-          setError(String(firstValue[0]))
-          return
-        }
-      }
-      if (detail?.application && Array.isArray(detail.application) && detail.application[0]) {
-        setError(String(detail.application[0]))
-      } else if (detail?.error) {
-        setError(String(detail.error))
-      } else {
-        setError('Unable to create decision.')
-      }
+      setError(extractApiError(detail, 'Unable to create decision.'))
+    } finally {
+      setIsCreating(false)
     }
   }
 
   const respond = async (id: number, status: 'Accepted' | 'Declined') => {
     try {
+      setRespondingById((prev) => ({ ...prev, [id]: true }))
       setError(null)
+      setFlash(null)
       await apiClient.post(`/admissions/decisions/${id}/respond/`, { response_status: status })
       setFlash(`Response set to ${status}.`)
       await load()
     } catch (err: any) {
       const detail = err?.response?.data
-      if (detail?.error) setError(String(detail.error))
-      else setError('Unable to update response.')
+      setError(extractApiError(detail, 'Unable to update response.'))
+    } finally {
+      setRespondingById((prev) => ({ ...prev, [id]: false }))
     }
   }
 
   const downloadOfferLetter = async (id: number) => {
     try {
+      setDownloadingById((prev) => ({ ...prev, [id]: true }))
       setError(null)
+      setFlash(null)
       const response = await apiClient.get(`/admissions/decisions/${id}/offer-letter/`, {
         responseType: 'blob',
       })
@@ -134,8 +171,10 @@ export default function AdmissionsDecisionsPage() {
       anchor.remove()
       window.URL.revokeObjectURL(url)
       setFlash('Offer letter downloaded.')
-    } catch {
-      setError('Unable to download offer letter.')
+    } catch (err: any) {
+      setError(extractApiError(err?.response?.data, 'Unable to download offer letter.'))
+    } finally {
+      setDownloadingById((prev) => ({ ...prev, [id]: false }))
     }
   }
 
@@ -166,8 +205,12 @@ export default function AdmissionsDecisionsPage() {
           </select>
           <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.decision_date} onChange={(e) => setForm((p) => ({ ...p, decision_date: e.target.value }))} required />
           <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.offer_deadline} onChange={(e) => setForm((p) => ({ ...p, offer_deadline: e.target.value }))} />
-          <button type="submit" className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400">
-            Save
+          <button
+            type="submit"
+            disabled={isCreating}
+            className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isCreating ? 'Saving...' : 'Save'}
           </button>
           <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm md:col-span-5" placeholder="Decision notes" value={form.decision_notes} onChange={(e) => setForm((p) => ({ ...p, decision_notes: e.target.value }))} />
         </form>
@@ -175,6 +218,7 @@ export default function AdmissionsDecisionsPage() {
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
+        {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading decisions...</p> : null}
         <div className="overflow-x-auto rounded-2xl border border-slate-800">
           <table className="w-full min-w-[980px] text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
@@ -199,19 +243,34 @@ export default function AdmissionsDecisionsPage() {
                     <div className="flex gap-2">
                       {row.decision === 'Accept' && row.response_status === 'Pending' ? (
                         <>
-                          <button type="button" className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => respond(row.id, 'Accepted')}>
-                            Mark accepted
+                          <button
+                            type="button"
+                            disabled={Boolean(respondingById[row.id])}
+                            className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                            onClick={() => respond(row.id, 'Accepted')}
+                          >
+                            {respondingById[row.id] ? 'Working...' : 'Mark accepted'}
                           </button>
-                          <button type="button" className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => respond(row.id, 'Declined')}>
-                            Mark declined
+                          <button
+                            type="button"
+                            disabled={Boolean(respondingById[row.id])}
+                            className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                            onClick={() => respond(row.id, 'Declined')}
+                          >
+                            {respondingById[row.id] ? 'Working...' : 'Mark declined'}
                           </button>
                         </>
                       ) : (
                         <span className="px-2 py-1 text-xs text-slate-400">No response action</span>
                       )}
                       {row.decision === 'Accept' ? (
-                        <button type="button" className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => downloadOfferLetter(row.id)}>
-                          Offer letter
+                        <button
+                          type="button"
+                          disabled={Boolean(downloadingById[row.id])}
+                          className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={() => downloadOfferLetter(row.id)}
+                        >
+                          {downloadingById[row.id] ? 'Downloading...' : 'Offer letter'}
                         </button>
                       ) : null}
                     </div>

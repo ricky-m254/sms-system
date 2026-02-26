@@ -14,6 +14,7 @@ type Inquiry = {
 }
 
 const statusOptions = ['New', 'Contacted', 'Interested', 'Applied', 'Lost']
+const inquirySourceOptions = ['Website', 'Referral', 'Advertisement', 'Walk-in', 'Event', 'Other']
 
 export default function AdmissionsInquiriesPage() {
   const [rows, setRows] = useState<Inquiry[]>([])
@@ -66,10 +67,27 @@ export default function AdmissionsInquiriesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
+  useEffect(() => {
+    if (!flash) return
+    const timer = window.setTimeout(() => setFlash(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [flash])
+
   const displayRows = useMemo(() => rows, [rows])
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (!inquirySourceOptions.includes(form.inquiry_source)) {
+      setError('Invalid inquiry source selected.')
+      return
+    }
+    if (form.parent_email.trim()) {
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.parent_email.trim())
+      if (!isValidEmail) {
+        setError('Parent email format is invalid.')
+        return
+      }
+    }
     try {
       setError(null)
       await apiClient.post('/admissions/inquiries/', form)
@@ -89,6 +107,7 @@ export default function AdmissionsInquiriesPage() {
       else if (detail?.parent_name?.[0]) setError(String(detail.parent_name[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to create inquiry.')
+      setFlash(null)
     }
   }
 
@@ -102,6 +121,7 @@ export default function AdmissionsInquiriesPage() {
       const detail = err?.response?.data
       if (detail?.error) setError(String(detail.error))
       else setError('Unable to mark inquiry as lost.')
+      setFlash(null)
     }
   }
 
@@ -115,14 +135,20 @@ export default function AdmissionsInquiriesPage() {
       const detail = err?.response?.data
       if (detail?.error) setError(String(detail.error))
       else setError('Unable to convert inquiry.')
+      setFlash(null)
     }
   }
 
   const updateStatus = async (id: number) => {
+    const nextStatus = statusById[id]
+    if (!statusOptions.includes(nextStatus)) {
+      setError('Invalid inquiry status selected.')
+      return
+    }
     try {
       setError(null)
       await apiClient.patch(`/admissions/inquiries/${id}/`, {
-        status: statusById[id],
+        status: nextStatus,
       })
       setFlash('Inquiry status updated.')
       await load()
@@ -131,6 +157,7 @@ export default function AdmissionsInquiriesPage() {
       if (detail?.status?.[0]) setError(String(detail.status[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to update inquiry status.')
+      setFlash(null)
     }
   }
 
@@ -151,12 +178,11 @@ export default function AdmissionsInquiriesPage() {
           <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" placeholder="Child name" value={form.child_name} onChange={(e) => setForm((p) => ({ ...p, child_name: e.target.value }))} required />
           <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.inquiry_date} onChange={(e) => setForm((p) => ({ ...p, inquiry_date: e.target.value }))} required />
           <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.inquiry_source} onChange={(e) => setForm((p) => ({ ...p, inquiry_source: e.target.value }))}>
-            <option>Website</option>
-            <option>Referral</option>
-            <option>Advertisement</option>
-            <option>Walk-in</option>
-            <option>Event</option>
-            <option>Other</option>
+            {inquirySourceOptions.map((source) => (
+              <option key={source} value={source}>
+                {source}
+              </option>
+            ))}
           </select>
           <button className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-3">
             Create inquiry

@@ -634,3 +634,114 @@ class AdmissionsPhaseBTests(TenantTestBase):
 
         self.assertTrue(AuditLog.objects.filter(action="CONVERT", model_name="AdmissionInquiry").exists())
         self.assertTrue(AuditLog.objects.filter(action="DECISION_CREATE", model_name="AdmissionDecision").exists())
+
+    def test_contract_validation_score_ranges(self):
+        create_inquiry = self.factory.post(
+            "/api/admissions/inquiries/",
+            {
+                "parent_name": "Validation Parent",
+                "parent_email": "validation@example.com",
+                "child_name": "Validation Child",
+                "inquiry_date": "2026-02-14",
+                "inquiry_source": "Website",
+                "grade_level_interest": self.school_class.id,
+                "preferred_start": self.term.id,
+            },
+            format="json",
+        )
+        force_authenticate(create_inquiry, user=self.user)
+        inquiry_response = AdmissionInquiryViewSet.as_view({"post": "create"})(create_inquiry)
+        self.assertEqual(inquiry_response.status_code, 201)
+
+        convert_request = self.factory.post(
+            f"/api/admissions/inquiries/{inquiry_response.data['id']}/convert/",
+            {"student_gender": "Male"},
+            format="json",
+        )
+        force_authenticate(convert_request, user=self.user)
+        convert_response = AdmissionInquiryViewSet.as_view({"post": "convert"})(convert_request, pk=inquiry_response.data["id"])
+        self.assertEqual(convert_response.status_code, 201)
+        application_id = convert_response.data["application_id"]
+
+        bad_review = self.factory.post(
+            "/api/admissions/reviews/",
+            {
+                "application": application_id,
+                "overall_score": "120.00",
+                "recommendation": "Accept",
+            },
+            format="json",
+        )
+        force_authenticate(bad_review, user=self.user)
+        bad_review_response = AdmissionReviewViewSet.as_view({"post": "create"})(bad_review)
+        self.assertEqual(bad_review_response.status_code, 400)
+
+        bad_assessment = self.factory.post(
+            "/api/admissions/assessments/",
+            {
+                "application": application_id,
+                "scheduled_at": "2026-03-01T09:00:00Z",
+                "status": "Completed",
+            },
+            format="json",
+        )
+        force_authenticate(bad_assessment, user=self.user)
+        bad_assessment_response = AdmissionAssessmentViewSet.as_view({"post": "create"})(bad_assessment)
+        self.assertEqual(bad_assessment_response.status_code, 400)
+
+    def test_contract_validation_decision_rules(self):
+        create_inquiry = self.factory.post(
+            "/api/admissions/inquiries/",
+            {
+                "parent_name": "Decision Parent",
+                "parent_email": "decision@example.com",
+                "child_name": "Decision Child",
+                "inquiry_date": "2026-02-14",
+                "inquiry_source": "Website",
+                "grade_level_interest": self.school_class.id,
+                "preferred_start": self.term.id,
+            },
+            format="json",
+        )
+        force_authenticate(create_inquiry, user=self.user)
+        inquiry_response = AdmissionInquiryViewSet.as_view({"post": "create"})(create_inquiry)
+        self.assertEqual(inquiry_response.status_code, 201)
+
+        convert_request = self.factory.post(
+            f"/api/admissions/inquiries/{inquiry_response.data['id']}/convert/",
+            {"student_gender": "Female"},
+            format="json",
+        )
+        force_authenticate(convert_request, user=self.user)
+        convert_response = AdmissionInquiryViewSet.as_view({"post": "convert"})(convert_request, pk=inquiry_response.data["id"])
+        self.assertEqual(convert_response.status_code, 201)
+        application_id = convert_response.data["application_id"]
+
+        bad_offer_for_waitlist = self.factory.post(
+            "/api/admissions/decisions/",
+            {
+                "application": application_id,
+                "decision": "Waitlist",
+                "decision_date": "2026-03-10",
+                "offer_deadline": "2026-03-20",
+            },
+            format="json",
+        )
+        force_authenticate(bad_offer_for_waitlist, user=self.user)
+        bad_offer_response = AdmissionDecisionViewSet.as_view({"post": "create"})(bad_offer_for_waitlist)
+        self.assertEqual(bad_offer_response.status_code, 400)
+
+        bad_initial_response = self.factory.post(
+            "/api/admissions/decisions/",
+            {
+                "application": application_id,
+                "decision": "Accept",
+                "decision_date": "2026-03-10",
+                "offer_deadline": "2026-03-20",
+                "response_status": "Accepted",
+            },
+            format="json",
+        )
+        force_authenticate(bad_initial_response, user=self.user)
+        bad_initial_response_result = AdmissionDecisionViewSet.as_view({"post": "create"})(bad_initial_response)
+        self.assertEqual(bad_initial_response_result.status_code, 400)

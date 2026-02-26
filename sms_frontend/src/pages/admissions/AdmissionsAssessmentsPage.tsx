@@ -15,9 +15,14 @@ type Assessment = {
   notes?: string
 }
 
+const assessmentStatusOptions = ['Scheduled', 'Completed', 'Missed']
+const passOptions = ['unknown', 'pass', 'fail']
+const MAX_SCORE = 9999.99
+
 export default function AdmissionsAssessmentsPage() {
   const [applications, setApplications] = useState<Application[]>([])
   const [rows, setRows] = useState<Assessment[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
   const [statusById, setStatusById] = useState<Record<number, string>>({})
@@ -31,7 +36,15 @@ export default function AdmissionsAssessmentsPage() {
     status: 'Scheduled',
   })
 
+  const toApiDateTime = (value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) return ''
+    if (trimmed.length === 16) return `${trimmed}:00`
+    return trimmed
+  }
+
   const load = async () => {
+    setIsLoading(true)
     setError(null)
     try {
       const [appRes, listRes] = await Promise.all([
@@ -55,8 +68,13 @@ export default function AdmissionsAssessmentsPage() {
       setScoreById(scoreSeed)
       setPassById(passSeed)
       setNotesById(notesSeed)
-    } catch {
-      setError('Unable to load assessments data.')
+    } catch (err: any) {
+      const detail = err?.response?.data
+      if (detail?.error) setError(String(detail.error))
+      else setError('Unable to load assessments data.')
+      setFlash(null)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -64,13 +82,31 @@ export default function AdmissionsAssessmentsPage() {
     load()
   }, [])
 
+  useEffect(() => {
+    if (!flash) return
+    const timer = window.setTimeout(() => setFlash(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [flash])
+
   const create = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (!form.application) {
+      setError('Select an application first.')
+      return
+    }
+    if (!form.scheduled_at) {
+      setError('Assessment date and time are required.')
+      return
+    }
+    if (!assessmentStatusOptions.includes(form.status)) {
+      setError('Invalid assessment status selected.')
+      return
+    }
     try {
       setError(null)
       await apiClient.post('/admissions/assessments/', {
         application: Number(form.application),
-        scheduled_at: form.scheduled_at,
+        scheduled_at: toApiDateTime(form.scheduled_at),
         venue: form.venue || undefined,
         status: form.status,
       })
@@ -83,16 +119,34 @@ export default function AdmissionsAssessmentsPage() {
       else if (detail?.scheduled_at?.[0]) setError(String(detail.scheduled_at[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to create assessment.')
+      setFlash(null)
     }
   }
 
   const saveRow = async (row: Assessment) => {
+    const statusValue = statusById[row.id] || row.status
+    if (!assessmentStatusOptions.includes(statusValue)) {
+      setError('Invalid assessment status selected.')
+      return
+    }
+    const passState = passById[row.id]
+    if (!passOptions.includes(passState)) {
+      setError('Invalid pass/fail state selected.')
+      return
+    }
+    const scoreValue = scoreById[row.id]
+    if (scoreValue !== '') {
+      const parsedScore = Number(scoreValue)
+      if (Number.isNaN(parsedScore) || parsedScore < 0 || parsedScore > MAX_SCORE) {
+        setError(`Assessment score must be between 0 and ${MAX_SCORE}.`)
+        return
+      }
+    }
     try {
       setError(null)
-      const passState = passById[row.id]
       await apiClient.patch(`/admissions/assessments/${row.id}/`, {
-        status: statusById[row.id] || row.status,
-        score: scoreById[row.id] === '' ? null : Number(scoreById[row.id]),
+        status: statusValue,
+        score: scoreValue === '' ? null : Number(scoreValue),
         is_pass: passState === 'unknown' ? null : passState === 'pass',
         notes: notesById[row.id] || undefined,
       })
@@ -104,6 +158,7 @@ export default function AdmissionsAssessmentsPage() {
       else if (detail?.score?.[0]) setError(String(detail.score[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to update assessment.')
+      setFlash(null)
     }
   }
 
@@ -152,6 +207,7 @@ export default function AdmissionsAssessmentsPage() {
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
+        {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading assessments...</p> : null}
         <div className="overflow-x-auto rounded-2xl border border-slate-800">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
