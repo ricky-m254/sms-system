@@ -3,6 +3,7 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from clients.models import Domain, Tenant
 from school.models import Guardian, Student
 from .models import ParentStudentLink
 from .views import _children_for_parent
@@ -10,8 +11,32 @@ from .views import _children_for_parent
 User = get_user_model()
 
 
-class ParentPortalTests(TestCase):
+class TenantTestBase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django_tenants.utils import schema_context
+
+        with schema_context("public"):
+            cls.tenant = Tenant.objects.create(
+                schema_name="parent_portal_test",
+                name="Parent Portal Test School",
+                paid_until="2030-01-01",
+            )
+            Domain.objects.create(domain="parent-portal.localhost", tenant=cls.tenant, is_primary=True)
+
     def setUp(self):
+        from django_tenants.utils import schema_context
+
+        self.schema_context = schema_context(self.tenant.schema_name)
+        self.schema_context.__enter__()
+
+    def tearDown(self):
+        self.schema_context.__exit__(None, None, None)
+
+
+class ParentPortalTests(TenantTestBase):
+    def setUp(self):
+        super().setUp()
         self.parent = User.objects.create_user(username="parent1", email="parent1@example.com", password="pass1234")
         self.student = Student.objects.create(
             first_name="Child",
