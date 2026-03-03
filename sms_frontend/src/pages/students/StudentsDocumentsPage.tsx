@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
-import { downloadBlob, extractFilename } from '../../utils/download'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type UploadedDoc = {
   id: number
@@ -47,6 +49,8 @@ export default function StudentsDocumentsPage() {
   const pageSize = 10
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<StudentDocRow | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const [formState, setFormState] = useState({
     student: '',
@@ -123,13 +127,18 @@ export default function StudentsDocumentsPage() {
     }
   }
 
-  const handleDelete = async (row: StudentDocRow) => {
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     setError(null)
+    setIsDeleting(true)
     try {
-      await apiClient.delete(`/students/${row.student_id}/documents/${row.id}/`)
+      await apiClient.delete(`/students/${deleteTarget.student_id}/documents/${deleteTarget.id}/`)
+      setDeleteTarget(null)
       setRefreshKey((prev) => prev + 1)
-    } catch {
-      setError('Unable to delete document.')
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to delete document.'))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -156,12 +165,10 @@ export default function StudentsDocumentsPage() {
           date_to: dateTo || undefined,
         },
       })
-      const contentDisposition = response.headers?.['content-disposition'] as string | undefined
       const defaultName = format === 'csv' ? 'students_documents_report.csv' : 'students_documents_report.pdf'
-      const filename = extractFilename(contentDisposition, defaultName)
-      downloadBlob(response.data as Blob, filename)
-    } catch {
-      setDownloadError(`Unable to export ${format.toUpperCase()} documents report.`)
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, defaultName)
+    } catch (err) {
+      setDownloadError(extractApiErrorMessage(err, `Unable to export ${format.toUpperCase()} documents report.`))
     } finally {
       setIsDownloading(false)
     }
@@ -307,7 +314,7 @@ export default function StudentsDocumentsPage() {
                   <td className="px-4 py-3">
                     <button
                       className="text-xs text-rose-200"
-                      onClick={() => handleDelete(row)}
+                      onClick={() => setDeleteTarget(row)}
                     >
                       Delete
                     </button>
@@ -408,6 +415,22 @@ export default function StudentsDocumentsPage() {
           </div>
         </div>
       ) : null}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete Document"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.file_name}" for ${deleteTarget.student_name}? This cannot be undone.`
+            : 'Delete this document?'
+        }
+        confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
+        cancelLabel="Cancel"
+        onCancel={() => {
+          if (!isDeleting) setDeleteTarget(null)
+        }}
+        onConfirm={() => void handleDelete()}
+        isProcessing={isDeleting}
+      />
     </div>
   )
 }

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type AttendanceRow = { id: number; staff: number; staff_name: string; date: string; status: string; clock_in: string | null; clock_out: string | null }
@@ -66,17 +68,12 @@ export default function StaffAttendancePage() {
         params: { month, year },
         responseType: 'blob',
       })
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `staff_attendance_${year}_${month}.csv`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to export attendance CSV.')
+      downloadFromResponse(
+        response as { data: Blob; headers?: Record<string, unknown> },
+        `staff_attendance_${year}_${month}.csv`,
+      )
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to export attendance CSV.'))
     }
   }
 

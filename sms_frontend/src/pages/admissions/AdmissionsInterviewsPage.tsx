@@ -15,9 +15,14 @@ type Interview = {
   feedback?: string
 }
 
+const interviewTypeOptions = ['In-person', 'Phone', 'Video']
+const interviewStatusOptions = ['Scheduled', 'Completed', 'Cancelled', 'No-show']
+const MAX_SCORE = 9999.99
+
 export default function AdmissionsInterviewsPage() {
   const [applications, setApplications] = useState<Application[]>([])
   const [rows, setRows] = useState<Interview[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
@@ -35,7 +40,26 @@ export default function AdmissionsInterviewsPage() {
     location: '',
   })
 
+  const toDatetimeLocalValue = (value?: string) => {
+    if (!value) return ''
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) {
+      const fallback = value.replace(' ', 'T')
+      return fallback.length >= 16 ? fallback.slice(0, 16) : fallback
+    }
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  }
+
+  const toApiDateTime = (value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) return ''
+    if (trimmed.length === 16) return `${trimmed}:00`
+    return trimmed
+  }
+
   const load = async () => {
+    setIsLoading(true)
     setError(null)
     try {
       const interviewParams = statusFilter !== 'all' ? { status: statusFilter } : undefined
@@ -55,7 +79,7 @@ export default function AdmissionsInterviewsPage() {
       loaded.forEach((row) => {
         feedbackSeed[row.id] = row.feedback ?? ''
         scoreSeed[row.id] = row.score != null ? String(row.score) : ''
-        dateSeed[row.id] = row.interview_date ? row.interview_date.slice(0, 16) : ''
+        dateSeed[row.id] = toDatetimeLocalValue(row.interview_date)
         typeSeed[row.id] = row.interview_type
         locationSeed[row.id] = row.location ?? ''
         statusSeed[row.id] = row.status
@@ -71,8 +95,11 @@ export default function AdmissionsInterviewsPage() {
       if (detail?.error) {
         setError(String(detail.error))
       } else {
-      setError('Unable to load interviews data.')
+        setError('Unable to load interviews data.')
       }
+      setFlash(null)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -80,6 +107,12 @@ export default function AdmissionsInterviewsPage() {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter])
+
+  useEffect(() => {
+    if (!flash) return
+    const timer = window.setTimeout(() => setFlash(null), 3000)
+    return () => window.clearTimeout(timer)
+  }, [flash])
 
   const formatDateTime = (value?: string) => {
     if (!value) return '--'
@@ -108,12 +141,20 @@ export default function AdmissionsInterviewsPage() {
 
   const create = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (!form.application) {
+      setError('Select an application first.')
+      return
+    }
     if (!form.interview_date || !form.interview_time) {
       setError('Interview date and time are required.')
       return
     }
+    if (!interviewTypeOptions.includes(form.interview_type)) {
+      setError('Invalid interview type selected.')
+      return
+    }
     try {
-      const interviewDateTime = `${form.interview_date}T${form.interview_time}:00`
+      const interviewDateTime = toApiDateTime(`${form.interview_date}T${form.interview_time}`)
       await apiClient.post('/admissions/interviews/', {
         application: Number(form.application),
         interview_date: interviewDateTime,
@@ -133,10 +174,19 @@ export default function AdmissionsInterviewsPage() {
       } else {
         setError('Unable to create interview.')
       }
+      setFlash(null)
     }
   }
 
   const markCompleted = async (row: Interview) => {
+    const scoreValue = scoreById[row.id]
+    if (scoreValue !== '') {
+      const parsed = Number(scoreValue)
+      if (Number.isNaN(parsed) || parsed < 0 || parsed > MAX_SCORE) {
+        setError(`Interview score must be between 0 and ${MAX_SCORE}.`)
+        return
+      }
+    }
     try {
       await apiClient.post(`/admissions/interviews/${row.id}/feedback/`, {
         feedback: feedbackById[row.id] || 'Completed from dashboard.',
@@ -152,10 +202,19 @@ export default function AdmissionsInterviewsPage() {
       } else {
         setError('Unable to update interview.')
       }
+      setFlash(null)
     }
   }
 
   const saveFeedback = async (row: Interview) => {
+    const scoreValue = scoreById[row.id]
+    if (scoreValue !== '') {
+      const parsed = Number(scoreValue)
+      if (Number.isNaN(parsed) || parsed < 0 || parsed > MAX_SCORE) {
+        setError(`Interview score must be between 0 and ${MAX_SCORE}.`)
+        return
+      }
+    }
     try {
       await apiClient.post(`/admissions/interviews/${row.id}/feedback/`, {
         feedback: feedbackById[row.id] || undefined,
@@ -170,6 +229,7 @@ export default function AdmissionsInterviewsPage() {
       } else {
         setError('Unable to save interview feedback.')
       }
+      setFlash(null)
     }
   }
 
@@ -179,11 +239,16 @@ export default function AdmissionsInterviewsPage() {
       setError('Interview date and time are required.')
       return
     }
+    const nextType = typeById[row.id] || row.interview_type
+    if (!interviewTypeOptions.includes(nextType)) {
+      setError('Invalid interview type selected.')
+      return
+    }
     try {
       setError(null)
       await apiClient.patch(`/admissions/interviews/${row.id}/`, {
-        interview_date: scheduleValue,
-        interview_type: typeById[row.id] || row.interview_type,
+        interview_date: toApiDateTime(scheduleValue),
+        interview_type: nextType,
         location: locationById[row.id] || undefined,
       })
       setFlash('Interview schedule updated.')
@@ -193,14 +258,20 @@ export default function AdmissionsInterviewsPage() {
       if (detail?.interview_date?.[0]) setError(String(detail.interview_date[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to update interview schedule.')
+      setFlash(null)
     }
   }
 
   const saveStatus = async (row: Interview) => {
+    const nextStatus = statusById[row.id] || row.status
+    if (!interviewStatusOptions.includes(nextStatus)) {
+      setError('Invalid interview status selected.')
+      return
+    }
     try {
       setError(null)
       await apiClient.patch(`/admissions/interviews/${row.id}/`, {
-        status: statusById[row.id] || row.status,
+        status: nextStatus,
       })
       setFlash('Interview status updated.')
       await load()
@@ -209,6 +280,7 @@ export default function AdmissionsInterviewsPage() {
       if (detail?.status?.[0]) setError(String(detail.status[0]))
       else if (detail?.error) setError(String(detail.error))
       else setError('Unable to update interview status.')
+      setFlash(null)
     }
   }
 
@@ -310,6 +382,7 @@ export default function AdmissionsInterviewsPage() {
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
+        {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading interviews...</p> : null}
         <div className="overflow-x-auto rounded-2xl border border-slate-800">
           <table className="w-full min-w-[1120px] text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">

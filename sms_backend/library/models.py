@@ -105,6 +105,13 @@ class LibraryMember(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="library_memberships")
+    student = models.OneToOneField(
+        "school.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="library_member_profile",
+    )
     member_id = models.CharField(max_length=60, unique=True)
     member_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="Student")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Active")
@@ -236,3 +243,67 @@ class FineRecord(models.Model):
     class Meta:
         ordering = ["-created_at", "-id"]
 
+
+class InventoryAudit(models.Model):
+    STATUS_CHOICES = [
+        ("In Progress", "In Progress"),
+        ("Completed", "Completed"),
+    ]
+
+    audit_date = models.DateField(default=timezone.now)
+    conducted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="library_inventory_audits",
+    )
+    total_expected = models.PositiveIntegerField(default=0)
+    total_found = models.PositiveIntegerField(default=0)
+    missing_count = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="In Progress")
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-audit_date", "-id"]
+
+
+class AcquisitionRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+        ("Ordered", "Ordered"),
+        ("Received", "Received"),
+    ]
+
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="library_acquisition_requests",
+    )
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255, blank=True)
+    isbn = models.CharField(max_length=40, blank=True)
+    quantity = models.PositiveIntegerField(default=1)
+    justification = models.TextField(blank=True)
+    estimated_cost = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="library_acquisition_requests_approved",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]

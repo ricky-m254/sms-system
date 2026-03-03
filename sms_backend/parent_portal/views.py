@@ -5,12 +5,14 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.db.models import Avg, Q, Sum
+from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from communication.models import Announcement, Notification, NotificationPreference
+from library.models import CirculationTransaction, LibraryMember
 from school.models import (
     AssessmentGrade,
     Assignment,
@@ -75,6 +77,17 @@ def _active_enrollment(student):
     if not student:
         return None
     return Enrollment.objects.filter(student=student, is_active=True, status="Active").order_by("-id").first()
+
+
+def _library_member_ids_for_child(child):
+    if not child:
+        return []
+    candidates = {
+        child.admission_number,
+        f"LIB-{child.id}",
+        f"LIB-{child.id:03d}",
+    }
+    return [value for value in candidates if value]
 
 
 def _kpis(child):
@@ -363,7 +376,20 @@ class ParentFinanceInvoiceDownloadView(ParentPortalAccessMixin, APIView):
         row = Invoice.objects.filter(id=invoice_id, student=child, is_active=True).first() if child else None
         if not row:
             return Response({"error": "Invoice not found."}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"message": "Invoice PDF endpoint placeholder.", "invoice_id": row.id})
+        payload = [
+            "field,value",
+            f"invoice_id,{row.id}",
+            f"student_id,{row.student_id}",
+            f"invoice_date,{row.invoice_date}",
+            f"due_date,{row.due_date}",
+            f"status,{row.status}",
+            f"total_amount,{row.total_amount}",
+            f"amount_paid,{row.amount_paid}",
+            f"balance_due,{row.balance_due}",
+        ]
+        response = HttpResponse("\n".join(payload), content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="invoice_{row.id}.csv"'
+        return response
 
 
 class ParentFinancePaymentsView(ParentPortalAccessMixin, APIView):
@@ -393,7 +419,20 @@ class ParentFinanceReceiptView(ParentPortalAccessMixin, APIView):
         row = Payment.objects.filter(id=payment_id, student=child, is_active=True).first() if child else None
         if not row:
             return Response({"error": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"message": "Receipt endpoint placeholder.", "payment_id": row.id})
+        payload = [
+            "field,value",
+            f"payment_id,{row.id}",
+            f"student_id,{row.student_id}",
+            f"payment_date,{row.payment_date}",
+            f"amount,{row.amount}",
+            f"payment_method,{row.payment_method}",
+            f"reference_number,{row.reference_number}",
+            f"receipt_number,{row.receipt_number or ''}",
+            f"notes,{(row.notes or '').replace(',', ' ')}",
+        ]
+        response = HttpResponse("\n".join(payload), content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="receipt_{row.id}.csv"'
+        return response
 
 
 class ParentFinancePayView(ParentPortalAccessMixin, APIView):
@@ -518,7 +557,23 @@ class ParentTimetableView(ParentPortalAccessMixin, APIView):
 
 class ParentTimetableExportView(ParentPortalAccessMixin, APIView):
     def get(self, request):
-        return Response({"message": "Timetable export placeholder endpoint."})
+        child, _ = _pick_child(request)
+        enrollment = _active_enrollment(child)
+        if not child or not enrollment:
+            return Response({"error": "No linked child or active enrollment."}, status=status.HTTP_404_NOT_FOUND)
+        rows = (
+            AssessmentGrade.objects.filter(student=child, is_active=True)
+            .select_related("assessment", "assessment__subject")
+            .order_by("-assessment__date")[:200]
+        )
+        payload = ["assessment,subject,date,category"]
+        payload.extend(
+            f"{r.assessment.name},{r.assessment.subject.name},{r.assessment.date},{r.assessment.category}"
+            for r in rows
+        )
+        response = HttpResponse("\n".join(payload), content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="timetable_{child.id}.csv"'
+        return response
 
 
 class ParentCalendarView(ParentPortalAccessMixin, APIView):
@@ -585,12 +640,73 @@ class ParentEventRsvpView(ParentPortalAccessMixin, APIView):
 
 class ParentLibraryBorrowingsView(ParentPortalAccessMixin, APIView):
     def get(self, request):
-        return Response([])
+        child, _ = _pick_child(request)
+        if not child:
+            return Response([])
+        member_ids = _library_member_ids_for_child(child)
+        member_lookup = set(
+            LibraryMember.objects.filter(member_type="Student", member_id__in=member_ids, is_active=True).values_list("id", flat=True)
+        )
+        if not member_lookup:
+            return Response([])
+        rows = (
+            CirculationTransaction.objects.filter(
+                member_id__in=member_lookup,
+                is_active=True,
+                return_date__isnull=True,
+                transaction_type__in=["Issue", "Renew"],
+            )
+            .select_related("copy", "copy__resource", "member")
+            .order_by("-issue_date", "-id")[:200]
+        )
+        return Response(
+            [
+                {
+                    "id": row.id,
+                    "member_id": row.member.member_id,
+                    "resource_title": row.copy.resource.title,
+                    "accession_number": row.copy.accession_number,
+                    "issue_date": row.issue_date,
+                    "due_date": row.due_date,
+                    "renewal_count": row.renewal_count,
+                }
+                for row in rows
+            ]
+        )
 
 
 class ParentLibraryHistoryView(ParentPortalAccessMixin, APIView):
     def get(self, request):
-        return Response([])
+        child, _ = _pick_child(request)
+        if not child:
+            return Response([])
+        member_ids = _library_member_ids_for_child(child)
+        member_lookup = set(
+            LibraryMember.objects.filter(member_type="Student", member_id__in=member_ids, is_active=True).values_list("id", flat=True)
+        )
+        if not member_lookup:
+            return Response([])
+        rows = (
+            CirculationTransaction.objects.filter(member_id__in=member_lookup, is_active=True)
+            .select_related("copy", "copy__resource", "member")
+            .order_by("-issue_date", "-id")[:300]
+        )
+        return Response(
+            [
+                {
+                    "id": row.id,
+                    "member_id": row.member.member_id,
+                    "resource_title": row.copy.resource.title,
+                    "accession_number": row.copy.accession_number,
+                    "transaction_type": row.transaction_type,
+                    "issue_date": row.issue_date,
+                    "due_date": row.due_date,
+                    "return_date": row.return_date,
+                    "fine_amount": row.fine_amount,
+                }
+                for row in rows
+            ]
+        )
 
 
 class ParentProfileView(ParentPortalAccessMixin, APIView):

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { useAuthStore } from '../../store/auth'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type InvoiceAdjustment = {
   id: number
@@ -16,21 +17,6 @@ type InvoiceAdjustment = {
   reviewed_by_name?: string
   review_notes?: string
   created_at: string
-}
-
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
 }
 
 const formatMoney = (value: number | string | undefined) =>
@@ -115,7 +101,7 @@ export default function FinanceAdjustmentsPage() {
         } else if (status === 404) {
           setError('Adjustments endpoint not found (404). Verify tenant routing.')
         } else {
-          setError(extractApiError(err, 'Unable to load adjustments. Please try again.'))
+          setError(extractApiErrorMessage(err, 'Unable to load adjustments. Please try again.'))
         }
       }
     } finally {
@@ -208,7 +194,7 @@ export default function FinanceAdjustmentsPage() {
       setActionMessage(`Adjustment ${action}d.`)
       await loadData()
     } catch (err) {
-      setActionMessage(extractApiError(err, `Unable to ${action} adjustment.`))
+      setActionMessage(extractApiErrorMessage(err, `Unable to ${action} adjustment.`))
     } finally {
       setReviewingId(null)
     }
@@ -310,7 +296,7 @@ export default function FinanceAdjustmentsPage() {
               }}
             />
             <input
-              className="w-28 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-28"
               placeholder="Invoice #"
               value={invoiceFilter}
               onChange={(event) => {
@@ -322,7 +308,7 @@ export default function FinanceAdjustmentsPage() {
               type="number"
               min="0"
               step="0.01"
-              className="w-24 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-24"
               placeholder="Min"
               value={minAmount}
               onChange={(event) => {
@@ -334,7 +320,7 @@ export default function FinanceAdjustmentsPage() {
               type="number"
               min="0"
               step="0.01"
-              className="w-24 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-24"
               placeholder="Max"
               value={maxAmount}
               onChange={(event) => {
@@ -344,7 +330,7 @@ export default function FinanceAdjustmentsPage() {
             />
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -353,7 +339,7 @@ export default function FinanceAdjustmentsPage() {
             />
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -361,7 +347,7 @@ export default function FinanceAdjustmentsPage() {
               }}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value)
@@ -374,7 +360,7 @@ export default function FinanceAdjustmentsPage() {
               <option value="REJECTED">REJECTED</option>
             </select>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={() => {
                 setQuery('')
                 setInvoiceFilter('')
@@ -389,13 +375,14 @@ export default function FinanceAdjustmentsPage() {
               Reset
             </button>
             <button
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 sm:w-auto"
               onClick={() => navigate('/modules/finance/adjustments/new')}
             >
               Create adjustment
             </button>
           </div>
         </div>
+        <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
         {isServerPaginated ? (
           <p className="mt-3 text-xs text-slate-500">
             Filters and summaries apply to the current page only while pagination is enabled.

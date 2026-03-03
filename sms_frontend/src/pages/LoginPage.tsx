@@ -22,6 +22,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const setTokens = useAuthStore((state) => state.setTokens)
   const setTenant = useAuthStore((state) => state.setTenant)
+  const setAuthMode = useAuthStore((state) => state.setAuthMode)
   const setUsername = useAuthStore((state) => state.setUsername)
   const setRole = useAuthStore((state) => state.setRole)
   const setPermissions = useAuthStore((state) => state.setPermissions)
@@ -40,6 +41,7 @@ export default function LoginPage() {
 
     try {
       setTenant(tenantId.trim() || null)
+      setAuthMode('tenant')
       setUsername(username.trim())
       const response = await apiClient.post<LoginResponse>('/auth/login/', {
         username: username.trim(),
@@ -134,6 +136,16 @@ export default function LoginPage() {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
+          <p className="mt-4 text-center text-xs text-slate-400">
+            Platform admin?{' '}
+            <button
+              type="button"
+              className="text-emerald-300 hover:text-emerald-200"
+              onClick={() => navigate('/platform/login')}
+            >
+              Use Super Admin login
+            </button>
+          </p>
         </div>
       </div>
     </div>

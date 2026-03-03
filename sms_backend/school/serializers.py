@@ -25,6 +25,7 @@ class GuardianSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'relationship', 'phone', 'email', 'is_active']
 
 class StudentSerializer(serializers.ModelSerializer): 
+    admission_number = serializers.CharField(required=False, allow_blank=True)
     guardians = GuardianSerializer(many=True, read_only=True)
     uploaded_documents = serializers.SerializerMethodField()
     class Meta:
@@ -62,7 +63,21 @@ class SchoolProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SchoolProfile
-        fields = ['id', 'school_name', 'logo', 'logo_url', 'address', 'phone', 'is_active']
+        fields = [
+            'id',
+            'school_name',
+            'logo',
+            'logo_url',
+            'address',
+            'phone',
+            'currency',
+            'tax_percentage',
+            'receipt_prefix',
+            'admission_number_mode',
+            'admission_number_prefix',
+            'admission_number_padding',
+            'is_active',
+        ]
         read_only_fields = ['id', 'logo_url']
 
     def get_logo_url(self, obj):

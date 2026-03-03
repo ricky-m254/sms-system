@@ -435,7 +435,7 @@ class AcademicsClassManagementTests(TenantTestBase):
         promote_response = AcademicEnrollmentViewSet.as_view({"post": "bulk_promote"})(promote_request)
         self.assertEqual(promote_response.status_code, 200)
         self.assertEqual(promote_response.data["promoted"], 1)
-        self.assertEqual(Enrollment.objects.filter(term=self.term2).count(), 1)
+        self.assertEqual(Enrollment.objects.filter(term_id=self.term2.id).count(), 1)
 
 
 class AcademicsGradebookTests(TenantTestBase):

@@ -7,6 +7,11 @@ from decimal import Decimal
 # 1. CORE ADMINISTRATION
 # ==========================================
 class SchoolProfile(models.Model):
+    ADMISSION_NUMBER_MODE_CHOICES = [
+        ("AUTO", "Auto generate"),
+        ("MANUAL", "Manual entry"),
+    ]
+
     school_name = models.CharField(max_length=255)
     logo = models.ImageField(upload_to='school_logos/', blank=True, null=True)
     address = models.TextField(blank=True)
@@ -16,6 +21,13 @@ class SchoolProfile(models.Model):
     currency = models.CharField(max_length=10, default='KES', help_text="e.g. KES, USD")
     tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     receipt_prefix = models.CharField(max_length=10, default='RCT-')
+    admission_number_mode = models.CharField(
+        max_length=20,
+        choices=ADMISSION_NUMBER_MODE_CHOICES,
+        default="AUTO",
+    )
+    admission_number_prefix = models.CharField(max_length=20, default="ADM-")
+    admission_number_padding = models.PositiveIntegerField(default=4)
     
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

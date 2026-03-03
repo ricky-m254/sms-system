@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 const pipelineStages = [
   'Inquiry',
@@ -108,6 +109,8 @@ export default function StudentsAdmissionsPage() {
   const [isSavingMeta, setIsSavingMeta] = useState(false)
   const [uploadingDocs, setUploadingDocs] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [pendingDocumentDeleteId, setPendingDocumentDeleteId] = useState<number | null>(null)
+  const [isDeletingDocument, setIsDeletingDocument] = useState(false)
   const [enrollForm, setEnrollForm] = useState({
     admission_number: '',
     school_class: '',
@@ -515,14 +518,23 @@ export default function StudentsAdmissionsPage() {
 
   const handleApplicationDocumentDelete = async (docId: number) => {
     if (!selectedApplication) return
-    const confirmed = window.confirm('Delete this document?')
-    if (!confirmed) return
+    setPendingDocumentDeleteId(docId)
+  }
+
+  const confirmApplicationDocumentDelete = async () => {
+    if (!selectedApplication || pendingDocumentDeleteId === null) return
+    setIsDeletingDocument(true)
     try {
-      await apiClient.delete(`/admissions/applications/${selectedApplication.id}/documents/${docId}/`)
+      await apiClient.delete(
+        `/admissions/applications/${selectedApplication.id}/documents/${pendingDocumentDeleteId}/`,
+      )
       setFlash('Document removed.')
       setRefreshKey((prev) => prev + 1)
     } catch {
       setFormError('Unable to delete document.')
+    } finally {
+      setIsDeletingDocument(false)
+      setPendingDocumentDeleteId(null)
     }
   }
 
@@ -984,6 +996,17 @@ export default function StudentsAdmissionsPage() {
         </div>
       ) : null}
 
+      <ConfirmDialog
+        open={pendingDocumentDeleteId !== null}
+        title="Delete application document"
+        description="This document will be removed from the application. Continue?"
+        confirmLabel="Confirm delete"
+        isProcessing={isDeletingDocument}
+        error={null}
+        onConfirm={() => void confirmApplicationDocumentDelete()}
+        onCancel={() => setPendingDocumentDeleteId(null)}
+      />
+
       {selectedApplication ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
           <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
@@ -1130,9 +1153,9 @@ export default function StudentsAdmissionsPage() {
               </button>
               <Link
                 className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
-                to="/modules/admissions/decisions"
+                to="/settings/students"
               >
-                Open Decisions
+                Open Student Settings
               </Link>
             </div>
 

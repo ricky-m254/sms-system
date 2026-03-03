@@ -1,6 +1,11 @@
+import hashlib
+import hmac
+import json
+
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.test import TestCase
+from django.utils import timezone
 from django_tenants.utils import schema_context
 from rest_framework.test import APIRequestFactory, force_authenticate
 
@@ -13,12 +18,14 @@ from .views import (
     CommunicationMessageViewSet,
     ConversationViewSet,
     EmailCampaignViewSet,
+    EmailWebhookView,
     NotificationViewSet,
     PushDeviceViewSet,
     PushSendView,
     SmsWebhookView,
     SmsSendView,
 )
+from .models import EmailRecipient
 
 User = get_user_model()
 
@@ -217,3 +224,120 @@ class CommunicationModuleTests(TenantTestBase):
         )
         invalid_response = SmsWebhookView.as_view()(invalid_sms_webhook)
         self.assertEqual(invalid_response.status_code, 403)
+
+    @override_settings(
+        COMMUNICATION_WEBHOOK_SHARED_SECRET="test-secret",
+        COMMUNICATION_WEBHOOK_TOKEN="",
+        COMMUNICATION_WEBHOOK_REQUIRE_TIMESTAMP=True,
+        COMMUNICATION_WEBHOOK_MAX_AGE_SECONDS=300,
+    )
+    def test_webhook_signature_with_timestamp_and_strict_status_validation(self):
+        send_sms = self.factory.post(
+            "/api/communication/sms/send/",
+            {"phones": ["+1555010003"], "message": "Signature test", "channel": "SMS"},
+            format="json",
+        )
+        force_authenticate(send_sms, user=self.user)
+        sms_response = SmsSendView.as_view()(send_sms)
+        self.assertEqual(sms_response.status_code, 201)
+        provider_id = sms_response.data[0]["provider_id"]
+
+        sms_payload = {"provider_id": provider_id, "status": "delivered"}
+        sms_payload_json = json.dumps(sms_payload, separators=(",", ":"))
+        sms_payload_bytes = sms_payload_json.encode("utf-8")
+        timestamp = str(int(timezone.now().timestamp()))
+        signature = hmac.new(
+            b"test-secret",
+            f"{timestamp}.{sms_payload_json}".encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+        sms_webhook = self.factory.post(
+            "/api/communication/webhooks/sms/",
+            sms_payload_json,
+            content_type="application/json",
+            HTTP_X_WEBHOOK_TIMESTAMP=timestamp,
+            HTTP_X_WEBHOOK_SIGNATURE=signature,
+        )
+        sms_webhook_response = SmsWebhookView.as_view()(sms_webhook)
+        self.assertEqual(sms_webhook_response.status_code, 200)
+
+        invalid_status_payload = {"provider_id": provider_id, "status": "mystery"}
+        invalid_status_json = json.dumps(invalid_status_payload, separators=(",", ":"))
+        invalid_status_bytes = invalid_status_json.encode("utf-8")
+        invalid_status_sig = hmac.new(
+            b"test-secret",
+            f"{timestamp}.{invalid_status_json}".encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+        invalid_status_webhook = self.factory.post(
+            "/api/communication/webhooks/sms/",
+            invalid_status_json,
+            content_type="application/json",
+            HTTP_X_WEBHOOK_TIMESTAMP=timestamp,
+            HTTP_X_WEBHOOK_SIGNATURE=invalid_status_sig,
+        )
+        invalid_status_response = SmsWebhookView.as_view()(invalid_status_webhook)
+        self.assertEqual(invalid_status_response.status_code, 400)
+
+        create_campaign = self.factory.post(
+            "/api/communication/email-campaigns/",
+            {"title": "Webhook", "subject": "Subject", "body_text": "Body"},
+            format="json",
+        )
+        force_authenticate(create_campaign, user=self.user)
+        campaign_response = EmailCampaignViewSet.as_view({"post": "create"})(create_campaign)
+        self.assertEqual(campaign_response.status_code, 201)
+        campaign_id = campaign_response.data["id"]
+
+        send_campaign = self.factory.post(
+            f"/api/communication/email-campaigns/{campaign_id}/send/",
+            {"emails": ["guardian@school.local"]},
+            format="json",
+        )
+        force_authenticate(send_campaign, user=self.user)
+        send_response = EmailCampaignViewSet.as_view({"post": "send"})(send_campaign, pk=campaign_id)
+        self.assertEqual(send_response.status_code, 200)
+
+        provider_id_email = EmailRecipient.objects.filter(campaign_id=campaign_id).order_by("-id").values_list("provider_id", flat=True).first()
+        self.assertTrue(provider_id_email)
+        email_payload = {"provider_id": provider_id_email, "status": "open"}
+        email_payload_json = json.dumps(email_payload, separators=(",", ":"))
+        email_payload_bytes = email_payload_json.encode("utf-8")
+        email_sig = hmac.new(
+            b"test-secret",
+            f"{timestamp}.{email_payload_json}".encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+        email_webhook = self.factory.post(
+            "/api/communication/webhooks/email/",
+            email_payload_json,
+            content_type="application/json",
+            HTTP_X_WEBHOOK_TIMESTAMP=timestamp,
+            HTTP_X_WEBHOOK_SIGNATURE=email_sig,
+        )
+        email_webhook_response = EmailWebhookView.as_view()(email_webhook)
+        self.assertEqual(email_webhook_response.status_code, 200)
+
+    @override_settings(
+        COMMUNICATION_WEBHOOK_TOKEN="",
+        COMMUNICATION_WEBHOOK_SHARED_SECRET="",
+        COMMUNICATION_WEBHOOK_STRICT_MODE=False,
+    )
+    def test_webhook_allows_unconfigured_verification_in_non_strict_mode(self):
+        send_sms = self.factory.post(
+            "/api/communication/sms/send/",
+            {"phones": ["+1555010004"], "message": "Non-strict webhook test", "channel": "SMS"},
+            format="json",
+        )
+        force_authenticate(send_sms, user=self.user)
+        sms_response = SmsSendView.as_view()(send_sms)
+        self.assertEqual(sms_response.status_code, 201)
+        provider_id = sms_response.data[0]["provider_id"]
+
+        sms_webhook = self.factory.post(
+            "/api/communication/webhooks/sms/",
+            {"provider_id": provider_id, "status": "Delivered"},
+            format="json",
+        )
+        webhook_response = SmsWebhookView.as_view()(sms_webhook)
+        self.assertEqual(webhook_response.status_code, 200)

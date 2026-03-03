@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type Employee = {
   id: number
@@ -176,16 +178,12 @@ export default function HrEmployeeProfilePage() {
       const response = await apiClient.get(`/hr/documents/${documentId}/download/`, {
         responseType: 'blob',
       })
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
-      const anchor = document.createElement('a')
-      anchor.href = blobUrl
-      anchor.download = fileName || `document-${documentId}`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      window.URL.revokeObjectURL(blobUrl)
-    } catch {
-      setError('Failed to download document.')
+      downloadFromResponse(
+        response as { data: Blob; headers?: Record<string, unknown> },
+        fileName || `document-${documentId}`,
+      )
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Failed to download document.'))
     } finally {
       setWorking(false)
     }

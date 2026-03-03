@@ -4,6 +4,7 @@ djangorestframework-simplejwt==5.3.0
 
 # Multi-tenancy
 django-tenants==3.5.0
+django-cors-headers==4.4.0
 
 # Database
 psycopg2-binary==2.9.9
@@ -11,5 +12,5 @@ psycopg2-binary==2.9.9
 # Environment variables
 python-dotenv==1.0.0
 
-# Production server (VERY IMPORTANT)
+# Production server
 gunicorn==21.2.0

@@ -1,6 +1,7 @@
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
-import { downloadBlob, extractFilename } from '../../utils/download'
+import { downloadBlob, downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type GatewayTx = {
   id: number
@@ -41,21 +42,6 @@ const asList = <T,>(payload: ApiList<T>): T[] => (Array.isArray(payload) ? paylo
 const money = (v: string | number | undefined) =>
   Number(v ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
-}
-
 export default function FinanceReconciliationPage() {
   const [transactions, setTransactions] = useState<GatewayTx[]>([])
   const [events, setEvents] = useState<WebhookEvent[]>([])
@@ -82,7 +68,7 @@ export default function FinanceReconciliationPage() {
       setEvents(asList(evRes.data))
       setLines(asList(lineRes.data))
     } catch (err) {
-      setError(extractApiError(err, 'Unable to load reconciliation workspace.'))
+      setError(extractApiErrorMessage(err, 'Unable to load reconciliation workspace.'))
     } finally {
       setBusy(false)
     }
@@ -102,7 +88,7 @@ export default function FinanceReconciliationPage() {
       setMessage(`Line ${action} completed.`)
       await loadData()
     } catch (err) {
-      setError(extractApiError(err, `Line ${action} failed.`))
+      setError(extractApiErrorMessage(err, `Line ${action} failed.`))
     } finally {
       setActingLine(null)
     }
@@ -118,7 +104,7 @@ export default function FinanceReconciliationPage() {
       setMessage('Transaction marked reconciled.')
       await loadData()
     } catch (err) {
-      setError(extractApiError(err, 'Unable to mark transaction reconciled.'))
+      setError(extractApiErrorMessage(err, 'Unable to mark transaction reconciled.'))
     } finally {
       setActingTxId(null)
     }
@@ -176,11 +162,9 @@ export default function FinanceReconciliationPage() {
   const exportLinesCsv = async () => {
     try {
       const response = await apiClient.get('/finance/reconciliation/bank-lines/export-csv/', { responseType: 'blob' })
-      const contentDisposition = response.headers?.['content-disposition'] as string | undefined
-      const filename = extractFilename(contentDisposition, 'finance_bank_statement_lines.csv')
-      downloadBlob(response.data as Blob, filename)
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, 'finance_bank_statement_lines.csv')
     } catch (err) {
-      setError(extractApiError(err, 'Unable to export bank statement lines CSV.'))
+      setError(extractApiErrorMessage(err, 'Unable to export bank statement lines CSV.'))
     }
   }
 
@@ -200,7 +184,7 @@ export default function FinanceReconciliationPage() {
       setMessage(`Import completed. Created=${data.created ?? 0}, Failed=${data.failed ?? 0}.`)
       await loadData()
     } catch (err) {
-      setError(extractApiError(err, 'Unable to import CSV. Ensure columns include statement_date and amount.'))
+      setError(extractApiErrorMessage(err, 'Unable to import CSV. Ensure columns include statement_date and amount.'))
     } finally {
       setIsImporting(false)
       event.target.value = ''

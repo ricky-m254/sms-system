@@ -407,7 +407,7 @@ export default function FinanceReportsPage() {
                 ) : null}
                 {report.exportMode === 'none' ? (
                   <span className="rounded-lg border border-slate-800 px-3 py-1 text-xs text-slate-500">
-                    Export not yet available
+                    Planned: export from accounting pack
                   </span>
                 ) : null}
               </div>

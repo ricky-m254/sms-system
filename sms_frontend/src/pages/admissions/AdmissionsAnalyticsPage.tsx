@@ -16,10 +16,12 @@ type SourceRow = {
 export default function AdmissionsAnalyticsPage() {
   const [funnel, setFunnel] = useState<FunnelResponse | null>(null)
   const [sources, setSources] = useState<SourceRow[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
+      setIsLoading(true)
       setError(null)
       try {
         const [funnelRes, sourcesRes] = await Promise.all([
@@ -30,6 +32,8 @@ export default function AdmissionsAnalyticsPage() {
         setSources(sourcesRes.data?.sources ?? [])
       } catch {
         setError('Unable to load admissions analytics.')
+      } finally {
+        setIsLoading(false)
       }
     }
     load()
@@ -45,6 +49,11 @@ export default function AdmissionsAnalyticsPage() {
       {error ? (
         <section className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
           {error}
+        </section>
+      ) : null}
+      {isLoading ? (
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
+          Loading analytics...
         </section>
       ) : null}
 

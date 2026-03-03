@@ -10,9 +10,26 @@ type Fine = {
   status: string
 }
 
+type FinePosting = {
+  id: number
+  entry_date: string
+  memo: string
+  source_type: string
+  entry_key: string
+  lines: Array<{
+    account_code: string
+    account_name: string
+    debit: string
+    credit: string
+    description: string
+  }>
+}
+
 export default function LibraryFinesPage() {
   const [rows, setRows] = useState<Fine[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [selectedFineId, setSelectedFineId] = useState<number | null>(null)
+  const [postings, setPostings] = useState<FinePosting[]>([])
 
   const load = async () => {
     try {
@@ -43,6 +60,17 @@ export default function LibraryFinesPage() {
       await load()
     } catch {
       setError('Fine waiver failed.')
+    }
+  }
+
+  const loadPostings = async (id: number) => {
+    try {
+      const response = await apiClient.get<FinePosting[]>(`/library/fines/${id}/finance-postings/`)
+      setSelectedFineId(id)
+      setPostings(response.data ?? [])
+      setError(null)
+    } catch {
+      setError('Unable to load finance postings for this fine.')
     }
   }
 
@@ -90,6 +118,12 @@ export default function LibraryFinesPage() {
                       >
                         Waive
                       </button>
+                      <button
+                        className="rounded-lg border border-slate-600 px-2 py-1 text-xs text-slate-200"
+                        onClick={() => loadPostings(row.id)}
+                      >
+                        Finance
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -105,7 +139,60 @@ export default function LibraryFinesPage() {
           </table>
         </div>
       </section>
+
+      {selectedFineId ? (
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-slate-200">Finance Postings for Fine #{selectedFineId}</h2>
+            <button
+              className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300"
+              onClick={() => {
+                setSelectedFineId(null)
+                setPostings([])
+              }}
+            >
+              Close
+            </button>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-slate-400">
+                <tr>
+                  <th className="px-2 py-2">Date</th>
+                  <th className="px-2 py-2">Type</th>
+                  <th className="px-2 py-2">Memo</th>
+                  <th className="px-2 py-2">Lines</th>
+                </tr>
+              </thead>
+              <tbody>
+                {postings.map((entry) => (
+                  <tr key={entry.id} className="border-t border-slate-800 align-top">
+                    <td className="px-2 py-2">{entry.entry_date}</td>
+                    <td className="px-2 py-2">{entry.source_type}</td>
+                    <td className="px-2 py-2">{entry.memo}</td>
+                    <td className="px-2 py-2">
+                      <div className="space-y-1">
+                        {entry.lines.map((line, index) => (
+                          <div key={`${entry.id}-${line.account_code}-${index}`} className="text-xs text-slate-300">
+                            {line.account_code} {line.account_name} | D {line.debit} C {line.credit}
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!postings.length ? (
+                  <tr>
+                    <td className="px-2 py-4 text-slate-500" colSpan={4}>
+                      No finance postings recorded yet.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
     </div>
   )
 }
-

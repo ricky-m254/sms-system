@@ -1,23 +1,120 @@
-from django_tenants.middleware import TenantMainMiddleware
-from django.http import HttpResponse
+from django.conf import settings
+from django.db import connection
+from django.http import JsonResponse
+from django_tenants.middleware.main import TenantMainMiddleware
+from django_tenants.utils import get_public_schema_name
 
-from sms_backend.clients.models import Tenant
+from clients.models import Tenant
 
-class TenantHeaderMiddleware(TenantMainMiddleware):
+
+def _host_without_port(raw_host: str) -> str:
+    return (raw_host or "").split(":")[0].strip().lower()
+
+
+class TenantContextGuardMiddleware:
     """
-    Allows selecting tenant via Header (X-Tenant-ID)
-    if Subdomain resolution fails.
+    Validates tenant context integrity for API requests after TenantMainMiddleware:
+    - Optional required tenant header on tenant API routes.
+    - Header/schema mismatch rejection to prevent cross-tenant confusion.
     """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        guard_response = self.process_request(request)
+        if guard_response is not None:
+            return guard_response
+        return self.get_response(request)
+
     def process_request(self, request):
-        # 1. Check Header first (Frontend way)
-        tenant_id = request.headers.get('X-Tenant-ID')
-        if tenant_id:
-            # Force tenant by ID (You need to map ID to Schema in logic, 
-            # but for this specific architecture, we usually use subdomain)
-            # FOR SIMPLICITY in this debug:
-            # We will pass the SCHEMA NAME in the header, not ID.
-            request.tenant = Tenant.objects.get(schema_name=tenant_id)
-            return super().process_request(request)
-        
-        # 2. Fallback to Subdomain (Browser/Admin way)
-        return super().process_request(request)
+        """
+        Backward-compatible hook for tests/legacy code that still calls process_request directly.
+        Returns JsonResponse on guard violation, otherwise None.
+        """
+        api_prefix = getattr(settings, "TENANT_GUARD_API_PREFIX", "/api/")
+        if not request.path.startswith(api_prefix):
+            return None
+
+        tenant = getattr(request, "tenant", None)
+        tenant_schema = getattr(tenant, "schema_name", None)
+        public_schema = get_public_schema_name()
+        header_name = getattr(settings, "TENANT_HEADER_NAME", "X-Tenant-ID")
+        header_value = (request.headers.get(header_name) or "").strip()
+        host = _host_without_port(request.get_host())
+        is_local_dev_host = host in {"localhost", "127.0.0.1"}
+
+        # Header-first resolution for local/dev and audit paths:
+        # if a tenant header is provided while request resolved to public schema,
+        # switch the active tenant context explicitly.
+        if header_value and (not hasattr(request, "tenant") or tenant_schema in {None, public_schema}):
+            try:
+                resolved_tenant = Tenant.objects.get(schema_name=header_value)
+            except Tenant.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "detail": f"Unknown tenant schema in header '{header_name}'.",
+                        "header_schema": header_value,
+                    },
+                    status=400,
+                )
+            request.tenant = resolved_tenant
+            # Ensure DB connection uses the resolved tenant schema for downstream ORM usage.
+            connection.set_tenant(resolved_tenant)
+
+        tenant = getattr(request, "tenant", None)
+        tenant_schema = getattr(tenant, "schema_name", None)
+        is_public_request = not tenant_schema or tenant_schema == public_schema
+        if is_public_request:
+            return None
+
+        if getattr(settings, "TENANT_REQUIRE_HEADER", False) and not header_value:
+            return JsonResponse(
+                {
+                    "detail": (
+                        f"Missing tenant header '{header_name}' for tenant API request."
+                    ),
+                    "expected_schema": tenant_schema,
+                },
+                status=400,
+            )
+
+        if (
+            header_value
+            and getattr(settings, "TENANT_ENFORCE_HEADER_MATCH", True)
+            and header_value != tenant_schema
+        ):
+            return JsonResponse(
+                {
+                    "detail": "Tenant header does not match resolved tenant context.",
+                    "header_schema": header_value,
+                    "resolved_schema": tenant_schema,
+                    "host": request.get_host(),
+                },
+                status=400,
+            )
+
+        if getattr(settings, "TENANT_ENFORCE_HOST_MATCH", True):
+            tenant_domains = {
+                domain.lower()
+                for domain in tenant.domains.values_list("domain", flat=True)
+                if domain
+            }
+            if getattr(settings, "DEBUG", False) and is_local_dev_host:
+                return None
+            if tenant_domains and host and host not in tenant_domains:
+                return JsonResponse(
+                    {
+                        "detail": "Request host does not match resolved tenant domain.",
+                        "host": host,
+                        "resolved_schema": tenant_schema,
+                        "expected_domains": sorted(tenant_domains),
+                    },
+                    status=400,
+                )
+
+        return None
+
+
+# Backward compatibility for existing imports/tests.
+TenantHeaderMiddleware = TenantContextGuardMiddleware

@@ -16,9 +16,11 @@ import hashlib
 import hmac
 import json
 import csv
+import os
+import re
 
 from .models import (
-    Student, Invoice, Payment, Enrollment, AdmissionApplication,
+    Student, Guardian, Invoice, Payment, Enrollment, AdmissionApplication,
     FeeStructure, Expense, Budget, InvoiceLineItem, AttendanceRecord, BehaviorIncident,
     FeeAssignment, InvoiceAdjustment, Module, UserModuleAssignment,
     Role, UserProfile, AdmissionDocument, StudentDocument,
@@ -52,6 +54,19 @@ from .serializers import (
     MedicalRecordSerializer, ImmunizationRecordSerializer, ClinicVisitSerializer,
     SchoolProfileSerializer
 )
+
+
+_STORAGE_SUFFIX_PATTERN = re.compile(r"^(?P<base>.+)_[A-Za-z0-9]{7}(?P<ext>\.[^./\\]+)$")
+
+
+def _display_document_name(file_field) -> str:
+    if not file_field:
+        return ""
+    raw_name = os.path.basename(getattr(file_field, "name", "") or "")
+    match = _STORAGE_SUFFIX_PATTERN.match(raw_name)
+    if match:
+        return f"{match.group('base')}{match.group('ext')}"
+    return raw_name
 from communication.serializers import MessageSerializer
 from reporting.serializers import AuditLogSerializer
 from .services import (
@@ -60,6 +75,7 @@ from .services import (
 )
 from .pagination import FinanceResultsPagination
 from .permissions import IsSchoolAdmin, IsAccountant, IsTeacher, HasModuleAccess
+from .module_focus import is_module_allowed, module_focus_lock_enabled, module_focus_keys
 
 
 def _role_name(user):
@@ -74,6 +90,96 @@ def _is_admin_like(user):
 
 def _approval_threshold():
     return 10000
+
+
+def _active_school_profile():
+    return SchoolProfile.objects.filter(is_active=True).first()
+
+
+def _resolve_admission_number_mode(profile: SchoolProfile | None) -> tuple[str, str, int]:
+    mode = "AUTO"
+    prefix = "ADM-"
+    padding = 4
+    if profile:
+        mode = (profile.admission_number_mode or "AUTO").upper()
+        prefix = (profile.admission_number_prefix or "ADM-").strip() or "ADM-"
+        padding = profile.admission_number_padding or 4
+    if mode not in {"AUTO", "MANUAL"}:
+        mode = "AUTO"
+    if padding < 1:
+        padding = 1
+    return mode, prefix, padding
+
+
+def _generate_next_admission_number(prefix: str, padding: int) -> str:
+    max_number = 0
+    for value in Student.objects.filter(admission_number__startswith=prefix).values_list("admission_number", flat=True):
+        suffix = str(value or "")[len(prefix):]
+        if suffix.isdigit():
+            max_number = max(max_number, int(suffix))
+    next_number = max_number + 1
+    return f"{prefix}{str(next_number).zfill(padding)}"
+
+
+def _resolve_student_admission_number(requested: str | None) -> str:
+    profile = _active_school_profile()
+    mode, prefix, padding = _resolve_admission_number_mode(profile)
+    candidate = (requested or "").strip()
+
+    if mode == "MANUAL":
+        if not candidate:
+            raise ValidationError(
+                {
+                    "admission_number": "admission_number is required when admission number mode is MANUAL."
+                }
+            )
+        return candidate
+
+    if candidate:
+        return candidate
+
+    auto_candidate = _generate_next_admission_number(prefix, padding)
+    while Student.objects.filter(admission_number=auto_candidate).exists():
+        auto_candidate = _generate_next_admission_number(prefix, padding)
+    return auto_candidate
+
+
+def _sync_library_member_for_student(student: Student) -> None:
+    try:
+        from library.models import LibraryMember
+    except Exception:
+        return
+
+    member_code = f"LIB-STU-{student.id}"
+    member = (
+        LibraryMember.objects.filter(student=student).first()
+        or LibraryMember.objects.filter(member_id=member_code).first()
+    )
+    if member:
+        changed_fields = []
+        if member.student_id != student.id:
+            member.student = student
+            changed_fields.append("student")
+        if member.member_type != "Student":
+            member.member_type = "Student"
+            changed_fields.append("member_type")
+        if not member.is_active:
+            member.is_active = True
+            changed_fields.append("is_active")
+        if member.status != "Active":
+            member.status = "Active"
+            changed_fields.append("status")
+        if changed_fields:
+            member.save(update_fields=changed_fields)
+        return
+
+    LibraryMember.objects.create(
+        member_id=member_code,
+        member_type="Student",
+        status="Active",
+        student=student,
+        is_active=True,
+    )
 
 # ... existing ViewSets
 
@@ -147,9 +253,42 @@ class StudentViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(is_active=False)
         return queryset
 
+    def perform_create(self, serializer):
+        requested_admission_number = serializer.validated_data.get("admission_number")
+        admission_number = _resolve_student_admission_number(requested_admission_number)
+        if Student.objects.filter(admission_number=admission_number).exists():
+            raise ValidationError({"admission_number": "Admission number already exists."})
+        student = serializer.save(admission_number=admission_number)
+        _sync_library_member_for_student(student)
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        if not instance.is_active:
+            raise ValidationError("Inactive/graduated student records are read-only.")
+        serializer.save()
+
+    @action(detail=True, methods=['post'], url_path='graduate')
+    def graduate(self, request, pk=None):
+        student = self.get_object()
+        student.is_active = False
+        student.save(update_fields=['is_active'])
+        Enrollment.objects.filter(student=student, is_active=True).update(
+            is_active=False,
+            status='Completed',
+            left_date=timezone.now().date(),
+        )
+        AuditLog.objects.create(
+            user_id=request.user.id if getattr(request.user, "is_authenticated", False) else None,
+            action="GRADUATE",
+            model_name="Student",
+            object_id=str(student.id),
+            details=f"Student {student.admission_number} marked as graduated/inactive.",
+        )
+        return Response({"message": "Student graduated successfully.", "student_id": student.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path='photo')
     def upload_photo(self, request, pk=None):
@@ -198,7 +337,7 @@ class StudentViewSet(viewsets.ModelViewSet):
                     "student_id": doc.student_id,
                     "student_name": f"{doc.student.first_name} {doc.student.last_name}".strip(),
                     "admission_number": doc.student.admission_number,
-                    "file_name": doc.file.name.split('/')[-1] if doc.file else '',
+                    "file_name": _display_document_name(doc.file),
                     "url": request.build_absolute_uri(file_url) if file_url else '',
                     "uploaded_at": doc.uploaded_at,
                 }
@@ -845,12 +984,13 @@ class AdmissionApplicationViewSet(viewsets.ModelViewSet):
         if not gender:
             return Response({"error": "Invalid student gender in application."}, status=status.HTTP_400_BAD_REQUEST)
 
-        admission_number = request.data.get('admission_number')
-        if request.data.get('assign_admission_number') and not admission_number:
-            admission_number = f"ADM-{application.id:04d}"
-
-        if not admission_number:
-            return Response({"error": "admission_number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        requested_admission_number = request.data.get('admission_number')
+        try:
+            admission_number = _resolve_student_admission_number(requested_admission_number)
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        if Student.objects.filter(admission_number=admission_number).exists():
+            return Response({"error": "admission_number already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
         student = Student.objects.create(
             first_name=application.student_first_name,
@@ -873,6 +1013,7 @@ class AdmissionApplicationViewSet(viewsets.ModelViewSet):
         application.status = 'Enrolled'
         application.decision = 'Admitted'
         application.save(update_fields=['student', 'status', 'decision'])
+        _sync_library_member_for_student(student)
 
         return Response({
             "message": "Enrollment complete",
@@ -1017,6 +1158,12 @@ class ModuleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsSchoolAdmin, HasModuleAccess]
     module_key = "CORE"
 
+    def get_queryset(self):
+        queryset = Module.objects.filter(is_active=True)
+        if module_focus_lock_enabled():
+            queryset = queryset.filter(key__in=module_focus_keys())
+        return queryset.order_by("key")
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
@@ -1031,6 +1178,8 @@ class ModuleViewSet(viewsets.ModelViewSet):
             user=request.user,
             module__is_active=True
         ).select_related('module')
+        if module_focus_lock_enabled():
+            assignments = assignments.filter(module__key__in=module_focus_keys())
         modules = [a.module for a in assignments]
         serializer = self.get_serializer(modules, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1043,6 +1192,8 @@ class UserModuleAssignmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        if module_focus_lock_enabled():
+            queryset = queryset.filter(module__key__in=module_focus_keys())
         user_id = self.request.query_params.get('user_id')
         module_key = self.request.query_params.get('module_key')
 
@@ -1070,6 +1221,8 @@ class UserModuleAssignmentViewSet(viewsets.ModelViewSet):
             user=request.user,
             module__is_active=True
         ).select_related('module', 'assigned_by')
+        if module_focus_lock_enabled():
+            assignments = assignments.filter(module__key__in=module_focus_keys())
         serializer = self.get_serializer(assignments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1088,9 +1241,22 @@ class UserModuleAssignmentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        modules = list(Module.objects.filter(key__in=module_keys, is_active=True))
+        normalized_keys = [str(key).strip().upper() for key in module_keys if str(key).strip()]
+        if module_focus_lock_enabled():
+            blocked = [key for key in normalized_keys if not is_module_allowed(key)]
+            if blocked:
+                return Response(
+                    {
+                        "error": "Requested modules are locked in focus mode.",
+                        "blocked": blocked,
+                        "allowed": sorted(list(module_focus_keys())),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        modules = list(Module.objects.filter(key__in=normalized_keys, is_active=True))
         found_keys = {m.key for m in modules}
-        missing = [k for k in module_keys if k not in found_keys]
+        missing = [k for k in normalized_keys if k not in found_keys]
         if missing:
             return Response(
                 {"error": "Invalid module_keys", "missing": missing},
@@ -1814,6 +1980,12 @@ class FinanceGatewayWebhookView(APIView):
     def _verify_request(request, raw_body):
         expected_token = getattr(settings, "FINANCE_WEBHOOK_TOKEN", "")
         expected_secret = getattr(settings, "FINANCE_WEBHOOK_SHARED_SECRET", "")
+        strict_mode = bool(getattr(settings, "FINANCE_WEBHOOK_STRICT_MODE", True))
+
+        if not expected_token and not expected_secret:
+            if strict_mode:
+                return False, "Finance webhook verification is not configured."
+            return True, ""
 
         token = FinanceGatewayWebhookView._extract_token(request)
         if expected_token and token != expected_token:
@@ -2265,7 +2437,9 @@ class StudentsDashboardView(APIView):
             if rate < 85:
                 low_attendance_count += 1
 
-        recent_cutoff = timezone.now().date() - timedelta(days=14)
+        # Track critical incidents over a full month so operational alerts don't miss
+        # serious issues that happened outside a strict 2-week window.
+        recent_cutoff = timezone.now().date() - timedelta(days=30)
         critical_behavior_count = BehaviorIncident.objects.filter(
             incident_date__gte=recent_cutoff,
             severity__in=['High', 'Critical'],
@@ -2342,6 +2516,29 @@ class SchoolProfileView(APIView):
             },
             "profile": profile_data,
         }, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        if not _is_admin_like(request.user):
+            return Response(
+                {"error": "Only tenant admins can update school profile settings."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        profile = SchoolProfile.objects.filter(is_active=True).first()
+        if not profile:
+            tenant = getattr(request, "tenant", None)
+            profile = SchoolProfile.objects.create(
+                school_name=getattr(tenant, "name", None) or "School",
+                is_active=True,
+            )
+
+        serializer = SchoolProfileSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        payload = serializer.data
+        if payload.get("logo_url"):
+            payload["logo_url"] = request.build_absolute_uri(payload["logo_url"])
+        return Response(payload, status=status.HTTP_200_OK)
 
 class StudentsModuleReportView(APIView):
     """
@@ -3334,7 +3531,7 @@ class StudentsDocumentsCsvExportView(APIView):
             writer.writerow([
                 f"{doc.student.first_name} {doc.student.last_name}".strip(),
                 doc.student.admission_number,
-                doc.file.name.split('/')[-1] if doc.file else '',
+                _display_document_name(doc.file),
                 request.build_absolute_uri(file_url) if file_url else '',
                 doc.uploaded_at,
             ])
@@ -3513,6 +3710,20 @@ class FinanceStudentRefView(APIView):
         serializer = FinanceStudentRefSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class FinanceStudentDetailView(APIView):
+    """
+    Finance-safe student detail endpoint (includes guardians).
+    This avoids requiring STUDENTS module access for finance workflows.
+    """
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+
+    def get(self, request, student_id):
+        student = get_object_or_404(Student, id=student_id)
+        serializer = StudentSerializer(student)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class FinanceEnrollmentRefView(APIView):
     """
     Read-only enrollment references for Finance module.
@@ -3614,6 +3825,8 @@ class DashboardRoutingView(APIView):
             ).select_related('module').order_by('module__key')
             modules = [{'key': a.module.key, 'name': a.module.name} for a in assignments]
 
+        modules = [module for module in modules if is_module_allowed(module.get("key"))]
+
         module_count = len(modules)
         if module_count == 1:
             target = "MODULE"
@@ -3670,6 +3883,8 @@ class DashboardSummaryView(APIView):
             # Normalize keys for non-admin users
             modules = [{'key': m['module__key'], 'name': m['module__name']} for m in modules]
 
+        modules = [module for module in modules if is_module_allowed(module.get("key"))]
+
         module_keys = [m['key'] for m in modules]
 
         summary = {}
@@ -3692,6 +3907,54 @@ class DashboardSummaryView(APIView):
                 "staff_active": Staff.objects.filter(is_active=True).count()
             }
 
+        if "STAFF" in module_keys:
+            try:
+                from staff_mgmt.models import StaffMember
+
+                summary["staff"] = {
+                    "active": StaffMember.objects.filter(is_active=True).count(),
+                }
+            except Exception:
+                summary["staff"] = {"active": 0}
+
+        if "PARENTS" in module_keys:
+            try:
+                summary["parents"] = {
+                    "guardian_profiles": Guardian.objects.filter(is_active=True).count(),
+                }
+            except Exception:
+                summary["parents"] = {"guardian_profiles": 0}
+
+        if "LIBRARY" in module_keys:
+            try:
+                from library.models import (
+                    CirculationTransaction,
+                    FineRecord,
+                    LibraryMember,
+                    LibraryResource,
+                )
+
+                summary["library"] = {
+                    "resources": LibraryResource.objects.filter(is_active=True).count(),
+                    "members": LibraryMember.objects.filter(is_active=True).count(),
+                    "active_borrowings": CirculationTransaction.objects.filter(
+                        is_active=True,
+                        transaction_type="Issue",
+                        return_date__isnull=True,
+                    ).count(),
+                    "pending_fines": FineRecord.objects.filter(
+                        is_active=True,
+                        status="Pending",
+                    ).count(),
+                }
+            except Exception:
+                summary["library"] = {
+                    "resources": 0,
+                    "members": 0,
+                    "active_borrowings": 0,
+                    "pending_fines": 0,
+                }
+
         if "FINANCE" in module_keys:
             invoice_total = Invoice.objects.aggregate(total=Sum('total_amount'))['total'] or 0
             payment_total = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
@@ -3709,7 +3972,20 @@ class DashboardSummaryView(APIView):
                 "invoices_pending": Invoice.objects.filter(is_active=True, status='CONFIRMED').count()
             }
 
-        handled = {"STUDENTS", "ADMISSIONS", "HR", "FINANCE", "REPORTING", "ACADEMICS", "COMMUNICATION", "CORE"}
+        handled = {
+            "STUDENTS",
+            "ADMISSIONS",
+            "HR",
+            "FINANCE",
+            "REPORTING",
+            "ACADEMICS",
+            "COMMUNICATION",
+            "CORE",
+            "ASSETS",
+            "LIBRARY",
+            "PARENTS",
+            "STAFF",
+        }
         for key in module_keys:
             if key not in handled:
                 unavailable.append(key)

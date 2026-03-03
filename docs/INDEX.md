@@ -45,9 +45,20 @@ Start here for system intent and guardrails.
 
 ## Next Team Start Here
 - docs/NEXT_TEAM_PLAYBOOK.md
+- docs/NEXT_DEV_TEAM_MASTER_HANDOFF.md
+- docs/GO_LIVE_HANDOFF_2026-03-03.md
+- docs/PRODUCTION_ENV_LOCK_CHECKLIST.md
+- docs/SECRET_ROTATION_AND_STORAGE_RUNBOOK.md
+- docs/PLATFORM_SUPER_ADMIN_RUNBOOK.md
 
 ## Academics Build Matrix
 - docs/ACADEMICS_IMPLEMENTATION_MATRIX.md
 
 ## Admissions Readiness
 - docs/ADMISSIONS_READINESS.md
+
+## Presentation and Release Evidence
+- docs/PRESENTATION_DEMO_RUNBOOK.md
+- docs/PRESENTATION_CHECKLIST_EXECUTION.md
+- docs/PRESENTATION_SCREENSHOT_MANIFEST.md
+- docs/RELEASE_EVIDENCE_BUNDLE.md

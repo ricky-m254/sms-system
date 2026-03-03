@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type Staff = {
   id: number
@@ -79,17 +81,9 @@ export default function StaffDirectoryPage() {
   const exportCsv = async () => {
     try {
       const response = await apiClient.get('/staff/export/', { responseType: 'blob' })
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = 'staff_directory.csv'
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to export staff directory.')
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, 'staff_directory.csv')
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to export staff directory.'))
     }
   }
 

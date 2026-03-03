@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type SummaryPayload = {
   total_staff: number
@@ -49,17 +51,9 @@ export default function StaffAnalyticsPage() {
   const downloadReport = async (path: string, fileName: string) => {
     try {
       const response = await apiClient.get(path, { responseType: 'blob' })
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = fileName
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to export analytics report.')
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, fileName)
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to export analytics report.'))
     }
   }
 

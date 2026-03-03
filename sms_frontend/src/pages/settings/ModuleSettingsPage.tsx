@@ -5,10 +5,12 @@ import { settingsSchemas } from '../../settings'
 import { hasPermission, useCurrentUser } from '../../settings/permissions'
 import { useModuleSettings } from '../../settings/useModuleSettings'
 import { apiClient } from '../../api/client'
+import { isSettingsKeyEnabled } from '../../config/moduleFocus'
 
 export default function ModuleSettingsPage() {
   const params = useParams<{ module: string }>()
   const moduleKey = params.module?.toLowerCase() ?? 'global'
+  const isEnabledSettingsKey = isSettingsKeyEnabled(moduleKey)
   const schema = settingsSchemas[moduleKey]
   const user = useCurrentUser()
   const [showRestricted, setShowRestricted] = useState(false)
@@ -41,18 +43,18 @@ export default function ModuleSettingsPage() {
     }
   }, [canDebugPermissions, showRestricted])
 
-  if (!schema) {
+  if (!schema || !isEnabledSettingsKey) {
     return (
       <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-6">
         <h1 className="text-lg font-display font-semibold text-rose-200">
-          Settings module not found
+          Settings module unavailable
         </h1>
         <p className="mt-2 text-sm text-rose-200">
-          The requested settings page does not exist. Choose one of the available modules
-          below.
+          The requested settings page is locked in focus mode. Choose one of the active
+          settings modules below.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          {Object.keys(settingsSchemas).map((key) => (
+          {Object.keys(settingsSchemas).filter((key) => isSettingsKeyEnabled(key)).map((key) => (
             <Link
               key={key}
               className="rounded-full border border-rose-400/40 px-3 py-1 text-xs text-rose-200"
