@@ -6,6 +6,7 @@ from io import BytesIO
 from django.db import transaction
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Avg, Count, Q
@@ -14,7 +15,7 @@ from django.core.files.base import ContentFile
 from reportlab.pdfgen import canvas
 import csv
 
-from school.permissions import HasModuleAccess
+from school.permissions import HasModuleAccess, IsAcademicStaff
 from school.models import Department, Subject, SubjectMapping, SyllabusTopic
 from school.models import Enrollment, TeacherAssignment
 from school.models import (
@@ -55,8 +56,39 @@ from .serializers import (
 
 
 class AcademicsModuleAccessMixin:
-    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    permission_classes = [IsAcademicStaff, HasModuleAccess]
     module_key = "ACADEMICS"
+
+
+def _is_teacher_only(user):
+    if not hasattr(user, "userprofile"):
+        return False
+    return user.userprofile.role.name == "TEACHER"
+
+
+def _teacher_assigned_class_ids(user):
+    return list(
+        TeacherAssignment.objects.filter(teacher=user, is_active=True)
+        .values_list("class_section_id", flat=True)
+        .distinct()
+    )
+
+
+def _restrict_queryset_to_teacher_assignments(queryset, user, class_field: str):
+    if not _is_teacher_only(user):
+        return queryset
+    class_ids = _teacher_assigned_class_ids(user)
+    if not class_ids:
+        return queryset.none()
+    return queryset.filter(**{f"{class_field}__in": class_ids})
+
+
+def _enforce_teacher_can_access_class(user, class_section_id: int):
+    if not _is_teacher_only(user):
+        return
+    class_ids = {int(value) for value in _teacher_assigned_class_ids(user)}
+    if int(class_section_id) not in class_ids:
+        raise PermissionDenied("Teachers can only access assigned classes.")
 
 
 class AcademicYearViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSet):
@@ -369,7 +401,7 @@ class AcademicEnrollmentViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSe
 
             exists = Enrollment.objects.filter(
                 student=enrollment.student,
-                school_class=target_class,
+                school_class_id=target_class.id,
                 term_id=to_term,
                 is_active=True,
             ).exists()
@@ -379,7 +411,7 @@ class AcademicEnrollmentViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSe
 
             Enrollment.objects.create(
                 student=enrollment.student,
-                school_class=target_class,
+                school_class_id=target_class.id,
                 term_id=to_term,
                 status="Active",
                 is_active=True,
@@ -478,7 +510,13 @@ class AssessmentViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(subject_id=subject)
         if term:
             queryset = queryset.filter(term_id=term)
+        queryset = _restrict_queryset_to_teacher_assignments(queryset, self.request.user, "class_section_id")
         return queryset
+
+    def perform_create(self, serializer):
+        class_section_id = serializer.validated_data["class_section"].id
+        _enforce_teacher_can_access_class(self.request.user, class_section_id)
+        serializer.save()
 
     @action(detail=True, methods=["post"], url_path="publish")
     def publish(self, request, pk=None):
@@ -504,10 +542,12 @@ class AssessmentGradeViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(student_id=student)
         if assessment:
             queryset = queryset.filter(assessment_id=assessment)
+        queryset = _restrict_queryset_to_teacher_assignments(queryset, self.request.user, "assessment__class_section_id")
         return queryset
 
     def perform_create(self, serializer):
         assessment = serializer.validated_data["assessment"]
+        _enforce_teacher_can_access_class(self.request.user, assessment.class_section_id)
         raw_score = Decimal(serializer.validated_data["raw_score"])
         percentage = (raw_score / Decimal(assessment.max_score) * Decimal("100.00")) if Decimal(assessment.max_score) > 0 else Decimal("0.00")
         scheme = GradingScheme.objects.filter(is_default=True, is_active=True).first() or GradingScheme.objects.filter(is_active=True).first()
@@ -520,6 +560,7 @@ class AssessmentGradeViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         assessment = serializer.validated_data.get("assessment", serializer.instance.assessment)
+        _enforce_teacher_can_access_class(self.request.user, assessment.class_section_id)
         raw_score = Decimal(serializer.validated_data.get("raw_score", serializer.instance.raw_score))
         percentage = (raw_score / Decimal(assessment.max_score) * Decimal("100.00")) if Decimal(assessment.max_score) > 0 else Decimal("0.00")
         scheme = GradingScheme.objects.filter(is_default=True, is_active=True).first() or GradingScheme.objects.filter(is_active=True).first()
@@ -935,9 +976,12 @@ class AssignmentViewSet(AcademicsModuleAccessMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(subject_id=subject)
         if status_value:
             queryset = queryset.filter(status=status_value)
+        queryset = _restrict_queryset_to_teacher_assignments(queryset, self.request.user, "class_section_id")
         return queryset
 
     def perform_create(self, serializer):
+        class_section_id = serializer.validated_data["class_section"].id
+        _enforce_teacher_can_access_class(self.request.user, class_section_id)
         serializer.save(teacher=self.request.user)
 
     def perform_destroy(self, instance):
@@ -1000,10 +1044,12 @@ class AssignmentSubmissionViewSet(AcademicsModuleAccessMixin, viewsets.ModelView
             queryset = queryset.filter(assignment_id=assignment)
         if student:
             queryset = queryset.filter(student_id=student)
+        queryset = _restrict_queryset_to_teacher_assignments(queryset, self.request.user, "assignment__class_section_id")
         return queryset
 
     def perform_create(self, serializer):
         assignment = serializer.validated_data["assignment"]
+        _enforce_teacher_can_access_class(self.request.user, assignment.class_section_id)
         is_late = timezone.now() > assignment.due_date
         serializer.save(is_late=is_late)
 

@@ -40,11 +40,18 @@ class ResourceCopySerializer(serializers.ModelSerializer):
 
 class LibraryMemberSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.username", read_only=True)
+    student_name = serializers.SerializerMethodField()
+    student_admission_number = serializers.CharField(source="student.admission_number", read_only=True)
 
     class Meta:
         model = LibraryMember
         fields = "__all__"
         read_only_fields = ["created_at", "user_name", "total_fines"]
+
+    def get_student_name(self, obj):
+        if not obj.student_id:
+            return ""
+        return f"{obj.student.first_name} {obj.student.last_name}".strip()
 
 
 class CirculationRuleSerializer(serializers.ModelSerializer):

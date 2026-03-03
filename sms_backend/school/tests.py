@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
@@ -5,7 +7,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from clients.models import Tenant, Domain
 from .models import (
     Role, UserProfile, Module, UserModuleAssignment,
-    Student, Enrollment, Budget
+    Student, Enrollment, Budget, SchoolProfile, AdmissionApplication
 )
 from academics.models import AcademicYear, Term, SchoolClass
 from communication.models import Message
@@ -13,13 +15,13 @@ from reporting.models import AuditLog
 from hr.models import Staff
 from .views import (
     DashboardRoutingView, DashboardSummaryView,
-    FinanceStudentRefView, FinanceEnrollmentRefView, BudgetViewSet
+    FinanceStudentRefView, FinanceEnrollmentRefView, BudgetViewSet, StudentViewSet, AdmissionApplicationViewSet
 )
+from library.models import LibraryMember
 from academics.views import AcademicYearsRefView, TermsRefView, ClassesRefView
 from hr.views import StaffRefView
 from hr.views import StaffViewSet
-from communication.views import MessagesRefView
-from communication.views import MessageViewSet
+from communication.views import CommunicationMessageViewSet
 from reporting.views import AuditLogRefView
 from reporting.views import AuditLogViewSet
 
@@ -235,6 +237,111 @@ class FinanceBudgetApiTests(TenantTestBase):
         self.assertEqual(list_response.data["count"], 1)
         self.assertEqual(len(list_response.data["results"]), 1)
 
+
+class AdmissionNumberAndLibrarySyncTests(TenantTestBase):
+    def setUp(self):
+        super().setUp()
+        self.factory = APIRequestFactory()
+        self.user = User.objects.create_user(username="tenant_admin", password="pass1234")
+        role = Role.objects.create(name="ADMIN", description="School Administrator")
+        UserProfile.objects.create(user=self.user, role=role)
+        students_module = Module.objects.create(key="STUDENTS", name="Students")
+        UserModuleAssignment.objects.create(user=self.user, module=students_module, is_active=True)
+
+        self.year = AcademicYear.objects.create(
+            name="2026-2027", start_date="2026-01-01", end_date="2026-12-31"
+        )
+        self.term = Term.objects.create(
+            academic_year=self.year, name="Term 1", start_date="2026-01-01", end_date="2026-04-30"
+        )
+        self.school_class = SchoolClass.objects.create(
+            name="Grade 7", stream="A", academic_year=self.year
+        )
+
+    def test_student_create_auto_assigns_admission_number_and_library_member(self):
+        SchoolProfile.objects.create(
+            school_name="Auto Mode School",
+            admission_number_mode="AUTO",
+            admission_number_prefix="ADM-",
+            admission_number_padding=4,
+            is_active=True,
+        )
+        request = self.factory.post(
+            "/api/students/",
+            {
+                "first_name": "Auto",
+                "last_name": "Student",
+                "date_of_birth": "2012-01-01",
+                "gender": "M",
+            },
+            format="json",
+        )
+        force_authenticate(request, user=self.user)
+        response = StudentViewSet.as_view({"post": "create"})(request)
+        self.assertEqual(response.status_code, 201)
+        student = Student.objects.get(id=response.data["id"])
+        self.assertTrue(student.admission_number.startswith("ADM-"))
+        self.assertTrue(LibraryMember.objects.filter(student=student, is_active=True).exists())
+
+    def test_manual_mode_requires_admission_number(self):
+        SchoolProfile.objects.create(
+            school_name="Manual Mode School",
+            admission_number_mode="MANUAL",
+            admission_number_prefix="ADM-",
+            admission_number_padding=4,
+            is_active=True,
+        )
+        request = self.factory.post(
+            "/api/students/",
+            {
+                "first_name": "Manual",
+                "last_name": "Student",
+                "date_of_birth": "2012-01-01",
+                "gender": "F",
+            },
+            format="json",
+        )
+        force_authenticate(request, user=self.user)
+        response = StudentViewSet.as_view({"post": "create"})(request)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("admission_number", response.data)
+
+    def test_enroll_auto_assigns_admission_number_and_library_member(self):
+        SchoolProfile.objects.create(
+            school_name="Enrollment School",
+            admission_number_mode="AUTO",
+            admission_number_prefix="ENR-",
+            admission_number_padding=3,
+            is_active=True,
+        )
+        application = AdmissionApplication.objects.create(
+            student_first_name="Enroll",
+            student_last_name="Candidate",
+            student_dob=date(2012, 2, 2),
+            student_gender="Male",
+            previous_school="",
+            applying_for_grade_id=self.school_class.id,
+            application_date=date(2026, 1, 5),
+            guardian_name="Parent One",
+            guardian_phone="0700000000",
+            guardian_email="parent@example.com",
+            status="Submitted",
+        )
+        request = self.factory.post(
+            f"/api/admissions/applications/{application.id}/enroll/",
+            {
+                "school_class": self.school_class.id,
+                "term": self.term.id,
+            },
+            format="json",
+        )
+        force_authenticate(request, user=self.user)
+        response = AdmissionApplicationViewSet.as_view({"post": "enroll"})(request, pk=application.id)
+        self.assertEqual(response.status_code, 200)
+        student = Student.objects.get(id=response.data["student_id"])
+        self.assertTrue(student.admission_number.startswith("ENR-"))
+        self.assertTrue(LibraryMember.objects.filter(student=student, is_active=True).exists())
+
 class ModuleContractsTests(TenantTestBase):
     def setUp(self):
         super().setUp()
@@ -303,15 +410,9 @@ class ModuleContractsTests(TenantTestBase):
         self.assertEqual(response.status_code, 200)
 
     def test_communication_contracts(self):
-        request = self.factory.get("/api/communication/ref/messages/")
-        force_authenticate(request, user=self.user)
-        response = MessagesRefView.as_view()(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(len(response.data), 1)
-
         request = self.factory.get("/api/communication/messages/")
         force_authenticate(request, user=self.user)
-        response = MessageViewSet.as_view({"get": "list"})(request)
+        response = CommunicationMessageViewSet.as_view({"get": "list"})(request)
         self.assertEqual(response.status_code, 200)
 
     def test_reporting_contracts(self):

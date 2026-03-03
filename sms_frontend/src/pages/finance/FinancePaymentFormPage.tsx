@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type FinanceStudent = {
   id: number
@@ -35,18 +36,6 @@ const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Card', 'Mobile Money', 'Chequ
 
 const todayDate = () => new Date().toISOString().slice(0, 10)
 
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
-  if (!data || typeof data !== 'object') return fallback
-  const keys = ['detail', 'error', 'message', 'non_field_errors'] as const
-  for (const key of keys) {
-    const value = data[key]
-    if (Array.isArray(value) && value.length > 0) return String(value[0])
-    if (typeof value === 'string' && value.trim().length > 0) return value
-  }
-  return fallback
-}
-
 export default function FinancePaymentFormPage() {
   const navigate = useNavigate()
   const [students, setStudents] = useState<FinanceStudent[]>([])
@@ -78,7 +67,7 @@ export default function FinancePaymentFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setFormError(extractApiError(err, 'Unable to load student references.'))
+          setFormError(extractApiErrorMessage(err, 'Unable to load student references.'))
         }
       } finally {
         if (isMounted) {
@@ -169,25 +158,19 @@ export default function FinancePaymentFormPage() {
       })
       navigate('/modules/finance/payments', { state: { flash: 'Payment recorded.' } })
     } catch (err) {
-      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
-      if (data && typeof data === 'object') {
-        const nextErrors: Record<string, string> = {}
-        const assign = (key: string) => {
-          const value = data[key]
-          if (Array.isArray(value)) {
-            nextErrors[key] = value.join(' ')
-          } else if (typeof value === 'string') {
-            nextErrors[key] = value
-          }
-        }
-        ;['student', 'amount', 'payment_date', 'payment_method', 'reference_number'].forEach(assign)
-        if (Object.keys(nextErrors).length > 0) {
-          setFieldErrors(nextErrors)
-          setFormError(extractApiError(err, 'Please correct the highlighted fields.'))
-          return
-        }
+      const nextErrors = mapApiFieldErrors(err, [
+        'student',
+        'amount',
+        'payment_date',
+        'payment_method',
+        'reference_number',
+      ])
+      if (Object.keys(nextErrors).length > 0) {
+        setFieldErrors(nextErrors)
+        setFormError(extractApiErrorMessage(err, 'Please correct the highlighted fields.'))
+        return
       }
-      setFormError(extractApiError(err, 'Unable to record payment.'))
+      setFormError(extractApiErrorMessage(err, 'Unable to record payment.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -212,8 +195,11 @@ export default function FinancePaymentFormPage() {
           <label className="block text-sm">
             Student
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className={`mt-2 w-full rounded-xl border bg-slate-950 px-3 py-2 text-sm text-white outline-none ${
+                fieldErrors.student ? 'border-rose-500/70' : 'border-slate-800 focus:border-emerald-400'
+              }`}
               value={formState.student}
+              aria-invalid={Boolean(fieldErrors.student)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, student: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, student: '' }))
@@ -238,6 +224,7 @@ export default function FinancePaymentFormPage() {
               step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
+              aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, amount: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, amount: '' }))
@@ -254,6 +241,7 @@ export default function FinancePaymentFormPage() {
               type="date"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.payment_date}
+              aria-invalid={Boolean(fieldErrors.payment_date)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, payment_date: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, payment_date: '' }))
@@ -266,8 +254,13 @@ export default function FinancePaymentFormPage() {
           <label className="block text-sm">
             Payment Method
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className={`mt-2 w-full rounded-xl border bg-slate-950 px-3 py-2 text-sm text-white outline-none ${
+                fieldErrors.payment_method
+                  ? 'border-rose-500/70'
+                  : 'border-slate-800 focus:border-emerald-400'
+              }`}
               value={formState.payment_method}
+              aria-invalid={Boolean(fieldErrors.payment_method)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, payment_method: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, payment_method: '' }))
@@ -289,6 +282,7 @@ export default function FinancePaymentFormPage() {
             <input
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.reference_number}
+              aria-invalid={Boolean(fieldErrors.reference_number)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, reference_number: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, reference_number: '' }))
@@ -309,7 +303,7 @@ export default function FinancePaymentFormPage() {
             />
           </label>
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"

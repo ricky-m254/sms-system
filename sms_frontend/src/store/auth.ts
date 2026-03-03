@@ -4,12 +4,14 @@ type AuthState = {
   accessToken: string | null
   refreshToken: string | null
   tenantId: string | null
+  authMode: 'tenant' | 'platform'
   username: string | null
   role: string | null
   permissions: string[]
   isAuthenticated: boolean
   setTokens: (accessToken: string, refreshToken: string) => void
   setTenant: (tenantId: string | null) => void
+  setAuthMode: (mode: 'tenant' | 'platform') => void
   setUsername: (username: string | null) => void
   setRole: (role: string | null) => void
   setPermissions: (permissions: string[]) => void
@@ -19,6 +21,7 @@ type AuthState = {
 const ACCESS_TOKEN_KEY = 'sms_access_token'
 const REFRESH_TOKEN_KEY = 'sms_refresh_token'
 const TENANT_ID_KEY = 'sms_tenant_id'
+const AUTH_MODE_KEY = 'sms_auth_mode'
 const USERNAME_KEY = 'sms_username'
 const ROLE_KEY = 'sms_role'
 const PERMISSIONS_KEY = 'sms_permissions'
@@ -47,6 +50,7 @@ export const useAuthStore = create<AuthState>((set) => {
   const accessToken = readStorage(ACCESS_TOKEN_KEY)
   const refreshToken = readStorage(REFRESH_TOKEN_KEY)
   const tenantId = readStorage(TENANT_ID_KEY)
+  const authMode = readStorage(AUTH_MODE_KEY) === 'platform' ? 'platform' : 'tenant'
   const username = readStorage(USERNAME_KEY)
   const role = readStorage(ROLE_KEY)
   const permissions = (() => {
@@ -65,6 +69,7 @@ export const useAuthStore = create<AuthState>((set) => {
     accessToken,
     refreshToken,
     tenantId,
+    authMode,
     username,
     role,
     permissions,
@@ -82,6 +87,10 @@ export const useAuthStore = create<AuthState>((set) => {
       writeStorage(TENANT_ID_KEY, nextTenant)
       set({ tenantId: nextTenant })
     },
+    setAuthMode: (mode) => {
+      writeStorage(AUTH_MODE_KEY, mode)
+      set({ authMode: mode })
+    },
     setUsername: (nextUsername) => {
       writeStorage(USERNAME_KEY, nextUsername)
       set({ username: nextUsername })
@@ -98,6 +107,7 @@ export const useAuthStore = create<AuthState>((set) => {
       writeStorage(ACCESS_TOKEN_KEY, null)
       writeStorage(REFRESH_TOKEN_KEY, null)
       writeStorage(TENANT_ID_KEY, null)
+      writeStorage(AUTH_MODE_KEY, null)
       writeStorage(USERNAME_KEY, null)
       writeStorage(ROLE_KEY, null)
       writeStorage(PERMISSIONS_KEY, null)
@@ -105,6 +115,7 @@ export const useAuthStore = create<AuthState>((set) => {
         accessToken: null,
         refreshToken: null,
         tenantId: null,
+        authMode: 'tenant',
         username: null,
         role: null,
         permissions: [],

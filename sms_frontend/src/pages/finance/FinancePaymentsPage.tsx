@@ -2,7 +2,9 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
 import { useAuthStore } from '../../store/auth'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type Payment = {
   id: number
@@ -65,21 +67,6 @@ const formatDateTime = (value: string | undefined) => {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return date.toLocaleString()
-}
-
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
 }
 
 const paymentStatusBadgeClass = (status: 'Reversed' | 'Allocated' | 'Partial' | 'Unallocated') => {
@@ -160,7 +147,7 @@ export default function FinancePaymentsPage() {
       })
       setReversalRows(normalizePaginatedResponse(response.data).items)
     } catch (err) {
-      setReversalError(extractApiError(err, 'Unable to load payment reversal requests.'))
+      setReversalError(extractApiErrorMessage(err, 'Unable to load payment reversal requests.'))
     } finally {
       setReversalLoading(false)
     }
@@ -214,7 +201,7 @@ export default function FinancePaymentsPage() {
           } else if (status === 404) {
             setError('Finance endpoints not found (404). Verify tenant routing.')
           } else {
-            setError(extractApiError(err, 'Unable to load payments. Please try again.'))
+            setError(extractApiErrorMessage(err, 'Unable to load payments. Please try again.'))
           }
         }
       } finally {
@@ -321,7 +308,7 @@ export default function FinancePaymentsPage() {
       setPayments((prev) => prev.filter((payment) => payment.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err) {
-      setDeleteError(extractApiError(err, 'Unable to delete payment.'))
+      setDeleteError(extractApiErrorMessage(err, 'Unable to delete payment.'))
     } finally {
       setIsDeleting(false)
     }
@@ -391,7 +378,7 @@ export default function FinancePaymentsPage() {
       setReversalReason('')
       await loadReversals()
     } catch (err) {
-      const detail = extractApiError(
+      const detail = extractApiErrorMessage(
         err,
         `Failed to submit reversal request for ${reversalTarget.reference_number}.`,
       )
@@ -428,7 +415,7 @@ export default function FinancePaymentsPage() {
       setTotalCount(normalized.totalCount)
       setIsServerPaginated(normalized.isPaginated)
     } catch (err) {
-      setReversalMessage(extractApiError(err, `Unable to ${action} reversal request.`))
+      setReversalMessage(extractApiErrorMessage(err, `Unable to ${action} reversal request.`))
     } finally {
       setReviewingReversalId(null)
     }
@@ -477,7 +464,7 @@ export default function FinancePaymentsPage() {
               }}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -492,7 +479,7 @@ export default function FinancePaymentsPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={methodFilter}
               onChange={(event) => {
                 setMethodFilter(event.target.value)
@@ -507,7 +494,7 @@ export default function FinancePaymentsPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={allocationFilter}
               onChange={(event) => {
                 setAllocationFilter(event.target.value)
@@ -521,7 +508,7 @@ export default function FinancePaymentsPage() {
             </select>
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -530,7 +517,7 @@ export default function FinancePaymentsPage() {
             />
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -538,13 +525,14 @@ export default function FinancePaymentsPage() {
               }}
             />
             <button
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 sm:w-auto"
               onClick={() => navigate('/modules/finance/payments/new')}
             >
               Record payment
             </button>
           </div>
         </div>
+        <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
           <table className="min-w-[980px] w-full text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
@@ -797,33 +785,20 @@ export default function FinancePaymentsPage() {
         )}
       </section>
 
-      {deleteTarget ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6">
-            <h3 className="text-lg font-display font-semibold">Delete payment</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              This will remove payment <strong>{deleteTarget.reference_number}</strong>. Continue?
-            </p>
-            {deleteError ? <p className="mt-3 text-xs text-rose-300">{deleteError}</p> : null}
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Confirm delete'}
-              </button>
-              <button
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
-                onClick={() => setDeleteTarget(null)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete payment"
+        description={
+          <>
+            This will remove payment <strong>{deleteTarget?.reference_number}</strong>. Continue?
+          </>
+        }
+        confirmLabel="Confirm delete"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       {reversalTarget ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">

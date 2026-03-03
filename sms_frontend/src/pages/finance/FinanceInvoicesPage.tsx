@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type Invoice = {
   id: number
@@ -1121,33 +1122,20 @@ export default function FinanceInvoicesPage() {
         </div>
       ) : null}
 
-      {deleteTarget ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6">
-            <h3 className="text-lg font-display font-semibold">Delete invoice</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              This will void <strong>INV-{deleteTarget.id}</strong>. Continue?
-            </p>
-            {deleteError ? <p className="mt-3 text-xs text-rose-300">{deleteError}</p> : null}
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Confirm delete'}
-              </button>
-              <button
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
-                onClick={() => setDeleteTarget(null)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete invoice"
+        description={
+          <>
+            This will void <strong>INV-{deleteTarget?.id}</strong>. Continue?
+          </>
+        }
+        confirmLabel="Confirm delete"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

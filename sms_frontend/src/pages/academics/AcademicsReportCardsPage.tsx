@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type SchoolClass = { id: number; display_name?: string; name: string }
 type Term = { id: number; name: string }
@@ -132,17 +134,9 @@ export default function AcademicsReportCardsPage() {
       const response = await apiClient.get(`/academics/report-cards/${id}/pdf/`, {
         responseType: 'blob',
       })
-      const blob = new Blob([response.data], { type: 'application/pdf' })
-      const url = window.URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `report_card_${id}.pdf`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      window.URL.revokeObjectURL(url)
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, `report_card_${id}.pdf`)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(extractApiErrorMessage(err, 'Unable to download report card PDF.'))
     }
   }
 

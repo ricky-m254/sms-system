@@ -14,7 +14,18 @@ from school.permissions import HasModuleAccess, IsSchoolAdmin, IsTeacher
 from school.views import AdmissionApplicationViewSet as SchoolAdmissionApplicationViewSet
 from school.views import AdmissionsPipelineSummaryView as SchoolAdmissionsPipelineSummaryView
 from school.serializers import AdmissionApplicationSerializer
-from school.models import AdmissionApplication, AuditLog
+from school.models import (
+    AcademicYear,
+    AdmissionApplication,
+    AuditLog,
+    FeeStructure,
+    SchoolClass,
+    SchoolProfile,
+    Staff,
+    Subject,
+    TeacherAssignment,
+    Term,
+)
 from .models import (
     AdmissionApplicationProfile,
     AdmissionAssessment,
@@ -57,7 +68,7 @@ class AdmissionApplicationViewSet(SchoolAdmissionApplicationViewSet):
     module_key = "ADMISSIONS"
 
     @staticmethod
-    def _enrollment_precheck(application: AdmissionApplication):
+    def _enrollment_precheck(application: AdmissionApplication, request_data=None):
         decision_record = getattr(application, "decision_record", None)
         if not decision_record:
             return False, "Admission decision is required before enrollment."
@@ -67,6 +78,31 @@ class AdmissionApplicationViewSet(SchoolAdmissionApplicationViewSet):
             return False, "Parent acceptance is required before enrollment."
         if decision_record.offer_deadline and date.today() > decision_record.offer_deadline:
             return False, "Offer deadline has passed."
+        if not SchoolProfile.objects.filter(is_active=True).exists():
+            return False, "School profile must be configured before enrollment."
+        if not AcademicYear.objects.filter(is_active=True).exists():
+            return False, "At least one active academic year is required before enrollment."
+        if not Term.objects.filter(is_active=True).exists():
+            return False, "At least one active term is required before enrollment."
+        if not Subject.objects.filter(is_active=True).exists():
+            return False, "At least one active subject is required before enrollment."
+        if not Staff.objects.filter(is_active=True).exists():
+            return False, "At least one active staff account is required before enrollment."
+        if not TeacherAssignment.objects.filter(is_active=True).exists():
+            return False, "Teacher assignments are required before enrollment."
+
+        target_term_id = None
+        target_class_id = None
+        if isinstance(request_data, dict):
+            target_term_id = request_data.get("term")
+            target_class_id = request_data.get("school_class")
+        profile = getattr(application, "admission_profile", None)
+        if not target_term_id and profile and profile.term_id:
+            target_term_id = profile.term_id
+        if target_class_id and not SchoolClass.objects.filter(id=target_class_id, is_active=True).exists():
+            return False, "Target class must exist and be active before enrollment."
+        if target_term_id and not FeeStructure.objects.filter(term_id=target_term_id, is_active=True).exists():
+            return False, "Fee structures must be configured for the enrollment term before enrollment."
         return True, None
 
     @action(detail=True, methods=["post"], url_path="shortlist")
@@ -117,7 +153,7 @@ class AdmissionApplicationViewSet(SchoolAdmissionApplicationViewSet):
     @action(detail=True, methods=["post"], url_path="enroll")
     def enroll(self, request, pk=None):
         application = self.get_object()
-        ok, reason = self._enrollment_precheck(application)
+        ok, reason = self._enrollment_precheck(application, request.data)
         if not ok:
             return Response({"error": reason}, status=status.HTTP_400_BAD_REQUEST)
         response = super().enroll(request, pk=pk)

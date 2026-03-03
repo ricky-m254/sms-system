@@ -2,6 +2,263 @@
 
 This document summarizes what has been implemented so far, what is missing, and key integration points. It is intended for the next team to continue the work without losing context.
 
+## Latest Update (March 3, 2026 - Tenant Dashboard Modernization + Go-Live Scan)
+
+- Tenant main dashboard modernized for operational readiness:
+  - KPI cards retained and hardened.
+  - Added chart panels:
+    - module activity snapshot (bar chart)
+    - finance mix (pie chart, shown only when finance data exists)
+  - Added "Today's Tasks" action panel generated from current tenant metrics.
+  - Kept strict role/module visibility behavior from backend assignments.
+- Readiness scan completed:
+  - `python manage.py check` PASS
+  - `npx tsc -b --pretty false` PASS
+  - `npm run build` PASS
+  - broad backend suite PASS (`75` tests):
+    - `school.tests admissions.tests academics.tests parent_portal.tests communication.tests library.tests clients.tests`
+- Dedicated deployment-readiness report added:
+  - `docs/TENANT_GO_LIVE_READINESS_2026-03-03.md`
+
+## Latest Update (March 3, 2026 - Super Admin Users Lifecycle Completed)
+
+- Completed Super Admin Users lifecycle management end-to-end:
+  - create/grant super admin
+  - role update (OWNER/ADMIN/SUPPORT/AUDITOR)
+  - activate/deactivate
+  - revoke access
+  - reset platform admin password
+- New backend endpoint added:
+  - `POST /api/platform/admin-users/{id}/reset-password/`
+  - Payload: `{ "password": "<new_password>" }` (min length 8)
+- Super Admin Users UI upgraded for operational clarity:
+  - role dropdown + save per row
+  - in-row password reset input + confirmation
+  - confirmation dialog for revoke/deactivate/reset
+  - clearer success/error messaging
+- Validation:
+  - `python manage.py check` passed
+  - `npx tsc -b --pretty false` passed
+  - API verification passed for `/api/platform/admin-users/` and `/reset-password/`
+
+## Latest Update (March 3, 2026 - System Continuation Checkpoint)
+
+### Current state understood
+- Multi-tenant SMS architecture is active with:
+  - public schema for platform APIs and Super Admin.
+  - tenant schemas for school module operations.
+- Frontend auth flow is split:
+  - Super Admin: `/platform/login` on `localhost`.
+  - Tenant users: `/login` on tenant host (example `demo.localhost`).
+- Frontend API base resolution now follows current browser host, avoiding earlier cross-host login mismatch.
+
+### Super Admin status now
+- Implemented and live in UI:
+  - Overview
+  - Tenants (guided flow: create/select/manage profile/status/billing/credential reset)
+  - Subscription & Billing page
+  - Support
+  - Impersonation
+  - Monitoring
+  - Deployment
+  - Backup & Recovery
+  - Security & Compliance
+  - Action Logs
+  - Platform Settings
+  - Admin Users
+- Known operational caveat:
+  - If an endpoint appears missing in browser (404) but exists in code, restart backend to load latest routes.
+
+### Where work was left
+- Tenant Management user flow was refactored for usability and production operations:
+  - Step 1: Create tenant
+  - Step 2: Select tenant and status operations
+  - Step 3: Manage selected tenant (profile, plan assignment, invoice generation, school-admin credential reset)
+- Subscription & Billing module was made visible and wired from Super Admin navigation.
+- Super Admin users/roles management already supports:
+  - list
+  - create/grant
+  - role update
+  - activate/deactivate
+  - revoke
+- In-progress hardening slice (not finished in this checkpoint):
+  - extending super-admin user lifecycle to include dedicated password reset action endpoint and richer UI controls.
+
+### Immediate next actions (recommended)
+1. Finish super-admin user lifecycle hardening:
+   - Add backend action for explicit super-admin password reset.
+   - Add corresponding button/flow on `/platform/admin-users`.
+2. Add confirmation UX on super-admin revoke/deactivate and self-protection messaging.
+3. Run backend + frontend validation and update this document with evidence block.
+
+## Latest Update (March 3, 2026 - Super Admin Tenant/Billing UX Completion Slice)
+
+- Super Admin navigation and routing now exposes Subscription & Billing:
+  - Frontend route added: `/platform/billing`
+  - Sidebar item added: `Subscription & Billing`
+- New Super Admin billing page implemented:
+  - Plan visibility via `/api/platform/plans/`
+  - Invoice tracking via `/api/platform/subscription-invoices/`
+  - Manual payment recording via `/api/platform/subscription-invoices/{id}/record-payment/`
+- Tenants page upgraded from read-only status actions to full management surface:
+  - Tenant profile edit (`PATCH /api/platform/tenants/{id}/`)
+  - Plan assignment (`POST /api/platform/tenants/{id}/assign-plan/`)
+  - On-demand invoice generation (`POST /api/platform/tenants/{id}/generate-invoice/`)
+  - Create tenant now supports optional plan selection
+- Backend endpoint added for tenant credential administration:
+  - `POST /api/platform/tenants/{id}/reset-school-admin/`
+  - Payload: `username` (optional, defaults `admin`), `password` (required), `email` (optional)
+  - Includes platform action log persistence (`RESET_CREDENTIALS`).
+- Validation:
+  - `python manage.py check` passed
+  - `npx tsc -b --pretty false` passed
+
+## Latest Update (March 3, 2026 - Full Launch Gate + Cross-Module Regression Closure)
+
+- Full all-modules backend matrix re-validated and green:
+  - `python manage.py test school.test_architecture_audit school.test_production_readiness_gate school.test_uat_fail_closure school.tests admissions.tests parent_portal.tests communication.tests library.tests academics.tests.AcademicsClassManagementTests school.test_finance_phase4 school.test_finance_phase11 school.test_finance_phase13 school.test_finance_phase14 school.test_finance_phase15 clients.tests --keepdb --noinput`
+  - Result: `Found 86 test(s)` and `OK`.
+- Root cause for prior cross-module `403` regressions was config lock mode:
+  - `MODULE_FOCUS_LOCK` was enabled in backend env and blocked non-focus modules.
+- Hardening fix applied:
+  - `sms_backend/.env` now sets `MODULE_FOCUS_LOCK=false`.
+  - `sms_backend/.env.example` now sets `MODULE_FOCUS_LOCK=false`.
+  - `sms_backend/config/settings.py` default changed to `MODULE_FOCUS_LOCK=False`.
+  - Focus lock remains available for deliberate temporary windows via explicit env override.
+- New canonical handoff doc added for next teams:
+  - `docs/GO_LIVE_HANDOFF_2026-03-03.md`
+
+## Latest Update (March 3, 2026 - Step 3 Deployment Hooking Hardening)
+
+- Deployment pipeline hardening moved from scaffold-only toward operational integration:
+  - Added secure callback token setting: `DEPLOYMENT_CALLBACK_TOKEN`.
+  - Added release callback endpoint:
+    - `POST /api/platform/deployment/releases/callbacks/status/`
+    - Supports events: `deploying`, `success`, `failed`, `rolled_back`
+    - Enforces callback token validation.
+  - Added automated release health-check endpoint:
+    - `POST /api/platform/deployment/releases/{id}/run-health-checks/`
+    - Persists computed health summary on release record.
+  - Release completion now auto-computes health summary when not provided.
+- Production guardrails updated:
+  - Strict production startup now rejects placeholder `DEPLOYMENT_CALLBACK_TOKEN`.
+- Validation:
+  - `python manage.py test clients.tests.PlatformDeploymentHardeningTests --keepdb --noinput` passed.
+  - `python manage.py test clients.tests --keepdb --noinput` passed.
+  - `python manage.py check` passed.
+
+## Latest Update (March 3, 2026 - Step 4 Backup/Recovery Operational Hardening)
+
+- Added concrete backup/recovery operational endpoints:
+  - `POST /api/platform/backup/jobs/{id}/verify-integrity/`
+  - `POST /api/platform/backup/jobs/enforce-retention/` (`dry_run` supported)
+  - `POST /api/platform/backup/jobs/{id}/run-restore-drill/` (dual-admin separation enforced)
+- Backup flow now supports:
+  - Checksum-based integrity verification with explicit pass/fail response.
+  - Retention enforcement execution with dry-run preview and apply mode.
+  - Restore drill creation/execution tied to successful backup and separate approver.
+- Docs updated for new operations:
+  - `docs/PLATFORM_SUPER_ADMIN_RUNBOOK.md`
+  - `docs/GO_LIVE_HANDOFF_2026-03-03.md`
+- Validation:
+  - `python manage.py test clients.tests.PlatformBackupRestoreHardeningTests --keepdb --noinput` passed.
+  - `python manage.py test clients.tests --keepdb --noinput` passed.
+
+## Latest Update (March 3, 2026 - Step 5 Provider/Webhook Security Finalization + Full Gate)
+
+- Finance webhook security hardened:
+  - Added `FINANCE_WEBHOOK_STRICT_MODE` setting (defaults strict in non-debug environments).
+  - Finance webhooks now reject unconfigured verification in strict mode.
+  - Non-strict mode remains available for controlled development environments.
+- Added finance webhook verification tests for:
+  - strict-mode rejection when unconfigured
+  - non-strict-mode allowance when unconfigured
+- Env templates updated:
+  - `sms_backend/.env.example`
+  - `sms_backend/.env.production.example`
+- Validation:
+  - `python manage.py test school.test_finance_phase4 --keepdb --noinput` passed.
+  - Full all-modules backend gate rerun passed:
+    - `Found 94 test(s)` and `OK`.
+
+## Current Hardening Status (March 2, 2026)
+
+- Backend config now follows strict env-first behavior in `sms_backend/config/settings.py`:
+  - `DJANGO_DEBUG` defaults to `false`.
+  - `DJANGO_ALLOW_INSECURE_DEFAULTS` defaults to `false`.
+  - `DJANGO_SECRET_KEY` is required unless explicitly running insecure local dev mode.
+  - `DJANGO_ALLOWED_HOSTS` is required (no implicit production fallback).
+  - Postgres credentials are required unless explicitly in insecure local dev mode.
+  - Parent portal guardian fallback should be explicitly set via `PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK` in strict environments.
+- Tenant reliability guard middleware now validates tenant context triplet consistency on API routes:
+  - Header vs resolved tenant schema (`TENANT_ENFORCE_HEADER_MATCH`).
+  - Host vs resolved tenant domains (`TENANT_ENFORCE_HOST_MATCH`).
+  - Optional required header on tenant API routes (`TENANT_REQUIRE_HEADER`).
+- Frontend hardening completed for shared delete confirmation and shared export download error behavior:
+  - Shared confirmation component: `src/components/ConfirmDialog.tsx`.
+  - Shared API blob download utility: `src/utils/download.ts` (`downloadFromResponse`).
+- Validation evidence:
+  - Backend gate matrix: 69 tests passed.
+    - Validated with explicit env profile (`DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, full Postgres triplet, `PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK`).
+  - Frontend build: `npm run build` passed.
+  - Presentation evidence validator: PASS (`docs/validate_presentation_evidence.ps1`).
+
+## Latest Update (March 2, 2026 - Platform Step 4 Hardening + Action Logs)
+
+- Platform Step 4 hardening tightened in backend:
+  - Strict transition guards for support tickets, impersonation sessions, and monitoring alerts.
+  - Serializer-level protection for lifecycle fields (status/timestamps cannot be client-forced).
+- Platform action audit is now DB-backed (not logger-only):
+  - New model: `clients.PlatformActionLog`
+  - New endpoint: `GET /api/platform/action-logs/`
+  - Filter params: `tenant_id`, `actor_id`, `action`, `model_name`, `date_from`, `date_to`
+  - Wired into support/impersonation/monitoring sensitive actions.
+- New platform ops runbook added for next team:
+  - `docs/PLATFORM_SUPER_ADMIN_RUNBOOK.md`
+  - Includes super admin bootstrap, login flow, and platform endpoint access.
+- Focused cross-module consistency pass started and applied:
+  - Finance: `FinanceReconciliationPage` now uses shared download + API error extraction pattern.
+  - Students: `StudentsDocumentsPage` now uses shared download + API error extraction and delete confirmation dialog.
+  - Academics: `AcademicsCalendarPage` now uses delete confirmation dialog and date-range validation (`start_date <= end_date`).
+- Validation after update:
+  - `python manage.py migrate clients` applied `clients.0008_platformactionlog`
+  - `python manage.py test clients.tests.PlatformStep4HardeningTests --keepdb --noinput` passed (`7` tests)
+  - `python manage.py check` passed
+  - `npm run build` passed
+
+## Latest Update (March 3, 2026 - Super Admin Web UI)
+
+- New platform auth mode added in frontend auth store:
+  - `authMode: 'tenant' | 'platform'`
+  - Tenant and platform browser sessions are route-isolated.
+- New browser entrypoint for Super Admin:
+  - `/platform/login`
+  - Login uses public schema auth and verifies platform role by calling:
+    - `GET /api/platform/analytics/overview/`
+- New Super Admin routes/UI:
+  - `/platform` (overview dashboard)
+  - `/platform/tenants` (tenant provisioning + activate/suspend/resume)
+  - `/platform/support` (ticket creation/workflow actions)
+  - `/platform/impersonation` (request/approve/start/end sessions)
+  - `/platform/monitoring` (snapshots + alerts + acknowledge/resolve)
+  - `/platform/action-logs` (filterable platform action logs)
+- Additional Super Admin completion slice (March 3, 2026):
+  - `/platform/deployment` (maintenance windows, releases, feature flags)
+  - `/platform/backup-recovery` (backup jobs and restore workflow)
+  - `/platform/security-compliance` (security incidents + compliance report generation)
+  - Backend platform endpoints added:
+    - `/api/platform/maintenance/windows/`
+    - `/api/platform/deployment/releases/`
+    - `/api/platform/deployment/feature-flags/`
+    - `/api/platform/backup/jobs/`
+    - `/api/platform/backup/restores/`
+    - `/api/platform/security/incidents/`
+    - `/api/platform/security/compliance-reports/`
+- Existing tenant routes remain intact:
+  - `/login`, `/dashboard`, `/modules/*`, `/settings/*`
+- Validation:
+  - `npm run build` passed after platform UI integration.
+
 ## Backend Overview
 
 **Architecture**
@@ -3532,3 +3789,160 @@ Reference matrix: `docs/ACADEMICS_IMPLEMENTATION_MATRIX.md`
 - Frontend build passes:
   - `npm run build` (from `sms_frontend`)
 
+
+## Presentation Finalization Checklist (2026-02-27)
+
+### Strict Gate
+- [x] Item 1: Production config hardening executed.
+  - `config/settings.py` converted to env-first settings for `DEBUG`, `SECRET_KEY`, DB, hosts, CORS, CSRF, secure cookie flags.
+  - Added deployment template: `sms_backend/.env.example`.
+  - Local debug fallback kept for DB password to preserve current dev/test execution.
+- [x] Item 2: Migration hygiene executed.
+  - Added missing migration state for unmanaged wrapper apps:
+    - `academics/migrations/0001_initial.py`
+    - `reporting/migrations/0001_initial.py`
+  - Converted to `SeparateDatabaseAndState` with empty DB operations to avoid duplicate table creation.
+  - Check result: `python manage.py makemigrations --check --dry-run` => `No changes detected`.
+- [x] Item 3: Coverage gap closure executed (role + finance closure matrix expansion).
+  - Extended UAT fail-closure suite for:
+    - Admin and Tenant Super Admin finance access allow-path assertions.
+    - Accountant denied academics write.
+    - Closed-period denial for payment posting.
+    - Closed-period denial for adjustment approval.
+  - Added architecture audit module for:
+    - tenant resolution path (header/domain + middleware ordering/delegation)
+    - cross-module direct-write guard (static boundary scan).
+  - Fixed surfaced defect: `record_payment` now enforces open accounting period before mutation.
+
+### Verification Snapshot
+- [x] Targeted suites green:
+  - `python manage.py test school.test_uat_fail_closure school.test_architecture_audit --keepdb --noinput`
+- [x] Consolidated matrix green:
+  - `python manage.py test school.test_architecture_audit school.test_production_readiness_gate school.test_uat_fail_closure school.tests admissions.tests parent_portal.tests communication.tests library.tests academics.tests.AcademicsClassManagementTests school.test_finance_phase4 school.test_finance_phase11 school.test_finance_phase13 school.test_finance_phase14 school.test_finance_phase15 --keepdb --noinput`
+  - Result: `69/69 OK`
+
+### Item 4 Execution (Presentation/Demo Readiness)
+- [x] Demo runbook produced with strict script order and fallback path:
+  - `docs/PRESENTATION_DEMO_RUNBOOK.md`
+- [x] Strict execution checklist produced with pass/fail evidence:
+  - `docs/PRESENTATION_CHECKLIST_EXECUTION.md`
+- [x] Screenshot capture closure toolkit added:
+  - `docs/PRESENTATION_SCREENSHOT_MANIFEST.md`
+  - `docs/validate_presentation_evidence.ps1`
+  - `docs/presentation_evidence/screenshots/.gitkeep`
+- [x] Screenshot capture pack completed and validated:
+  - Files captured in `docs/presentation_evidence/screenshots` using exact manifest filenames.
+  - Validator result: `Missing files: 0` / `STATUS: PASS`
+  - Command: `powershell -ExecutionPolicy Bypass -File docs/validate_presentation_evidence.ps1`
+
+### Item 5 Execution (Release Gate Evidence Bundle)
+- [x] Evidence bundle produced with command outputs + gate matrix + risk signoff:
+  - `docs/RELEASE_EVIDENCE_BUNDLE.md`
+- [x] Fresh backend gate run executed:
+  - `Found 69 test(s)` / `Ran 69 tests` / `OK`
+- [x] Fresh frontend production build executed:
+  - `vite v7.3.1` / `1139 modules transformed` / `built in 48.59s`
+- [x] Fresh migration hygiene check executed:
+  - `python manage.py makemigrations --check --dry-run` => `No changes detected`
+
+## Next Team Master Handoff (2026-02-27)
+
+- Consolidated onboarding, environment, validation, evidence, risks, and first-week execution plan documented in:
+  - `docs/NEXT_DEV_TEAM_MASTER_HANDOFF.md`
+- `docs/INDEX.md` and `docs/NEXT_TEAM_PLAYBOOK.md` updated to include this handoff in mandatory read order.
+
+## 2026-03-03 UI Module Visibility Fix + Super Admin Next Plan
+
+### Completed now
+- Removed hardcoded frontend module focus lock in `src/config/moduleFocus.ts`.
+- Frontend now defaults to showing all tenant module routes that exist in the app.
+- Added optional env-based UI module toggles in `.env.example`:
+  - `VITE_ENABLED_BACKEND_MODULE_KEYS`
+  - `VITE_ENABLED_ROUTE_KEYS`
+  - `VITE_ENABLED_SETTINGS_KEYS`
+
+### Why this mattered
+- Users could authenticate successfully but still not see most modules due to frontend-only hardcoded restrictions.
+- This created a mismatch with backend `MODULE_FOCUS_LOCK=false` and gave a false impression that modules were unavailable.
+
+### Next Super Admin live-readiness slice
+1. Tenant Management: schema onboarding UX hardening + validation and safer destructive actions.
+2. Subscription/Billing: invoice/payment state transitions with explicit audit links in UI.
+3. Support/Impersonation/Monitoring: enforce approval/timebox UX and clearer alert triage.
+4. Security/Compliance/Action Logs: stronger filters, export, and incident/report traceability.
+5. Deployment/Backup/Recovery: mark integration depth (record orchestration vs external execution hooks) in UI + runbooks.
+
+## 2026-03-03 Step 1 Delivery: Deployment & Maintenance Hardening
+
+Backend additions completed:
+- New persistence models:
+  - `clients.PlatformNotificationDispatch` (tenant notification fan-out tracking)
+  - `clients.DeploymentHookRun` (CI/CD trigger/rollback hook execution tracking)
+- New deployment endpoints:
+  - `POST /api/platform/deployment/releases/{id}/trigger-pipeline/`
+  - `GET /api/platform/deployment/releases/{id}/hook-runs/`
+- Existing rollback flow now records external rollback hook execution result.
+- Maintenance window lifecycle now queues persistent tenant notifications.
+- Feature flag runtime evaluation endpoint added:
+  - `GET /api/platform/deployment/feature-flags/evaluate/?key=...&tenant_id=...&actor_id=...`
+
+Validation evidence:
+- `python manage.py test clients.tests.PlatformDeploymentIntegrationStep1Tests --noinput` => `OK` (4 tests).
+- `python manage.py check` => no issues.
+
+## 2026-03-03 Step 2 Delivery: Backup & Recovery Orchestration Hardening
+
+Backend additions completed:
+- New persistence model:
+  - `clients.BackupExecutionRun` (tracks backup engine execution runs)
+- New backup orchestration endpoints:
+  - `POST /api/platform/backup/jobs/{id}/execute-engine/`
+  - `GET /api/platform/backup/jobs/{id}/executions/`
+  - `POST /api/platform/backup/restores/{id}/execute/`
+- Configurable backup execution mode via env:
+  - `BACKUP_ENGINE_MODE=mock` (safe default)
+  - `BACKUP_ENGINE_MODE=pg_dump` (requires infrastructure dependencies)
+
+Remaining deep-integration gaps:
+- PITR/WAL orchestration and geo-redundant DR automation are still pending.
+- Snapshot/object-storage provider adapters beyond local/mock execution remain pending.
+
+## 2026-03-03 Step 3 Delivery: Platform Settings Module
+
+Implemented:
+- New backend model + API:
+  - `clients.PlatformSetting`
+  - `/api/platform/settings/` (list/create/update/delete)
+- New Super Admin frontend page:
+  - `/platform/settings`
+  - JSON value editing with create/update and listing
+
+## 2026-03-03 Step 4 Delivery: Super Admin Users & Roles Management
+
+Implemented:
+- Extended `GlobalSuperAdmin` with role support:
+  - `OWNER`, `ADMIN`, `SUPPORT`, `AUDITOR`
+- New backend management API:
+  - `GET/POST /api/platform/admin-users/`
+  - `PATCH /api/platform/admin-users/{id}/update/`
+  - `POST /api/platform/admin-users/{id}/revoke/`
+- New Super Admin frontend page:
+  - `/platform/admin-users`
+  - grant/update/revoke platform admins directly in browser UI
+
+## 2026-03-03 Final UX Pass: Deployment + Backup pages
+
+Deployment page UX additions:
+- Added direct actions for new hardening APIs:
+  - Trigger pipeline (`/trigger-pipeline/`)
+  - Run health checks (`/run-health-checks/`)
+  - Load hook run history (`/hook-runs/`)
+- Added runtime feature-flag evaluation panel (`/feature-flags/evaluate/`).
+
+Backup page UX additions:
+- Added backup engine execution action (`/execute-engine/`).
+- Added backup execution history action (`/executions/`).
+- Added restore execute action (`/backup/restores/{id}/execute/`).
+
+Validation:
+- Frontend production build completed successfully after this pass.

@@ -1,21 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
 
-const navItems = [
-  { label: 'Dashboard', to: '/modules/finance' },
-  { label: 'Invoices', to: '/modules/finance/invoices' },
-  { label: 'Payments', to: '/modules/finance/payments' },
-  { label: 'Expenses', to: '/modules/finance/expenses' },
-  { label: 'Fee Structures', to: '/modules/finance/fee-structures' },
-  { label: 'Fee Assignments', to: '/modules/finance/fee-assignments' },
-  { label: 'Adjustments', to: '/modules/finance/adjustments' },
-  { label: 'Accounts', to: '/modules/finance/accounts' },
-  { label: 'Reconciliation', to: '/modules/finance/reconciliation' },
-  { label: 'Reports', to: '/modules/finance/reports' },
-  { label: 'Scholarships', to: '/modules/finance/scholarships' },
-  { label: 'Refunds', to: '/modules/finance/refunds' },
-  { label: 'Settings', to: '/settings/finance' },
+const navSections = [
+  {
+    title: 'Finance',
+    items: [
+      { label: 'Dashboard', to: '/modules/finance' },
+      { label: 'Invoices', to: '/modules/finance/invoices' },
+      { label: 'Payments', to: '/modules/finance/payments' },
+      { label: 'Expenses', to: '/modules/finance/expenses' },
+      { label: 'Fee Structures', to: '/modules/finance/fee-structures' },
+      { label: 'Fee Assignments', to: '/modules/finance/fee-assignments' },
+      { label: 'Adjustments', to: '/modules/finance/adjustments' },
+      { label: 'Accounts', to: '/modules/finance/accounts' },
+      { label: 'Reconciliation', to: '/modules/finance/reconciliation' },
+      { label: 'Reports', to: '/modules/finance/reports' },
+      { label: 'Scholarships', to: '/modules/finance/scholarships' },
+      { label: 'Refunds', to: '/modules/finance/refunds' },
+      { label: 'Settings', to: '/settings/finance' },
+    ],
+  },
 ]
 
 export default function FinanceLayout() {
@@ -25,9 +30,16 @@ export default function FinanceLayout() {
   const [isNavOpen, setIsNavOpen] = useState(false)
   const [navQuery, setNavQuery] = useState('')
 
-  const filteredNavItems = navItems.filter((item) =>
-    item.label.toLowerCase().includes(navQuery.trim().toLowerCase()),
-  )
+  const filteredSections = useMemo(() => {
+    const term = navQuery.trim().toLowerCase()
+    if (!term) return navSections
+    return navSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item.label.toLowerCase().includes(term)),
+      }))
+      .filter((section) => section.items.length > 0)
+  }, [navQuery])
 
   useEffect(() => {
     setIsNavOpen(false)
@@ -51,25 +63,32 @@ export default function FinanceLayout() {
             value={navQuery}
             onChange={(event) => setNavQuery(event.target.value)}
           />
-          <div className={`mt-4 space-y-2 text-sm ${isNavOpen ? 'block' : 'hidden'} md:block`}>
-            {filteredNavItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/modules/finance'}
-                onClick={() => setIsNavOpen(false)}
-                className={({ isActive }) =>
-                  `block rounded-xl px-4 py-2 transition ${
-                    isActive
-                      ? 'bg-emerald-500/15 text-emerald-200'
-                      : 'text-slate-300 hover:bg-slate-800/60'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
+          <div className={`mt-5 space-y-4 text-sm ${isNavOpen ? 'block' : 'hidden'} md:block`}>
+            {filteredSections.map((section) => (
+              <div key={section.title}>
+                <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">{section.title}</p>
+                <div className="mt-2 space-y-2">
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.to === '/modules/finance'}
+                      onClick={() => setIsNavOpen(false)}
+                      className={({ isActive }) =>
+                        `block rounded-xl px-4 py-2 transition ${
+                          isActive
+                            ? 'bg-emerald-500/15 text-emerald-200'
+                            : 'text-slate-300 hover:bg-slate-800/60'
+                        }`
+                      }
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
             ))}
-            {filteredNavItems.length === 0 ? (
+            {filteredSections.length === 0 ? (
               <p className="rounded-xl border border-slate-800 px-4 py-2 text-xs text-slate-400">
                 No matching sections.
               </p>

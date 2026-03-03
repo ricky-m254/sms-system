@@ -105,6 +105,13 @@ class LibraryMember(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="library_memberships")
+    student = models.OneToOneField(
+        "school.Student",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="library_member_profile",
+    )
     member_id = models.CharField(max_length=60, unique=True)
     member_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="Student")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Active")

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type FeeStructure = {
   id: number
@@ -49,21 +50,6 @@ type FeeAssignment = {
   is_active: boolean
   start_date?: string
   end_date?: string
-}
-
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
 }
 
 export default function FinanceFeeAssignmentFormPage() {
@@ -120,7 +106,7 @@ export default function FinanceFeeAssignmentFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setFormError(extractApiError(err, 'Unable to load assignment data.'))
+          setFormError(extractApiErrorMessage(err, 'Unable to load assignment data.'))
         }
       } finally {
         if (isMounted) {
@@ -223,26 +209,20 @@ export default function FinanceFeeAssignmentFormPage() {
         state: { flash: isEdit ? 'Fee assignment updated.' : 'Fee assignment created.' },
       })
     } catch (err) {
-      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
-      if (data && typeof data === 'object') {
-        const nextErrors: Record<string, string> = {}
-        const assign = (key: string) => {
-          const value = data[key]
-          if (Array.isArray(value)) {
-            nextErrors[key] = value.join(' ')
-          } else if (typeof value === 'string') {
-            nextErrors[key] = value
-          }
-        }
-        ;['student', 'fee_structure', 'discount_amount', 'start_date', 'end_date', 'is_active'].forEach(assign)
-        if (Object.keys(nextErrors).length > 0) {
-          setFieldErrors(nextErrors)
-          setFormError('Please correct the highlighted fields.')
-          return
-        }
+      const nextErrors = mapApiFieldErrors(err, [
+        'student',
+        'fee_structure',
+        'discount_amount',
+        'start_date',
+        'end_date',
+        'is_active',
+      ])
+      if (Object.keys(nextErrors).length > 0) {
+        setFieldErrors(nextErrors)
+        setFormError(extractApiErrorMessage(err, 'Please correct the highlighted fields.'))
+        return
       }
-      const detail = (err as { response?: { data?: { detail?: string; error?: string } } })?.response?.data
-      setFormError(detail?.error ?? detail?.detail ?? extractApiError(err, 'Unable to save fee assignment.'))
+      setFormError(extractApiErrorMessage(err, 'Unable to save fee assignment.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -273,6 +253,7 @@ export default function FinanceFeeAssignmentFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.student}
+              aria-invalid={Boolean(fieldErrors.student)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, student: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, student: '' }))
@@ -295,6 +276,7 @@ export default function FinanceFeeAssignmentFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.fee_structure}
+              aria-invalid={Boolean(fieldErrors.fee_structure)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, fee_structure: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, fee_structure: '' }))
@@ -320,6 +302,7 @@ export default function FinanceFeeAssignmentFormPage() {
               step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.discount_amount}
+              aria-invalid={Boolean(fieldErrors.discount_amount)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, discount_amount: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, discount_amount: '' }))
@@ -337,6 +320,7 @@ export default function FinanceFeeAssignmentFormPage() {
               type="date"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.start_date}
+              aria-invalid={Boolean(fieldErrors.start_date)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, start_date: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, start_date: '' }))
@@ -353,6 +337,7 @@ export default function FinanceFeeAssignmentFormPage() {
               type="date"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.end_date}
+              aria-invalid={Boolean(fieldErrors.end_date)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, end_date: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, end_date: '' }))
@@ -373,7 +358,7 @@ export default function FinanceFeeAssignmentFormPage() {
             Active
           </label>
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"

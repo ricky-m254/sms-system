@@ -170,6 +170,7 @@ class LibraryCoreTests(TenantTestBase):
         sync = LibraryMemberViewSet.as_view({"post": "sync"})(sync_req)
         self.assertEqual(sync.status_code, 200)
         self.assertGreaterEqual(sync.data["created"], 1)
+        self.assertTrue(LibraryMember.objects.filter(student=student, is_active=True).exists())
 
         waiting_member = LibraryMember.objects.create(member_id="LIB-002", member_type="Student", user=self.user2)
         waiting_res_req = self.factory.post(

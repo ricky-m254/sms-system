@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from django.http import JsonResponse
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -19,4 +19,7 @@ urlpatterns = [
     
     # 2. Authentication (Login)
     path("api/auth/login/", TokenObtainPairView.as_view()),
+
+    # 3. Platform (Super Tenant) APIs
+    path("api/platform/", include("clients.platform_urls")),
 ]   

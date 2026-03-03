@@ -18,7 +18,17 @@ from .views import (
     AdmissionReviewViewSet,
     ShortlistedApplicationsView,
 )
-from school.models import AcademicYear, AuditLog, SchoolClass, Term
+from school.models import (
+    AcademicYear,
+    AuditLog,
+    FeeStructure,
+    SchoolClass,
+    SchoolProfile,
+    Staff,
+    Subject,
+    TeacherAssignment,
+    Term,
+)
 
 
 User = get_user_model()
@@ -72,6 +82,32 @@ class AdmissionsPhaseBTests(TenantTestBase):
             name="Grade 7",
             stream="A",
             academic_year=self.year,
+            is_active=True,
+        )
+        SchoolProfile.objects.create(school_name="Admissions Test School", is_active=True)
+        self.subject = Subject.objects.create(name="Mathematics", code="ADM-MATH", is_active=True)
+        Staff.objects.create(
+            first_name="Class",
+            last_name="Teacher",
+            employee_id="ADM-EMP-001",
+            role="Teacher",
+            phone="0700000001",
+            is_active=True,
+        )
+        TeacherAssignment.objects.create(
+            teacher=self.user,
+            subject=self.subject,
+            class_section=self.school_class,
+            academic_year=self.year,
+            term=self.term,
+            is_primary=True,
+            is_active=True,
+        )
+        FeeStructure.objects.create(
+            name="Admissions Test Tuition",
+            amount="1000.00",
+            academic_year=self.year,
+            term=self.term,
             is_active=True,
         )
 

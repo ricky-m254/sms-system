@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/auth'
 const navItems = [
   { label: 'Dashboard', to: '/modules/students' },
   { label: 'Student Directory', to: '/modules/students/directory' },
-  { label: 'Admissions', to: '/modules/admissions/applications' },
+  { label: 'Admissions', to: '/modules/students/admissions' },
   { label: 'Attendance', to: '/modules/students/attendance' },
   { label: 'Behavior & Discipline', to: '/modules/students/behavior' },
   { label: 'Medical Records', to: '/modules/students/medical' },

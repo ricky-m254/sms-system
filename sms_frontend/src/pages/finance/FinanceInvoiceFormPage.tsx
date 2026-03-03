@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { useAuthStore } from '../../store/auth'
+import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type FinanceStudent = {
   id: number
@@ -167,8 +168,7 @@ export default function FinanceInvoiceFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-          setFormError(detail ?? 'Unable to load invoice references.')
+          setFormError(extractApiErrorMessage(err, 'Unable to load invoice references.'))
         }
       } finally {
         if (isMounted) {
@@ -385,7 +385,11 @@ export default function FinanceInvoiceFormPage() {
           setLineItemErrors((prev) => (prev.length > 0 ? prev : [{ fee_structure: 'Add line items.' }]))
         }
       }
-      setFormError(detail?.error ?? detail?.detail ?? 'Unable to create invoice.')
+      const nextErrors = mapApiFieldErrors(err, ['student', 'term', 'due_date'])
+      if (Object.keys(nextErrors).length > 0) {
+        setFieldErrors((prev) => ({ ...prev, ...nextErrors }))
+      }
+      setFormError(extractApiErrorMessage(err, 'Unable to create invoice.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -422,6 +426,7 @@ export default function FinanceInvoiceFormPage() {
               <select
                 className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
                 value={formState.student}
+                aria-invalid={Boolean(fieldErrors.student)}
                 onChange={(event) => {
                   setFormState((prev) => ({ ...prev, student: event.target.value }))
                   setFieldErrors((prev) => ({ ...prev, student: '' }))
@@ -445,6 +450,7 @@ export default function FinanceInvoiceFormPage() {
               <select
                 className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
                 value={formState.term}
+                aria-invalid={Boolean(fieldErrors.term)}
                 onChange={(event) => {
                   setFormState((prev) => ({ ...prev, term: event.target.value }))
                   setFieldErrors((prev) => ({ ...prev, term: '' }))
@@ -469,6 +475,7 @@ export default function FinanceInvoiceFormPage() {
                 type="date"
                 className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
                 value={formState.due_date}
+                aria-invalid={Boolean(fieldErrors.due_date)}
                 onChange={(event) => {
                   setFormState((prev) => ({ ...prev, due_date: event.target.value }))
                   setFieldErrors((prev) => ({ ...prev, due_date: '' }))
@@ -673,7 +680,7 @@ export default function FinanceInvoiceFormPage() {
 
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
           {formSuccess ? <p className="text-xs text-emerald-300">{formSuccess}</p> : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"

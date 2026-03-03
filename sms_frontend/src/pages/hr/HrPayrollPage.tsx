@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type Employee = {
   id: number
@@ -257,17 +259,12 @@ export default function HrPayrollPage() {
   const downloadBankFile = async (payrollId: number) => {
     try {
       const response = await apiClient.get(`/hr/payrolls/${payrollId}/bank-file/`, { responseType: 'blob' })
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `payroll_bank_file_${payrollId}.csv`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to download bank file.')
+      downloadFromResponse(
+        response as { data: Blob; headers?: Record<string, unknown> },
+        `payroll_bank_file_${payrollId}.csv`,
+      )
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to download bank file.'))
     }
   }
 
@@ -276,34 +273,24 @@ export default function HrPayrollPage() {
       const response = await apiClient.get(`/hr/payrolls/tax-report/?month=${runMonth}&year=${runYear}`, {
         responseType: 'blob',
       })
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `payroll_tax_report_${runYear}_${runMonth}.csv`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to download tax report.')
+      downloadFromResponse(
+        response as { data: Blob; headers?: Record<string, unknown> },
+        `payroll_tax_report_${runYear}_${runMonth}.csv`,
+      )
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to download tax report.'))
     }
   }
 
   const downloadPayslip = async (payslipId: number) => {
     try {
       const response = await apiClient.get(`/hr/payslips/${payslipId}/pdf/`, { responseType: 'blob' })
-      const blob = new Blob([response.data], { type: 'application/octet-stream' })
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `payslip_${payslipId}.txt`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to download payslip.')
+      downloadFromResponse(
+        response as { data: Blob; headers?: Record<string, unknown> },
+        `payslip_${payslipId}.txt`,
+      )
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to download payslip.'))
     }
   }
 

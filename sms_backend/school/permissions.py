@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from .module_focus import is_module_allowed
 
 class IsSchoolAdmin(permissions.BasePermission):
     """
@@ -45,6 +46,8 @@ class HasModuleAccess(permissions.BasePermission):
             return False
 
         module_key = getattr(view, "module_key", None)
+        if module_key and not is_module_allowed(module_key):
+            return False
         if not module_key:
             return True
 
@@ -60,3 +63,16 @@ class HasModuleAccess(permissions.BasePermission):
             module__is_active=True,
             is_active=True
         ).exists()
+
+
+class IsAcademicStaff(permissions.BasePermission):
+    """
+    Allows access only to teaching/academic authority roles.
+    Parents and finance-only users are denied even if module assignment exists.
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if not hasattr(request.user, 'userprofile'):
+            return False
+        return request.user.userprofile.role.name in ['TEACHER', 'ADMIN', 'TENANT_SUPER_ADMIN']

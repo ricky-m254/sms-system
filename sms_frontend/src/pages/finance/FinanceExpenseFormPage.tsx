@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type Expense = {
   id: number
@@ -34,6 +35,7 @@ export default function FinanceExpenseFormPage() {
     approval_status: '',
   })
   const isFormDisabled = isSubmitting || isLoading
+  const today = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
     let isMounted = true
@@ -86,6 +88,9 @@ export default function FinanceExpenseFormPage() {
       nextErrors.amount = 'Enter a valid amount.'
     }
     if (!formState.expense_date) nextErrors.expense_date = 'Choose an expense date.'
+    if (formState.expense_date && formState.expense_date > today) {
+      nextErrors.expense_date = 'Expense date cannot be in the future.'
+    }
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors)
       setFormError('Please correct the highlighted fields.')
@@ -114,34 +119,21 @@ export default function FinanceExpenseFormPage() {
         state: { flash: isEdit ? 'Expense updated.' : 'Expense created.' },
       })
     } catch (err) {
-      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
-      if (data && typeof data === 'object') {
-        const nextErrors: Record<string, string> = {}
-        const assign = (key: string) => {
-          const value = data[key]
-          if (Array.isArray(value)) {
-            nextErrors[key] = value.join(' ')
-          } else if (typeof value === 'string') {
-            nextErrors[key] = value
-          }
-        }
-        ;[
-          'category',
-          'amount',
-          'expense_date',
-          'vendor',
-          'payment_method',
-          'invoice_number',
-          'approval_status',
-        ].forEach(assign)
-        if (Object.keys(nextErrors).length > 0) {
-          setFieldErrors(nextErrors)
-          setFormError('Please correct the highlighted fields.')
-          return
-        }
+      const nextErrors = mapApiFieldErrors(err, [
+        'category',
+        'amount',
+        'expense_date',
+        'vendor',
+        'payment_method',
+        'invoice_number',
+        'approval_status',
+      ])
+      if (Object.keys(nextErrors).length > 0) {
+        setFieldErrors(nextErrors)
+        setFormError(extractApiErrorMessage(err, 'Please correct the highlighted fields.'))
+        return
       }
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setFormError(detail ?? 'Unable to save expense.')
+      setFormError(extractApiErrorMessage(err, 'Unable to save expense.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -172,6 +164,7 @@ export default function FinanceExpenseFormPage() {
             <input
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.category}
+              aria-invalid={Boolean(fieldErrors.category)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, category: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, category: '' }))
@@ -188,6 +181,7 @@ export default function FinanceExpenseFormPage() {
             <input
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
+              aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, amount: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, amount: '' }))
@@ -205,6 +199,7 @@ export default function FinanceExpenseFormPage() {
               type="date"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.expense_date}
+              aria-invalid={Boolean(fieldErrors.expense_date)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, expense_date: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, expense_date: '' }))
@@ -220,6 +215,7 @@ export default function FinanceExpenseFormPage() {
             <input
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.vendor}
+              aria-invalid={Boolean(fieldErrors.vendor)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, vendor: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, vendor: '' }))
@@ -236,6 +232,7 @@ export default function FinanceExpenseFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.payment_method}
+              aria-invalid={Boolean(fieldErrors.payment_method)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, payment_method: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, payment_method: '' }))
@@ -259,6 +256,7 @@ export default function FinanceExpenseFormPage() {
             <input
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.invoice_number}
+              aria-invalid={Boolean(fieldErrors.invoice_number)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, invoice_number: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, invoice_number: '' }))
@@ -275,6 +273,7 @@ export default function FinanceExpenseFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.approval_status}
+              aria-invalid={Boolean(fieldErrors.approval_status)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, approval_status: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, approval_status: '' }))
@@ -301,7 +300,7 @@ export default function FinanceExpenseFormPage() {
             />
           </label>
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"

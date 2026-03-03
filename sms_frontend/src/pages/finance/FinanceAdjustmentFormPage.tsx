@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type Invoice = {
   id: number
@@ -35,21 +36,6 @@ type EnrollmentRef = {
   term?: number
 }
 
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
-}
-
 export default function FinanceAdjustmentFormPage() {
   const navigate = useNavigate()
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -80,7 +66,7 @@ export default function FinanceAdjustmentFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setFormError(extractApiError(err, 'Unable to load invoices.'))
+          setFormError(extractApiErrorMessage(err, 'Unable to load invoices.'))
         }
       } finally {
         if (isMounted) {
@@ -178,26 +164,13 @@ export default function FinanceAdjustmentFormPage() {
         state: { flash: 'Adjustment submitted for review.' },
       })
     } catch (err) {
-      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
-      if (data && typeof data === 'object') {
-        const nextErrors: Record<string, string> = {}
-        const assign = (key: string) => {
-          const value = data[key]
-          if (Array.isArray(value)) {
-            nextErrors[key] = value.join(' ')
-          } else if (typeof value === 'string') {
-            nextErrors[key] = value
-          }
-        }
-        ;['invoice', 'amount', 'reason', 'notes'].forEach(assign)
-        if (Object.keys(nextErrors).length > 0) {
-          setFieldErrors(nextErrors)
-          setFormError('Please correct the highlighted fields.')
-          return
-        }
+      const nextErrors = mapApiFieldErrors(err, ['invoice', 'amount', 'reason', 'notes'])
+      if (Object.keys(nextErrors).length > 0) {
+        setFieldErrors(nextErrors)
+        setFormError(extractApiErrorMessage(err, 'Please correct the highlighted fields.'))
+        return
       }
-      const detail = (err as { response?: { data?: { error?: string; detail?: string } } })?.response?.data
-      setFormError(detail?.error ?? detail?.detail ?? extractApiError(err, 'Unable to create adjustment.'))
+      setFormError(extractApiErrorMessage(err, 'Unable to create adjustment.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -224,6 +197,7 @@ export default function FinanceAdjustmentFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.invoice}
+              aria-invalid={Boolean(fieldErrors.invoice)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, invoice: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, invoice: '' }))
@@ -251,6 +225,7 @@ export default function FinanceAdjustmentFormPage() {
               step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
+              aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, amount: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, amount: '' }))
@@ -266,6 +241,7 @@ export default function FinanceAdjustmentFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.reason}
+              aria-invalid={Boolean(fieldErrors.reason)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, reason: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, reason: '' }))
@@ -287,6 +263,7 @@ export default function FinanceAdjustmentFormPage() {
             <textarea
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.notes}
+              aria-invalid={Boolean(fieldErrors.notes)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, notes: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, notes: '' }))
@@ -298,7 +275,7 @@ export default function FinanceAdjustmentFormPage() {
             ) : null}
           </label>
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"

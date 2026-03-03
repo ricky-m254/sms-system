@@ -6,6 +6,7 @@ import parentSettings from './schemas/parents'
 import academicsSettings from './schemas/academics'
 import staffSettings from './schemas/staff'
 import communicationSettings from './schemas/communication'
+import { isSettingsKeyEnabled } from '../config/moduleFocus'
 
 export const settingsSchemas: Record<string, SettingsSchema> = {
   global: globalSettings,
@@ -17,7 +18,7 @@ export const settingsSchemas: Record<string, SettingsSchema> = {
   communication: communicationSettings,
 }
 
-export const settingsSidebar = [
+const ALL_SETTINGS_SIDEBAR = [
   { key: 'global', label: 'Global Settings' },
   { key: 'finance', label: 'Finance Settings' },
   { key: 'students', label: 'Student Settings' },
@@ -26,3 +27,5 @@ export const settingsSidebar = [
   { key: 'staff', label: 'Staff Settings' },
   { key: 'communication', label: 'Communication Settings' },
 ]
+
+export const settingsSidebar = ALL_SETTINGS_SIDEBAR.filter((item) => isSettingsKeyEnabled(item.key))

@@ -19,3 +19,14 @@ export const extractFilename = (contentDisposition?: string, fallback = 'report'
   if (plainMatch?.[1]) return plainMatch[1].replace(/['"]/g, '').trim()
   return fallback
 }
+
+type BlobResponse = {
+  data: Blob
+  headers?: Record<string, unknown>
+}
+
+export const downloadFromResponse = (response: BlobResponse, fallbackFilename: string) => {
+  const contentDisposition = String(response.headers?.['content-disposition'] ?? '')
+  const filename = extractFilename(contentDisposition, fallbackFilename)
+  downloadBlob(response.data, filename)
+}

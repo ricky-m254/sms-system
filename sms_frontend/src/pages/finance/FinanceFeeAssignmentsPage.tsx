@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type FeeAssignment = {
   id: number
@@ -24,21 +26,6 @@ type FinanceStudent = {
 type FeeStructure = {
   id: number
   name: string
-}
-
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
 }
 
 const statusBadgeClass = (isActive: boolean) =>
@@ -123,7 +110,7 @@ export default function FinanceFeeAssignmentsPage() {
               'Fee assignments endpoint not found (404). Backend route is likely missing; register FeeAssignmentViewSet.',
             )
           } else {
-            setError(extractApiError(err, 'Unable to load fee assignments. Please try again.'))
+            setError(extractApiErrorMessage(err, 'Unable to load fee assignments. Please try again.'))
           }
         }
       } finally {
@@ -175,7 +162,7 @@ export default function FinanceFeeAssignmentsPage() {
       setAssignments((prev) => prev.filter((assignment) => assignment.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err) {
-      setDeleteError(extractApiError(err, 'Unable to delete fee assignment.'))
+      setDeleteError(extractApiErrorMessage(err, 'Unable to delete fee assignment.'))
     } finally {
       setIsDeleting(false)
     }
@@ -226,7 +213,7 @@ export default function FinanceFeeAssignmentsPage() {
               }}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -241,7 +228,7 @@ export default function FinanceFeeAssignmentsPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={feeFilter}
               onChange={(event) => {
                 setFeeFilter(event.target.value)
@@ -256,7 +243,7 @@ export default function FinanceFeeAssignmentsPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value as 'all' | 'active' | 'inactive')
@@ -268,7 +255,7 @@ export default function FinanceFeeAssignmentsPage() {
               <option value="inactive">Inactive</option>
             </select>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={() => {
                 setQuery('')
                 setStudentFilter('all')
@@ -280,13 +267,14 @@ export default function FinanceFeeAssignmentsPage() {
               Reset
             </button>
             <button
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 sm:w-auto"
               onClick={() => navigate('/modules/finance/fee-assignments/new')}
             >
               Assign fee
             </button>
           </div>
         </div>
+        <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
           <table className="min-w-[840px] w-full text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
@@ -364,34 +352,21 @@ export default function FinanceFeeAssignmentsPage() {
         </div>
       </section>
 
-      {deleteTarget ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6">
-            <h3 className="text-lg font-display font-semibold">Delete fee assignment</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              This will remove the assignment for{' '}
-              <strong>{deleteTarget.student_name ?? deleteTarget.student}</strong>. Continue?
-            </p>
-            {deleteError ? <p className="mt-3 text-xs text-rose-300">{deleteError}</p> : null}
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Confirm delete'}
-              </button>
-              <button
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
-                onClick={() => setDeleteTarget(null)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete fee assignment"
+        description={
+          <>
+            This will remove the assignment for{' '}
+            <strong>{deleteTarget?.student_name ?? deleteTarget?.student}</strong>. Continue?
+          </>
+        }
+        confirmLabel="Confirm delete"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

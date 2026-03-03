@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type DocumentRow = { id: number; staff: number; staff_name: string; title: string; document_type: string; verification_status: string; expiry_date: string | null }
@@ -75,17 +77,9 @@ export default function StaffDocumentsPage() {
   const download = async (id: number) => {
     try {
       const response = await apiClient.get(`/staff/documents/${id}/download/`, { responseType: 'blob' })
-      const blob = new Blob([response.data])
-      const url = URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `staff_document_${id}`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      URL.revokeObjectURL(url)
-    } catch {
-      setError('Unable to download document.')
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, `staff_document_${id}`)
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to download document.'))
     }
   }
 

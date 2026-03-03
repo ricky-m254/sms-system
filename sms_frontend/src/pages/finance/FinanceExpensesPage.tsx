@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
 import { downloadBlob } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 import { format, parseISO } from 'date-fns'
 import {
   Bar,
@@ -54,21 +56,6 @@ type Budget = {
     category: string
     limit: number
   }>
-}
-
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
 }
 
 export default function FinanceExpensesPage() {
@@ -191,7 +178,7 @@ export default function FinanceExpensesPage() {
         } else if (status === 404) {
           setBudgetNotice('Budget API endpoint not found.')
         } else {
-          setBudgetNotice(extractApiError(err, 'Budget API unavailable.'))
+          setBudgetNotice(extractApiErrorMessage(err, 'Budget API unavailable.'))
         }
       }
     }
@@ -257,7 +244,7 @@ export default function FinanceExpensesPage() {
           } else if (status === 404) {
             setError('Finance endpoints not found (404). Verify tenant routing.')
           } else {
-            setError(extractApiError(err, 'Unable to load expenses. Please try again.'))
+            setError(extractApiErrorMessage(err, 'Unable to load expenses. Please try again.'))
           }
         }
       } finally {
@@ -441,7 +428,7 @@ export default function FinanceExpensesPage() {
       setExpenses((prev) => prev.filter((expense) => expense.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err) {
-      setDeleteError(extractApiError(err, 'Unable to delete expense.'))
+      setDeleteError(extractApiErrorMessage(err, 'Unable to delete expense.'))
     } finally {
       setIsDeleting(false)
     }
@@ -476,7 +463,7 @@ export default function FinanceExpensesPage() {
       })()
       setBudgetNotice('Budget saved successfully.')
     } catch (err) {
-      setBudgetNotice(extractApiError(err, 'Budget API unavailable. Save failed.'))
+      setBudgetNotice(extractApiErrorMessage(err, 'Budget API unavailable. Save failed.'))
     } finally {
       setIsSavingBudget(false)
     }
@@ -810,7 +797,7 @@ export default function FinanceExpensesPage() {
               }}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={categoryFilter}
               onChange={(event) => {
                 setCategoryFilter(event.target.value)
@@ -825,7 +812,7 @@ export default function FinanceExpensesPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={approvalFilter}
               onChange={(event) => {
                 setApprovalFilter(event.target.value)
@@ -838,7 +825,7 @@ export default function FinanceExpensesPage() {
               <option value="Rejected">Rejected</option>
             </select>
             <input
-              className="w-full max-w-[160px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[160px]"
               placeholder="Vendor"
               value={vendorQuery}
               onChange={(event) => {
@@ -848,7 +835,7 @@ export default function FinanceExpensesPage() {
             />
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -857,7 +844,7 @@ export default function FinanceExpensesPage() {
             />
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -865,25 +852,26 @@ export default function FinanceExpensesPage() {
               }}
             />
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={handleExportCsv}
             >
               Export CSV
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={handleExportSummary}
             >
               Export summary
             </button>
             <button
-              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900"
+              className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 sm:w-auto"
               onClick={() => navigate('/modules/finance/expenses/new')}
             >
               Create expense
             </button>
           </div>
         </div>
+        <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
           <table className="min-w-[980px] w-full text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
@@ -1048,33 +1036,20 @@ export default function FinanceExpensesPage() {
         </div>
       </section>
 
-      {deleteTarget ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6">
-            <h3 className="text-lg font-display font-semibold">Delete expense</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              This will permanently remove <strong>{deleteTarget.category}</strong>. Continue?
-            </p>
-            {deleteError ? <p className="mt-3 text-xs text-rose-300">{deleteError}</p> : null}
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Confirm delete'}
-              </button>
-              <button
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
-                onClick={() => setDeleteTarget(null)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete expense"
+        description={
+          <>
+            This will permanently remove <strong>{deleteTarget?.category}</strong>. Continue?
+          </>
+        }
+        confirmLabel="Confirm delete"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

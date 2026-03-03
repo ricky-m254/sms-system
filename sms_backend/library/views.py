@@ -181,22 +181,35 @@ class LibraryMemberViewSet(LibraryAccessMixin, viewsets.ModelViewSet):
         try:
             from school.models import Student
 
-            for student in Student.objects.filter(is_active=True).only("id", "admission_number"):
+            for student in Student.objects.filter(is_active=True).only("id", "admission_number", "first_name", "last_name"):
                 member_code = f"LIB-STU-{student.id}"
-                member, was_created = LibraryMember.objects.get_or_create(
-                    member_id=member_code,
-                    defaults={
-                        "member_type": "Student",
-                        "status": "Active",
-                    },
+                member = (
+                    LibraryMember.objects.filter(student=student).first()
+                    or LibraryMember.objects.filter(member_id=member_code).first()
                 )
+                was_created = False
+                if not member:
+                    member = LibraryMember.objects.create(
+                        member_id=member_code,
+                        member_type="Student",
+                        status="Active",
+                        student=student,
+                        is_active=True,
+                    )
+                    was_created = True
                 if was_created:
                     created += 1
-                elif not member.is_active or member.status != "Active":
+                elif (
+                    not member.is_active
+                    or member.status != "Active"
+                    or member.member_type != "Student"
+                    or member.student_id != student.id
+                ):
                     member.is_active = True
                     member.status = "Active"
                     member.member_type = "Student"
-                    member.save(update_fields=["is_active", "status", "member_type"])
+                    member.student = student
+                    member.save(update_fields=["is_active", "status", "member_type", "student"])
                     reactivated += 1
                 else:
                     unchanged += 1

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type FeeStructure = {
   id: number
@@ -23,21 +24,6 @@ type Term = {
   id: number
   name: string
   academic_year_id: number
-}
-
-const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
-  if (data && typeof data === 'object') {
-    const detail = (data as { detail?: unknown }).detail
-    if (typeof detail === 'string' && detail.trim()) return detail
-    const first = Object.values(data as Record<string, unknown>).find((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0,
-    )
-    if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
-    if (typeof first === 'string') return first
-  }
-  return fallback
 }
 
 export default function FinanceFeeStructureFormPage() {
@@ -98,7 +84,7 @@ export default function FinanceFeeStructureFormPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setFormError(extractApiError(err, 'Unable to load fee structure data.'))
+          setFormError(extractApiErrorMessage(err, 'Unable to load fee structure data.'))
         }
       } finally {
         if (isMounted) {
@@ -168,26 +154,20 @@ export default function FinanceFeeStructureFormPage() {
         state: { flash: isEdit ? 'Fee structure updated.' : 'Fee structure created.' },
       })
     } catch (err) {
-      const data = (err as { response?: { data?: Record<string, unknown> } })?.response?.data
-      if (data && typeof data === 'object') {
-        const nextErrors: Record<string, string> = {}
-        const assign = (key: string) => {
-          const value = data[key]
-          if (Array.isArray(value)) {
-            nextErrors[key] = value.join(' ')
-          } else if (typeof value === 'string') {
-            nextErrors[key] = value
-          }
-        }
-        ;['name', 'amount', 'category', 'academic_year', 'term', 'grade_level'].forEach(assign)
-        if (Object.keys(nextErrors).length > 0) {
-          setFieldErrors(nextErrors)
-          setFormError('Please correct the highlighted fields.')
-          return
-        }
+      const nextErrors = mapApiFieldErrors(err, [
+        'name',
+        'amount',
+        'category',
+        'academic_year',
+        'term',
+        'grade_level',
+      ])
+      if (Object.keys(nextErrors).length > 0) {
+        setFieldErrors(nextErrors)
+        setFormError(extractApiErrorMessage(err, 'Please correct the highlighted fields.'))
+        return
       }
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setFormError(detail ?? extractApiError(err, 'Unable to save fee structure.'))
+      setFormError(extractApiErrorMessage(err, 'Unable to save fee structure.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -218,6 +198,7 @@ export default function FinanceFeeStructureFormPage() {
             <input
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.name}
+              aria-invalid={Boolean(fieldErrors.name)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, name: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, name: '' }))
@@ -237,6 +218,7 @@ export default function FinanceFeeStructureFormPage() {
               step="0.01"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
+              aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, amount: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, amount: '' }))
@@ -253,6 +235,7 @@ export default function FinanceFeeStructureFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.category}
+              aria-invalid={Boolean(fieldErrors.category)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, category: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, category: '' }))
@@ -277,6 +260,7 @@ export default function FinanceFeeStructureFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.academic_year}
+              aria-invalid={Boolean(fieldErrors.academic_year)}
               onChange={(event) => {
                 setFormState((prev) => ({
                   ...prev,
@@ -303,6 +287,7 @@ export default function FinanceFeeStructureFormPage() {
             <select
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.term}
+              aria-invalid={Boolean(fieldErrors.term)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, term: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, term: '' }))
@@ -328,6 +313,7 @@ export default function FinanceFeeStructureFormPage() {
               step="1"
               className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.grade_level}
+              aria-invalid={Boolean(fieldErrors.grade_level)}
               onChange={(event) => {
                 setFormState((prev) => ({ ...prev, grade_level: event.target.value }))
                 setFieldErrors((prev) => ({ ...prev, grade_level: '' }))
@@ -349,7 +335,7 @@ export default function FinanceFeeStructureFormPage() {
             Active
           </label>
           {formError ? <p className="text-xs text-rose-300">{formError}</p> : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"

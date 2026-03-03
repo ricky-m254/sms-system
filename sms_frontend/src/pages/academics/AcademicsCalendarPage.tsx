@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type AcademicYear = { id: number; name: string }
 type Term = { id: number; name: string }
@@ -22,21 +25,6 @@ type CalendarEvent = {
   is_public: boolean
 }
 
-function getErrorMessage(err: unknown): string {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (!data) return 'Request failed.'
-  if (typeof data === 'string') return data
-  if (typeof data === 'object') {
-    const messages: string[] = []
-    Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
-      if (Array.isArray(value)) messages.push(`${key}: ${value.join(' ')}`)
-      else if (typeof value === 'string') messages.push(`${key}: ${value}`)
-    })
-    if (messages.length > 0) return messages.join(' | ')
-  }
-  return 'Request failed.'
-}
-
 export default function AcademicsCalendarPage() {
   const [years, setYears] = useState<AcademicYear[]>([])
   const [terms, setTerms] = useState<Term[]>([])
@@ -45,6 +33,7 @@ export default function AcademicsCalendarPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
+  const [archiveTarget, setArchiveTarget] = useState<CalendarEvent | null>(null)
 
   const [form, setForm] = useState({
     title: '',
@@ -75,7 +64,7 @@ export default function AcademicsCalendarPage() {
       setClasses(normalizePaginatedResponse<SchoolClass>(classesRes.data).items)
       setEvents(normalizePaginatedResponse<CalendarEvent>(eventsRes.data).items)
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(extractApiErrorMessage(err, 'Unable to load calendar data.'))
     } finally {
       setIsLoading(false)
     }
@@ -89,6 +78,10 @@ export default function AcademicsCalendarPage() {
     event.preventDefault()
     setError(null)
     setFlash(null)
+    if (form.start_date && form.end_date && form.start_date > form.end_date) {
+      setError('Invalid date range: start date cannot be after end date.')
+      return
+    }
     try {
       await apiClient.post('/academics/calendar/', {
         ...form,
@@ -112,19 +105,21 @@ export default function AcademicsCalendarPage() {
       setFlash('Calendar event created.')
       await loadAll()
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(extractApiErrorMessage(err, 'Unable to create calendar event.'))
     }
   }
 
-  const deleteEvent = async (id: number) => {
+  const deleteEvent = async () => {
+    if (!archiveTarget) return
     setError(null)
     setFlash(null)
     try {
-      await apiClient.delete(`/academics/calendar/${id}/`)
+      await apiClient.delete(`/academics/calendar/${archiveTarget.id}/`)
+      setArchiveTarget(null)
       setFlash('Calendar event archived.')
       await loadAll()
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(extractApiErrorMessage(err, 'Unable to archive calendar event.'))
     }
   }
 
@@ -132,17 +127,9 @@ export default function AcademicsCalendarPage() {
     setError(null)
     try {
       const response = await apiClient.get('/academics/calendar/export/', { responseType: 'blob' })
-      const blob = new Blob([response.data], { type: 'text/calendar' })
-      const url = window.URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = 'academic_calendar.ics'
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      window.URL.revokeObjectURL(url)
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, 'academic_calendar.ics')
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(extractApiErrorMessage(err, 'Unable to export academic calendar.'))
     }
   }
 
@@ -221,7 +208,7 @@ export default function AcademicsCalendarPage() {
                   <td className="px-3 py-2">{item.scope} {item.class_section_name ? `(${item.class_section_name})` : ''}</td>
                   <td className="px-3 py-2">{item.is_public ? 'Yes' : 'No'}</td>
                   <td className="px-3 py-2">
-                    <button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => deleteEvent(item.id)}>
+                    <button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => setArchiveTarget(item)}>
                       Archive
                     </button>
                   </td>
@@ -236,6 +223,19 @@ export default function AcademicsCalendarPage() {
           </table>
         </div>
       </section>
+      <ConfirmDialog
+        open={archiveTarget !== null}
+        title="Archive Calendar Event"
+        description={
+          archiveTarget
+            ? `Archive "${archiveTarget.title}" (${archiveTarget.start_date} to ${archiveTarget.end_date})?`
+            : 'Archive this calendar event?'
+        }
+        confirmLabel="Archive"
+        cancelLabel="Cancel"
+        onCancel={() => setArchiveTarget(null)}
+        onConfirm={() => void deleteEvent()}
+      />
     </div>
   )
 }

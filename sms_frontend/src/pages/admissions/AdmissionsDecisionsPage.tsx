@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import { downloadFromResponse } from '../../utils/download'
+import { extractApiErrorMessage } from '../../utils/forms'
 
 type Application = { id: number; application_number?: string; student_first_name: string; student_last_name: string }
 type Decision = {
@@ -161,18 +163,10 @@ export default function AdmissionsDecisionsPage() {
       const response = await apiClient.get(`/admissions/decisions/${id}/offer-letter/`, {
         responseType: 'blob',
       })
-      const blob = new Blob([response.data], { type: 'application/pdf' })
-      const url = window.URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `offer_letter_${id}.pdf`
-      document.body.appendChild(anchor)
-      anchor.click()
-      anchor.remove()
-      window.URL.revokeObjectURL(url)
+      downloadFromResponse(response as { data: Blob; headers?: Record<string, unknown> }, `offer_letter_${id}.pdf`)
       setFlash('Offer letter downloaded.')
     } catch (err: any) {
-      setError(extractApiError(err?.response?.data, 'Unable to download offer letter.'))
+      setError(extractApiErrorMessage(err, 'Unable to download offer letter.'))
     } finally {
       setDownloadingById((prev) => ({ ...prev, [id]: false }))
     }

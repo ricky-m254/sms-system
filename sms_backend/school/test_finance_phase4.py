@@ -97,6 +97,36 @@ class FinancePhase4WebhookAndReconciliationTests(TenantTestBase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["processed"], True)
 
+    @override_settings(
+        FINANCE_WEBHOOK_TOKEN="",
+        FINANCE_WEBHOOK_SHARED_SECRET="",
+        FINANCE_WEBHOOK_STRICT_MODE=True,
+    )
+    def test_gateway_webhook_rejects_unconfigured_verification_in_strict_mode(self):
+        payload = {"event_id": "evt-3", "event_type": "payment.succeeded"}
+        request = self.factory.post(
+            "/api/finance/gateway/webhooks/mpesa/",
+            payload,
+            format="json",
+        )
+        response = FinanceGatewayWebhookView.as_view()(request, provider="mpesa")
+        self.assertEqual(response.status_code, 401)
+
+    @override_settings(
+        FINANCE_WEBHOOK_TOKEN="",
+        FINANCE_WEBHOOK_SHARED_SECRET="",
+        FINANCE_WEBHOOK_STRICT_MODE=False,
+    )
+    def test_gateway_webhook_allows_unconfigured_verification_in_non_strict_mode(self):
+        payload = {"event_id": "evt-4", "event_type": "payment.succeeded"}
+        request = self.factory.post(
+            "/api/finance/gateway/webhooks/mpesa/",
+            payload,
+            format="json",
+        )
+        response = FinanceGatewayWebhookView.as_view()(request, provider="mpesa")
+        self.assertEqual(response.status_code, 201)
+
     def test_bank_line_auto_match_uses_payment_reference(self):
         payment = Payment.objects.create(
             student=self.student,

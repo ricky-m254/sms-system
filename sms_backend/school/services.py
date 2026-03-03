@@ -459,6 +459,7 @@ class FinanceService:
     @transaction.atomic
     def record_payment(student, amount, payment_method, reference_number, notes=""):
         FinanceWriteGuard.ensure_student_readonly()
+        FinanceService._ensure_open_period(timezone.now().date())
         payment = Payment.objects.create(
             student=student,
             amount=amount,

@@ -152,6 +152,11 @@ class SchoolClassSerializer(serializers.ModelSerializer):
             "display_name",
             "class_teacher_name",
         ]
+        extra_kwargs = {
+            # Legacy `name`/`stream` are auto-derived from grade_level/section_name on create.
+            "name": {"required": False, "allow_blank": True},
+            "stream": {"required": False, "allow_blank": True},
+        }
 
     def get_display_name(self, obj):
         return obj.display_name
