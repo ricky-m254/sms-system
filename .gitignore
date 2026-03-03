@@ -13,3 +13,4 @@ __pycache__/
 coverage/
 *.log
 sms_backend/media/
+sms_backend/var/
