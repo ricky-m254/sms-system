@@ -86,6 +86,90 @@ class UserModuleAssignment(models.Model):
         return f"{self.user.username} -> {self.module.key}"
 
 
+class TenantModule(models.Model):
+    """
+    Tenant-scoped module enablement record.
+    Tenant isolation is guaranteed by schema-level isolation (django-tenants).
+    """
+    module = models.OneToOneField(Module, on_delete=models.CASCADE, related_name='tenant_module')
+    is_enabled = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', 'module__key']
+
+    def __str__(self):
+        return f"{self.module.key} ({'enabled' if self.is_enabled else 'disabled'})"
+
+
+class ModuleSetting(models.Model):
+    """
+    Theme + feature toggles per tenant module.
+    Flexible data is stored in JSON for forward compatibility.
+    """
+    PRESET_DEFAULT = "DEFAULT"
+    PRESET_MODERN = "MODERN"
+    PRESET_CLASSIC = "CLASSIC"
+    PRESET_MINIMAL = "MINIMAL"
+    PRESET_DARK = "DARK"
+    PRESET_CHOICES = [
+        (PRESET_DEFAULT, "Default"),
+        (PRESET_MODERN, "Modern"),
+        (PRESET_CLASSIC, "Classic"),
+        (PRESET_MINIMAL, "Minimal"),
+        (PRESET_DARK, "Dark"),
+    ]
+
+    SIDEBAR_COLLAPSED = "COLLAPSED"
+    SIDEBAR_EXPANDED = "EXPANDED"
+    SIDEBAR_ICON_ONLY = "ICON_ONLY"
+    SIDEBAR_STYLE_CHOICES = [
+        (SIDEBAR_COLLAPSED, "Collapsed"),
+        (SIDEBAR_EXPANDED, "Expanded"),
+        (SIDEBAR_ICON_ONLY, "Icon-only"),
+    ]
+
+    tenant_module = models.OneToOneField(
+        TenantModule,
+        on_delete=models.CASCADE,
+        related_name='settings',
+    )
+    theme_preset = models.CharField(max_length=20, choices=PRESET_CHOICES, default=PRESET_DEFAULT)
+    primary_color = models.CharField(max_length=16, default="#10b981")
+    secondary_color = models.CharField(max_length=16, default="#0ea5e9")
+    sidebar_style = models.CharField(
+        max_length=20,
+        choices=SIDEBAR_STYLE_CHOICES,
+        default=SIDEBAR_EXPANDED,
+    )
+    feature_toggles = models.JSONField(default=dict, blank=True)
+    config = models.JSONField(default=dict, blank=True)
+    created_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_module_settings',
+    )
+    updated_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='updated_module_settings',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['tenant_module__module__key']
+
+    def __str__(self):
+        return f"{self.tenant_module.module.key} settings"
+
+
 class AcademicYear(models.Model):
     name = models.CharField(max_length=50) # e.g., "2023-2024"
     start_date = models.DateField()

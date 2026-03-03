@@ -1,192 +1,328 @@
-import { Link, useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import SettingsField from '../../components/settings/SettingsField'
-import { settingsSchemas } from '../../settings'
-import { hasPermission, useCurrentUser } from '../../settings/permissions'
-import { useModuleSettings } from '../../settings/useModuleSettings'
-import { apiClient } from '../../api/client'
-import { isSettingsKeyEnabled } from '../../config/moduleFocus'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import {
+  type FeatureToggles,
+  type ModuleThemeSettings,
+  type ModuleThemeSettingsInput,
+  type TenantModule,
+  getTenantModuleSettings,
+  getTenantModules,
+  updateTenantModuleSettings,
+} from '../../api/moduleSettings'
+
+const PRESETS = ['DEFAULT', 'MODERN', 'CLASSIC', 'MINIMAL', 'DARK'] as const
+const SIDEBARS = ['COLLAPSED', 'EXPANDED', 'ICON_ONLY'] as const
+
+const EMPTY_TOGGLES: FeatureToggles = {
+  analytics: true,
+  reports: true,
+  export: true,
+  ai_assistant: false,
+}
+
+function normalizeModulePathKey(value: string | undefined): string {
+  if (!value) return ''
+  return value.trim().replace(/-/g, '_').toUpperCase()
+}
+
+function normalizeToggles(value: Partial<FeatureToggles> | undefined): FeatureToggles {
+  return {
+    analytics: Boolean(value?.analytics),
+    reports: Boolean(value?.reports),
+    export: Boolean(value?.export),
+    ai_assistant: Boolean(value?.ai_assistant),
+  }
+}
 
 export default function ModuleSettingsPage() {
   const params = useParams<{ module: string }>()
-  const moduleKey = params.module?.toLowerCase() ?? 'global'
-  const isEnabledSettingsKey = isSettingsKeyEnabled(moduleKey)
-  const schema = settingsSchemas[moduleKey]
-  const user = useCurrentUser()
-  const [showRestricted, setShowRestricted] = useState(false)
-  const canDebugPermissions = hasPermission(user, 'settings:debug')
-  const debugStorageKey = 'settings:debug_show_hidden'
-  const [maintenanceStatus, setMaintenanceStatus] = useState<string | null>(null)
-  const [isResettingSequences, setIsResettingSequences] = useState(false)
+  const navigate = useNavigate()
+  const [modules, setModules] = useState<TenantModule[]>([])
+  const [settings, setSettings] = useState<ModuleThemeSettings | null>(null)
+  const [draft, setDraft] = useState<ModuleThemeSettingsInput | null>(null)
+  const [loadingModules, setLoadingModules] = useState(true)
+  const [loadingSettings, setLoadingSettings] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
 
-  const { values, setValue, reset, storageKey } = useModuleSettings(moduleKey)
-
-  useEffect(() => {
-    if (!canDebugPermissions) {
-      setShowRestricted(false)
-      return
-    }
-    try {
-      const stored = localStorage.getItem(debugStorageKey)
-      setShowRestricted(stored === 'true')
-    } catch {
-      setShowRestricted(false)
-    }
-  }, [canDebugPermissions])
+  const selectedPathKey = normalizeModulePathKey(params.module)
 
   useEffect(() => {
-    if (!canDebugPermissions) return
-    try {
-      localStorage.setItem(debugStorageKey, String(showRestricted))
-    } catch {
-      // ignore
-    }
-  }, [canDebugPermissions, showRestricted])
+    let mounted = true
+    setLoadingModules(true)
+    setError(null)
 
-  if (!schema || !isEnabledSettingsKey) {
-    return (
-      <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-6">
-        <h1 className="text-lg font-display font-semibold text-rose-200">
-          Settings module unavailable
-        </h1>
-        <p className="mt-2 text-sm text-rose-200">
-          The requested settings page is locked in focus mode. Choose one of the active
-          settings modules below.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {Object.keys(settingsSchemas).filter((key) => isSettingsKeyEnabled(key)).map((key) => (
-            <Link
-              key={key}
-              className="rounded-full border border-rose-400/40 px-3 py-1 text-xs text-rose-200"
-              to={`/settings/${key}`}
-            >
-              {settingsSchemas[key].title}
-            </Link>
-          ))}
-        </div>
-      </div>
-    )
+    getTenantModules()
+      .then((rows) => {
+        if (!mounted) return
+        setModules(rows.filter((row) => row.is_enabled))
+      })
+      .catch(() => {
+        if (!mounted) return
+        setError('Unable to load tenant modules.')
+      })
+      .finally(() => {
+        if (!mounted) return
+        setLoadingModules(false)
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const selectedModule = useMemo(() => {
+    if (modules.length === 0) return null
+    if (selectedPathKey) {
+      const found = modules.find((module) => module.module_key === selectedPathKey)
+      if (found) return found
+    }
+    return modules[0]
+  }, [modules, selectedPathKey])
+
+  useEffect(() => {
+    if (!selectedModule) return
+    const slug = selectedModule.module_key.toLowerCase().replace(/_/g, '-')
+    if (slug !== (params.module ?? '').toLowerCase()) {
+      navigate(`/settings/${slug}`, { replace: true })
+    }
+  }, [navigate, params.module, selectedModule])
+
+  useEffect(() => {
+    if (!selectedModule) return
+    let mounted = true
+    setLoadingSettings(true)
+    setError(null)
+    setStatusMessage(null)
+
+    getTenantModuleSettings(selectedModule.module_id)
+      .then((payload) => {
+        if (!mounted) return
+        const normalized: ModuleThemeSettings = {
+          ...payload,
+          feature_toggles: normalizeToggles(payload.feature_toggles),
+        }
+        setSettings(normalized)
+        setDraft({
+          theme_preset: normalized.theme_preset,
+          primary_color: normalized.primary_color,
+          secondary_color: normalized.secondary_color,
+          sidebar_style: normalized.sidebar_style,
+          feature_toggles: normalized.feature_toggles,
+          config: normalized.config ?? {},
+        })
+      })
+      .catch(() => {
+        if (!mounted) return
+        setError('Unable to load module settings. You may not have admin access.')
+      })
+      .finally(() => {
+        if (!mounted) return
+        setLoadingSettings(false)
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [selectedModule])
+
+  const updateDraft = (patch: Partial<ModuleThemeSettingsInput>) => {
+    setDraft((prev) => {
+      if (!prev) return prev
+      return { ...prev, ...patch }
+    })
   }
 
-  const visibleSettings = schema.settings.filter((setting) => {
-    if (showRestricted) return true
-    return hasPermission(user, setting.requiredPermission)
-  })
+  const updateToggle = (key: keyof FeatureToggles, value: boolean) => {
+    setDraft((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        feature_toggles: {
+          ...prev.feature_toggles,
+          [key]: value,
+        },
+      }
+    })
+  }
 
-  const canSeeMaintenance = moduleKey === 'global' && canDebugPermissions
+  const resetDraft = () => {
+    if (!settings) return
+    setDraft({
+      theme_preset: settings.theme_preset,
+      primary_color: settings.primary_color,
+      secondary_color: settings.secondary_color,
+      sidebar_style: settings.sidebar_style,
+      feature_toggles: normalizeToggles(settings.feature_toggles),
+      config: settings.config ?? {},
+    })
+    setStatusMessage('Changes reverted.')
+  }
 
-  const handleSequenceReset = async () => {
-    setMaintenanceStatus(null)
-    setIsResettingSequences(true)
+  const saveChanges = async () => {
+    if (!selectedModule || !draft) return
+    setSaving(true)
+    setError(null)
+    setStatusMessage(null)
     try {
-      const response = await apiClient.post('/admin/maintenance/reset-sequences/')
-      const resetCount = Array.isArray(response.data?.reset) ? response.data.reset.length : 0
-      setMaintenanceStatus(`Sequences reset for ${resetCount} tables.`)
+      const updated = await updateTenantModuleSettings(selectedModule.module_id, {
+        ...draft,
+        feature_toggles: normalizeToggles(draft.feature_toggles),
+      })
+      const normalized = {
+        ...updated,
+        feature_toggles: normalizeToggles(updated.feature_toggles),
+      }
+      setSettings(normalized)
+      setDraft({
+        theme_preset: normalized.theme_preset,
+        primary_color: normalized.primary_color,
+        secondary_color: normalized.secondary_color,
+        sidebar_style: normalized.sidebar_style,
+        feature_toggles: normalized.feature_toggles,
+        config: normalized.config ?? {},
+      })
+      setStatusMessage('Module settings saved successfully.')
     } catch {
-      setMaintenanceStatus('Unable to reset sequences. Check permissions and backend logs.')
+      setError('Save failed. Only Tenant Admin can modify module settings.')
     } finally {
-      setIsResettingSequences(false)
+      setSaving(false)
     }
+  }
+
+  if (loadingModules) {
+    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">Loading modules...</div>
+  }
+
+  if (!selectedModule) {
+    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">No assigned modules were found for this tenant.</div>
   }
 
   return (
-    <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-          {schema.module} settings
-        </p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">{schema.title}</h1>
-        {schema.description ? (
-          <p className="mt-2 text-sm text-slate-400">{schema.description}</p>
-        ) : null}
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
-          <span className="rounded-full border border-slate-700 px-3 py-1">
-            Auto-saved locally
-          </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1">
-            Storage: {storageKey}
-          </span>
-          {canDebugPermissions ? (
-            <button
-              type="button"
-              onClick={() => setShowRestricted((prev) => !prev)}
-              className={`rounded-full border px-3 py-1 transition ${
-                showRestricted
-                  ? 'border-emerald-400/60 text-emerald-200'
-                  : 'border-slate-700 text-slate-300 hover:border-slate-500'
-              }`}
-            >
-              {showRestricted ? 'Hide restricted fields' : 'Show restricted fields'}
-            </button>
-          ) : null}
+    <div className="grid grid-cols-12 gap-6">
+      <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-4">
+        <h2 className="text-sm font-semibold text-slate-100">Module Settings</h2>
+        <p className="mt-1 text-xs text-slate-400">Select a module to configure its theme and feature toggles.</p>
+        <div className="mt-4 space-y-2">
+          {modules.map((module) => {
+            const isActive = module.module_key === selectedModule.module_key
+            const slug = module.module_key.toLowerCase().replace(/_/g, '-')
+            return (
+              <button
+                key={module.module_id}
+                type="button"
+                onClick={() => navigate(`/settings/${slug}`)}
+                className={`w-full rounded-xl border px-3 py-3 text-left transition ${
+                  isActive
+                    ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-100'
+                    : 'border-slate-700 bg-slate-950/30 text-slate-200 hover:border-slate-500'
+                }`}
+              >
+                <p className="text-sm font-semibold">{module.module_name}</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{module.module_key}</p>
+              </button>
+            )
+          })}
         </div>
-      </header>
+      </aside>
 
-      <section className="grid grid-cols-12 gap-4">
-        {visibleSettings.length === 0 ? (
-          <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <p className="text-sm text-slate-300">
-              No settings are visible with the current permissions.
-            </p>
-          </div>
-        ) : null}
+      <section className="col-span-12 space-y-5 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-8">
+        <header>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Theme Configuration</p>
+          <h1 className="mt-1 text-2xl font-display font-semibold text-slate-100">{selectedModule.module_name}</h1>
+          <p className="mt-2 text-sm text-slate-400">These settings apply dynamically whenever users open this module.</p>
+        </header>
 
-        {visibleSettings.map((setting) => {
-          const isRestricted =
-            Boolean(setting.requiredPermission) &&
-            !hasPermission(user, setting.requiredPermission) &&
-            showRestricted
-          return (
-            <SettingsField
-              key={setting.key}
-              definition={setting}
-              value={values[setting.key] ?? setting.defaultValue}
-              onChange={(nextValue) => setValue(setting.key, nextValue)}
-              isRestricted={isRestricted}
-            />
-          )
-        })}
-      </section>
-
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-        <div>
-          <p className="text-sm font-semibold text-slate-100">Reset to defaults</p>
-          <p className="mt-1 text-xs text-slate-400">
-            Restore the schema default values for this module.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-emerald-400"
-        >
-          Reset module settings
-        </button>
-      </div>
-
-      {canSeeMaintenance ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-100">Maintenance</p>
-              <p className="mt-1 text-xs text-slate-400">
-                Reset tenant sequences if inserts fail due to duplicate primary keys.
-              </p>
+        {loadingSettings || !draft ? (
+          <div className="rounded-xl border border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-300">Loading module settings...</div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Theme Preset</span>
+                <select
+                  value={draft.theme_preset}
+                  onChange={(event) => updateDraft({ theme_preset: event.target.value as ModuleThemeSettingsInput['theme_preset'] })}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                >
+                  {PRESETS.map((preset) => (
+                    <option key={preset} value={preset}>{preset}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Sidebar Style</span>
+                <select
+                  value={draft.sidebar_style}
+                  onChange={(event) => updateDraft({ sidebar_style: event.target.value as ModuleThemeSettingsInput['sidebar_style'] })}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                >
+                  {SIDEBARS.map((style) => (
+                    <option key={style} value={style}>{style}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Primary Color</span>
+                <input
+                  type="color"
+                  value={draft.primary_color}
+                  onChange={(event) => updateDraft({ primary_color: event.target.value })}
+                  className="h-10 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-950 px-1"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Secondary Color</span>
+                <input
+                  type="color"
+                  value={draft.secondary_color}
+                  onChange={(event) => updateDraft({ secondary_color: event.target.value })}
+                  className="h-10 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-950 px-1"
+                />
+              </label>
             </div>
-            <button
-              type="button"
-              onClick={handleSequenceReset}
-              disabled={isResettingSequences}
-              className="rounded-xl border border-amber-400/60 px-4 py-2 text-xs font-semibold text-amber-200 transition hover:border-amber-300 disabled:opacity-60"
-            >
-              {isResettingSequences ? 'Resetting...' : 'Reset sequences'}
-            </button>
-          </div>
-          {maintenanceStatus ? (
-            <p className="mt-3 text-xs text-slate-300">{maintenanceStatus}</p>
-          ) : null}
-        </div>
-      ) : null}
+
+            <div className="rounded-xl border border-slate-700 bg-slate-950/40 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Feature Toggles</p>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {Object.entries(draft.feature_toggles ?? EMPTY_TOGGLES).map(([key, value]) => (
+                  <label key={key} className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2">
+                    <span className="text-sm text-slate-200">{key.replace('_', ' ')}</span>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(value)}
+                      onChange={(event) => updateToggle(key as keyof FeatureToggles, event.target.checked)}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={saveChanges}
+                disabled={saving}
+                className="rounded-xl border border-emerald-400/60 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-60"
+              >
+                {saving ? 'Saving...' : 'Save changes'}
+              </button>
+              <button
+                type="button"
+                onClick={resetDraft}
+                disabled={saving}
+                className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+              >
+                Reset
+              </button>
+            </div>
+          </>
+        )}
+
+        {error ? <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div> : null}
+        {statusMessage ? <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{statusMessage}</div> : null}
+      </section>
     </div>
   )
 }

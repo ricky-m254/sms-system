@@ -8,6 +8,7 @@ from .models import (
     InvoiceInstallmentPlan, InvoiceInstallment, LateFeeRule, FeeReminderLog
     , AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine
     , PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine
+    , Module, TenantModule, ModuleSetting
 )
 from .events import (
     invoice_created, payment_recorded, payment_allocated,
@@ -1121,6 +1122,92 @@ class FinanceWriteGuard:
         # Placeholder for stronger enforcement (signals or db constraints).
         # This guard exists to document the boundary explicitly.
         return True
+
+
+class TenantModuleSettingsService:
+    """
+    Service layer for tenant module settings to keep controller logic minimal.
+    Tenant isolation relies on schema isolation; only module identity is accepted.
+    """
+
+    DEFAULT_TOGGLES = {
+        "analytics": True,
+        "reports": True,
+        "export": True,
+        "ai_assistant": False,
+    }
+
+    @staticmethod
+    def _build_default_config(module_key: str) -> dict:
+        return {
+            "module_key": module_key,
+            "version": 1,
+        }
+
+    @staticmethod
+    def ensure_tenant_module(module: Module) -> TenantModule:
+        tenant_module, _ = TenantModule.objects.get_or_create(
+            module=module,
+            defaults={
+                "is_enabled": bool(module.is_active),
+                "sort_order": 0,
+            },
+        )
+        return tenant_module
+
+    @staticmethod
+    def ensure_module_settings(tenant_module: TenantModule, user=None) -> ModuleSetting:
+        settings_obj, created = ModuleSetting.objects.get_or_create(
+            tenant_module=tenant_module,
+            defaults={
+                "feature_toggles": dict(TenantModuleSettingsService.DEFAULT_TOGGLES),
+                "config": TenantModuleSettingsService._build_default_config(tenant_module.module.key),
+                "created_by": user,
+                "updated_by": user,
+            },
+        )
+        if created:
+            return settings_obj
+
+        changed_fields = []
+        if not isinstance(settings_obj.feature_toggles, dict):
+            settings_obj.feature_toggles = dict(TenantModuleSettingsService.DEFAULT_TOGGLES)
+            changed_fields.append("feature_toggles")
+        else:
+            merged = dict(TenantModuleSettingsService.DEFAULT_TOGGLES)
+            merged.update(settings_obj.feature_toggles)
+            if merged != settings_obj.feature_toggles:
+                settings_obj.feature_toggles = merged
+                changed_fields.append("feature_toggles")
+
+        if not isinstance(settings_obj.config, dict):
+            settings_obj.config = TenantModuleSettingsService._build_default_config(tenant_module.module.key)
+            changed_fields.append("config")
+
+        if changed_fields:
+            settings_obj.updated_by = user
+            changed_fields.append("updated_by")
+            settings_obj.save(update_fields=changed_fields)
+        return settings_obj
+
+    @staticmethod
+    def list_modules_for_tenant(user=None):
+        modules = Module.objects.filter(is_active=True).order_by("key")
+        rows = []
+        for module in modules:
+            tenant_module = TenantModuleSettingsService.ensure_tenant_module(module)
+            TenantModuleSettingsService.ensure_module_settings(tenant_module, user=user)
+            rows.append(tenant_module)
+        return rows
+
+    @staticmethod
+    def get_module_settings(module_id: int, user=None):
+        module = Module.objects.filter(id=module_id, is_active=True).first()
+        if not module:
+            return None, None
+        tenant_module = TenantModuleSettingsService.ensure_tenant_module(module)
+        settings_obj = TenantModuleSettingsService.ensure_module_settings(tenant_module, user=user)
+        return tenant_module, settings_obj
 
 
 class StudentsService:

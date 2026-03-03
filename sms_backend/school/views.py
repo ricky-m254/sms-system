@@ -47,7 +47,7 @@ from .serializers import (
     InvoiceWriteOffRequestSerializer,
     AccountingPeriodSerializer, ChartOfAccountSerializer, JournalEntrySerializer,
     PaymentGatewayTransactionSerializer, PaymentGatewayWebhookEventSerializer, BankStatementLineSerializer,
-    ModuleSerializer, UserModuleAssignmentSerializer,
+    ModuleSerializer, UserModuleAssignmentSerializer, TenantModuleSerializer, ModuleSettingSerializer,
     AdmissionApplicationSerializer, StudentDocumentSerializer,
     FinanceStudentRefSerializer, FinanceEnrollmentRefSerializer,
     AttendanceRecordSerializer, BehaviorIncidentSerializer,
@@ -71,7 +71,7 @@ from communication.serializers import MessageSerializer
 from reporting.serializers import AuditLogSerializer
 from .services import (
     FinanceService, StudentsService, AcademicsService, HrService,
-    CommunicationService, CoreService, ReportingService
+    CommunicationService, CoreService, ReportingService, TenantModuleSettingsService
 )
 from .pagination import FinanceResultsPagination
 from .permissions import IsSchoolAdmin, IsAccountant, IsTeacher, HasModuleAccess
@@ -1288,6 +1288,43 @@ class UserModuleAssignmentViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK
         )
+
+
+class TenantModuleListView(APIView):
+    """
+    GET /api/tenant/modules
+    Lists tenant-assigned modules with current module theme settings.
+    """
+    permission_classes = [IsSchoolAdmin]
+
+    def get(self, request):
+        tenant_modules = TenantModuleSettingsService.list_modules_for_tenant(user=request.user)
+        serializer = TenantModuleSerializer(tenant_modules, many=True)
+        return Response({"count": len(serializer.data), "results": serializer.data}, status=status.HTTP_200_OK)
+
+
+class TenantModuleSettingsView(APIView):
+    """
+    GET /api/tenant/modules/{id}/settings
+    PUT /api/tenant/modules/{id}/settings
+    """
+    permission_classes = [IsSchoolAdmin]
+
+    def get(self, request, module_id: int):
+        tenant_module, settings_obj = TenantModuleSettingsService.get_module_settings(module_id, user=request.user)
+        if not tenant_module or not settings_obj:
+            return Response({"detail": "Module not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(ModuleSettingSerializer(settings_obj).data, status=status.HTTP_200_OK)
+
+    def put(self, request, module_id: int):
+        tenant_module, settings_obj = TenantModuleSettingsService.get_module_settings(module_id, user=request.user)
+        if not tenant_module or not settings_obj:
+            return Response({"detail": "Module not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ModuleSettingSerializer(settings_obj, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        updated = serializer.save(updated_by=request.user)
+        return Response(ModuleSettingSerializer(updated).data, status=status.HTTP_200_OK)
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()

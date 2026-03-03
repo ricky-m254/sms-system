@@ -46,7 +46,9 @@ from .views import (
     BehaviorIncidentViewSet,
     MedicalRecordViewSet,
     ImmunizationRecordViewSet,
-    ClinicVisitViewSet
+    ClinicVisitViewSet,
+    TenantModuleListView,
+    TenantModuleSettingsView,
 )
 
 # ==========================================
@@ -148,6 +150,8 @@ urlpatterns = [
     path('finance/ref/enrollments/', FinanceEnrollmentRefView.as_view(), name='finance_ref_enrollments'),
 
     # 4. Module Apps (Read-Only Reference Contracts)
+    path('tenant/modules', TenantModuleListView.as_view(), name='tenant_modules'),
+    path('tenant/modules/<int:module_id>/settings', TenantModuleSettingsView.as_view(), name='tenant_module_settings'),
     path('staff/', include('staff_mgmt.urls')),
     path('admissions/', include('admissions.urls')),
     path('academics/', include('academics.urls')),

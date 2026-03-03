@@ -4,7 +4,7 @@ from .models import (
     Expense, Student, Guardian, Enrollment,
     Invoice, InvoiceLineItem, Payment, PaymentAllocation,
     FeeStructure, SchoolProfile, Guardian,
-    FeeAssignment, InvoiceAdjustment, Module, UserModuleAssignment,
+    FeeAssignment, InvoiceAdjustment, Module, UserModuleAssignment, TenantModule, ModuleSetting,
     AcademicYear, Term, SchoolClass, AdmissionApplication, AdmissionDocument, StudentDocument, AttendanceRecord, BehaviorIncident,
     Budget,
     MedicalRecord, ImmunizationRecord, ClinicVisit,
@@ -382,6 +382,74 @@ class UserModuleAssignmentSerializer(serializers.ModelSerializer):
             'assigned_by', 'assigned_by_name', 'is_active', 'assigned_at'
         ]
         read_only_fields = ['assigned_at', 'assigned_by']
+
+
+class ModuleSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ModuleSetting
+        fields = [
+            'id',
+            'theme_preset',
+            'primary_color',
+            'secondary_color',
+            'sidebar_style',
+            'feature_toggles',
+            'config',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'updated_at']
+
+    def validate(self, attrs):
+        def _is_hex_color(value: str) -> bool:
+            if not isinstance(value, str):
+                return False
+            if not value.startswith('#'):
+                return False
+            code = value[1:]
+            if len(code) not in (3, 6):
+                return False
+            return all(ch in '0123456789abcdefABCDEF' for ch in code)
+
+        for color_field in ('primary_color', 'secondary_color'):
+            if color_field in attrs and not _is_hex_color(attrs[color_field]):
+                raise serializers.ValidationError({color_field: 'Use a valid hex color like #10b981.'})
+
+        toggles = attrs.get('feature_toggles')
+        if toggles is not None:
+            if not isinstance(toggles, dict):
+                raise serializers.ValidationError({'feature_toggles': 'feature_toggles must be an object.'})
+            allowed = {'analytics', 'reports', 'export', 'ai_assistant'}
+            unknown = sorted([key for key in toggles.keys() if key not in allowed])
+            if unknown:
+                raise serializers.ValidationError(
+                    {'feature_toggles': f'Unsupported feature toggles: {", ".join(unknown)}'}
+                )
+            for key in allowed:
+                if key in toggles and not isinstance(toggles[key], bool):
+                    raise serializers.ValidationError({'feature_toggles': f'"{key}" must be a boolean.'})
+
+        return attrs
+
+
+class TenantModuleSerializer(serializers.ModelSerializer):
+    module_id = serializers.IntegerField(source='module.id', read_only=True)
+    module_key = serializers.CharField(source='module.key', read_only=True)
+    module_name = serializers.CharField(source='module.name', read_only=True)
+    settings = ModuleSettingSerializer(read_only=True)
+
+    class Meta:
+        model = TenantModule
+        fields = [
+            'id',
+            'module_id',
+            'module_key',
+            'module_name',
+            'is_enabled',
+            'sort_order',
+            'settings',
+            'updated_at',
+        ]
+        read_only_fields = fields
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
