@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { differenceInCalendarDays, format, parseISO } from 'date-fns'
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   Cell,
   CartesianGrid,
   Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -127,19 +127,6 @@ export default function FinanceSummaryPage() {
     void loadData(true)
   }, [])
 
-  const paymentsByMonth = useMemo(() => {
-    const bucket = new Map<string, number>()
-    for (const payment of payments) {
-      const key = safeMonthKey(payment.payment_date)
-      if (!key) continue
-      bucket.set(key, (bucket.get(key) ?? 0) + Number(payment.amount))
-    }
-    return Array.from(bucket.entries()).map(([month, total]) => ({
-      month,
-      payments: total,
-    }))
-  }, [payments])
-
   const operatingCashflow = useMemo(() => {
     const bucket = new Map<string, { inflow: number; outflow: number }>()
     for (const payment of payments) {
@@ -199,6 +186,14 @@ export default function FinanceSummaryPage() {
       total,
     }))
   }, [payments])
+
+  const operatingActivitiesTrend = useMemo(() => {
+    return operatingCashflow.map((row) => ({
+      month: row.month,
+      collections: row.inflow,
+      expenses: row.outflow,
+    }))
+  }, [operatingCashflow])
 
   return (
     <div className="space-y-8">
@@ -266,29 +261,43 @@ export default function FinanceSummaryPage() {
           </p>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={operatingCashflow}>
-                <defs>
-                  <linearGradient id="inflow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="outflow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="month" stroke="#94a3b8" />
-                <YAxis stroke="#94a3b8" />
+              <LineChart data={operatingCashflow} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="4 4" stroke="#1f2937" />
+                <XAxis dataKey="month" stroke="#94a3b8" tickLine={false} axisLine={false} />
+                <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }}
                   formatter={(value: number) => Number(value).toLocaleString()}
                 />
                 <Legend />
-                <Area type="monotone" dataKey="inflow" stroke="#22c55e" fill="url(#inflow)" />
-                <Area type="monotone" dataKey="outflow" stroke="#ef4444" fill="url(#outflow)" />
-                <Area type="monotone" dataKey="net" stroke="#f59e0b" fill="transparent" />
-              </AreaChart>
+                <Line
+                  type="monotone"
+                  dataKey="inflow"
+                  name="Cash Inflow"
+                  stroke="#22c55e"
+                  strokeWidth={3}
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="outflow"
+                  name="Cash Outflow"
+                  stroke="#ef4444"
+                  strokeWidth={3}
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="net"
+                  name="Net"
+                  stroke="#38bdf8"
+                  strokeWidth={3}
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -344,20 +353,38 @@ export default function FinanceSummaryPage() {
           </div>
         </div>
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-5">
-          <h2 className="text-lg font-display font-semibold">Payments volume</h2>
-          <p className="mt-1 text-sm text-slate-400">Monthly payment totals.</p>
+          <h2 className="text-lg font-display font-semibold">Operating Activities Trend</h2>
+          <p className="mt-1 text-sm text-slate-400">Monthly collections and expense movement.</p>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={paymentsByMonth}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="month" stroke="#94a3b8" />
-                <YAxis stroke="#94a3b8" />
+              <LineChart data={operatingActivitiesTrend} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="4 4" stroke="#1f2937" />
+                <XAxis dataKey="month" stroke="#94a3b8" tickLine={false} axisLine={false} />
+                <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }}
                   formatter={(value: number) => Number(value).toLocaleString()}
                 />
-                <Bar dataKey="payments" fill="#22c55e" radius={[6, 6, 0, 0]} />
-              </BarChart>
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="collections"
+                  name="Collections"
+                  stroke="#22c55e"
+                  strokeWidth={3}
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="expenses"
+                  name="Expenses"
+                  stroke="#f97316"
+                  strokeWidth={3}
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>

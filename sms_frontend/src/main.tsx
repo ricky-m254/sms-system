@@ -10,12 +10,12 @@ import IdleLogout from './components/IdleLogout'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <ThemeProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <ThemeProvider>
           <IdleLogout />
           <App />
-        </BrowserRouter>
-      </ThemeProvider>
+        </ThemeProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>,
 )

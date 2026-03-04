@@ -3928,21 +3928,33 @@ class DashboardSummaryView(APIView):
         unavailable = []
 
         if "STUDENTS" in module_keys:
-            summary["students"] = {
-                "active": Student.objects.filter(is_active=True).count(),
-                "enrollments": Enrollment.objects.filter(is_active=True).count()
-            }
+            try:
+                summary["students"] = {
+                    "active": Student.objects.filter(is_active=True).count(),
+                    "enrollments": Enrollment.objects.filter(is_active=True).count(),
+                }
+            except Exception:
+                summary["students"] = {"active": 0, "enrollments": 0}
+                unavailable.append("STUDENTS")
 
         if "ADMISSIONS" in module_keys:
-            summary["admissions"] = {
-                "applications": AdmissionApplication.objects.count(),
-                "enrolled": AdmissionApplication.objects.filter(status="Enrolled").count(),
-            }
+            try:
+                summary["admissions"] = {
+                    "applications": AdmissionApplication.objects.count(),
+                    "enrolled": AdmissionApplication.objects.filter(status="Enrolled").count(),
+                }
+            except Exception:
+                summary["admissions"] = {"applications": 0, "enrolled": 0}
+                unavailable.append("ADMISSIONS")
 
         if "HR" in module_keys:
-            summary["hr"] = {
-                "staff_active": Staff.objects.filter(is_active=True).count()
-            }
+            try:
+                summary["hr"] = {
+                    "staff_active": Staff.objects.filter(is_active=True).count()
+                }
+            except Exception:
+                summary["hr"] = {"staff_active": 0}
+                unavailable.append("HR")
 
         if "STAFF" in module_keys:
             try:
@@ -3953,6 +3965,7 @@ class DashboardSummaryView(APIView):
                 }
             except Exception:
                 summary["staff"] = {"active": 0}
+                unavailable.append("STAFF")
 
         if "PARENTS" in module_keys:
             try:
@@ -3961,6 +3974,7 @@ class DashboardSummaryView(APIView):
                 }
             except Exception:
                 summary["parents"] = {"guardian_profiles": 0}
+                unavailable.append("PARENTS")
 
         if "LIBRARY" in module_keys:
             try:
@@ -3991,23 +4005,38 @@ class DashboardSummaryView(APIView):
                     "active_borrowings": 0,
                     "pending_fines": 0,
                 }
+                unavailable.append("LIBRARY")
 
         if "FINANCE" in module_keys:
-            invoice_total = Invoice.objects.aggregate(total=Sum('total_amount'))['total'] or 0
-            payment_total = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
-            expense_total = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
-            summary["finance"] = {
-                "revenue_billed": float(invoice_total),
-                "cash_collected": float(payment_total),
-                "total_expenses": float(expense_total),
-                "net_profit": float(payment_total - expense_total),
-                "outstanding_receivables": float(invoice_total - payment_total)
-            }
+            try:
+                invoice_total = Invoice.objects.aggregate(total=Sum('total_amount'))['total'] or 0
+                payment_total = Payment.objects.aggregate(total=Sum('amount'))['total'] or 0
+                expense_total = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
+                summary["finance"] = {
+                    "revenue_billed": float(invoice_total),
+                    "cash_collected": float(payment_total),
+                    "total_expenses": float(expense_total),
+                    "net_profit": float(payment_total - expense_total),
+                    "outstanding_receivables": float(invoice_total - payment_total)
+                }
+            except Exception:
+                summary["finance"] = {
+                    "revenue_billed": 0.0,
+                    "cash_collected": 0.0,
+                    "total_expenses": 0.0,
+                    "net_profit": 0.0,
+                    "outstanding_receivables": 0.0,
+                }
+                unavailable.append("FINANCE")
 
         if "REPORTING" in module_keys:
-            summary["reporting"] = {
-                "invoices_pending": Invoice.objects.filter(is_active=True, status='CONFIRMED').count()
-            }
+            try:
+                summary["reporting"] = {
+                    "invoices_pending": Invoice.objects.filter(is_active=True, status='CONFIRMED').count()
+                }
+            except Exception:
+                summary["reporting"] = {"invoices_pending": 0}
+                unavailable.append("REPORTING")
 
         handled = {
             "STUDENTS",
@@ -4030,7 +4059,7 @@ class DashboardSummaryView(APIView):
         return Response({
             "modules": module_keys,
             "modules_detail": modules,
-            "unavailable_modules": unavailable,
+            "unavailable_modules": sorted(list(set(unavailable))),
             "summary": summary
         })
 

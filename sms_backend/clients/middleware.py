@@ -61,6 +61,9 @@ class TenantContextGuardMiddleware:
             request.tenant = resolved_tenant
             # Ensure DB connection uses the resolved tenant schema for downstream ORM usage.
             connection.set_tenant(resolved_tenant)
+            # Keep routing aligned with tenant context when host resolved to public schema.
+            # Without this, Django can still use public URL patterns and return 404 for tenant APIs.
+            request.urlconf = settings.ROOT_URLCONF
 
         tenant = getattr(request, "tenant", None)
         tenant_schema = getattr(tenant, "schema_name", None)
