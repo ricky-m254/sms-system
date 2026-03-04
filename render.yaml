@@ -1,0 +1,72 @@
+services:
+  - type: web
+    name: sms-backend
+    runtime: python
+    rootDir: sms_backend
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash render_start.sh
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_ALLOW_INSECURE_DEFAULTS
+        value: "true"
+      - key: TENANT_HEADER_NAME
+        value: X-Tenant-ID
+      - key: TENANT_REQUIRE_HEADER
+        value: "true"
+      - key: TENANT_ENFORCE_HEADER_MATCH
+        value: "true"
+      - key: TENANT_ENFORCE_HOST_MATCH
+        value: "false"
+      - key: TENANT_GUARD_API_PREFIX
+        value: /api/
+      - key: PLATFORM_DEFAULT_TRIAL_DAYS
+        value: "14"
+      - key: PLATFORM_BILLING_GRACE_DAYS
+        value: "7"
+      - key: PLATFORM_MAINTENANCE_NOTIFY_CHANNELS
+        value: IN_APP,EMAIL
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: sms-postgres
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: sms-postgres
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: sms-postgres
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: sms-postgres
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: sms-postgres
+          property: password
+
+  - type: static
+    name: sms-frontend
+    rootDir: sms_frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_APP_TITLE
+        value: SMS
+      # Set this in Render dashboard after backend is created:
+      # https://sms-backend.onrender.com
+      - key: VITE_FORCE_API_BASE_URL
+        sync: false
+
+databases:
+  - name: sms-postgres
+    databaseName: sms_school_db
+    user: sms_app_user
+    plan: starter
