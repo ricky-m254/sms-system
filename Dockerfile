@@ -23,7 +23,7 @@ COPY . .
 # Make start script executable
 RUN chmod +x start.sh
 
-# Expose Railway port
+# Expose application port
 EXPOSE 8000
 
 # Start app
