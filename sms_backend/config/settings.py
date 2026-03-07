@@ -105,6 +105,14 @@ ALLOWED_HOSTS = _env_list(
         else []
     ),
 )
+
+# Auto-include Replit proxy domains so the dev/prod previews always work
+_replit_domains = os.environ.get("REPLIT_DOMAINS", "")
+for _d in _replit_domains.split(","):
+    _d = _d.strip()
+    if _d and _d not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_d)
+
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must be configured.")
 
@@ -153,6 +161,7 @@ INSTALLED_APPS = list(set(SHARED_APPS) | set(TENANT_APPS))
 # ==========================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django_tenants.middleware.main.TenantMainMiddleware",
     "clients.middleware.TenantContextGuardMiddleware",
@@ -188,37 +197,52 @@ WSGI_APPLICATION = "config.wsgi.application"
 # ==========================================
 # DATABASE
 # ==========================================
-DATABASES = {
-    "default": {
-        "ENGINE": "django_tenants.postgresql_backend",
-        "NAME": _env_str(
-            "POSTGRES_DB",
-            default="sms_school_db" if DEBUG and ALLOW_INSECURE_DEFAULTS else None,
-            required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
-        ),
-        "USER": _env_str(
-            "POSTGRES_USER",
-            default="postgres" if DEBUG and ALLOW_INSECURE_DEFAULTS else None,
-            required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
-        ),
-        "PASSWORD": _env_str(
-            "POSTGRES_PASSWORD",
-            default="postgres" if DEBUG and ALLOW_INSECURE_DEFAULTS else None,
-            required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
-            allow_blank=DEBUG and ALLOW_INSECURE_DEFAULTS,
-        ),
-        "HOST": _env_str(
-            "POSTGRES_HOST",
-            default="localhost" if DEBUG and ALLOW_INSECURE_DEFAULTS else None,
-            required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
-        ),
-        "PORT": _env_str(
-            "POSTGRES_PORT",
-            default="5432" if DEBUG and ALLOW_INSECURE_DEFAULTS else None,
-            required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
-        ),
+_DATABASE_URL = os.environ.get("DATABASE_URL", "")
+if _DATABASE_URL:
+    from urllib.parse import urlparse as _urlparse
+    _parsed_db = _urlparse(_DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django_tenants.postgresql_backend",
+            "NAME": _parsed_db.path.lstrip("/"),
+            "USER": _parsed_db.username or "",
+            "PASSWORD": _parsed_db.password or "",
+            "HOST": _parsed_db.hostname or "localhost",
+            "PORT": str(_parsed_db.port or 5432),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django_tenants.postgresql_backend",
+            "NAME": _env_str(
+                "POSTGRES_DB",
+                default=os.environ.get("PGDATABASE", "sms_school_db" if DEBUG and ALLOW_INSECURE_DEFAULTS else None),
+                required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
+            ),
+            "USER": _env_str(
+                "POSTGRES_USER",
+                default=os.environ.get("PGUSER", "postgres" if DEBUG and ALLOW_INSECURE_DEFAULTS else None),
+                required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
+            ),
+            "PASSWORD": _env_str(
+                "POSTGRES_PASSWORD",
+                default=os.environ.get("PGPASSWORD", "postgres" if DEBUG and ALLOW_INSECURE_DEFAULTS else None),
+                required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
+                allow_blank=DEBUG and ALLOW_INSECURE_DEFAULTS,
+            ),
+            "HOST": _env_str(
+                "POSTGRES_HOST",
+                default=os.environ.get("PGHOST", "localhost" if DEBUG and ALLOW_INSECURE_DEFAULTS else None),
+                required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
+            ),
+            "PORT": _env_str(
+                "POSTGRES_PORT",
+                default=os.environ.get("PGPORT", "5432" if DEBUG and ALLOW_INSECURE_DEFAULTS else None),
+                required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
+            ),
+        }
+    }
 
 
 # ==========================================
@@ -302,11 +326,25 @@ CSRF_TRUSTED_ORIGINS = _env_list(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://demo.localhost:3000",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000",
         ]
         if DEBUG and ALLOW_INSECURE_DEFAULTS
         else []
     ),
 )
+
+# Auto-include Replit proxy domains in CORS and CSRF
+for _d in _replit_domains.split(","):
+    _d = _d.strip()
+    if _d:
+        for _scheme in ("https://", "http://"):
+            _origin = f"{_scheme}{_d}"
+            if _origin not in CORS_ALLOWED_ORIGINS:
+                CORS_ALLOWED_ORIGINS.append(_origin)
+            if _origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(_origin)
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
@@ -337,6 +375,10 @@ SECURE_REFERRER_POLICY = _env_str(
 # ==========================================
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Whitenoise also serves the React production build from this directory
+WHITENOISE_ROOT = BASE_DIR / "frontend_build"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -403,10 +445,14 @@ PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK = os.getenv(
 # ==========================================
 # PLATFORM (SUPER TENANT ADMIN)
 # ==========================================
+_replit_first_domain = _replit_domains.split(",")[0].strip() if _replit_domains else ""
 PLATFORM_DEFAULT_BASE_DOMAIN = _env_str(
     "PLATFORM_DEFAULT_BASE_DOMAIN",
-    default="localhost" if DEBUG and ALLOW_INSECURE_DEFAULTS else None,
-    required=not (DEBUG and ALLOW_INSECURE_DEFAULTS),
+    default=(
+        "localhost" if DEBUG and ALLOW_INSECURE_DEFAULTS
+        else (_replit_first_domain or None)
+    ),
+    required=not (DEBUG and ALLOW_INSECURE_DEFAULTS) and not _replit_first_domain,
 )
 PLATFORM_DEFAULT_TRIAL_DAYS = _env_int(
     "PLATFORM_DEFAULT_TRIAL_DAYS",
