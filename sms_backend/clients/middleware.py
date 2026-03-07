@@ -9,20 +9,37 @@ from clients.models import Tenant
 
 class HealthCheckMiddleware:
     """
-    Intercepts /health and /health/ requests before the tenant middleware runs.
-    This ensures the deployment health probe always gets a 200, even when no
-    tenant domains are registered for the current host.
+    Intercepts health-probe paths BEFORE TenantMainMiddleware runs so the
+    deployment health check always gets HTTP 200 — even when no tenant domains
+    are registered for the current host yet.
+
+    Also intercepts the root path "/" so the React SPA is served immediately
+    without going through tenant resolution.
     """
 
-    HEALTH_PATHS = {"/health", "/health/"}
+    PROBE_PATHS = {"/health", "/health/", "/api/ping", "/api/ping/"}
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path in self.HEALTH_PATHS:
+        if request.path in self.PROBE_PATHS:
             return JsonResponse({"status": "ok"})
+        if request.path in ("/", ""):
+            return self._serve_index(request)
         return self.get_response(request)
+
+    @staticmethod
+    def _serve_index(request):
+        from django.conf import settings
+        from django.http import FileResponse, HttpResponse
+        index_path = settings.BASE_DIR / "frontend_build" / "index.html"
+        if index_path.exists():
+            return FileResponse(open(index_path, "rb"), content_type="text/html")
+        return HttpResponse(
+            b"<h1>SMS Platform</h1><p>App is starting up...</p>",
+            content_type="text/html",
+        )
 
 
 def _host_without_port(raw_host: str) -> str:
