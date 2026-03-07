@@ -162,6 +162,7 @@ INSTALLED_APPS = list(set(SHARED_APPS) | set(TENANT_APPS))
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "clients.middleware.HealthCheckMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django_tenants.middleware.main.TenantMainMiddleware",
     "clients.middleware.TenantContextGuardMiddleware",

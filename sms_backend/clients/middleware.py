@@ -7,6 +7,24 @@ from django_tenants.utils import get_public_schema_name
 from clients.models import Tenant
 
 
+class HealthCheckMiddleware:
+    """
+    Intercepts /health and /health/ requests before the tenant middleware runs.
+    This ensures the deployment health probe always gets a 200, even when no
+    tenant domains are registered for the current host.
+    """
+
+    HEALTH_PATHS = {"/health", "/health/"}
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path in self.HEALTH_PATHS:
+            return JsonResponse({"status": "ok"})
+        return self.get_response(request)
+
+
 def _host_without_port(raw_host: str) -> str:
     return (raw_host or "").split(":")[0].strip().lower()
 
