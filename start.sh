@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Starting backend..."
+echo "Starting Backend API on localhost:8000..."
+cd sms_backend && python manage.py runserver localhost:8000 &
+BACKEND_PID=$!
 
-cd sms_backend
+echo "Starting Frontend on 0.0.0.0:5000..."
+cd sms_frontend && npm run dev &
+FRONTEND_PID=$!
 
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput || true
+echo "Both services running. Backend PID: $BACKEND_PID, Frontend PID: $FRONTEND_PID"
 
-gunicorn config.wsgi:application \
-  --bind 0.0.0.0:${PORT:-8000} \
-  --workers 3
+trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT TERM
+wait
