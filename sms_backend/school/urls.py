@@ -57,6 +57,7 @@ from .views import (
     FinanceClassBalancesReportView,
     FinanceArrearsByTermReportView,
     FinanceReceiptPdfView,
+    FinanceStudentLedgerView,
 )
 
 # ==========================================
@@ -166,6 +167,7 @@ urlpatterns = [
     path('finance/reports/class-balances/', FinanceClassBalancesReportView.as_view(), name='finance_class_balances_report'),
     path('finance/reports/arrears-by-term/', FinanceArrearsByTermReportView.as_view(), name='finance_arrears_by_term_report'),
     path('finance/payments/<int:pk>/receipt/pdf/', FinanceReceiptPdfView.as_view(), name='finance_receipt_pdf'),
+    path('finance/students/<int:student_id>/ledger/', FinanceStudentLedgerView.as_view(), name='finance_student_ledger'),
 
     # 4. Module Apps (Read-Only Reference Contracts)
     path('tenant/modules', TenantModuleListView.as_view(), name='tenant_modules'),

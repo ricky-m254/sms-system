@@ -92,7 +92,7 @@ const reports = [
     id: 'student-ledger',
     title: 'Student Account Statement',
     description: 'Ledger of invoices, payments, and adjustments.',
-    exportMode: 'none' as const,
+    exportMode: 'student-ledger' as const,
   },
   {
     id: 'vote-head-allocation',
@@ -427,6 +427,14 @@ export default function FinanceReportsPage() {
                   <span className="rounded-lg border border-slate-800 px-3 py-1 text-xs text-slate-500">
                     Planned: export from accounting pack
                   </span>
+                ) : null}
+                {report.exportMode === 'student-ledger' ? (
+                  <a
+                    href="/modules/finance/ledger"
+                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                  >
+                    Open Student Ledger →
+                  </a>
                 ) : null}
                 {report.exportMode === 'vote-head' ? (
                   <a

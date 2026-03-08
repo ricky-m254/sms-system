@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
 
@@ -42,7 +43,18 @@ const blankForm: FormState = {
 
 const fmt = (v: number | string) => parseFloat(String(v) || '0').toLocaleString('en-KE', { minimumFractionDigits: 2 })
 
+const extractApiError = (err: unknown, fallback: string) => {
+  const data = (err as { response?: { data?: unknown } })?.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const msgs = Object.values(data as Record<string, unknown>).flat()
+    if (msgs.length) return (msgs as string[]).join(' ')
+  }
+  return fallback
+}
+
 export default function FinanceCashbookPage() {
+  const navigate = useNavigate()
   const [activeBook, setActiveBook] = useState<'CASH' | 'BANK'>('CASH')
   const [entries, setEntries] = useState<Entry[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
@@ -71,176 +83,154 @@ export default function FinanceCashbookPage() {
 
   useEffect(() => { load() }, [activeBook, dateFrom, dateTo])
 
-  const openCreate = () => {
-    setForm({ ...blankForm, book_type: activeBook })
-    setSaveError('')
-    setShowForm(true)
-  }
+  const openCreate = () => { setForm({ ...blankForm, book_type: activeBook }); setSaveError(''); setShowForm(true) }
 
   const handleSave = async () => {
-    setSaving(true)
-    setSaveError('')
-    const payload: Record<string, unknown> = {
-      book_type: form.book_type,
-      entry_date: form.entry_date,
-      entry_type: form.entry_type,
-      reference: form.reference,
-      description: form.description,
-      amount_in: form.amount_in || '0',
-      amount_out: form.amount_out || '0',
-    }
+    setSaving(true); setSaveError('')
     try {
-      await apiClient.post('/api/finance/cashbook/', payload)
-      setShowForm(false)
-      load()
-    } catch (err: unknown) {
-      const data = (err as { response?: { data?: unknown } })?.response?.data
-      if (data && typeof data === 'object') {
-        const msgs = Object.values(data as Record<string, unknown>).flat()
-        setSaveError(msgs.join(' '))
-      } else {
-        setSaveError('Failed to save entry.')
-      }
-    } finally {
-      setSaving(false)
-    }
+      await apiClient.post('/api/finance/cashbook/', {
+        ...form, amount_in: form.amount_in || '0', amount_out: form.amount_out || '0'
+      })
+      setShowForm(false); load()
+    } catch (err) { setSaveError(extractApiError(err, 'Failed to save entry.')) }
+    finally { setSaving(false) }
   }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
     await apiClient.delete(`/api/finance/cashbook/${deleteTarget.id}/`)
-    setDeleteTarget(null)
-    load()
+    setDeleteTarget(null); load()
   }
 
   const activeSummary = summary?.[activeBook.toLowerCase() as 'cash' | 'bank']
 
+  const typeColor = (t: string) => {
+    if (t === 'RECEIPT') return 'bg-emerald-500/20 text-emerald-300'
+    if (t === 'EXPENSE') return 'bg-red-500/20 text-red-300'
+    if (t === 'OPENING') return 'bg-blue-500/20 text-blue-300'
+    return 'bg-slate-700 text-slate-300'
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Cashbook & Bankbook</h1>
-          <p className="text-gray-500 text-sm mt-1">Daily transaction ledger with running balances</p>
-        </div>
-        <button onClick={openCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-          + Add Entry
+    <section className="col-span-12 grid grid-cols-12 gap-6">
+      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <button onClick={() => navigate('/modules/finance')} className="mb-4 flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200 transition">
+          ← Back to Finance
         </button>
-      </div>
-
-      <div className="flex gap-2">
-        {(['CASH', 'BANK'] as const).map(bt => (
-          <button
-            key={bt}
-            onClick={() => setActiveBook(bt)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium border transition ${activeBook === bt ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
-          >
-            {bt === 'CASH' ? 'Cashbook' : 'Bankbook'}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-display font-bold text-white">Cashbook & Bankbook</h1>
+            <p className="mt-1 text-sm text-slate-400">Daily transaction ledger with running balances</p>
+          </div>
+          <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600">
+            + Add Entry
           </button>
-        ))}
-      </div>
-
-      {activeSummary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Opening Balance', value: activeSummary.opening_balance, color: 'text-gray-700' },
-            { label: 'Total Receipts', value: activeSummary.total_in, color: 'text-green-700' },
-            { label: 'Total Payments', value: activeSummary.total_out, color: 'text-red-600' },
-            { label: 'Closing Balance', value: activeSummary.closing_balance, color: 'text-blue-700' },
-          ].map(card => (
-            <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-4">
-              <p className="text-xs text-gray-500">{card.label}</p>
-              <p className={`text-xl font-bold mt-1 ${card.color}`}>KES {fmt(card.value)}</p>
-            </div>
+        </div>
+        <div className="mt-4 flex gap-2">
+          {(['CASH', 'BANK'] as const).map(bt => (
+            <button key={bt} onClick={() => setActiveBook(bt)}
+              className={`rounded-xl px-5 py-2 text-sm font-medium transition ${activeBook === bt ? 'bg-emerald-500 text-white' : 'border border-slate-700 text-slate-300 hover:bg-slate-800'}`}>
+              {bt === 'CASH' ? 'Cashbook' : 'Bankbook'}
+            </button>
           ))}
         </div>
+      </header>
+
+      {activeSummary && (
+        <section className="col-span-12 grid grid-cols-2 gap-4 md:grid-cols-4">
+          {[
+            { label: 'Opening Balance', value: activeSummary.opening_balance, color: 'text-slate-300' },
+            { label: 'Total Receipts', value: activeSummary.total_in, color: 'text-emerald-400' },
+            { label: 'Total Payments', value: activeSummary.total_out, color: 'text-red-400' },
+            { label: 'Closing Balance', value: activeSummary.closing_balance, color: 'text-blue-400' },
+          ].map(card => (
+            <div key={card.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+              <p className="text-xs uppercase text-slate-500">{card.label}</p>
+              <p className={`mt-2 text-xl font-bold font-mono ${card.color}`}>KES {fmt(card.value)}</p>
+            </div>
+          ))}
+        </section>
       )}
 
-      <div className="flex gap-3 items-center">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+      <div className="col-span-12 flex flex-wrap gap-3 items-center">
+        <div className="flex items-center gap-2 text-sm text-slate-400">
           <span>From:</span>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm" />
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400" />
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-slate-400">
           <span>To:</span>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm" />
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400" />
         </div>
         {(dateFrom || dateTo) && (
-          <button onClick={() => { setDateFrom(''); setDateTo('') }} className="text-sm text-gray-500 hover:text-gray-700 underline">Clear</button>
+          <button onClick={() => { setDateFrom(''); setDateTo('') }} className="text-sm text-slate-500 hover:text-slate-300 underline">Clear</button>
         )}
       </div>
 
-      {loading && <p className="text-gray-500">Loading…</p>}
-
-      {!loading && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium">Date</th>
-                <th className="px-4 py-3 text-left font-medium">Type</th>
-                <th className="px-4 py-3 text-left font-medium">Reference</th>
-                <th className="px-4 py-3 text-left font-medium">Description</th>
-                <th className="px-4 py-3 text-right font-medium">In (KES)</th>
-                <th className="px-4 py-3 text-right font-medium">Out (KES)</th>
-                <th className="px-4 py-3 text-right font-medium">Balance (KES)</th>
-                <th className="px-4 py-3 text-center font-medium">Source</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+        {loading ? (
+          <p className="p-6 text-slate-400 text-sm">Loading…</p>
+        ) : (
+          <table className="w-full text-sm text-slate-200">
+            <thead>
+              <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-left">Date</th>
+                <th className="px-5 py-4 text-left">Type</th>
+                <th className="px-5 py-4 text-left">Reference</th>
+                <th className="px-5 py-4 text-left">Description</th>
+                <th className="px-5 py-4 text-right">In (KES)</th>
+                <th className="px-5 py-4 text-right">Out (KES)</th>
+                <th className="px-5 py-4 text-right">Balance (KES)</th>
+                <th className="px-5 py-4 text-center">Source</th>
+                <th className="px-5 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-800/60">
               {entries.length === 0 && (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-400">No entries yet for this period.</td></tr>
+                <tr><td colSpan={9} className="py-10 text-center text-slate-500">No entries for this period.</td></tr>
               )}
               {entries.map(e => (
-                <tr key={e.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-600">{e.entry_date}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      e.entry_type === 'RECEIPT' ? 'bg-green-100 text-green-700' :
-                      e.entry_type === 'EXPENSE' ? 'bg-red-100 text-red-600' :
-                      e.entry_type === 'OPENING' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      {e.entry_type}
-                    </span>
+                <tr key={e.id} className="hover:bg-slate-800/30 transition">
+                  <td className="px-5 py-3 text-slate-400">{e.entry_date}</td>
+                  <td className="px-5 py-3">
+                    <span className={`rounded px-2 py-0.5 text-xs font-medium ${typeColor(e.entry_type)}`}>{e.entry_type}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 font-mono text-xs">{e.reference || '—'}</td>
-                  <td className="px-4 py-3 text-gray-700">{e.description}</td>
-                  <td className="px-4 py-3 text-right text-green-700 font-mono">{parseFloat(e.amount_in) > 0 ? fmt(e.amount_in) : ''}</td>
-                  <td className="px-4 py-3 text-right text-red-600 font-mono">{parseFloat(e.amount_out) > 0 ? fmt(e.amount_out) : ''}</td>
-                  <td className="px-4 py-3 text-right text-blue-700 font-mono font-semibold">{fmt(e.running_balance)}</td>
-                  <td className="px-4 py-3 text-center">
-                    {e.is_auto ? <span className="text-xs text-gray-400">Auto</span> : <span className="text-xs text-blue-600">Manual</span>}
+                  <td className="px-5 py-3 font-mono text-xs text-slate-400">{e.reference || '—'}</td>
+                  <td className="px-5 py-3 text-slate-300">{e.description}</td>
+                  <td className="px-5 py-3 text-right font-mono text-emerald-400">{parseFloat(e.amount_in) > 0 ? fmt(e.amount_in) : ''}</td>
+                  <td className="px-5 py-3 text-right font-mono text-red-400">{parseFloat(e.amount_out) > 0 ? fmt(e.amount_out) : ''}</td>
+                  <td className="px-5 py-3 text-right font-mono font-semibold text-blue-300">{fmt(e.running_balance)}</td>
+                  <td className="px-5 py-3 text-center">
+                    {e.is_auto ? <span className="text-xs text-slate-600">Auto</span> : <span className="text-xs text-emerald-500">Manual</span>}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-5 py-3 text-right">
                     {!e.is_auto && (
-                      <button onClick={() => setDeleteTarget(e)} className="text-red-500 hover:underline text-xs">Delete</button>
+                      <button onClick={() => setDeleteTarget(e)} className="text-xs text-red-400 hover:text-red-300 transition">Delete</button>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </section>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Add Cashbook Entry</h2>
-            {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+            <h2 className="mb-4 text-lg font-semibold text-white">Add Entry</h2>
+            {saveError && <p className="mb-3 text-sm text-red-400">{saveError}</p>}
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Book</label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.book_type} onChange={e => setForm(f => ({ ...f, book_type: e.target.value }))}>
+                  <label className="mb-1 block text-xs text-slate-400">Book</label>
+                  <select className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.book_type} onChange={e => setForm(f => ({ ...f, book_type: e.target.value }))}>
                     <option value="CASH">Cashbook</option>
                     <option value="BANK">Bankbook</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                  <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.entry_type} onChange={e => setForm(f => ({ ...f, entry_type: e.target.value }))}>
+                  <label className="mb-1 block text-xs text-slate-400">Type</label>
+                  <select className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.entry_type} onChange={e => setForm(f => ({ ...f, entry_type: e.target.value }))}>
                     <option value="OPENING">Opening Balance</option>
                     <option value="RECEIPT">Receipt</option>
                     <option value="EXPENSE">Expense</option>
@@ -249,33 +239,31 @@ export default function FinanceCashbookPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input type="date" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.entry_date} onChange={e => setForm(f => ({ ...f, entry_date: e.target.value }))} />
+                <label className="mb-1 block text-xs text-slate-400">Date</label>
+                <input type="date" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.entry_date} onChange={e => setForm(f => ({ ...f, entry_date: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <input className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                <label className="mb-1 block text-xs text-slate-400">Description</label>
+                <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reference</label>
-                <input className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.reference} onChange={e => setForm(f => ({ ...f, reference: e.target.value }))} />
+                <label className="mb-1 block text-xs text-slate-400">Reference</label>
+                <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.reference} onChange={e => setForm(f => ({ ...f, reference: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount In (KES)</label>
-                  <input type="number" min="0" step="0.01" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.amount_in} onChange={e => setForm(f => ({ ...f, amount_in: e.target.value, amount_out: '' }))} />
+                  <label className="mb-1 block text-xs text-slate-400">Amount In (KES)</label>
+                  <input type="number" min="0" step="0.01" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.amount_in} onChange={e => setForm(f => ({ ...f, amount_in: e.target.value, amount_out: '' }))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount Out (KES)</label>
-                  <input type="number" min="0" step="0.01" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" value={form.amount_out} onChange={e => setForm(f => ({ ...f, amount_out: e.target.value, amount_in: '' }))} />
+                  <label className="mb-1 block text-xs text-slate-400">Amount Out (KES)</label>
+                  <input type="number" min="0" step="0.01" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.amount_out} onChange={e => setForm(f => ({ ...f, amount_out: e.target.value, amount_in: '' }))} />
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
-                {saving ? 'Saving…' : 'Save'}
-              </button>
+            <div className="mt-5 flex justify-end gap-3">
+              <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
+              <button onClick={handleSave} disabled={saving} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </div>
         </div>
@@ -284,10 +272,10 @@ export default function FinanceCashbookPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Entry"
-        message={`Delete the entry "${deleteTarget?.description}"? This will recompute all running balances.`}
+        message={`Delete "${deleteTarget?.description}"? Running balances will be recomputed.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
-    </div>
+    </section>
   )
 }

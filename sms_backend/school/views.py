@@ -4914,3 +4914,120 @@ class FinanceReceiptPdfView(APIView):
         response = HttpResponse(pdf_data, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="receipt_{payment.receipt_number}.pdf"'
         return response
+
+
+# ==========================================
+# STUDENT ACCOUNT LEDGER
+# ==========================================
+
+class FinanceStudentLedgerView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, student_id):
+        from decimal import Decimal as D
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return Response({'detail': 'Student not found.'}, status=404)
+        term_id = request.query_params.get('term')
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+
+        entries = []
+
+        inv_qs = Invoice.objects.filter(student=student, is_active=True)
+        if term_id:
+            inv_qs = inv_qs.filter(term_id=term_id)
+        if date_from:
+            inv_qs = inv_qs.filter(invoice_date__gte=date_from)
+        if date_to:
+            inv_qs = inv_qs.filter(invoice_date__lte=date_to)
+        for inv in inv_qs.select_related('term').order_by('invoice_date', 'id'):
+            entries.append({
+                'date': str(inv.invoice_date),
+                'type': 'INVOICE',
+                'reference': inv.invoice_number or f'INV-{inv.id}',
+                'description': f'Invoice – {inv.term.name if inv.term else ""}',
+                'debit': float(inv.total_amount),
+                'credit': 0.0,
+                'term': inv.term.name if inv.term else '',
+                'status': inv.status,
+                'invoice_id': inv.id,
+            })
+
+        pay_qs = Payment.objects.filter(student=student, is_active=True)
+        if date_from:
+            pay_qs = pay_qs.filter(payment_date__date__gte=date_from)
+        if date_to:
+            pay_qs = pay_qs.filter(payment_date__date__lte=date_to)
+        for pay in pay_qs.order_by('payment_date', 'id'):
+            pay_date = pay.payment_date.date() if hasattr(pay.payment_date, 'date') else pay.payment_date
+            entries.append({
+                'date': str(pay_date),
+                'type': 'PAYMENT',
+                'reference': pay.receipt_number or pay.reference_number,
+                'description': f'Payment – {pay.payment_method}',
+                'debit': 0.0,
+                'credit': float(pay.amount),
+                'term': '',
+                'status': 'REVERSED' if pay.reversed_at else 'ACTIVE',
+                'payment_id': pay.id,
+            })
+
+        adj_qs = InvoiceAdjustment.objects.filter(invoice__student=student)
+        if date_from:
+            adj_qs = adj_qs.filter(created_at__date__gte=date_from)
+        if date_to:
+            adj_qs = adj_qs.filter(created_at__date__lte=date_to)
+        for adj in adj_qs.select_related('invoice').order_by('created_at', 'id'):
+            signed = float(adj.signed_amount)
+            adj_date = adj.created_at.date() if hasattr(adj.created_at, 'date') else adj.created_at
+            entries.append({
+                'date': str(adj_date),
+                'type': 'ADJUSTMENT',
+                'reference': f'ADJ-{adj.id}',
+                'description': f'{adj.adjustment_type} – {adj.reason[:60] if adj.reason else ""}',
+                'debit': max(-signed, 0.0),
+                'credit': max(signed, 0.0),
+                'term': '',
+                'status': 'POSTED',
+            })
+
+        cf_qs = BalanceCarryForward.objects.filter(student=student)
+        if term_id:
+            cf_qs = cf_qs.filter(to_term_id=term_id)
+        for cf in cf_qs.select_related('from_term', 'to_term').order_by('created_at'):
+            cf_date = cf.created_at.date() if hasattr(cf.created_at, 'date') else cf.created_at
+            entries.append({
+                'date': str(cf_date),
+                'type': 'CARRY_FORWARD',
+                'reference': f'CF-{cf.id}',
+                'description': f'Balance carried forward from {cf.from_term.name} → {cf.to_term.name}',
+                'debit': float(cf.amount),
+                'credit': 0.0,
+                'term': cf.to_term.name if cf.to_term else '',
+                'status': 'POSTED',
+            })
+
+        entries.sort(key=lambda e: e['date'])
+
+        balance = D('0.00')
+        for entry in entries:
+            balance += D(str(entry['debit'])) - D(str(entry['credit']))
+            entry['balance'] = float(balance)
+
+        enrollment = student.enrollment_set.filter(is_active=True).select_related('school_class', 'term').first()
+        student_data = {
+            'id': student.id,
+            'name': f"{student.first_name} {student.last_name}".strip(),
+            'admission_number': student.admission_number,
+            'class_name': enrollment.school_class.name if enrollment and enrollment.school_class else 'N/A',
+            'current_term': enrollment.term.name if enrollment and enrollment.term else 'N/A',
+        }
+
+        return Response({
+            'student': student_data,
+            'entry_count': len(entries),
+            'closing_balance': float(balance),
+            'entries': entries,
+        })

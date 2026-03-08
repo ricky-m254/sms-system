@@ -22,6 +22,7 @@ const navSections = [
       { label: 'Vote Heads', to: '/modules/finance/vote-heads' },
       { label: 'Cashbook', to: '/modules/finance/cashbook' },
       { label: 'Arrears', to: '/modules/finance/arrears' },
+      { label: 'Student Ledger', to: '/modules/finance/ledger' },
       { label: 'Settings', to: '/settings/finance' },
     ],
   },
