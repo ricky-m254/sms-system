@@ -73,8 +73,8 @@ export default function FinanceCashbookPage() {
     if (dateFrom) params.date_from = dateFrom
     if (dateTo) params.date_to = dateTo
     const [entriesRes, summaryRes] = await Promise.all([
-      apiClient.get('/api/finance/cashbook/', { params }),
-      apiClient.get('/api/finance/cashbook/summary/'),
+      apiClient.get('/finance/cashbook/', { params }),
+      apiClient.get('/finance/cashbook/summary/'),
     ])
     setEntries(entriesRes.data.results ?? entriesRes.data)
     setSummary(summaryRes.data)
@@ -88,7 +88,7 @@ export default function FinanceCashbookPage() {
   const handleSave = async () => {
     setSaving(true); setSaveError('')
     try {
-      await apiClient.post('/api/finance/cashbook/', {
+      await apiClient.post('/finance/cashbook/', {
         ...form, amount_in: form.amount_in || '0', amount_out: form.amount_out || '0'
       })
       setShowForm(false); load()
@@ -98,7 +98,7 @@ export default function FinanceCashbookPage() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return
-    await apiClient.delete(`/api/finance/cashbook/${deleteTarget.id}/`)
+    await apiClient.delete(`/finance/cashbook/${deleteTarget.id}/`)
     setDeleteTarget(null); load()
   }
 

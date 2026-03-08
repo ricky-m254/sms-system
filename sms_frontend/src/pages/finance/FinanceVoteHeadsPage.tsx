@@ -49,7 +49,7 @@ export default function FinanceVoteHeadsPage() {
 
   const load = () => {
     setLoading(true)
-    apiClient.get('/api/finance/vote-heads/').then(r => {
+    apiClient.get('/finance/vote-heads/').then(r => {
       setRows(r.data.results ?? r.data)
       setLoading(false)
     }).catch(() => { setError('Failed to load vote heads.'); setLoading(false) })
@@ -68,8 +68,8 @@ export default function FinanceVoteHeadsPage() {
   const handleSave = async () => {
     setSaving(true); setSaveError('')
     try {
-      if (editing) await apiClient.patch(`/api/finance/vote-heads/${editing.id}/`, form)
-      else await apiClient.post('/api/finance/vote-heads/', form)
+      if (editing) await apiClient.patch(`/finance/vote-heads/${editing.id}/`, form)
+      else await apiClient.post('/finance/vote-heads/', form)
       setShowForm(false); load()
     } catch (err) { setSaveError(extractApiError(err, 'Failed to save.')) }
     finally { setSaving(false) }
@@ -77,14 +77,14 @@ export default function FinanceVoteHeadsPage() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return
-    await apiClient.delete(`/api/finance/vote-heads/${deleteTarget.id}/`)
+    await apiClient.delete(`/finance/vote-heads/${deleteTarget.id}/`)
     setDeleteTarget(null); load()
   }
 
   const handleSeed = async () => {
     setSeeding(true); setSeedMsg('')
     try {
-      const r = await apiClient.post('/api/finance/vote-heads/seed-defaults/')
+      const r = await apiClient.post('/finance/vote-heads/seed-defaults/')
       setSeedMsg(r.data.message || 'Done.'); load()
     } catch { setSeedMsg('Seeding failed.') }
     finally { setSeeding(false) }

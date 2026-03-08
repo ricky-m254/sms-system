@@ -40,6 +40,7 @@ const FinanceArrearsPage = lazy(() => import('./pages/finance/FinanceArrearsPage
 const FinanceStudentLedgerPage = lazy(() => import('./pages/finance/FinanceStudentLedgerPage'))
 const SettingsLayout = lazy(() => import('./pages/settings/SettingsLayout'))
 const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPage'))
+const SettingsUsersPage = lazy(() => import('./pages/settings/SettingsUsersPage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
 const ParentsDirectoryPage = lazy(() => import('./pages/parents/ParentsDirectoryPage'))
@@ -382,6 +383,7 @@ function App() {
           element={isTenantAuth && settingsEnabled ? <SettingsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/settings/global" replace />} />
+          <Route path="users" element={<SettingsUsersPage />} />
           <Route path=":module" element={<ModuleSettingsPage />} />
         </Route>
         <Route path="/modules/:moduleKey" element={<Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />} />

@@ -81,8 +81,8 @@ export default function FinanceArrearsPage() {
   const [students, setStudents] = useState<{ id: number; name: string; admission_number: string }[]>([])
 
   useEffect(() => {
-    apiClient.get('/api/finance/terms/').then(r => setTerms(r.data.results ?? r.data))
-    apiClient.get('/api/finance/ref/students/').then(r =>
+    apiClient.get('/finance/terms/').then(r => setTerms(r.data.results ?? r.data))
+    apiClient.get('/finance/ref/students/').then(r =>
       setStudents((r.data.results ?? r.data).map((s: { id: number; first_name: string; last_name: string; admission_number: string }) => ({
         id: s.id, name: `${s.first_name} ${s.last_name}`.trim(), admission_number: s.admission_number,
       })))
@@ -93,7 +93,7 @@ export default function FinanceArrearsPage() {
     setLoading(true)
     const params: Record<string, string> = { group_by: groupBy }
     if (selectedTerm) params.term = selectedTerm
-    const r = await apiClient.get('/api/finance/reports/arrears/', { params })
+    const r = await apiClient.get('/finance/reports/arrears/', { params })
     if (groupBy === 'class') {
       setClassGroups(r.data.data || [])
       setRows([])
@@ -108,7 +108,7 @@ export default function FinanceArrearsPage() {
 
   const loadCarryForwards = async () => {
     setCfLoading(true)
-    const r = await apiClient.get('/api/finance/carry-forwards/')
+    const r = await apiClient.get('/finance/carry-forwards/')
     setCarryForwards(r.data.results ?? r.data)
     setCfLoading(false)
   }
@@ -121,7 +121,7 @@ export default function FinanceArrearsPage() {
   const handleCfSave = async () => {
     setCfSaving(true); setCfError('')
     try {
-      await apiClient.post('/api/finance/carry-forwards/', {
+      await apiClient.post('/finance/carry-forwards/', {
         student: parseInt(cfForm.student),
         from_term: parseInt(cfForm.from_term),
         to_term: parseInt(cfForm.to_term),

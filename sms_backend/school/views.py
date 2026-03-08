@@ -5031,3 +5031,155 @@ class FinanceStudentLedgerView(APIView):
             'closing_balance': float(balance),
             'entries': entries,
         })
+
+
+# ==========================================
+# TENANT USER MANAGEMENT
+# ==========================================
+
+class RoleListView(APIView):
+    """List all available roles for tenant users."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        roles = Role.objects.all().order_by('name')
+        data = [{'id': r.id, 'name': r.name, 'description': r.description} for r in roles]
+        return Response(data)
+
+
+class UserManagementListCreateView(APIView):
+    """List all tenant users with roles / create a new tenant user."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.contrib.auth.models import User as AuthUser
+        users = AuthUser.objects.select_related('userprofile__role').filter(is_active=True).order_by('username')
+        data = []
+        for u in users:
+            profile = getattr(u, 'userprofile', None)
+            role = getattr(profile, 'role', None)
+            data.append({
+                'id': u.id,
+                'username': u.username,
+                'email': u.email,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'is_active': u.is_active,
+                'is_staff': u.is_staff,
+                'date_joined': u.date_joined.strftime('%Y-%m-%d') if u.date_joined else None,
+                'last_login': u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else None,
+                'role_id': role.id if role else None,
+                'role_name': role.name if role else None,
+                'phone': profile.phone if profile else '',
+            })
+        return Response({'results': data, 'count': len(data)})
+
+    def post(self, request):
+        from django.contrib.auth.models import User as AuthUser
+        data = request.data
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        email = data.get('email', '').strip()
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        phone = data.get('phone', '').strip()
+        role_id = data.get('role_id')
+
+        if not username or not password:
+            return Response({'detail': 'Username and password are required.'}, status=400)
+        if AuthUser.objects.filter(username=username).exists():
+            return Response({'detail': f'Username "{username}" is already taken.'}, status=400)
+        if not role_id:
+            return Response({'detail': 'A role must be assigned.'}, status=400)
+        try:
+            role = Role.objects.get(id=role_id)
+        except Role.DoesNotExist:
+            return Response({'detail': 'Invalid role.'}, status=400)
+
+        user = AuthUser.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        UserProfile.objects.create(user=user, role=role, phone=phone)
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'role_name': role.name,
+        }, status=201)
+
+
+class UserManagementDetailView(APIView):
+    """Retrieve, update, or deactivate a specific tenant user."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_user(self, user_id):
+        from django.contrib.auth.models import User as AuthUser
+        try:
+            return AuthUser.objects.select_related('userprofile__role').get(id=user_id)
+        except AuthUser.DoesNotExist:
+            return None
+
+    def get(self, request, user_id):
+        u = self._get_user(user_id)
+        if not u:
+            return Response({'detail': 'User not found.'}, status=404)
+        profile = getattr(u, 'userprofile', None)
+        role = getattr(profile, 'role', None)
+        return Response({
+            'id': u.id, 'username': u.username, 'email': u.email,
+            'first_name': u.first_name, 'last_name': u.last_name,
+            'is_active': u.is_active, 'is_staff': u.is_staff,
+            'date_joined': u.date_joined.strftime('%Y-%m-%d') if u.date_joined else None,
+            'last_login': u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else None,
+            'role_id': role.id if role else None,
+            'role_name': role.name if role else None,
+            'phone': profile.phone if profile else '',
+        })
+
+    def patch(self, request, user_id):
+        u = self._get_user(user_id)
+        if not u:
+            return Response({'detail': 'User not found.'}, status=404)
+        data = request.data
+        if 'email' in data:
+            u.email = data['email']
+        if 'first_name' in data:
+            u.first_name = data['first_name']
+        if 'last_name' in data:
+            u.last_name = data['last_name']
+        if 'password' in data and data['password']:
+            u.set_password(data['password'])
+        u.save()
+
+        profile = getattr(u, 'userprofile', None)
+        if 'role_id' in data and data['role_id']:
+            try:
+                role = Role.objects.get(id=data['role_id'])
+                if profile:
+                    profile.role = role
+                    if 'phone' in data:
+                        profile.phone = data.get('phone', '')
+                    profile.save()
+                else:
+                    UserProfile.objects.create(user=u, role=role, phone=data.get('phone', ''))
+            except Role.DoesNotExist:
+                return Response({'detail': 'Invalid role.'}, status=400)
+        elif profile and 'phone' in data:
+            profile.phone = data.get('phone', '')
+            profile.save()
+
+        return Response({'detail': 'User updated.'})
+
+    def delete(self, request, user_id):
+        from django.contrib.auth.models import User as AuthUser
+        if str(user_id) == str(request.user.id):
+            return Response({'detail': 'You cannot deactivate your own account.'}, status=400)
+        u = self._get_user(user_id)
+        if not u:
+            return Response({'detail': 'User not found.'}, status=404)
+        u.is_active = False
+        u.save()
+        return Response({'detail': f'User "{u.username}" has been deactivated.'})

@@ -48,8 +48,8 @@ export default function FinanceStudentLedgerPage() {
   const [query, setQuery] = useState('')
 
   useEffect(() => {
-    apiClient.get('/api/finance/ref/students/').then(r => setStudents(r.data.results ?? r.data))
-    apiClient.get('/api/finance/terms/').then(r => setTerms(r.data.results ?? r.data))
+    apiClient.get('/finance/ref/students/').then(r => setStudents(r.data.results ?? r.data))
+    apiClient.get('/finance/terms/').then(r => setTerms(r.data.results ?? r.data))
   }, [])
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function FinanceStudentLedgerPage() {
       if (selectedTerm) params.term = selectedTerm
       if (dateFrom) params.date_from = dateFrom
       if (dateTo) params.date_to = dateTo
-      const r = await apiClient.get(`/api/finance/students/${selectedStudent}/ledger/`, { params })
+      const r = await apiClient.get(`/finance/students/${selectedStudent}/ledger/`, { params })
       setLedger(r.data)
     } catch {
       setError('Failed to load ledger.')
