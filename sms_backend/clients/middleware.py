@@ -99,6 +99,11 @@ class TenantContextGuardMiddleware:
             # Keep routing aligned with tenant context when host resolved to public schema.
             # Without this, Django can still use public URL patterns and return 404 for tenant APIs.
             request.urlconf = settings.ROOT_URLCONF
+            # Mark that this tenant was resolved from the header, not from the URL domain.
+            # The host-match guard below will skip its check for header-resolved tenants,
+            # because the platform host (e.g. sms-system.replit.app) is legitimately
+            # different from a school-specific domain.
+            request._tenant_from_header = True
 
         tenant = getattr(request, "tenant", None)
         tenant_schema = getattr(tenant, "schema_name", None)
@@ -132,7 +137,7 @@ class TenantContextGuardMiddleware:
                 status=400,
             )
 
-        if getattr(settings, "TENANT_ENFORCE_HOST_MATCH", True):
+        if getattr(settings, "TENANT_ENFORCE_HOST_MATCH", True) and not getattr(request, "_tenant_from_header", False):
             tenant_domains = {
                 domain.lower()
                 for domain in tenant.domains.values_list("domain", flat=True)
