@@ -13,7 +13,9 @@ from .models import (
     ScholarshipAward,
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
-    VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward
+    VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
+    StoreCategory, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
+    DispensaryVisit, DispensaryPrescription, DispensaryStock
 )
 from hr.models import Staff
 
@@ -787,3 +789,140 @@ class BalanceCarryForwardSerializer(serializers.ModelSerializer):
 
     def get_student_name(self, obj):
         return f"{obj.student.first_name} {obj.student.last_name}".strip()
+
+
+# ==========================================
+# STORE / INVENTORY SERIALIZERS
+# ==========================================
+
+class StoreCategorySerializer(serializers.ModelSerializer):
+    item_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StoreCategory
+        fields = ['id', 'name', 'description', 'item_type', 'is_active', 'item_count', 'created_at']
+
+    def get_item_count(self, obj):
+        return obj.items.filter(is_active=True).count()
+
+
+class StoreItemSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    is_low_stock = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = StoreItem
+        fields = [
+            'id', 'name', 'sku', 'category', 'category_name', 'unit', 'item_type',
+            'current_stock', 'reorder_level', 'max_stock', 'cost_price',
+            'is_active', 'is_low_stock', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['current_stock']
+
+
+class StoreTransactionSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source='item.name', read_only=True)
+    item_unit = serializers.CharField(source='item.unit', read_only=True)
+    performed_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StoreTransaction
+        fields = [
+            'id', 'item', 'item_name', 'item_unit', 'transaction_type',
+            'quantity', 'reference', 'purpose', 'performed_by', 'performed_by_name',
+            'date', 'notes', 'created_at'
+        ]
+        read_only_fields = ['created_at']
+
+    def get_performed_by_name(self, obj):
+        if obj.performed_by:
+            return f"{obj.performed_by.first_name} {obj.performed_by.last_name}".strip() or obj.performed_by.username
+        return ''
+
+
+class StoreOrderItemSerializer(serializers.ModelSerializer):
+    item_name_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StoreOrderItem
+        fields = ['id', 'item', 'item_name', 'item_name_display', 'unit', 'quantity_requested', 'quantity_approved', 'notes']
+
+    def get_item_name_display(self, obj):
+        if obj.item:
+            return obj.item.name
+        return obj.item_name
+
+
+class StoreOrderRequestSerializer(serializers.ModelSerializer):
+    items = StoreOrderItemSerializer(many=True, read_only=True)
+    requested_by_name = serializers.SerializerMethodField()
+    reviewed_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StoreOrderRequest
+        fields = [
+            'id', 'title', 'description', 'requested_by', 'requested_by_name',
+            'send_to', 'status', 'notes', 'reviewed_by', 'reviewed_by_name',
+            'reviewed_at', 'created_at', 'updated_at', 'items'
+        ]
+        read_only_fields = ['requested_by', 'reviewed_by', 'reviewed_at', 'created_at', 'updated_at']
+
+    def get_requested_by_name(self, obj):
+        if obj.requested_by:
+            return f"{obj.requested_by.first_name} {obj.requested_by.last_name}".strip() or obj.requested_by.username
+        return ''
+
+    def get_reviewed_by_name(self, obj):
+        if obj.reviewed_by:
+            return f"{obj.reviewed_by.first_name} {obj.reviewed_by.last_name}".strip() or obj.reviewed_by.username
+        return ''
+
+
+# ==========================================
+# DISPENSARY SERIALIZERS
+# ==========================================
+
+class DispensaryPrescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DispensaryPrescription
+        fields = ['id', 'visit', 'medication_name', 'dosage', 'frequency', 'quantity_dispensed', 'unit', 'notes', 'created_at']
+        read_only_fields = ['created_at']
+
+
+class DispensaryVisitSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_admission_number = serializers.CharField(source='student.admission_number', read_only=True)
+    attended_by_name = serializers.SerializerMethodField()
+    prescriptions = DispensaryPrescriptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = DispensaryVisit
+        fields = [
+            'id', 'student', 'student_name', 'student_admission_number',
+            'visit_date', 'visit_time', 'complaint', 'diagnosis', 'treatment',
+            'attended_by', 'attended_by_name', 'severity', 'parent_notified',
+            'referred', 'referred_to', 'follow_up_date', 'notes', 'created_at',
+            'prescriptions'
+        ]
+        read_only_fields = ['created_at']
+
+    def get_student_name(self, obj):
+        return f"{obj.student.first_name} {obj.student.last_name}".strip()
+
+    def get_attended_by_name(self, obj):
+        if obj.attended_by:
+            return f"{obj.attended_by.first_name} {obj.attended_by.last_name}".strip() or obj.attended_by.username
+        return ''
+
+
+class DispensaryStockSerializer(serializers.ModelSerializer):
+    is_low_stock = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = DispensaryStock
+        fields = [
+            'id', 'medication_name', 'generic_name', 'current_quantity', 'unit',
+            'reorder_level', 'expiry_date', 'supplier', 'notes', 'is_low_stock',
+            'updated_at', 'created_at'
+        ]
+        read_only_fields = ['updated_at', 'created_at']

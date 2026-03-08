@@ -44,6 +44,8 @@ const MODULE_OPERATIONAL_ROUTES: Record<string, string> = {
   ASSETS: '/modules/assets/dashboard',
   PARENTS: '/modules/parent-portal/dashboard',
   PARENT_PORTAL: '/modules/parent-portal/dashboard',
+  STORE: '/modules/store',
+  DISPENSARY: '/modules/dispensary',
 }
 
 const MODULE_LABELS: Record<string, string> = {
@@ -57,6 +59,8 @@ const MODULE_LABELS: Record<string, string> = {
   LIBRARY: 'Library',
   PARENTS: 'Parent Portal',
   ASSETS: 'Assets',
+  STORE: 'Store & Inventory',
+  DISPENSARY: 'Dispensary',
 }
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
@@ -71,6 +75,8 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
   HR: 'Organization, payroll, leave, recruitment and training.',
   LIBRARY: 'Catalog, circulation, reservations, fines and reports.',
   ASSETS: 'Asset register, inventory tracking and lifecycle controls.',
+  STORE: 'Food and office inventory, stock movements, reorder alerts and order requests.',
+  DISPENSARY: 'Student clinic visits, prescriptions, medication dispensing and referrals.',
 }
 
 const MODULE_DISPLAY_ORDER = [
@@ -83,6 +89,8 @@ const MODULE_DISPLAY_ORDER = [
   'STAFF',
   'HR',
   'LIBRARY',
+  'STORE',
+  'DISPENSARY',
 ]
 
 const MODULE_KEY_ALIASES: Record<string, string> = {

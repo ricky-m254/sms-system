@@ -77,7 +77,7 @@ The shared PostgreSQL database contains:
 
 ## Modules
 
-All 10 tenant modules are fully implemented (frontend + backend):
+All 12 tenant modules are fully implemented (frontend + backend):
 - **Students** — directory, attendance, behavior, medical, documents, reports
 - **Finance** — invoices, payments (receipt PDF download), expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs, vote heads, cashbook & bankbook, arrears management, balance carry-forward
 - **Academics** — structure, subjects, classes, gradebook, report cards, assignments, calendar, analytics
@@ -88,6 +88,8 @@ All 10 tenant modules are fully implemented (frontend + backend):
 - **Library** — catalog, circulation, reservations, members, fines, inventory, acquisition, reports
 - **Parent Portal** — child academics, attendance, finance, communication, schedule, assignments
 - **Assets** — registry, categories, assignments, maintenance records, dashboard (added March 2026)
+- **Store & Inventory** — food + office item CRUD, stock receipt/issuance/adjustment movements, reorder-level alerts, low-stock view, order requests (sent to Finance/Admin/Both) with approve/reject workflow (added March 2026)
+- **Dispensary** — student clinic visit records with diagnosis, treatment, severity triage, referrals, follow-ups, per-visit prescription/medication dispensing, medication stock tracker with expiry and reorder alerts (added March 2026)
 
 ### Navigation
 - `ModuleToolbar` component in every module sidebar: back-to-dashboard button + module switcher

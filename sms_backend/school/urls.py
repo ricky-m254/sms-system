@@ -52,6 +52,9 @@ from .views import (
     VoteHeadViewSet, VoteHeadPaymentAllocationViewSet,
     CashbookEntryViewSet, CashbookSummaryView,
     BalanceCarryForwardViewSet,
+    StoreCategoryViewSet, StoreItemViewSet, StoreTransactionViewSet,
+    StoreOrderRequestViewSet, StoreOrderReviewView, StoreDashboardView,
+    DispensaryVisitViewSet, DispensaryPrescriptionViewSet, DispensaryStockViewSet, DispensaryDashboardView,
     FinanceArrearsView,
     FinanceVoteHeadAllocationReportView,
     FinanceClassBalancesReportView,
@@ -105,6 +108,13 @@ router.register(r'finance/vote-heads', VoteHeadViewSet, basename='vote-head')
 router.register(r'finance/vote-head-allocations', VoteHeadPaymentAllocationViewSet, basename='vote-head-allocation')
 router.register(r'finance/cashbook', CashbookEntryViewSet, basename='cashbook-entry')
 router.register(r'finance/carry-forwards', BalanceCarryForwardViewSet, basename='carry-forward')
+router.register(r'store/categories', StoreCategoryViewSet, basename='store-category')
+router.register(r'store/items', StoreItemViewSet, basename='store-item')
+router.register(r'store/transactions', StoreTransactionViewSet, basename='store-transaction')
+router.register(r'store/orders', StoreOrderRequestViewSet, basename='store-order')
+router.register(r'dispensary/visits', DispensaryVisitViewSet, basename='dispensary-visit')
+router.register(r'dispensary/prescriptions', DispensaryPrescriptionViewSet, basename='dispensary-prescription')
+router.register(r'dispensary/stock', DispensaryStockViewSet, basename='dispensary-stock')
 
 # ==========================================
 # URL PATTERNS
@@ -171,6 +181,13 @@ urlpatterns = [
     path('finance/reports/arrears-by-term/', FinanceArrearsByTermReportView.as_view(), name='finance_arrears_by_term_report'),
     path('finance/payments/<int:pk>/receipt/pdf/', FinanceReceiptPdfView.as_view(), name='finance_receipt_pdf'),
     path('finance/students/<int:student_id>/ledger/', FinanceStudentLedgerView.as_view(), name='finance_student_ledger'),
+
+    # Store module
+    path('store/orders/<int:pk>/review/', StoreOrderReviewView.as_view(), name='store_order_review'),
+    path('store/dashboard/', StoreDashboardView.as_view(), name='store_dashboard'),
+
+    # Dispensary module
+    path('dispensary/dashboard/', DispensaryDashboardView.as_view(), name='dispensary_dashboard'),
 
     # User management
     path('users/roles/', RoleListView.as_view(), name='user_roles'),

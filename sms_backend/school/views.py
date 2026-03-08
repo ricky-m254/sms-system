@@ -30,7 +30,9 @@ from .models import (
     ScholarshipAward,
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
-    VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward
+    VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
+    StoreCategory, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
+    DispensaryVisit, DispensaryPrescription, DispensaryStock
 )
 from hr.models import Staff
 from academics.models import AcademicYear, Term, SchoolClass
@@ -55,7 +57,10 @@ from .serializers import (
     MedicalRecordSerializer, ImmunizationRecordSerializer, ClinicVisitSerializer,
     SchoolProfileSerializer,
     VoteHeadSerializer, VoteHeadPaymentAllocationSerializer,
-    CashbookEntrySerializer, BalanceCarryForwardSerializer
+    CashbookEntrySerializer, BalanceCarryForwardSerializer,
+    StoreCategorySerializer, StoreItemSerializer, StoreTransactionSerializer,
+    StoreOrderRequestSerializer,
+    DispensaryVisitSerializer, DispensaryPrescriptionSerializer, DispensaryStockSerializer,
 )
 
 
@@ -5183,3 +5188,259 @@ class UserManagementDetailView(APIView):
         u.is_active = False
         u.save()
         return Response({'detail': f'User "{u.username}" has been deactivated.'})
+
+
+# ==========================================
+# STORE / INVENTORY VIEWS
+# ==========================================
+
+class StoreCategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = StoreCategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = StoreCategory.objects.all()
+        item_type = self.request.query_params.get('item_type')
+        if item_type:
+            qs = qs.filter(item_type=item_type.upper())
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            qs = qs.filter(is_active=is_active.lower() == 'true')
+        return qs.order_by('name')
+
+
+class StoreItemViewSet(viewsets.ModelViewSet):
+    serializer_class = StoreItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = StoreItem.objects.select_related('category').all()
+        item_type = self.request.query_params.get('item_type')
+        if item_type and item_type.upper() != 'ALL':
+            qs = qs.filter(item_type=item_type.upper())
+        low_stock = self.request.query_params.get('low_stock')
+        if low_stock == 'true':
+            from django.db.models import F
+            qs = qs.filter(current_stock__lte=F('reorder_level'))
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            qs = qs.filter(is_active=is_active.lower() == 'true')
+        q = self.request.query_params.get('search')
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs.order_by('name')
+
+
+class StoreTransactionViewSet(viewsets.ModelViewSet):
+    serializer_class = StoreTransactionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = StoreTransaction.objects.select_related('item', 'performed_by').all()
+        item_id = self.request.query_params.get('item')
+        if item_id:
+            qs = qs.filter(item_id=item_id)
+        tx_type = self.request.query_params.get('transaction_type')
+        if tx_type:
+            qs = qs.filter(transaction_type=tx_type.upper())
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            qs = qs.filter(date__gte=date_from)
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            qs = qs.filter(date__lte=date_to)
+        return qs.order_by('-date', '-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(performed_by=self.request.user)
+
+
+class StoreOrderRequestViewSet(viewsets.ModelViewSet):
+    serializer_class = StoreOrderRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = StoreOrderRequest.objects.select_related('requested_by', 'reviewed_by').prefetch_related('items__item').all()
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter.upper())
+        send_to = self.request.query_params.get('send_to')
+        if send_to:
+            qs = qs.filter(send_to__in=[send_to.upper(), 'BOTH'])
+        return qs.order_by('-created_at')
+
+    def perform_create(self, serializer):
+        order = serializer.save(requested_by=self.request.user)
+        items_data = self.request.data.get('order_items', [])
+        for item_data in items_data:
+            item_id = item_data.get('item')
+            item_name = item_data.get('item_name', '')
+            StoreOrderItem.objects.create(
+                order=order,
+                item_id=item_id if item_id else None,
+                item_name=item_name or (StoreItem.objects.filter(id=item_id).values_list('name', flat=True).first() if item_id else ''),
+                unit=item_data.get('unit', 'pcs'),
+                quantity_requested=item_data.get('quantity_requested', 1),
+                notes=item_data.get('notes', ''),
+            )
+
+
+class StoreOrderReviewView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        from django.utils import timezone as tz
+        try:
+            order = StoreOrderRequest.objects.get(id=pk)
+        except StoreOrderRequest.DoesNotExist:
+            return Response({'detail': 'Order not found.'}, status=404)
+        action = request.data.get('action', '').upper()
+        if action not in ('APPROVE', 'REJECT', 'FULFILL'):
+            return Response({'detail': 'action must be APPROVE, REJECT, or FULFILL.'}, status=400)
+        status_map = {'APPROVE': 'APPROVED', 'REJECT': 'REJECTED', 'FULFILL': 'FULFILLED'}
+        order.status = status_map[action]
+        order.reviewed_by = request.user
+        order.reviewed_at = tz.now()
+        order.notes = request.data.get('notes', order.notes)
+        order.save()
+        approved_items = request.data.get('approved_items', [])
+        for ai in approved_items:
+            try:
+                oi = StoreOrderItem.objects.get(id=ai['id'])
+                oi.quantity_approved = ai.get('quantity_approved', oi.quantity_requested)
+                oi.save()
+            except StoreOrderItem.DoesNotExist:
+                pass
+        return Response({'detail': f'Order {status_map[action].lower()}.', 'status': order.status})
+
+
+class StoreDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import F
+        total_items = StoreItem.objects.filter(is_active=True).count()
+        low_stock_items = list(
+            StoreItem.objects.filter(is_active=True, current_stock__lte=F('reorder_level'))
+            .values('id', 'name', 'current_stock', 'reorder_level', 'unit', 'item_type')[:10]
+        )
+        pending_orders = StoreOrderRequest.objects.filter(status='PENDING').count()
+        total_categories = StoreCategory.objects.filter(is_active=True).count()
+        recent_transactions = list(
+            StoreTransaction.objects.select_related('item')
+            .values('id', 'transaction_type', 'quantity', 'date', 'item__name', 'item__unit', 'purpose')
+            .order_by('-date', '-created_at')[:10]
+        )
+        return Response({
+            'total_items': total_items,
+            'low_stock_count': len(low_stock_items),
+            'low_stock_items': low_stock_items,
+            'pending_orders': pending_orders,
+            'total_categories': total_categories,
+            'recent_transactions': recent_transactions,
+        })
+
+
+# ==========================================
+# DISPENSARY VIEWS
+# ==========================================
+
+class DispensaryVisitViewSet(viewsets.ModelViewSet):
+    serializer_class = DispensaryVisitSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = DispensaryVisit.objects.select_related('student', 'attended_by').prefetch_related('prescriptions').all()
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            qs = qs.filter(student_id=student_id)
+        severity = self.request.query_params.get('severity')
+        if severity:
+            qs = qs.filter(severity=severity.upper())
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            qs = qs.filter(visit_date__gte=date_from)
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            qs = qs.filter(visit_date__lte=date_to)
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                models.Q(student__first_name__icontains=search) |
+                models.Q(student__last_name__icontains=search) |
+                models.Q(student__admission_number__icontains=search)
+            )
+        return qs.order_by('-visit_date', '-created_at')
+
+    def perform_create(self, serializer):
+        visit = serializer.save()
+        prescriptions = self.request.data.get('prescriptions', [])
+        for p in prescriptions:
+            DispensaryPrescription.objects.create(
+                visit=visit,
+                medication_name=p.get('medication_name', ''),
+                dosage=p.get('dosage', ''),
+                frequency=p.get('frequency', ''),
+                quantity_dispensed=p.get('quantity_dispensed', 0),
+                unit=p.get('unit', ''),
+                notes=p.get('notes', ''),
+            )
+
+
+class DispensaryPrescriptionViewSet(viewsets.ModelViewSet):
+    serializer_class = DispensaryPrescriptionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = DispensaryPrescription.objects.select_related('visit__student').all()
+        visit_id = self.request.query_params.get('visit')
+        if visit_id:
+            qs = qs.filter(visit_id=visit_id)
+        return qs.order_by('-created_at')
+
+
+class DispensaryStockViewSet(viewsets.ModelViewSet):
+    serializer_class = DispensaryStockSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = DispensaryStock.objects.all()
+        low_stock = self.request.query_params.get('low_stock')
+        if low_stock == 'true':
+            from django.db.models import F
+            qs = qs.filter(current_quantity__lte=F('reorder_level'))
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                models.Q(medication_name__icontains=search) |
+                models.Q(generic_name__icontains=search)
+            )
+        return qs.order_by('medication_name')
+
+
+class DispensaryDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import F
+        import datetime
+        today = datetime.date.today()
+        first_of_month = today.replace(day=1)
+        visits_today = DispensaryVisit.objects.filter(visit_date=today).count()
+        visits_month = DispensaryVisit.objects.filter(visit_date__gte=first_of_month).count()
+        low_stock_meds = DispensaryStock.objects.filter(current_quantity__lte=F('reorder_level')).count()
+        referred_count = DispensaryVisit.objects.filter(visit_date__gte=first_of_month, referred=True).count()
+        recent_visits = list(
+            DispensaryVisit.objects.select_related('student')
+            .values('id', 'visit_date', 'complaint', 'diagnosis', 'severity',
+                    'student__first_name', 'student__last_name', 'student__admission_number',
+                    'referred', 'parent_notified')
+            .order_by('-visit_date', '-created_at')[:10]
+        )
+        return Response({
+            'visits_today': visits_today,
+            'visits_month': visits_month,
+            'low_stock_meds': low_stock_meds,
+            'referred_count': referred_count,
+            'recent_visits': recent_visits,
+        })

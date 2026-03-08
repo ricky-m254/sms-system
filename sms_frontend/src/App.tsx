@@ -135,6 +135,16 @@ const PlatformSecurityCompliancePage = lazy(() => import('./pages/platform/Platf
 const PlatformActionLogsPage = lazy(() => import('./pages/platform/PlatformActionLogsPage'))
 const PlatformSettingsPage = lazy(() => import('./pages/platform/PlatformSettingsPage'))
 const PlatformAdminUsersPage = lazy(() => import('./pages/platform/PlatformAdminUsersPage'))
+const StoreLayout = lazy(() => import('./pages/store/StoreLayout'))
+const StoreDashboardPage = lazy(() => import('./pages/store/StoreDashboardPage'))
+const StoreItemsPage = lazy(() => import('./pages/store/StoreItemsPage'))
+const StoreMovementsPage = lazy(() => import('./pages/store/StoreMovementsPage'))
+const StoreOrdersPage = lazy(() => import('./pages/store/StoreOrdersPage'))
+const StoreLowStockPage = lazy(() => import('./pages/store/StoreLowStockPage'))
+const DispensaryLayout = lazy(() => import('./pages/dispensary/DispensaryLayout'))
+const DispensaryDashboardPage = lazy(() => import('./pages/dispensary/DispensaryDashboardPage'))
+const DispensaryVisitsPage = lazy(() => import('./pages/dispensary/DispensaryVisitsPage'))
+const DispensaryStockPage = lazy(() => import('./pages/dispensary/DispensaryStockPage'))
 
 function RouteLoader() {
   return (
@@ -163,6 +173,8 @@ function App() {
   const libraryEnabled = isModuleRouteEnabled('library')
   const assetsEnabled = isModuleRouteEnabled('assets')
   const settingsEnabled = isModuleRouteEnabled('settings')
+  const storeEnabled = isModuleRouteEnabled('store')
+  const dispensaryEnabled = isModuleRouteEnabled('dispensary')
 
   return (
     <Suspense fallback={<RouteLoader />}>
@@ -377,6 +389,24 @@ function App() {
           <Route path="categories" element={<AssetsCategoriesPage />} />
           <Route path="assignments" element={<AssetsAssignmentsPage />} />
           <Route path="maintenance" element={<AssetsMaintenancePage />} />
+        </Route>
+        <Route
+          path="/modules/store/*"
+          element={isTenantAuth && storeEnabled ? <StoreLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<StoreDashboardPage />} />
+          <Route path="items" element={<StoreItemsPage />} />
+          <Route path="movements" element={<StoreMovementsPage />} />
+          <Route path="orders" element={<StoreOrdersPage />} />
+          <Route path="low-stock" element={<StoreLowStockPage />} />
+        </Route>
+        <Route
+          path="/modules/dispensary/*"
+          element={isTenantAuth && dispensaryEnabled ? <DispensaryLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<DispensaryDashboardPage />} />
+          <Route path="visits" element={<DispensaryVisitsPage />} />
+          <Route path="stock" element={<DispensaryStockPage />} />
         </Route>
         <Route
           path="/settings"

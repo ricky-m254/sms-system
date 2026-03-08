@@ -12,6 +12,8 @@ const MODULES = [
   { key: 'LIBRARY', label: 'Library', route: '/modules/library/dashboard' },
   { key: 'ASSETS', label: 'Assets', route: '/modules/assets/dashboard' },
   { key: 'PARENTS', label: 'Parents', route: '/modules/parent-portal/dashboard' },
+  { key: 'STORE', label: 'Store', route: '/modules/store' },
+  { key: 'DISPENSARY', label: 'Dispensary', route: '/modules/dispensary' },
 ]
 
 interface Props {

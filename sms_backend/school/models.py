@@ -1403,3 +1403,192 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} {self.model_name} - {self.user}"
+
+
+# ==========================================
+# STORE / INVENTORY MODULE
+# ==========================================
+
+class StoreCategory(models.Model):
+    ITEM_TYPE_CHOICES = [('FOOD', 'Food'), ('OFFICE', 'Office/Stationery'), ('COMBINED', 'Combined')]
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES, default='OFFICE')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'Store Categories'
+
+
+class StoreItem(models.Model):
+    ITEM_TYPE_CHOICES = [('FOOD', 'Food'), ('OFFICE', 'Office/Stationery'), ('OTHER', 'Other')]
+    name = models.CharField(max_length=200)
+    sku = models.CharField(max_length=50, blank=True)
+    category = models.ForeignKey(StoreCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='items')
+    unit = models.CharField(max_length=30, default='pcs')
+    item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES, default='OFFICE')
+    current_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    reorder_level = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    max_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_low_stock(self):
+        return self.current_stock <= self.reorder_level
+
+    class Meta:
+        ordering = ['name']
+
+
+class StoreTransaction(models.Model):
+    TYPE_CHOICES = [
+        ('RECEIPT', 'Stock Receipt'),
+        ('ISSUANCE', 'Stock Issuance'),
+        ('ADJUSTMENT', 'Adjustment'),
+        ('OPENING', 'Opening Stock'),
+    ]
+    item = models.ForeignKey(StoreItem, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=12, choices=TYPE_CHOICES)
+    quantity = models.DecimalField(max_digits=12, decimal_places=2)
+    reference = models.CharField(max_length=100, blank=True)
+    purpose = models.CharField(max_length=255, blank=True)
+    performed_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    date = models.DateField()
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+        if is_new:
+            item = self.item
+            if self.transaction_type in ('RECEIPT', 'OPENING'):
+                item.current_stock += self.quantity
+            elif self.transaction_type == 'ISSUANCE':
+                item.current_stock = max(item.current_stock - self.quantity, 0)
+            elif self.transaction_type == 'ADJUSTMENT':
+                item.current_stock = self.quantity
+            item.save(update_fields=['current_stock'])
+
+    def __str__(self):
+        return f"{self.transaction_type} - {self.item.name} x{self.quantity}"
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+
+class StoreOrderRequest(models.Model):
+    SEND_TO_CHOICES = [('FINANCE', 'Finance Office'), ('ADMIN', 'Administration'), ('BOTH', 'Finance & Admin')]
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+        ('FULFILLED', 'Fulfilled'),
+    ]
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    requested_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, related_name='store_requests')
+    send_to = models.CharField(max_length=10, choices=SEND_TO_CHOICES, default='FINANCE')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    notes = models.TextField(blank=True)
+    reviewed_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_store_requests')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.status})"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class StoreOrderItem(models.Model):
+    order = models.ForeignKey(StoreOrderRequest, on_delete=models.CASCADE, related_name='items')
+    item = models.ForeignKey(StoreItem, on_delete=models.SET_NULL, null=True, blank=True)
+    item_name = models.CharField(max_length=200, blank=True)
+    unit = models.CharField(max_length=30, default='pcs')
+    quantity_requested = models.DecimalField(max_digits=12, decimal_places=2)
+    quantity_approved = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    notes = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.item_name or (self.item.name if self.item else 'Item')} x{self.quantity_requested}"
+
+
+# ==========================================
+# DISPENSARY MODULE
+# ==========================================
+
+class DispensaryVisit(models.Model):
+    SEVERITY_CHOICES = [('MINOR', 'Minor'), ('MODERATE', 'Moderate'), ('SERIOUS', 'Serious')]
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='dispensary_visits')
+    visit_date = models.DateField()
+    visit_time = models.TimeField(null=True, blank=True)
+    complaint = models.TextField()
+    diagnosis = models.TextField(blank=True)
+    treatment = models.TextField(blank=True)
+    attended_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, default='MINOR')
+    parent_notified = models.BooleanField(default=False)
+    referred = models.BooleanField(default=False)
+    referred_to = models.CharField(max_length=255, blank=True)
+    follow_up_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.visit_date} ({self.severity})"
+
+    class Meta:
+        ordering = ['-visit_date', '-created_at']
+
+
+class DispensaryPrescription(models.Model):
+    visit = models.ForeignKey(DispensaryVisit, on_delete=models.CASCADE, related_name='prescriptions')
+    medication_name = models.CharField(max_length=200)
+    dosage = models.CharField(max_length=100, blank=True)
+    frequency = models.CharField(max_length=100, blank=True)
+    quantity_dispensed = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    unit = models.CharField(max_length=30, blank=True)
+    notes = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.medication_name} for {self.visit.student}"
+
+
+class DispensaryStock(models.Model):
+    medication_name = models.CharField(max_length=200)
+    generic_name = models.CharField(max_length=200, blank=True)
+    current_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    unit = models.CharField(max_length=30, default='tablets')
+    reorder_level = models.DecimalField(max_digits=10, decimal_places=2, default=10)
+    expiry_date = models.DateField(null=True, blank=True)
+    supplier = models.CharField(max_length=200, blank=True)
+    notes = models.CharField(max_length=255, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_low_stock(self):
+        return self.current_quantity <= self.reorder_level
+
+    def __str__(self):
+        return self.medication_name
+
+    class Meta:
+        ordering = ['medication_name']
+        verbose_name_plural = 'Dispensary Stock'

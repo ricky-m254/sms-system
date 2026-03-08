@@ -19,6 +19,8 @@ const DEFAULT_BACKEND_MODULE_KEYS = new Set([
   'library',
   'parents',
   'assets',
+  'store',
+  'dispensary',
 ])
 
 const DEFAULT_ROUTE_KEYS = new Set([
@@ -34,6 +36,8 @@ const DEFAULT_ROUTE_KEYS = new Set([
   'library',
   'assets',
   'settings',
+  'store',
+  'dispensary',
 ])
 
 const DEFAULT_SETTINGS_KEYS = new Set([
