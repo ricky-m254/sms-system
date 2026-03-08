@@ -9,17 +9,16 @@ export function resolveApiBaseUrl(): string {
     return configuredBase
   }
 
-  // In production builds, frontend and backend are served from the same origin.
-  // Use the current window origin so API calls go to the same domain with no port suffix.
+  // In production, frontend and backend are served from the same origin.
   if (import.meta.env.PROD && typeof window !== 'undefined') {
     return `${window.location.protocol}//${window.location.host}`
   }
 
-  // In development, the backend runs on a separate port (default 8000).
-  const fallbackPort = import.meta.env.VITE_API_PORT?.trim() || '8000'
+  // In development, use an empty base so all /api calls are relative.
+  // Vite's dev server proxies /api/* → localhost:8000 (see vite.config.ts).
   if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.hostname}:${fallbackPort}`
+    return `${window.location.protocol}//${window.location.host}`
   }
 
-  return `http://localhost:${fallbackPort}`
+  return ''
 }

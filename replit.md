@@ -4,16 +4,17 @@ A multi-tenant school management system built with Django (backend) and React/Vi
 
 ## Architecture
 
-- **Backend**: Django 4.2 + Django REST Framework, running on `localhost:8000`
-- **Frontend**: React 18 + TypeScript + Vite, running on `0.0.0.0:5000`
+- **Backend**: Django 4.2 + Django REST Framework, running on `localhost:8000` (dev) / port 3000 (production)
+- **Frontend**: React 18 + TypeScript + Vite, running on `0.0.0.0:5000` (dev)
 - **Database**: PostgreSQL (Replit built-in), accessed via `django-tenants` with schema-per-tenant isolation
+- **Multi-tenancy**: Header-based (`X-Tenant-ID`) — the platform domain serves all tenants; schools are identified by header
 
 ## Project Structure
 
 ```
 sms_backend/      Django backend
-  config/         Settings, URLs, WSGI/ASGI
-  clients/        Tenant & domain management
+  config/         Settings, URLs (public_urls.py + urls.py), WSGI
+  clients/        Tenant & domain management, middleware
   school/         Core school module (students, finance, etc.)
   academics/      Academics module
   admissions/     Admissions module
@@ -24,30 +25,58 @@ sms_backend/      Django backend
   reporting/      Reporting module
   staff_mgmt/     Staff management module
   assets/         Asset management module
+  frontend_build/ React build output (populated during deployment build phase)
 
 sms_frontend/     React frontend
-  src/api/        Axios API client config
+  src/api/        Axios API client — uses same-origin base URL; Vite proxies /api → localhost:8000 in dev
   src/components/ Reusable UI components
   src/pages/      Page-level views
   src/store/      Zustand state management
 ```
 
-## Environment Variables
-
-The backend reads from `sms_backend/.env`:
-- `DJANGO_DEBUG=true` 
-- `DJANGO_ALLOW_INSECURE_DEFAULTS=true`
-- `POSTGRES_*` - database connection (uses Replit built-in PostgreSQL)
-- `DJANGO_ALLOWED_HOSTS` - comma-separated allowed hosts
-
-## Workflows
+## Development Workflows
 
 - **Start application**: `cd sms_frontend && npm run dev` (port 5000, webview)
 - **Backend API**: `cd sms_backend && python manage.py runserver localhost:8000` (port 8000, console)
 
+### Frontend → Backend Connectivity (dev)
+
+Vite proxies all `/api/*` requests from port 5000 to `localhost:8000`. No CORS setup or separate port needed in the browser. Configured in `sms_frontend/vite.config.ts`.
+
+## Deployment (Production)
+
+- **Build phase** (`build.sh`): npm install, npm build, copy to `sms_backend/frontend_build/`, collectstatic, fake shared migrations, seed demo tenant, register production domain
+- **Run phase** (`deploy.sh`): start gunicorn on port 3000
+- Production: Django serves both the React SPA and all API endpoints from a single origin
+
+## Environment Variables (managed via Replit Secrets)
+
+- `DJANGO_SECRET_KEY` — Django secret key (Replit secret)
+- `DJANGO_DEBUG` — `true` for dev, `false` for production
+- `DJANGO_ALLOW_INSECURE_DEFAULTS` — `true` (shared env var)
+- `DATABASE_URL` — PostgreSQL connection string (auto-provided by Replit)
+- `REPLIT_DOMAINS` — auto-set by Replit; used to register production domain at build time
+
+## Tenant Setup
+
+The shared PostgreSQL database contains:
+- `public` schema — platform-level tables (Tenant, Domain, subscriptions)
+- `demo_school` schema — seeded demo tenant with sample data
+
+### Demo Tenant Login
+- **Tenant ID**: `demo_school`
+- **Username**: `admin`
+- **Password**: `admin123`
+
+### Key Middleware (order matters)
+1. `SecurityMiddleware`
+2. `WhiteNoiseMiddleware` — serves static files and `frontend_build/`
+3. `HealthCheckMiddleware` — intercepts `/health` and `/` before tenant routing
+4. `TenantMainMiddleware` — resolves tenant from domain
+5. `TenantContextGuardMiddleware` — resolves tenant from `X-Tenant-ID` header; skips host-match check for header-resolved tenants
+
 ## Key Notes
 
-- Multi-tenancy uses `django-tenants` with PostgreSQL schemas
-- Run `python manage.py migrate_schemas --shared` for shared schema migrations
-- Frontend port hardcoded to 5000 via `vite.config.ts`
-- Backend CORS is configured to allow `localhost:5000`
+- Run `python manage.py seed_demo` to (re)create the demo school tenant
+- Run `python manage.py create_school --schema_name X --name Y --domain Z` to provision a new school
+- `migrate_schemas --shared --fake` marks shared migrations applied without executing SQL (tables already exist from original dev setup)
