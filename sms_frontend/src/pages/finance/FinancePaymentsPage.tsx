@@ -13,6 +13,7 @@ type Payment = {
   amount: number
   payment_method: string
   reference_number: string
+  receipt_number?: string
   payment_date: string
   is_active: boolean
   reversed_at?: string | null

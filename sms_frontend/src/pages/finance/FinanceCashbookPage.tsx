@@ -272,7 +272,7 @@ export default function FinanceCashbookPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Entry"
-        message={`Delete "${deleteTarget?.description}"? Running balances will be recomputed.`}
+        description={`Delete "${deleteTarget?.description}"? Running balances will be recomputed.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />

@@ -231,7 +231,7 @@ export default function FinanceVoteHeadsPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Vote Head"
-        message={`Delete "${deleteTarget?.name}"? This cannot be undone.`}
+        description={`Delete "${deleteTarget?.name}"? This cannot be undone.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
