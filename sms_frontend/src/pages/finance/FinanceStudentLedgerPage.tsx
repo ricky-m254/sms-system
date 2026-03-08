@@ -165,8 +165,12 @@ export default function FinanceStudentLedgerPage() {
       const r = await apiClient.get<LedgerResponse>(`/finance/students/${selectedStudent}/ledger/`, { params })
       setLedger(r.data)
       setActiveTab('all')
-    } catch {
-      setError('Failed to load ledger. Please try again.')
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 404) setError('Student not found.')
+      else if (status === 403) setError('You do not have permission to view this ledger.')
+      else if (status === 500) setError('A server error occurred loading the ledger. Please try again later.')
+      else setError('Failed to load ledger — check your connection and try again.')
     } finally {
       setLoading(false)
     }

@@ -24,8 +24,11 @@ type FormState = {
 const blank: FormState = { name: '', description: '', allocation_percentage: '0.00', is_active: true, order: 0 }
 
 const extractApiError = (err: unknown, fallback: string) => {
-  const data = (err as { response?: { data?: unknown } })?.response?.data
-  if (typeof data === 'string' && data.trim()) return data
+  const res = err as { response?: { status?: number; data?: unknown } }
+  const status = res?.response?.status
+  const data = res?.response?.data
+  if (status === 500) return 'A server error occurred. Please try again or contact support.'
+  if (typeof data === 'string' && data.trim() && !data.trimStart().startsWith('<')) return data
   if (data && typeof data === 'object') {
     const msgs = Object.values(data as Record<string, unknown>).flat()
     if (msgs.length) return (msgs as string[]).join(' ')
