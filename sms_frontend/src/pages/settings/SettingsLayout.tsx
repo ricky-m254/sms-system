@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { settingsSidebar } from '../../settings'
+import ModuleToolbar from '../../components/ModuleToolbar'
 
 export default function SettingsLayout() {
   const [isNavOpen, setIsNavOpen] = useState(false)
@@ -9,6 +10,7 @@ export default function SettingsLayout() {
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-12 gap-4 px-4 py-6 sm:gap-6 sm:px-6 sm:py-8">
         <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 md:col-span-4 lg:col-span-3">
+          <ModuleToolbar />
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Settings</p>
           <h2 className="mt-2 text-lg font-display font-semibold">Configuration</h2>
           <p className="mt-2 text-xs text-slate-400">

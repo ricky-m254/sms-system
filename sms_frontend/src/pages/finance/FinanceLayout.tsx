@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
+import ModuleToolbar from '../../components/ModuleToolbar'
 
 const navSections = [
   {
@@ -49,6 +50,7 @@ export default function FinanceLayout() {
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-12 gap-4 px-4 py-6 sm:gap-6 sm:px-6 sm:py-8">
         <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 md:col-span-3 lg:col-span-2">
+          <ModuleToolbar currentModule="FINANCE" />
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
           <h2 className="mt-2 text-lg font-display font-semibold">Module</h2>
           <button
