@@ -129,6 +129,7 @@ export default function FinanceStudentLedgerPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [terms, setTerms] = useState<{ id: number; name: string }[]>([])
   const [selectedStudent, setSelectedStudent] = useState(searchParams.get('student') || '')
+  const [selectedStudentName, setSelectedStudentName] = useState('')
   const [selectedTerm, setSelectedTerm] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -136,6 +137,7 @@ export default function FinanceStudentLedgerPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [activeTab, setActiveTab] = useState<TabKey>('all')
 
   useEffect(() => {
@@ -176,15 +178,31 @@ export default function FinanceStudentLedgerPage() {
     }
   }
 
-  const handleStudentChange = (id: string) => {
-    setSelectedStudent(id)
-    setSearchParams(id ? { student: id } : {})
+  const selectStudent = (s: Student) => {
+    setSelectedStudent(String(s.id))
+    setSelectedStudentName(`${s.first_name} ${s.last_name} (${s.admission_number})`)
+    setSearchQuery(`${s.first_name} ${s.last_name} (${s.admission_number})`)
+    setShowSuggestions(false)
+    setSearchParams({ student: String(s.id) })
   }
 
-  const filteredStudents = useMemo(() =>
-    !searchQuery ? students : students.filter(s =>
-      `${s.first_name} ${s.last_name} ${s.admission_number}`.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [students, searchQuery])
+  const clearStudent = () => {
+    setSelectedStudent('')
+    setSelectedStudentName('')
+    setSearchQuery('')
+    setShowSuggestions(false)
+    setLedger(null)
+    setError('')
+    setSearchParams({})
+  }
+
+  const suggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q || selectedStudentName === searchQuery) return []
+    return students.filter(s =>
+      `${s.first_name} ${s.last_name} ${s.admission_number}`.toLowerCase().includes(q)
+    ).slice(0, 10)
+  }, [students, searchQuery, selectedStudentName])
 
   const tabEntries = useMemo(() => {
     if (!ledger) return []
@@ -235,30 +253,49 @@ export default function FinanceStudentLedgerPage() {
 
       <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-48">
-            <label className="mb-1 block text-xs text-slate-400">Search by Name or Admission No.</label>
-            <input
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
-              placeholder="e.g. John Doe or ADM-0023…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex-1 min-w-48">
-            <label className="mb-1 block text-xs text-slate-400">Select Student</label>
-            <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
-              value={selectedStudent}
-              onChange={e => handleStudentChange(e.target.value)}
-            >
-              <option value="">— Select student —</option>
-              {filteredStudents.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.first_name} {s.last_name} ({s.admission_number})
-                </option>
-              ))}
-            </select>
-            {searchQuery && <p className="mt-1 text-xs text-slate-500">{filteredStudents.length} match{filteredStudents.length !== 1 ? 'es' : ''}</p>}
+          <div className="relative flex-1 min-w-64">
+            <label className="mb-1 block text-xs text-slate-400">Search student by name or admission number</label>
+            <div className="flex items-center gap-2">
+              <input
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+                placeholder="Type name or admission no. (e.g. Alice or ST001)…"
+                value={searchQuery}
+                autoComplete="off"
+                onChange={e => {
+                  setSearchQuery(e.target.value)
+                  setShowSuggestions(true)
+                  if (!e.target.value) clearStudent()
+                }}
+                onFocus={() => { if (searchQuery && !selectedStudentName) setShowSuggestions(true) }}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              />
+              {selectedStudent && (
+                <button onClick={clearStudent} className="shrink-0 rounded-lg border border-slate-700 px-2 py-2 text-xs text-slate-400 hover:text-white hover:border-slate-500 transition" title="Clear">✕</button>
+              )}
+            </div>
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="absolute z-30 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden">
+                {suggestions.map(s => (
+                  <li key={s.id}>
+                    <button
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-800 transition flex items-center justify-between gap-2"
+                      onMouseDown={() => selectStudent(s)}
+                    >
+                      <span className="text-white">{s.first_name} {s.last_name}</span>
+                      <span className="text-xs text-slate-400 font-mono">{s.admission_number}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {showSuggestions && searchQuery.trim().length > 1 && suggestions.length === 0 && !selectedStudentName && (
+              <div className="absolute z-30 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-500">
+                No students match "{searchQuery}"
+              </div>
+            )}
+            {selectedStudent && (
+              <p className="mt-1 text-xs text-emerald-400">✓ Student selected — ledger loaded below</p>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">Term</label>

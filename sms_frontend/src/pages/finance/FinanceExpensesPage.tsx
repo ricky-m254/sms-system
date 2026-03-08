@@ -87,6 +87,7 @@ export default function FinanceExpensesPage() {
   const [budgetTouched, setBudgetTouched] = useState(false)
   const [isSavingBudget, setIsSavingBudget] = useState(false)
   const [budgetNotice, setBudgetNotice] = useState<string | null>(null)
+  const [showBudgetModal, setShowBudgetModal] = useState(false)
   const [budgetQuery, setBudgetQuery] = useState('')
   const [budgetDateFrom, setBudgetDateFrom] = useState('')
   const [budgetDateTo, setBudgetDateTo] = useState('')
@@ -619,109 +620,25 @@ export default function FinanceExpensesPage() {
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
           <p className="text-xs uppercase text-slate-400">Budget planning</p>
-          <div className="mt-3 grid gap-2 text-sm">
-            <label className="block text-xs text-slate-400">
-              Academic year
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-sm text-white"
-                value={selectedAcademicYear}
-                disabled={academicYears.length === 0}
-                onChange={(event) => {
-                  setSelectedAcademicYear(event.target.value)
-                  setBudgetTouched(false)
-                }}
-              >
-                {academicYears.length === 0 ? (
-                  <option value="">No academic years available</option>
-                ) : null}
-                {academicYears.map((year) => (
-                  <option key={year.id} value={String(year.id)}>
-                    {year.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-xs text-slate-400">
-              Term
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-sm text-white"
-                value={selectedTerm}
-                disabled={terms.length === 0}
-                onChange={(event) => {
-                  setSelectedTerm(event.target.value)
-                  setBudgetTouched(false)
-                }}
-              >
-                {terms.length === 0 ? (
-                  <option value="">No terms available</option>
-                ) : null}
-                {terms
-                  .filter((term) =>
-                    selectedAcademicYear
-                      ? Number(selectedAcademicYear) === Number(term.academic_year_id ?? term.academic_year)
-                      : true,
-                  )
-                  .map((term) => (
-                    <option key={term.id} value={String(term.id)}>
-                      {term.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label className="flex items-center justify-between gap-2">
-              <span className="text-xs text-slate-400">Monthly</span>
-              <input
-                type="number"
-                className="w-28 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-right text-sm text-white"
-                value={monthlyBudget}
-                onChange={(event) => {
-                  setMonthlyBudget(event.target.value)
-                  setBudgetTouched(true)
-                }}
-              />
-            </label>
-            <label className="flex items-center justify-between gap-2">
-              <span className="text-xs text-slate-400">Quarterly</span>
-              <input
-                type="number"
-                className="w-28 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-right text-sm text-white"
-                value={quarterlyBudget}
-                onChange={(event) => {
-                  setQuarterlyBudget(event.target.value)
-                  setBudgetTouched(true)
-                }}
-              />
-            </label>
-            <label className="flex items-center justify-between gap-2">
-              <span className="text-xs text-slate-400">Annual</span>
-              <input
-                type="number"
-                className="w-28 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-right text-sm text-white"
-                value={annualBudget}
-                onChange={(event) => {
-                  setAnnualBudget(event.target.value)
-                  setBudgetTouched(true)
-                }}
-              />
-            </label>
-            <div className="pt-1 text-[11px] text-slate-500">
-              Quarterly: {quarterlyBudgetValue ? quarterlyBudgetValue.toLocaleString() : '--'} | Annual:{' '}
+          <div className="mt-2">
+            <p className="text-2xl font-semibold">
               {annualBudgetValue ? annualBudgetValue.toLocaleString() : '--'}
-            </div>
-            <button
-              className="mt-2 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900 disabled:opacity-70"
-              onClick={handleSaveBudget}
-              disabled={isSavingBudget || Boolean(budgetValidationError)}
-            >
-              {isSavingBudget ? 'Saving...' : 'Save budget'}
-            </button>
-            {budgetValidationError ? (
-              <p className="text-[11px] text-amber-300">{budgetValidationError}</p>
-            ) : null}
-            {budgetNotice ? (
-              <p className="text-[11px] text-slate-400">{budgetNotice}</p>
-            ) : null}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              {annualBudgetValue ? 'Annual budget set' : 'No budget set yet'}
+            </p>
+            {monthlyBudgetValue > 0 && (
+              <p className="mt-1 text-xs text-slate-500">
+                Monthly: {monthlyBudgetValue.toLocaleString()} | Quarterly: {quarterlyBudgetValue.toLocaleString()}
+              </p>
+            )}
           </div>
+          <button
+            onClick={() => setShowBudgetModal(true)}
+            className="mt-3 w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-emerald-400 transition"
+          >
+            {selectedBudget ? 'Edit Budget' : '+ Create Budget'}
+          </button>
         </div>
       </section>
 
@@ -1035,6 +952,101 @@ export default function FinanceExpensesPage() {
           </table>
         </div>
       </section>
+
+      {showBudgetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold">
+                {selectedBudget ? 'Edit Budget' : 'Create Budget'}
+              </h2>
+              <button onClick={() => { setShowBudgetModal(false); setBudgetNotice(null) }} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+            </div>
+            <div className="grid gap-4">
+              <label className="block">
+                <span className="text-xs text-slate-400 mb-1 block">Academic Year</span>
+                <select
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+                  value={selectedAcademicYear}
+                  disabled={academicYears.length === 0}
+                  onChange={(e) => { setSelectedAcademicYear(e.target.value); setBudgetTouched(false) }}
+                >
+                  {academicYears.length === 0 ? <option value="">No academic years available</option> : null}
+                  {academicYears.map(y => <option key={y.id} value={String(y.id)}>{y.name}</option>)}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs text-slate-400 mb-1 block">Term</span>
+                <select
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+                  value={selectedTerm}
+                  disabled={terms.length === 0}
+                  onChange={(e) => { setSelectedTerm(e.target.value); setBudgetTouched(false) }}
+                >
+                  {terms.length === 0 ? <option value="">No terms available</option> : null}
+                  {terms
+                    .filter(t => selectedAcademicYear ? Number(selectedAcademicYear) === Number(t.academic_year_id ?? t.academic_year) : true)
+                    .map(t => <option key={t.id} value={String(t.id)}>{t.name}</option>)}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs text-slate-400 mb-1 block">Monthly Budget Amount</span>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 50000"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  value={monthlyBudget}
+                  onChange={(e) => { setMonthlyBudget(e.target.value); setBudgetTouched(true) }}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-slate-400 mb-1 block">Quarterly Budget Amount</span>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 150000"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  value={quarterlyBudget}
+                  onChange={(e) => { setQuarterlyBudget(e.target.value); setBudgetTouched(true) }}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-slate-400 mb-1 block">Annual Budget Amount</span>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 600000"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  value={annualBudget}
+                  onChange={(e) => { setAnnualBudget(e.target.value); setBudgetTouched(true) }}
+                />
+              </label>
+              {budgetValidationError && (
+                <p className="text-sm text-amber-300">{budgetValidationError}</p>
+              )}
+              {budgetNotice && (
+                <p className="text-sm text-emerald-300">{budgetNotice}</p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button
+                  className="flex-1 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-60 transition"
+                  onClick={async () => { await handleSaveBudget(); if (!budgetValidationError) setTimeout(() => setShowBudgetModal(false), 900) }}
+                  disabled={isSavingBudget || Boolean(budgetValidationError)}
+                >
+                  {isSavingBudget ? 'Saving…' : 'Save Budget'}
+                </button>
+                <button
+                  onClick={() => { setShowBudgetModal(false); setBudgetNotice(null) }}
+                  className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-300 hover:text-white transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
