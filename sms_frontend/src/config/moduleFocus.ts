@@ -49,6 +49,7 @@ const DEFAULT_SETTINGS_KEYS = new Set([
   'parents',
   'staff',
   'users',
+  'roles',
 ])
 
 const envBackendKeys = parseCsvEnv(import.meta.env.VITE_ENABLED_BACKEND_MODULE_KEYS)

@@ -42,6 +42,8 @@ class Command(BaseCommand):
             ('ASSETS', 'Assets and Inventory'),
             ('COMMUNICATION', 'Communication'),
             ('REPORTING', 'Reporting and Analytics'),
+            ('STORE', 'Store & Inventory'),
+            ('DISPENSARY', 'Dispensary'),
         ]
 
         created = 0

@@ -27,6 +27,7 @@ const ALL_SETTINGS_SIDEBAR = [
   { key: 'staff', label: 'Staff Settings' },
   { key: 'communication', label: 'Communication Settings' },
   { key: 'users', label: 'User Management' },
+  { key: 'roles', label: 'Roles & Permissions' },
 ]
 
 export const settingsSidebar = ALL_SETTINGS_SIDEBAR.filter((item) => isSettingsKeyEnabled(item.key))

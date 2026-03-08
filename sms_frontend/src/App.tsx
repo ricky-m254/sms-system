@@ -41,6 +41,7 @@ const FinanceStudentLedgerPage = lazy(() => import('./pages/finance/FinanceStude
 const SettingsLayout = lazy(() => import('./pages/settings/SettingsLayout'))
 const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPage'))
 const SettingsUsersPage = lazy(() => import('./pages/settings/SettingsUsersPage'))
+const SettingsRolesPage = lazy(() => import('./pages/settings/SettingsRolesPage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
 const ParentsDirectoryPage = lazy(() => import('./pages/parents/ParentsDirectoryPage'))
@@ -414,6 +415,7 @@ function App() {
         >
           <Route index element={<Navigate to="/settings/global" replace />} />
           <Route path="users" element={<SettingsUsersPage />} />
+          <Route path="roles" element={<SettingsRolesPage />} />
           <Route path=":module" element={<ModuleSettingsPage />} />
         </Route>
         <Route path="/modules/:moduleKey" element={<Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />} />

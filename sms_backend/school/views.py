@@ -4046,6 +4046,29 @@ class DashboardSummaryView(APIView):
                 summary["reporting"] = {"invoices_pending": 0}
                 unavailable.append("REPORTING")
 
+        if "STORE" in module_keys:
+            try:
+                summary["store"] = {
+                    "total_items": StoreItem.objects.filter(is_active=True).count(),
+                    "low_stock": StoreItem.objects.filter(is_active=True, current_stock__lte=models.F('reorder_level')).count(),
+                    "pending_orders": StoreOrderRequest.objects.filter(status='PENDING').count(),
+                }
+            except Exception:
+                summary["store"] = {"total_items": 0, "low_stock": 0, "pending_orders": 0}
+                unavailable.append("STORE")
+
+        if "DISPENSARY" in module_keys:
+            try:
+                import datetime
+                summary["dispensary"] = {
+                    "visits_today": DispensaryVisit.objects.filter(visit_date=datetime.date.today()).count(),
+                    "stock_items": DispensaryStock.objects.count(),
+                    "low_stock": DispensaryStock.objects.filter(current_quantity__lte=models.F('reorder_level')).count(),
+                }
+            except Exception:
+                summary["dispensary"] = {"visits_today": 0, "stock_items": 0, "low_stock": 0}
+                unavailable.append("DISPENSARY")
+
         handled = {
             "STUDENTS",
             "ADMISSIONS",
@@ -4059,6 +4082,8 @@ class DashboardSummaryView(APIView):
             "LIBRARY",
             "PARENTS",
             "STAFF",
+            "STORE",
+            "DISPENSARY",
         }
         for key in module_keys:
             if key not in handled:
@@ -5050,6 +5075,84 @@ class RoleListView(APIView):
         roles = Role.objects.all().order_by('name')
         data = [{'id': r.id, 'name': r.name, 'description': r.description} for r in roles]
         return Response(data)
+
+
+class RoleModuleAccessView(APIView):
+    """
+    GET  – Returns all roles with the modules assigned to each role.
+            For admin-level roles (ADMIN, TENANT_SUPER_ADMIN) every active
+            module is returned.  For other roles the union of active
+            UserModuleAssignments for users of that role is returned.
+    POST – Body: { role_name: str, module_keys: [str] }
+            Replaces module assignments for ALL currently active users of
+            that role.  Admin-level roles are skipped (they always have all
+            modules).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    _ADMIN_ROLES = {'ADMIN', 'TENANT_SUPER_ADMIN'}
+
+    def get(self, request):
+        from django.contrib.auth.models import User as AuthUser
+        all_modules = list(Module.objects.filter(is_active=True).order_by('key').values('key', 'name'))
+        roles = Role.objects.all().order_by('name')
+        result = []
+        for role in roles:
+            user_ids = list(
+                AuthUser.objects.filter(
+                    userprofile__role=role, is_active=True
+                ).values_list('id', flat=True)
+            )
+            user_count = len(user_ids)
+            if role.name in self._ADMIN_ROLES:
+                assigned_keys = [m['key'] for m in all_modules]
+                editable = False
+            else:
+                assigned_keys = list(
+                    UserModuleAssignment.objects.filter(
+                        user_id__in=user_ids, is_active=True, module__is_active=True
+                    ).values_list('module__key', flat=True).distinct()
+                )
+                editable = True
+            result.append({
+                'id': role.id,
+                'name': role.name,
+                'description': role.description,
+                'user_count': user_count,
+                'assigned_module_keys': sorted(assigned_keys),
+                'editable': editable,
+            })
+        return Response({'roles': result, 'all_modules': all_modules})
+
+    def post(self, request):
+        from django.contrib.auth.models import User as AuthUser
+        role_name = request.data.get('role_name', '').strip().upper()
+        module_keys = request.data.get('module_keys', [])
+        if not role_name:
+            return Response({'error': 'role_name is required.'}, status=400)
+        if role_name in self._ADMIN_ROLES:
+            return Response({'error': 'Admin-level role assignments cannot be restricted.'}, status=400)
+        try:
+            role = Role.objects.get(name=role_name)
+        except Role.DoesNotExist:
+            return Response({'error': f'Role "{role_name}" not found.'}, status=404)
+        modules = {m.key: m for m in Module.objects.filter(key__in=module_keys, is_active=True)}
+        users = AuthUser.objects.filter(userprofile__role=role, is_active=True)
+        for user in users:
+            UserModuleAssignment.objects.filter(user=user).update(is_active=False)
+            for key in module_keys:
+                mod = modules.get(key)
+                if mod:
+                    UserModuleAssignment.objects.update_or_create(
+                        user=user,
+                        module=mod,
+                        defaults={'is_active': True, 'assigned_by': request.user},
+                    )
+        return Response({
+            'updated_users': users.count(),
+            'assigned_module_keys': sorted(module_keys),
+            'role': role_name,
+        })
 
 
 class UserManagementListCreateView(APIView):

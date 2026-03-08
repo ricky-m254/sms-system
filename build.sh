@@ -21,6 +21,9 @@ python manage.py collectstatic --noinput
 echo "==> [build] Faking shared migrations (tables already exist)..."
 python manage.py migrate_schemas --shared --fake --noinput 2>&1 || true
 
+echo "==> [build] Seeding modules for all tenants (idempotent)..."
+python manage.py seed_modules --all-tenants 2>&1 || true
+
 echo "==> [build] Seeding demo school (idempotent — safe to re-run)..."
 python manage.py seed_demo \
   --schema_name demo_school \
