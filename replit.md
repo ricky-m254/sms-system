@@ -75,6 +75,24 @@ The shared PostgreSQL database contains:
 4. `TenantMainMiddleware` — resolves tenant from domain
 5. `TenantContextGuardMiddleware` — resolves tenant from `X-Tenant-ID` header; skips host-match check for header-resolved tenants
 
+## Modules
+
+All 10 tenant modules are fully implemented (frontend + backend):
+- **Students** — directory, attendance, behavior, medical, documents, reports
+- **Finance** — invoices, payments, expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs
+- **Academics** — structure, subjects, classes, gradebook, report cards, assignments, calendar, analytics
+- **Admissions** — inquiries, applications, reviews, assessments, interviews, decisions, enrollment, analytics
+- **HR** — employees, org chart, attendance, leave, payroll, recruitment, onboarding, performance, training, analytics
+- **Staff** — directory, profiles, departments/roles, attendance, performance, documents, analytics
+- **Communication** — messaging, notifications, email, SMS gateway, templates, announcements, analytics
+- **Library** — catalog, circulation, reservations, members, fines, inventory, acquisition, reports
+- **Parent Portal** — child academics, attendance, finance, communication, schedule, assignments
+- **Assets** — registry, categories, assignments, maintenance records, dashboard (added March 2026)
+
+### Navigation
+- `ModuleToolbar` component in every module sidebar: back-to-dashboard button + module switcher
+- All delete operations use `ConfirmDialog` for admin confirmation before any data is removed
+
 ## Key Notes
 
 - Run `python manage.py seed_demo` to (re)create the demo school tenant

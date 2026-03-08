@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type Department = {
   id: number
@@ -107,6 +108,12 @@ export default function HrOrganizationPage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [modalMode, setModalMode] = useState<ModalMode>('none')
+
+  const [deleteDeptTarget, setDeleteDeptTarget] = useState<number | null>(null)
+  const [deletePosTarget, setDeletePosTarget] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   const [departmentForm, setDepartmentForm] = useState<DepartmentForm>(defaultDepartmentForm)
   const [positionForm, setPositionForm] = useState<PositionForm>(defaultPositionForm)
 
@@ -217,18 +224,20 @@ export default function HrOrganizationPage() {
     }
   }
 
-  const archiveDepartment = async (departmentId: number) => {
-    setWorking(true)
-    setError(null)
+  const archiveDepartment = async () => {
+    if (!deleteDeptTarget) return
+    setIsDeleting(true)
+    setDeleteError(null)
     setNotice(null)
     try {
-      await apiClient.delete(`/hr/departments/${departmentId}/`)
+      await apiClient.delete(`/hr/departments/${deleteDeptTarget}/`)
       setNotice('Department archived.')
+      setDeleteDeptTarget(null)
       await load()
     } catch {
-      setError('Unable to archive department.')
+      setDeleteError('Unable to archive department.')
     } finally {
-      setWorking(false)
+      setIsDeleting(false)
     }
   }
 
@@ -262,18 +271,20 @@ export default function HrOrganizationPage() {
     }
   }
 
-  const archivePosition = async (positionId: number) => {
-    setWorking(true)
-    setError(null)
+  const archivePosition = async () => {
+    if (!deletePosTarget) return
+    setIsDeleting(true)
+    setDeleteError(null)
     setNotice(null)
     try {
-      await apiClient.delete(`/hr/positions/${positionId}/`)
+      await apiClient.delete(`/hr/positions/${deletePosTarget}/`)
       setNotice('Position archived.')
+      setDeletePosTarget(null)
       await load()
     } catch {
-      setError('Unable to archive position.')
+      setDeleteError('Unable to archive position.')
     } finally {
-      setWorking(false)
+      setIsDeleting(false)
     }
   }
 
@@ -357,7 +368,7 @@ export default function HrOrganizationPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => void archiveDepartment(department.id)}
+                          onClick={() => setDeleteDeptTarget(department.id)}
                           className="text-xs text-rose-300"
                           disabled={working}
                         >
@@ -408,7 +419,7 @@ export default function HrOrganizationPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => void archivePosition(position.id)}
+                          onClick={() => setDeletePosTarget(position.id)}
                           className="text-xs text-rose-300"
                           disabled={working}
                         >
@@ -623,6 +634,34 @@ export default function HrOrganizationPage() {
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={deleteDeptTarget !== null}
+        title="Archive Department"
+        description="Are you sure you want to archive this department?"
+        confirmLabel="Archive"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={archiveDepartment}
+        onCancel={() => {
+          setDeleteDeptTarget(null)
+          setDeleteError(null)
+        }}
+      />
+
+      <ConfirmDialog
+        open={deletePosTarget !== null}
+        title="Archive Position"
+        description="Are you sure you want to archive this position?"
+        confirmLabel="Archive"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={archivePosition}
+        onCancel={() => {
+          setDeletePosTarget(null)
+          setDeleteError(null)
+        }}
+      />
     </div>
   )
 }

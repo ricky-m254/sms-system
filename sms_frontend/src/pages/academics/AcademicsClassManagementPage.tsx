@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type Enrollment = {
   id: number
@@ -66,6 +67,10 @@ export default function AcademicsClassManagementPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
+
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const [enrollmentForm, setEnrollmentForm] = useState({
     student: '',
@@ -202,15 +207,19 @@ export default function AcademicsClassManagementPage() {
     }
   }
 
-  const removeAssignment = async (id: number) => {
-    setError(null)
-    setFlash(null)
+  const removeAssignment = async () => {
+    if (!deleteTarget) return
+    setDeleteError(null)
+    setIsDeleting(true)
     try {
-      await apiClient.delete(`/academics/teacher-assignments/${id}/`)
+      await apiClient.delete(`/academics/teacher-assignments/${deleteTarget}/`)
       setFlash('Teacher assignment removed.')
+      setDeleteTarget(null)
       await loadAll()
     } catch (err) {
-      setError(getErrorMessage(err))
+      setDeleteError(getErrorMessage(err))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -337,7 +346,7 @@ export default function AcademicsClassManagementPage() {
                     <td className="px-3 py-2">{item.class_section_name}</td>
                     <td className="px-3 py-2">{item.academic_year_name}</td>
                     <td className="px-3 py-2">{item.term_name || 'Full year'}</td>
-                    <td className="px-3 py-2"><button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => removeAssignment(item.id)}>Remove</button></td>
+                    <td className="px-3 py-2"><button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => setDeleteTarget(item.id)}>Remove</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -345,6 +354,20 @@ export default function AcademicsClassManagementPage() {
           </div>
         </div>
       </section>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Remove Teacher Assignment"
+        description="Are you sure you want to remove this teacher assignment? This action cannot be undone."
+        confirmLabel="Remove"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={removeAssignment}
+        onCancel={() => {
+          setDeleteTarget(null)
+          setDeleteError(null)
+        }}
+      />
     </div>
   )
 }

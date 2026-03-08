@@ -41,6 +41,7 @@ const MODULE_OPERATIONAL_ROUTES: Record<string, string> = {
   STAFF: '/modules/staff/dashboard',
   COMMUNICATION: '/modules/communication/dashboard',
   LIBRARY: '/modules/library/dashboard',
+  ASSETS: '/modules/assets/dashboard',
   PARENTS: '/modules/parent-portal/dashboard',
   PARENT_PORTAL: '/modules/parent-portal/dashboard',
 }

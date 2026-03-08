@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { buildPrintDocument, openPrintWindow, type TenantPrintMeta } from '../../utils/printTemplate'
 import { downloadBlob, extractFilename } from '../../utils/download'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 const tabs = [
   'Personal',
@@ -209,6 +210,10 @@ export default function StudentProfilePage() {
   const [isPrinting, setIsPrinting] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
 
+  const [deleteDocTarget, setDeleteDocTarget] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   useEffect(() => {
     if (!id) return
     let isMounted = true
@@ -362,21 +367,26 @@ export default function StudentProfilePage() {
     }
   }
 
-  const handleDocumentDelete = async (docId: number) => {
-    if (!id) return
+  const handleDocumentDelete = async () => {
+    if (!id || !deleteDocTarget) return
+    setIsDeleting(true)
+    setDeleteError(null)
     setDocError(null)
     try {
-      await apiClient.delete(`/students/${id}/documents/${docId}/`)
+      await apiClient.delete(`/students/${id}/documents/${deleteDocTarget}/`)
       setStudent((prev) =>
         prev
           ? {
               ...prev,
-              uploaded_documents: (prev.uploaded_documents ?? []).filter((doc) => doc.id !== docId),
+              uploaded_documents: (prev.uploaded_documents ?? []).filter((doc) => doc.id !== deleteDocTarget),
             }
           : prev,
       )
+      setDeleteDocTarget(null)
     } catch {
-      setDocError('Unable to delete document.')
+      setDeleteError('Unable to delete document.')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -920,7 +930,7 @@ export default function StudentProfilePage() {
                           </a>
                           <button
                             className="text-xs text-rose-200"
-                            onClick={() => handleDocumentDelete(doc.id)}
+                            onClick={() => setDeleteDocTarget(doc.id)}
                           >
                             Delete
                           </button>
@@ -937,6 +947,20 @@ export default function StudentProfilePage() {
           </div>
         </div>
       </section>
+
+      <ConfirmDialog
+        open={deleteDocTarget !== null}
+        title="Delete Document"
+        description="Are you sure you want to delete this document? This action cannot be undone."
+        confirmLabel="Delete"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDocumentDelete}
+        onCancel={() => {
+          setDeleteDocTarget(null)
+          setDeleteError(null)
+        }}
+      />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type Employee = {
   id: number
@@ -71,6 +72,11 @@ export default function HrEmployeeProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
+  const [deleteContactTarget, setDeleteContactTarget] = useState<number | null>(null)
+  const [deleteDocTarget, setDeleteDocTarget] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   const canLoad = useMemo(() => Number.isFinite(employeeId) && employeeId > 0, [employeeId])
 
   const load = async () => {
@@ -126,18 +132,20 @@ export default function HrEmployeeProfilePage() {
     }
   }
 
-  const handleDeleteContact = async (contactId: number) => {
-    setWorking(true)
-    setError(null)
+  const handleDeleteContact = async () => {
+    if (!deleteContactTarget) return
+    setIsDeleting(true)
+    setDeleteError(null)
     setNotice(null)
     try {
-      await apiClient.delete(`/hr/emergency-contacts/${contactId}/`)
+      await apiClient.delete(`/hr/emergency-contacts/${deleteContactTarget}/`)
       setNotice('Emergency contact archived.')
+      setDeleteContactTarget(null)
       await load()
     } catch {
-      setError('Failed to archive emergency contact.')
+      setDeleteError('Failed to archive emergency contact.')
     } finally {
-      setWorking(false)
+      setIsDeleting(false)
     }
   }
 
@@ -189,18 +197,20 @@ export default function HrEmployeeProfilePage() {
     }
   }
 
-  const handleDeleteDocument = async (documentId: number) => {
-    setWorking(true)
-    setError(null)
+  const handleDeleteDocument = async () => {
+    if (!deleteDocTarget) return
+    setIsDeleting(true)
+    setDeleteError(null)
     setNotice(null)
     try {
-      await apiClient.delete(`/hr/documents/${documentId}/`)
+      await apiClient.delete(`/hr/documents/${deleteDocTarget}/`)
       setNotice('Document archived.')
+      setDeleteDocTarget(null)
       await load()
     } catch {
-      setError('Failed to archive document.')
+      setDeleteError('Failed to archive document.')
     } finally {
-      setWorking(false)
+      setIsDeleting(false)
     }
   }
 
@@ -315,8 +325,7 @@ export default function HrEmployeeProfilePage() {
                     {contact.name} ({contact.relationship}) {contact.is_primary ? '• Primary' : ''}
                   </p>
                   <button
-                    onClick={() => void handleDeleteContact(contact.id)}
-                    disabled={working}
+                    onClick={() => setDeleteContactTarget(contact.id)}
                     className="text-xs text-rose-300"
                   >
                     Archive
@@ -398,8 +407,7 @@ export default function HrEmployeeProfilePage() {
                       Download
                     </button>
                     <button
-                      onClick={() => void handleDeleteDocument(document.id)}
-                      disabled={working}
+                      onClick={() => setDeleteDocTarget(document.id)}
                       className="text-xs text-rose-300"
                     >
                       Archive
@@ -415,6 +423,34 @@ export default function HrEmployeeProfilePage() {
           </div>
         </article>
       </section>
+
+      <ConfirmDialog
+        open={deleteContactTarget !== null}
+        title="Archive Emergency Contact"
+        description="Are you sure you want to archive this emergency contact?"
+        confirmLabel="Archive"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDeleteContact}
+        onCancel={() => {
+          setDeleteContactTarget(null)
+          setDeleteError(null)
+        }}
+      />
+
+      <ConfirmDialog
+        open={deleteDocTarget !== null}
+        title="Archive Document"
+        description="Are you sure you want to archive this document?"
+        confirmLabel="Archive"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={handleDeleteDocument}
+        onCancel={() => {
+          setDeleteDocTarget(null)
+          setDeleteError(null)
+        }}
+      />
     </div>
   )
 }

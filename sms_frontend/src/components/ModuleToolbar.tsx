@@ -10,6 +10,7 @@ const MODULES = [
   { key: 'STAFF', label: 'Staff', route: '/modules/staff/dashboard' },
   { key: 'COMMUNICATION', label: 'Comms', route: '/modules/communication/dashboard' },
   { key: 'LIBRARY', label: 'Library', route: '/modules/library/dashboard' },
+  { key: 'ASSETS', label: 'Assets', route: '/modules/assets/dashboard' },
   { key: 'PARENTS', label: 'Parents', route: '/modules/parent-portal/dashboard' },
 ]
 

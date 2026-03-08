@@ -110,6 +110,12 @@ const AdmissionsInterviewsPage = lazy(() => import('./pages/admissions/Admission
 const AdmissionsDecisionsPage = lazy(() => import('./pages/admissions/AdmissionsDecisionsPage'))
 const AdmissionsEnrollmentPage = lazy(() => import('./pages/admissions/AdmissionsEnrollmentPage'))
 const AdmissionsAnalyticsPage = lazy(() => import('./pages/admissions/AdmissionsAnalyticsPage'))
+const AssetsLayout = lazy(() => import('./pages/assets/AssetsLayout'))
+const AssetsDashboardPage = lazy(() => import('./pages/assets/AssetsDashboardPage'))
+const AssetsRegistryPage = lazy(() => import('./pages/assets/AssetsRegistryPage'))
+const AssetsCategoriesPage = lazy(() => import('./pages/assets/AssetsCategoriesPage'))
+const AssetsAssignmentsPage = lazy(() => import('./pages/assets/AssetsAssignmentsPage'))
+const AssetsMaintenancePage = lazy(() => import('./pages/assets/AssetsMaintenancePage'))
 const PlatformLoginPage = lazy(() => import('./pages/platform/PlatformLoginPage'))
 const PlatformLayout = lazy(() => import('./pages/platform/PlatformLayout'))
 const PlatformOverviewPage = lazy(() => import('./pages/platform/PlatformOverviewPage'))
@@ -150,6 +156,7 @@ function App() {
   const communicationEnabled = isModuleRouteEnabled('communication')
   const parentPortalEnabled = isModuleRouteEnabled('parent-portal')
   const libraryEnabled = isModuleRouteEnabled('library')
+  const assetsEnabled = isModuleRouteEnabled('assets')
   const settingsEnabled = isModuleRouteEnabled('settings')
 
   return (
@@ -350,6 +357,17 @@ function App() {
           <Route path="inventory" element={<LibraryInventoryPage />} />
           <Route path="acquisition" element={<LibraryAcquisitionPage />} />
           <Route path="reports" element={<LibraryReportsPage />} />
+        </Route>
+        <Route
+          path="/modules/assets/*"
+          element={isTenantAuth && assetsEnabled ? <AssetsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<Navigate to="/modules/assets/dashboard" replace />} />
+          <Route path="dashboard" element={<AssetsDashboardPage />} />
+          <Route path="registry" element={<AssetsRegistryPage />} />
+          <Route path="categories" element={<AssetsCategoriesPage />} />
+          <Route path="assignments" element={<AssetsAssignmentsPage />} />
+          <Route path="maintenance" element={<AssetsMaintenancePage />} />
         </Route>
         <Route
           path="/settings"

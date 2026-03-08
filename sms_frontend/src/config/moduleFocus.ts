@@ -18,6 +18,7 @@ const DEFAULT_BACKEND_MODULE_KEYS = new Set([
   'communication',
   'library',
   'parents',
+  'assets',
 ])
 
 const DEFAULT_ROUTE_KEYS = new Set([
@@ -31,6 +32,7 @@ const DEFAULT_ROUTE_KEYS = new Set([
   'communication',
   'parent-portal',
   'library',
+  'assets',
   'settings',
 ])
 

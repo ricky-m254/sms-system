@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type Department = {
   id: number
@@ -146,6 +147,10 @@ export default function HrAttendancePage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   useEffect(() => {
     const storedThreshold = localStorage.getItem(POLICY_THRESHOLD_KEY)
     const storedIncludeBreak = localStorage.getItem(POLICY_INCLUDE_BREAK_KEY)
@@ -282,18 +287,20 @@ export default function HrAttendancePage() {
     }
   }
 
-  const archiveSchedule = async (scheduleId: number) => {
-    setWorking(true)
-    setError(null)
+  const archiveSchedule = async () => {
+    if (!deleteTarget) return
+    setIsDeleting(true)
+    setDeleteError(null)
     setNotice(null)
     try {
-      await apiClient.delete(`/hr/schedules/${scheduleId}/`)
+      await apiClient.delete(`/hr/schedules/${deleteTarget}/`)
       setNotice('Work schedule archived.')
+      setDeleteTarget(null)
       await load()
     } catch {
-      setError('Unable to archive schedule.')
+      setDeleteError('Unable to archive schedule.')
     } finally {
-      setWorking(false)
+      setIsDeleting(false)
     }
   }
 
@@ -680,7 +687,7 @@ export default function HrAttendancePage() {
                         Edit
                       </button>
                       <button
-                        onClick={() => void archiveSchedule(schedule.id)}
+                        onClick={() => setDeleteTarget(schedule.id)}
                         className="text-xs text-rose-300"
                         disabled={working}
                       >
@@ -797,6 +804,20 @@ export default function HrAttendancePage() {
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Archive Work Schedule"
+        description="Are you sure you want to archive this work schedule?"
+        confirmLabel="Archive"
+        isProcessing={isDeleting}
+        error={deleteError}
+        onConfirm={archiveSchedule}
+        onCancel={() => {
+          setDeleteTarget(null)
+          setDeleteError(null)
+        }}
+      />
     </div>
   )
 }
