@@ -3849,7 +3849,7 @@ class FinanceClassRefView(APIView):
         qs = SchoolClass.objects.filter(is_active=True).order_by('name')
         result = []
         for sc in qs:
-            enrollment_qs = Enrollment.objects.filter(school_class=sc, is_active=True)
+            enrollment_qs = Enrollment.objects.filter(school_class_id=sc.id, is_active=True)
             if term_id:
                 enrollment_qs = enrollment_qs.filter(term_id=term_id)
             result.append({
@@ -3896,7 +3896,7 @@ class BulkFeeAssignByClassView(APIView):
         except (ValueError, TypeError):
             return Response({'error': 'discount_amount must be a number.'}, status=400)
 
-        enrollments = Enrollment.objects.filter(school_class=school_class, is_active=True)
+        enrollments = Enrollment.objects.filter(school_class_id=school_class.id, is_active=True)
         if term_id:
             enrollments = enrollments.filter(term_id=term_id)
 
