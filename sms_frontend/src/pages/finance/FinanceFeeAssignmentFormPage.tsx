@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
-import { normalizePaginatedResponse, PaginatedResponse } from '../../api/pagination'
+import { normalizePaginatedResponse, type PaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type FeeStructure = { id: number; name: string; amount?: number }
