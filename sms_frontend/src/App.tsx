@@ -34,6 +34,9 @@ const FinanceAccountsPage = lazy(() => import('./pages/finance/FinanceAccountsPa
 const FinanceReconciliationPage = lazy(() => import('./pages/finance/FinanceReconciliationPage'))
 const FinanceScholarshipsPage = lazy(() => import('./pages/finance/FinanceScholarshipsPage'))
 const FinanceRefundsPage = lazy(() => import('./pages/finance/FinanceRefundsPage'))
+const FinanceVoteHeadsPage = lazy(() => import('./pages/finance/FinanceVoteHeadsPage'))
+const FinanceCashbookPage = lazy(() => import('./pages/finance/FinanceCashbookPage'))
+const FinanceArrearsPage = lazy(() => import('./pages/finance/FinanceArrearsPage'))
 const SettingsLayout = lazy(() => import('./pages/settings/SettingsLayout'))
 const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
@@ -258,6 +261,9 @@ function App() {
           <Route path="reports" element={<FinanceReportsPage />} />
           <Route path="scholarships" element={<FinanceScholarshipsPage />} />
           <Route path="refunds" element={<FinanceRefundsPage />} />
+          <Route path="vote-heads" element={<FinanceVoteHeadsPage />} />
+          <Route path="cashbook" element={<FinanceCashbookPage />} />
+          <Route path="arrears" element={<FinanceArrearsPage />} />
           <Route path="settings" element={<Navigate to="/settings/finance" replace />} />
         </Route>
         <Route

@@ -12,7 +12,8 @@ from .models import (
     InvoiceWriteOffRequest,
     ScholarshipAward,
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
-    PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine
+    PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
+    VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward
 )
 from hr.models import Staff
 
@@ -739,3 +740,50 @@ class BankStatementLineSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['imported_at']
 
+
+
+class VoteHeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VoteHead
+        fields = ['id', 'name', 'description', 'allocation_percentage', 'is_preloaded', 'is_active', 'order', 'created_at']
+        read_only_fields = ['created_at']
+
+
+class VoteHeadPaymentAllocationSerializer(serializers.ModelSerializer):
+    vote_head_name = serializers.CharField(source='vote_head.name', read_only=True)
+    receipt_number = serializers.CharField(source='payment.receipt_number', read_only=True)
+
+    class Meta:
+        model = VoteHeadPaymentAllocation
+        fields = ['id', 'payment', 'vote_head', 'vote_head_name', 'receipt_number', 'amount', 'allocated_at']
+        read_only_fields = ['allocated_at']
+
+
+class CashbookEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CashbookEntry
+        fields = [
+            'id', 'book_type', 'entry_date', 'entry_type', 'reference',
+            'description', 'amount_in', 'amount_out', 'running_balance',
+            'payment', 'expense', 'is_auto', 'created_at'
+        ]
+        read_only_fields = ['running_balance', 'is_auto', 'created_at']
+
+
+class BalanceCarryForwardSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_admission_number = serializers.CharField(source='student.admission_number', read_only=True)
+    from_term_name = serializers.CharField(source='from_term.name', read_only=True)
+    to_term_name = serializers.CharField(source='to_term.name', read_only=True)
+
+    class Meta:
+        model = BalanceCarryForward
+        fields = [
+            'id', 'student', 'student_name', 'student_admission_number',
+            'from_term', 'from_term_name', 'to_term', 'to_term_name',
+            'amount', 'notes', 'created_by', 'created_at'
+        ]
+        read_only_fields = ['created_by', 'created_at']
+
+    def get_student_name(self, obj):
+        return f"{obj.student.first_name} {obj.student.last_name}".strip()

@@ -49,6 +49,14 @@ from .views import (
     ClinicVisitViewSet,
     TenantModuleListView,
     TenantModuleSettingsView,
+    VoteHeadViewSet, VoteHeadPaymentAllocationViewSet,
+    CashbookEntryViewSet, CashbookSummaryView,
+    BalanceCarryForwardViewSet,
+    FinanceArrearsView,
+    FinanceVoteHeadAllocationReportView,
+    FinanceClassBalancesReportView,
+    FinanceArrearsByTermReportView,
+    FinanceReceiptPdfView,
 )
 
 # ==========================================
@@ -89,6 +97,10 @@ router.register(r'finance/reminders', FeeReminderLogViewSet, basename='fee-remin
 router.register(r'finance/accounting/periods', AccountingPeriodViewSet, basename='accounting-period')
 router.register(r'finance/accounting/accounts', ChartOfAccountViewSet, basename='accounting-account')
 router.register(r'finance/accounting/journals', JournalEntryViewSet, basename='accounting-journal')
+router.register(r'finance/vote-heads', VoteHeadViewSet, basename='vote-head')
+router.register(r'finance/vote-head-allocations', VoteHeadPaymentAllocationViewSet, basename='vote-head-allocation')
+router.register(r'finance/cashbook', CashbookEntryViewSet, basename='cashbook-entry')
+router.register(r'finance/carry-forwards', BalanceCarryForwardViewSet, basename='carry-forward')
 
 # ==========================================
 # URL PATTERNS
@@ -148,6 +160,12 @@ urlpatterns = [
     # 3. Finance Reference Endpoints (Read-Only)
     path('finance/ref/students/', FinanceStudentRefView.as_view(), name='finance_ref_students'),
     path('finance/ref/enrollments/', FinanceEnrollmentRefView.as_view(), name='finance_ref_enrollments'),
+    path('finance/cashbook/summary/', CashbookSummaryView.as_view(), name='finance_cashbook_summary'),
+    path('finance/reports/arrears/', FinanceArrearsView.as_view(), name='finance_arrears_report'),
+    path('finance/reports/vote-head-allocation/', FinanceVoteHeadAllocationReportView.as_view(), name='finance_vote_head_allocation_report'),
+    path('finance/reports/class-balances/', FinanceClassBalancesReportView.as_view(), name='finance_class_balances_report'),
+    path('finance/reports/arrears-by-term/', FinanceArrearsByTermReportView.as_view(), name='finance_arrears_by_term_report'),
+    path('finance/payments/<int:pk>/receipt/pdf/', FinanceReceiptPdfView.as_view(), name='finance_receipt_pdf'),
 
     # 4. Module Apps (Read-Only Reference Contracts)
     path('tenant/modules', TenantModuleListView.as_view(), name='tenant_modules'),

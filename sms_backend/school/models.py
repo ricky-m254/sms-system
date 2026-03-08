@@ -947,6 +947,85 @@ class PaymentAllocation(models.Model):
     amount_allocated = models.DecimalField(max_digits=12, decimal_places=2)
     allocated_at = models.DateTimeField(auto_now_add=True)
 
+class VoteHead(models.Model):
+    PRELOADED_NAMES = ['Tuition', 'Exam', 'Medical', 'Activity', 'Boarding/Meals', 'Development', 'Arrears']
+
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    allocation_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal('0.00'),
+        help_text="Percentage of each payment allocated to this vote head (0 = manual/unallocated)",
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    is_preloaded = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+class VoteHeadPaymentAllocation(models.Model):
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='vote_head_allocations')
+    vote_head = models.ForeignKey(VoteHead, on_delete=models.CASCADE, related_name='payment_allocations')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    allocated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('payment', 'vote_head')
+
+    def __str__(self):
+        return f"{self.vote_head.name} ← {self.amount} ({self.payment.receipt_number})"
+
+class CashbookEntry(models.Model):
+    ENTRY_TYPES = [
+        ('OPENING', 'Opening Balance'),
+        ('RECEIPT', 'Receipt (Payment In)'),
+        ('EXPENSE', 'Expense (Payment Out)'),
+        ('ADJUSTMENT', 'Adjustment'),
+    ]
+    BOOK_TYPES = [
+        ('CASH', 'Cashbook'),
+        ('BANK', 'Bankbook'),
+    ]
+
+    book_type = models.CharField(max_length=10, choices=BOOK_TYPES, default='CASH')
+    entry_date = models.DateField()
+    entry_type = models.CharField(max_length=15, choices=ENTRY_TYPES)
+    reference = models.CharField(max_length=120, blank=True)
+    description = models.CharField(max_length=255)
+    amount_in = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    amount_out = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    running_balance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True, blank=True, related_name='cashbook_entries')
+    expense = models.ForeignKey(Expense, on_delete=models.SET_NULL, null=True, blank=True, related_name='cashbook_entries')
+    is_auto = models.BooleanField(default=False, help_text="Auto-created from payment/expense")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['book_type', 'entry_date', 'created_at']
+
+    def __str__(self):
+        return f"{self.book_type} {self.entry_date} {self.entry_type} {self.amount_in or self.amount_out}"
+
+class BalanceCarryForward(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='carry_forwards')
+    from_term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='carry_forwards_from')
+    to_term = models.ForeignKey(Term, on_delete=models.CASCADE, related_name='carry_forwards_to')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    notes = models.TextField(blank=True)
+    created_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'from_term', 'to_term')
+
+    def __str__(self):
+        return f"Carry {self.student} {self.from_term}→{self.to_term}: {self.amount}"
+
 # ==========================================
 # 6. COMMUNICATION
 # ==========================================

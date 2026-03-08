@@ -29,7 +29,8 @@ from .models import (
     InvoiceWriteOffRequest,
     ScholarshipAward,
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
-    PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine
+    PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
+    VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward
 )
 from hr.models import Staff
 from academics.models import AcademicYear, Term, SchoolClass
@@ -52,7 +53,9 @@ from .serializers import (
     FinanceStudentRefSerializer, FinanceEnrollmentRefSerializer,
     AttendanceRecordSerializer, BehaviorIncidentSerializer,
     MedicalRecordSerializer, ImmunizationRecordSerializer, ClinicVisitSerializer,
-    SchoolProfileSerializer
+    SchoolProfileSerializer,
+    VoteHeadSerializer, VoteHeadPaymentAllocationSerializer,
+    CashbookEntrySerializer, BalanceCarryForwardSerializer
 )
 
 
@@ -4499,4 +4502,415 @@ class BehaviorIncidentsPdfExportView(APIView):
 
         response = HttpResponse(pdf_data, content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="behavior_incidents_report.pdf"'
+        return response
+
+
+# ==========================================
+# VOTE HEADS
+# ==========================================
+
+class VoteHeadViewSet(viewsets.ModelViewSet):
+    serializer_class = VoteHeadSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = VoteHead.objects.all()
+        if self.request.query_params.get('active_only') == 'true':
+            qs = qs.filter(is_active=True)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    @action(detail=False, methods=['post'], url_path='seed-defaults')
+    def seed_defaults(self, request):
+        created = []
+        for i, name in enumerate(VoteHead.PRELOADED_NAMES):
+            vh, is_new = VoteHead.objects.get_or_create(
+                name=name,
+                defaults={'is_preloaded': True, 'order': i, 'is_active': True}
+            )
+            if is_new:
+                created.append(name)
+        return Response({'seeded': created, 'message': f'{len(created)} vote heads seeded.'})
+
+
+class VoteHeadPaymentAllocationViewSet(viewsets.ModelViewSet):
+    serializer_class = VoteHeadPaymentAllocationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = VoteHeadPaymentAllocation.objects.select_related('payment', 'vote_head').all()
+        payment_id = self.request.query_params.get('payment')
+        if payment_id:
+            qs = qs.filter(payment_id=payment_id)
+        vote_head_id = self.request.query_params.get('vote_head')
+        if vote_head_id:
+            qs = qs.filter(vote_head_id=vote_head_id)
+        return qs
+
+
+# ==========================================
+# CASHBOOK & BANKBOOK
+# ==========================================
+
+def _recompute_running_balances(book_type):
+    entries = list(CashbookEntry.objects.filter(book_type=book_type).order_by('entry_date', 'created_at'))
+    running = Decimal('0.00') if not entries else None
+    from decimal import Decimal as D
+    balance = D('0.00')
+    for entry in entries:
+        balance += (entry.amount_in or D('0.00')) - (entry.amount_out or D('0.00'))
+        entry.running_balance = balance
+    if entries:
+        CashbookEntry.objects.bulk_update(entries, ['running_balance'])
+
+
+class CashbookEntryViewSet(viewsets.ModelViewSet):
+    serializer_class = CashbookEntrySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = CashbookEntry.objects.all()
+        book_type = self.request.query_params.get('book_type')
+        if book_type:
+            qs = qs.filter(book_type=book_type.upper())
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            qs = qs.filter(entry_date__gte=date_from)
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            qs = qs.filter(entry_date__lte=date_to)
+        return qs.order_by('book_type', 'entry_date', 'created_at')
+
+    def perform_create(self, serializer):
+        from decimal import Decimal as D
+        obj = serializer.save()
+        _recompute_running_balances(obj.book_type)
+        obj.refresh_from_db()
+
+    def perform_update(self, serializer):
+        obj = serializer.save()
+        _recompute_running_balances(obj.book_type)
+
+    def perform_destroy(self, instance):
+        book_type = instance.book_type
+        instance.delete()
+        _recompute_running_balances(book_type)
+
+
+class CashbookSummaryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from decimal import Decimal as D
+        result = {}
+        for book_type in ['CASH', 'BANK']:
+            entries = CashbookEntry.objects.filter(book_type=book_type).order_by('entry_date', 'created_at')
+            total_in = entries.aggregate(t=Sum('amount_in'))['t'] or D('0.00')
+            total_out = entries.aggregate(t=Sum('amount_out'))['t'] or D('0.00')
+            closing = entries.last()
+            opening = entries.filter(entry_type='OPENING').first()
+            result[book_type.lower()] = {
+                'total_in': float(total_in),
+                'total_out': float(total_out),
+                'closing_balance': float(closing.running_balance) if closing else 0.0,
+                'opening_balance': float(opening.amount_in) if opening else 0.0,
+                'entry_count': entries.count(),
+            }
+        return Response(result)
+
+
+# ==========================================
+# BALANCE CARRY FORWARD
+# ==========================================
+
+class BalanceCarryForwardViewSet(viewsets.ModelViewSet):
+    serializer_class = BalanceCarryForwardSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = BalanceCarryForward.objects.select_related('student', 'from_term', 'to_term').all()
+        student_id = self.request.query_params.get('student')
+        if student_id:
+            qs = qs.filter(student_id=student_id)
+        from_term = self.request.query_params.get('from_term')
+        if from_term:
+            qs = qs.filter(from_term_id=from_term)
+        to_term = self.request.query_params.get('to_term')
+        if to_term:
+            qs = qs.filter(to_term_id=to_term)
+        return qs.order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+# ==========================================
+# ARREARS REPORT
+# ==========================================
+
+class FinanceArrearsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from decimal import Decimal as D
+        term_id = request.query_params.get('term')
+        group_by = request.query_params.get('group_by', 'student')
+
+        invoices_qs = Invoice.objects.filter(is_active=True).exclude(status__in=['PAID', 'VOID'])
+        if term_id:
+            invoices_qs = invoices_qs.filter(term_id=term_id)
+
+        rows = []
+        for inv in invoices_qs.select_related('student', 'term'):
+            balance = float(inv.balance_due)
+            if balance <= 0:
+                continue
+            enrollment = inv.student.enrollment_set.filter(is_active=True).select_related('school_class').first()
+            class_name = enrollment.school_class.name if enrollment and enrollment.school_class else 'N/A'
+            rows.append({
+                'invoice_id': inv.id,
+                'invoice_number': inv.invoice_number,
+                'student_id': inv.student.id,
+                'student_name': f"{inv.student.first_name} {inv.student.last_name}".strip(),
+                'admission_number': inv.student.admission_number,
+                'class_name': class_name,
+                'term': inv.term.name if inv.term else '',
+                'total_amount': float(inv.total_amount),
+                'balance_due': balance,
+                'due_date': str(inv.due_date),
+                'status': inv.status,
+            })
+
+        if group_by == 'class':
+            from collections import defaultdict
+            grouped = defaultdict(lambda: {'class_name': '', 'student_count': 0, 'total_balance': 0.0, 'invoices': []})
+            for row in rows:
+                key = row['class_name']
+                grouped[key]['class_name'] = key
+                grouped[key]['student_count'] += 1
+                grouped[key]['total_balance'] += row['balance_due']
+                grouped[key]['invoices'].append(row)
+            return Response({'group_by': 'class', 'data': list(grouped.values())})
+
+        return Response({'group_by': 'student', 'count': len(rows), 'results': rows})
+
+
+# ==========================================
+# VOTE HEAD ALLOCATION REPORT
+# ==========================================
+
+class FinanceVoteHeadAllocationReportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from decimal import Decimal as D
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+
+        qs = VoteHeadPaymentAllocation.objects.select_related('vote_head', 'payment')
+        if date_from:
+            qs = qs.filter(payment__payment_date__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(payment__payment_date__date__lte=date_to)
+
+        totals = qs.values('vote_head__id', 'vote_head__name').annotate(
+            total_allocated=Sum('amount'),
+            transaction_count=Count('id')
+        ).order_by('vote_head__order', 'vote_head__name')
+
+        grand_total = sum(float(r['total_allocated'] or 0) for r in totals)
+
+        return Response({
+            'date_from': date_from,
+            'date_to': date_to,
+            'grand_total': grand_total,
+            'rows': [
+                {
+                    'vote_head_id': r['vote_head__id'],
+                    'vote_head_name': r['vote_head__name'],
+                    'total_allocated': float(r['total_allocated'] or 0),
+                    'transaction_count': r['transaction_count'],
+                    'percentage_of_total': round(float(r['total_allocated'] or 0) / grand_total * 100, 2) if grand_total else 0,
+                }
+                for r in totals
+            ]
+        })
+
+
+# ==========================================
+# CLASS BALANCES REPORT
+# ==========================================
+
+class FinanceClassBalancesReportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        term_id = request.query_params.get('term')
+        invoices_qs = Invoice.objects.filter(is_active=True)
+        if term_id:
+            invoices_qs = invoices_qs.filter(term_id=term_id)
+
+        from collections import defaultdict
+        class_data = defaultdict(lambda: {
+            'class_name': '', 'student_count': 0,
+            'total_billed': 0.0, 'total_paid': 0.0, 'total_outstanding': 0.0
+        })
+
+        for inv in invoices_qs.select_related('student'):
+            enrollment = inv.student.enrollment_set.filter(is_active=True).select_related('school_class').first()
+            class_name = enrollment.school_class.name if enrollment and enrollment.school_class else 'Unassigned'
+            balance = float(inv.balance_due)
+            class_data[class_name]['class_name'] = class_name
+            class_data[class_name]['total_billed'] += float(inv.total_amount)
+            class_data[class_name]['total_paid'] += float(inv.total_amount) - balance
+            class_data[class_name]['total_outstanding'] += max(balance, 0)
+        student_counts = defaultdict(set)
+        for inv in invoices_qs.select_related('student'):
+            enrollment = inv.student.enrollment_set.filter(is_active=True).select_related('school_class').first()
+            class_name = enrollment.school_class.name if enrollment and enrollment.school_class else 'Unassigned'
+            student_counts[class_name].add(inv.student_id)
+        for class_name, students in student_counts.items():
+            class_data[class_name]['student_count'] = len(students)
+
+        return Response({
+            'term_id': term_id,
+            'rows': sorted(class_data.values(), key=lambda x: x['class_name'])
+        })
+
+
+# ==========================================
+# ARREARS BY TERM REPORT
+# ==========================================
+
+class FinanceArrearsByTermReportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from collections import defaultdict
+        invoices_qs = Invoice.objects.filter(is_active=True).exclude(status__in=['PAID', 'VOID'])
+        term_data = defaultdict(lambda: {
+            'term_id': None, 'term_name': '', 'student_count': 0,
+            'total_outstanding': 0.0, 'invoice_count': 0
+        })
+        for inv in invoices_qs.select_related('term'):
+            balance = float(inv.balance_due)
+            if balance <= 0:
+                continue
+            key = inv.term_id
+            term_data[key]['term_id'] = inv.term_id
+            term_data[key]['term_name'] = inv.term.name if inv.term else 'N/A'
+            term_data[key]['total_outstanding'] += balance
+            term_data[key]['invoice_count'] += 1
+
+        student_counts = defaultdict(set)
+        for inv in invoices_qs.select_related('term'):
+            if float(inv.balance_due) > 0:
+                student_counts[inv.term_id].add(inv.student_id)
+        for term_id, students in student_counts.items():
+            term_data[term_id]['student_count'] = len(students)
+
+        return Response({
+            'rows': sorted(term_data.values(), key=lambda x: (x['term_name']))
+        })
+
+
+# ==========================================
+# RECEIPT PDF
+# ==========================================
+
+class FinanceReceiptPdfView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib import colors
+        from io import BytesIO
+
+        try:
+            payment = Payment.objects.select_related('student').get(pk=pk)
+        except Payment.DoesNotExist:
+            return Response({'detail': 'Payment not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        tenant_meta = _resolve_tenant_pdf_meta(request)
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, title=f"Receipt {payment.receipt_number}")
+        styles = getSampleStyleSheet()
+        story = []
+
+        if tenant_meta.get('logo_path'):
+            try:
+                story.append(Image(tenant_meta['logo_path'], width=60, height=60))
+            except Exception:
+                pass
+
+        school_name = tenant_meta.get('school_name', 'School')
+        story.append(Paragraph(f"<b>{_safe_cell(school_name)}</b>", styles['Title']))
+        if tenant_meta.get('address'):
+            story.append(Paragraph(_safe_cell(tenant_meta['address']), styles['Normal']))
+        if tenant_meta.get('phone'):
+            story.append(Paragraph(f"Tel: {_safe_cell(tenant_meta['phone'])}", styles['Normal']))
+        story.append(Spacer(1, 18))
+
+        story.append(Paragraph("<b>OFFICIAL RECEIPT</b>", styles['Heading2']))
+        story.append(Spacer(1, 8))
+
+        details = [
+            ['Receipt No.', _safe_cell(payment.receipt_number)],
+            ['Date', _safe_cell(payment.payment_date.strftime('%d %b %Y') if payment.payment_date else '')],
+            ['Student', f"{payment.student.first_name} {payment.student.last_name}".strip()],
+            ['Admission No.', _safe_cell(payment.student.admission_number)],
+            ['Amount', f"KES {float(payment.amount):,.2f}"],
+            ['Method', _safe_cell(payment.payment_method)],
+            ['Reference', _safe_cell(payment.reference_number)],
+        ]
+
+        vote_allocs = VoteHeadPaymentAllocation.objects.filter(payment=payment).select_related('vote_head')
+        if vote_allocs.exists():
+            story.append(Spacer(1, 8))
+            alloc_rows = [['Vote Head', 'Amount']]
+            for va in vote_allocs:
+                alloc_rows.append([_safe_cell(va.vote_head.name), f"KES {float(va.amount):,.2f}"])
+            alloc_table = Table(alloc_rows, colWidths=[200, 120])
+            alloc_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ]))
+            details.append(['Vote Head Breakdown', ''])
+            table = Table(details, colWidths=[160, 280])
+            table.setStyle(TableStyle([
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ]))
+            story.append(table)
+            story.append(Spacer(1, 6))
+            story.append(alloc_table)
+        else:
+            table = Table(details, colWidths=[160, 280])
+            table.setStyle(TableStyle([
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ]))
+            story.append(table)
+
+        story.append(Spacer(1, 24))
+        story.append(Paragraph("____________________________", styles['Normal']))
+        story.append(Paragraph("Authorised Signature", styles['Normal']))
+        story.append(Spacer(1, 8))
+        story.append(Paragraph("<i>This is a computer-generated receipt.</i>", styles['Italic']))
+
+        doc.build(story)
+        pdf_data = buffer.getvalue()
+        buffer.close()
+
+        response = HttpResponse(pdf_data, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="receipt_{payment.receipt_number}.pdf"'
         return response

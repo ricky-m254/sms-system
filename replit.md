@@ -79,7 +79,7 @@ The shared PostgreSQL database contains:
 
 All 10 tenant modules are fully implemented (frontend + backend):
 - **Students** — directory, attendance, behavior, medical, documents, reports
-- **Finance** — invoices, payments, expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs
+- **Finance** — invoices, payments (receipt PDF download), expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs, vote heads, cashbook & bankbook, arrears management, balance carry-forward
 - **Academics** — structure, subjects, classes, gradebook, report cards, assignments, calendar, analytics
 - **Admissions** — inquiries, applications, reviews, assessments, interviews, decisions, enrollment, analytics
 - **HR** — employees, org chart, attendance, leave, payroll, recruitment, onboarding, performance, training, analytics

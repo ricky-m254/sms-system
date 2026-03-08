@@ -94,6 +94,24 @@ const reports = [
     description: 'Ledger of invoices, payments, and adjustments.',
     exportMode: 'none' as const,
   },
+  {
+    id: 'vote-head-allocation',
+    title: 'Vote Head Allocation Report',
+    description: 'How payments are distributed across vote heads (Tuition, Exam, Medical, etc.).',
+    exportMode: 'vote-head' as const,
+  },
+  {
+    id: 'class-balances',
+    title: 'Class Balances Report',
+    description: 'Outstanding balances grouped by class/stream.',
+    exportMode: 'class-balances' as const,
+  },
+  {
+    id: 'arrears-by-term',
+    title: 'Arrears by Term Report',
+    description: 'Total outstanding arrears summarised per term.',
+    exportMode: 'arrears-term' as const,
+  },
 ]
 
 const toCurrency = (value: number | undefined) => {
@@ -409,6 +427,30 @@ export default function FinanceReportsPage() {
                   <span className="rounded-lg border border-slate-800 px-3 py-1 text-xs text-slate-500">
                     Planned: export from accounting pack
                   </span>
+                ) : null}
+                {report.exportMode === 'vote-head' ? (
+                  <a
+                    href="/modules/finance/vote-heads"
+                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                  >
+                    Manage Vote Heads →
+                  </a>
+                ) : null}
+                {report.exportMode === 'class-balances' ? (
+                  <a
+                    href="/modules/finance/arrears"
+                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                  >
+                    View Class Balances →
+                  </a>
+                ) : null}
+                {report.exportMode === 'arrears-term' ? (
+                  <a
+                    href="/modules/finance/arrears"
+                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                  >
+                    View Arrears by Term →
+                  </a>
                 ) : null}
               </div>
             </div>

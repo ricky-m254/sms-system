@@ -5,6 +5,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage } from '../../utils/forms'
+import { downloadBlob } from '../../utils/download'
 
 type Payment = {
   id: number
@@ -587,6 +588,15 @@ export default function FinancePaymentsPage() {
                         onClick={() => toggleContext(payment)}
                       >
                         {openContextId === payment.id ? 'Hide context' : 'Context'}
+                      </button>
+                      <button
+                        className="ml-2 rounded-lg border border-sky-500/50 px-3 py-1 text-xs text-sky-200 hover:bg-sky-900/30"
+                        onClick={async () => {
+                          const res = await apiClient.get(`/api/finance/payments/${payment.id}/receipt/pdf/`, { responseType: 'blob' })
+                          downloadBlob(res.data, `receipt_${payment.receipt_number || payment.id}.pdf`)
+                        }}
+                      >
+                        Receipt PDF
                       </button>
                       <button
                         className="ml-2 rounded-lg border border-slate-600 px-3 py-1 text-xs text-slate-200"
