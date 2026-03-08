@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
-import { normalizePaginatedResponse } from '../../api/pagination'
+import { normalizePaginatedResponse, PaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 
 type FeeStructure = { id: number; name: string; amount?: number }
@@ -60,10 +60,10 @@ export default function FinanceFeeAssignmentFormPage() {
     const loadData = async () => {
       try {
         const [studentRes, feeRes, classRes, termRes] = await Promise.all([
-          apiClient.get<FinanceStudent[] | { results: FinanceStudent[] }>('/finance/ref/students/'),
-          apiClient.get<FeeStructure[] | { results: FeeStructure[] }>('/finance/fees/'),
+          apiClient.get<FinanceStudent[] | PaginatedResponse<FinanceStudent>>('/finance/ref/students/'),
+          apiClient.get<FeeStructure[] | PaginatedResponse<FeeStructure>>('/finance/fees/'),
           apiClient.get<ClassRef[]>('/finance/ref/classes/'),
-          apiClient.get<Term[] | { results: Term[] }>('/finance/terms/'),
+          apiClient.get<Term[] | PaginatedResponse<Term>>('/finance/terms/'),
         ])
         if (!isMounted) return
         setStudents(normalizePaginatedResponse(studentRes.data).items)
@@ -101,7 +101,7 @@ export default function FinanceFeeAssignmentFormPage() {
       try {
         const [detailRes, enrollmentRes] = await Promise.all([
           apiClient.get<StudentDetail>(`/students/${formState.student}/`),
-          apiClient.get<EnrollmentRef[] | { results: EnrollmentRef[] }>('/finance/ref/enrollments/', { params: { student_id: formState.student, active: true } }),
+          apiClient.get<EnrollmentRef[] | PaginatedResponse<EnrollmentRef>>('/finance/ref/enrollments/', { params: { student_id: formState.student, active: true } }),
         ])
         if (!isMounted) return
         setStudentDetail(detailRes.data)
