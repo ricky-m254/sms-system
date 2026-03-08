@@ -37,7 +37,7 @@ from .views import (
     MedicalImmunizationsCsvExportView, MedicalImmunizationsPdfExportView,
     MedicalClinicVisitsCsvExportView, MedicalClinicVisitsPdfExportView,
     StudentsDocumentsCsvExportView, StudentsDocumentsPdfExportView,
-    FinanceStudentRefView, FinanceEnrollmentRefView,
+    FinanceStudentRefView, FinanceEnrollmentRefView, FinanceClassRefView, BulkFeeAssignByClassView,
     FeeAssignmentViewSet, InvoiceAdjustmentViewSet,
     ScholarshipAwardViewSet,
     TenantSequenceResetView,
@@ -175,6 +175,8 @@ urlpatterns = [
     # 3. Finance Reference Endpoints (Read-Only)
     path('finance/ref/students/', FinanceStudentRefView.as_view(), name='finance_ref_students'),
     path('finance/ref/enrollments/', FinanceEnrollmentRefView.as_view(), name='finance_ref_enrollments'),
+    path('finance/ref/classes/', FinanceClassRefView.as_view(), name='finance_ref_classes'),
+    path('finance/fee-assignments/by-class/', BulkFeeAssignByClassView.as_view(), name='fee_assign_by_class'),
     path('finance/cashbook/summary/', CashbookSummaryView.as_view(), name='finance_cashbook_summary'),
     path('finance/reports/arrears/', FinanceArrearsView.as_view(), name='finance_arrears_report'),
     path('finance/reports/vote-head-allocation/', FinanceVoteHeadAllocationReportView.as_view(), name='finance_vote_head_allocation_report'),

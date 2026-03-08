@@ -591,11 +591,14 @@ class PaymentViewSet(viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(
                 models.Q(reference_number__icontains=search)
+                | models.Q(receipt_number__icontains=search)
+                | models.Q(invoice_number__icontains=search)
                 | models.Q(payment_method__icontains=search)
                 | models.Q(student__first_name__icontains=search)
                 | models.Q(student__last_name__icontains=search)
                 | models.Q(student__admission_number__icontains=search)
-            )
+                | models.Q(allocations__invoice__invoice_number__icontains=search)
+            ).distinct()
         if allocation_status in {'allocated', 'partial', 'unallocated'}:
             queryset = queryset.annotate(allocated_total=Sum('allocations__amount_allocated'))
             if allocation_status == 'allocated':
@@ -3832,6 +3835,106 @@ class FinanceEnrollmentRefView(APIView):
 
         serializer = FinanceEnrollmentRefSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class FinanceClassRefView(APIView):
+    """
+    Returns active SchoolClass list with enrolled student counts.
+    Used by fee-assignment-by-class form.
+    """
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+
+    def get(self, request):
+        term_id = request.query_params.get('term_id')
+        qs = SchoolClass.objects.filter(is_active=True).order_by('name')
+        result = []
+        for sc in qs:
+            enrollment_qs = Enrollment.objects.filter(school_class=sc, is_active=True)
+            if term_id:
+                enrollment_qs = enrollment_qs.filter(term_id=term_id)
+            result.append({
+                'id': sc.id,
+                'name': sc.display_name,
+                'stream': sc.stream,
+                'student_count': enrollment_qs.count(),
+            })
+        return Response(result)
+
+
+class BulkFeeAssignByClassView(APIView):
+    """
+    POST: Assigns a fee structure to every enrolled student in a given class/term.
+    Body: { class_id, fee_structure_id, term_id (optional), discount_amount (optional) }
+    Returns: { created, updated, skipped, student_count }
+    """
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+
+    def post(self, request):
+        class_id = request.data.get('class_id')
+        fee_structure_id = request.data.get('fee_structure_id')
+        term_id = request.data.get('term_id')
+        discount_amount = request.data.get('discount_amount', 0)
+
+        if not class_id:
+            return Response({'error': 'class_id is required.'}, status=400)
+        if not fee_structure_id:
+            return Response({'error': 'fee_structure_id is required.'}, status=400)
+
+        try:
+            school_class = SchoolClass.objects.get(id=class_id)
+        except SchoolClass.DoesNotExist:
+            return Response({'error': 'Class not found.'}, status=404)
+
+        try:
+            fee_structure = FeeStructure.objects.get(id=fee_structure_id)
+        except FeeStructure.DoesNotExist:
+            return Response({'error': 'Fee structure not found.'}, status=404)
+
+        try:
+            discount = float(discount_amount or 0)
+        except (ValueError, TypeError):
+            return Response({'error': 'discount_amount must be a number.'}, status=400)
+
+        enrollments = Enrollment.objects.filter(school_class=school_class, is_active=True)
+        if term_id:
+            enrollments = enrollments.filter(term_id=term_id)
+
+        student_ids = list(enrollments.values_list('student_id', flat=True).distinct())
+        if not student_ids:
+            return Response({
+                'created': 0, 'updated': 0, 'student_count': 0,
+                'message': 'No enrolled students found in this class/term combination.'
+            })
+
+        created_count = 0
+        updated_count = 0
+        for student_id in student_ids:
+            existing = FeeAssignment.objects.filter(
+                student_id=student_id, fee_structure=fee_structure, is_active=True
+            ).first()
+            if existing:
+                existing.discount_amount = discount
+                existing.save(update_fields=['discount_amount'])
+                updated_count += 1
+            else:
+                FeeAssignment.objects.create(
+                    student_id=student_id,
+                    fee_structure=fee_structure,
+                    discount_amount=discount,
+                    is_active=True,
+                )
+                created_count += 1
+
+        return Response({
+            'created': created_count,
+            'updated': updated_count,
+            'student_count': len(student_ids),
+            'class_name': school_class.display_name,
+            'fee_structure': fee_structure.name,
+            'message': f'Assigned "{fee_structure.name}" to {len(student_ids)} students in {school_class.display_name}.',
+        })
+
 
 class SchoolDashboardView(APIView):
     """

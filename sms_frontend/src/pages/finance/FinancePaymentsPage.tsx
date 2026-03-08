@@ -458,7 +458,7 @@ export default function FinancePaymentsPage() {
           <div className="flex flex-wrap items-center gap-3">
             <input
               className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
-              placeholder="Search reference, method, student"
+              placeholder="Admission no., invoice ref, receipt…"
               value={paymentQuery}
               onChange={(event) => {
                 setPaymentQuery(event.target.value)
