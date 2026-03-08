@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, ChevronDown, ChevronUp, Pill } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface Student { id: number; first_name: string; last_name: string; admission_number: string; }
 interface Prescription {
@@ -38,7 +38,6 @@ const SEV_COLOR: Record<string, string> = {
 
 export default function DispensaryVisitsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sevFilter, setSevFilter] = useState('');

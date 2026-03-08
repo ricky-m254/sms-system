@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface StoreItem {
   id: number; name: string; sku: string; category_name: string;

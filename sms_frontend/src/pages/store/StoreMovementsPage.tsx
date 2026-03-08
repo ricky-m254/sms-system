@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface StoreItem { id: number; name: string; unit: string; }
 interface Transaction {

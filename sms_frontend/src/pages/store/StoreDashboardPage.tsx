@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, AlertTriangle, ShoppingCart, Tag, ArrowRight } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface DashboardData {
   total_items: number;

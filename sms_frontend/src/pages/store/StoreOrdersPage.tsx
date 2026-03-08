@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface StoreItem { id: number; name: string; unit: string; }
 interface OrderItem {

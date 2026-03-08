@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Edit2, Trash2, AlertTriangle, Search } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface Med {
   id: number; medication_name: string; generic_name: string; current_quantity: number;

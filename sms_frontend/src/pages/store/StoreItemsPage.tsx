@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, AlertTriangle } from 'lucide-react';
-import apiClient from '../../api/client';
+import { apiClient } from '../../api/client';
 
 interface Category { id: number; name: string; item_type: string; }
 interface StoreItem {
