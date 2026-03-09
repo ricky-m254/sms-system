@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
 
 const navItems = [
@@ -20,21 +21,32 @@ export default function PlatformLayout() {
   const navigate = useNavigate()
   const logout = useAuthStore((state) => state.logout)
   const username = useAuthStore((state) => state.username)
+  const location = useLocation()
+  const [isNavOpen, setIsNavOpen] = useState(false)
+
+  useEffect(() => { setIsNavOpen(false) }, [location.pathname])
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-12 gap-6 px-6 py-8">
+      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-12 gap-4 px-4 py-6 sm:gap-6 sm:px-6 sm:py-8">
         <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 md:col-span-3 lg:col-span-2">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Platform</p>
           <h1 className="mt-2 text-lg font-display font-semibold">Super Admin</h1>
-          <div className="mt-5 space-y-2 text-sm">
+          <button
+            className="mt-4 w-full rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 md:hidden"
+            onClick={() => setIsNavOpen((p) => !p)}
+          >
+            {isNavOpen ? 'Hide menu ↑' : 'Show menu ↓'}
+          </button>
+          <div className={`mt-5 space-y-2 text-sm ${isNavOpen ? 'block' : 'hidden'} md:block`}>
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === '/platform'}
+                onClick={() => setIsNavOpen(false)}
                 className={({ isActive }) =>
-                  `block rounded-xl px-4 py-2 transition ${
+                  `block rounded-xl px-4 py-2.5 transition ${
                     isActive ? 'bg-emerald-500/15 text-emerald-200' : 'text-slate-300 hover:bg-slate-800/60'
                   }`
                 }
@@ -44,16 +56,11 @@ export default function PlatformLayout() {
             ))}
           </div>
           <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-xs text-slate-300">
-            <p>
-              <strong>User:</strong> {username ?? 'platform-admin'}
-            </p>
+            <p><strong>User:</strong> {username ?? 'platform-admin'}</p>
             <button
               type="button"
-              className="mt-3 w-full rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-200"
-              onClick={() => {
-                logout()
-                navigate('/platform/login')
-              }}
+              className="mt-3 w-full rounded-lg border border-slate-700 px-3 py-2.5 text-xs text-slate-200"
+              onClick={() => { logout(); navigate('/platform/login') }}
             >
               Sign out
             </button>
