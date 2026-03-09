@@ -76,7 +76,7 @@ from .views import (
 router = DefaultRouter()
 
 # Shared / cross-module
-router.register(r'departments', DepartmentViewSet, basename='department')
+router.register(r'school/departments', DepartmentViewSet, basename='department')
 
 # Modules
 router.register(r'students', StudentViewSet, basename='student')

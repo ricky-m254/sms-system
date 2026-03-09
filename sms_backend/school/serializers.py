@@ -19,13 +19,14 @@ from .models import (
     DispensaryVisit, DispensaryPrescription, DispensaryStock
 )
 from hr.models import Staff
+from hr.models import Department as HrDepartment
 
 # ==========================================
-# SHARED DEPARTMENT SERIALIZER
+# SHARED DEPARTMENT SERIALIZER (backed by hr.Department)
 # ==========================================
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Department
+        model = HrDepartment
         fields = ['id', 'name', 'description', 'is_active']
 
 # ==========================================

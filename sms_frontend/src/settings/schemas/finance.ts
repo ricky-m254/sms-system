@@ -6,6 +6,22 @@ const financeSettings: SettingsSchema = {
   description: 'Configuration for billing, payments, and financial controls.',
   settings: [
     {
+      key: 'defaultCurrency',
+      label: 'Default Currency',
+      description: 'Currency used across all finance reports, invoices, and payments.',
+      type: 'select',
+      defaultValue: 'KES',
+      options: [
+        { value: 'KES', label: 'KES — Kenyan Shilling (Ksh)' },
+        { value: 'USD', label: 'USD — US Dollar ($)' },
+        { value: 'EUR', label: 'EUR — Euro (€)' },
+        { value: 'GBP', label: 'GBP — British Pound (£)' },
+        { value: 'TZS', label: 'TZS — Tanzanian Shilling' },
+        { value: 'UGX', label: 'UGX — Ugandan Shilling' },
+        { value: 'ZAR', label: 'ZAR — South African Rand (R)' },
+      ],
+    },
+    {
       key: 'allowPartialPayments',
       label: 'Allow Partial Payments',
       description: 'Permit payments that do not settle the full invoice balance.',
