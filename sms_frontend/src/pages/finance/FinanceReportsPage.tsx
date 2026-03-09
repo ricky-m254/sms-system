@@ -36,6 +36,30 @@ type OverdueResponse = {
   results: OverdueRow[]
 }
 
+type BudgetVarianceRow = {
+  budget_id: number
+  academic_year: string
+  term: string
+  monthly_budget: number
+  quarterly_budget: number
+  annual_budget: number
+  total_actual_spend: number
+  variance: number
+  utilization_pct: number | null
+  status: 'UNDER' | 'OVER'
+}
+
+type BudgetCategoryRow = {
+  category: string
+  actual: number
+}
+
+type BudgetVarianceResponse = {
+  rows: BudgetVarianceRow[]
+  by_category: BudgetCategoryRow[]
+  total_actual: number
+}
+
 const extractApiError = (err: unknown, fallback: string) => {
   const data = (err as { response?: { data?: unknown } })?.response?.data
   if (typeof data === 'string' && data.trim()) return data
@@ -132,6 +156,9 @@ export default function FinanceReportsPage() {
   const [collectionsBusy, setCollectionsBusy] = useState(false)
   const [collectionsMessage, setCollectionsMessage] = useState<string | null>(null)
   const [collectionsError, setCollectionsError] = useState<string | null>(null)
+  const [budgetVariance, setBudgetVariance] = useState<BudgetVarianceResponse | null>(null)
+  const [budgetVarianceBusy, setBudgetVarianceBusy] = useState(false)
+  const [budgetVarianceError, setBudgetVarianceError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -177,6 +204,19 @@ export default function FinanceReportsPage() {
   useEffect(() => {
     void loadCollections()
   }, [])
+
+  const loadBudgetVariance = async () => {
+    setBudgetVarianceBusy(true)
+    setBudgetVarianceError(null)
+    try {
+      const res = await apiClient.get<BudgetVarianceResponse>('/finance/reports/budget-variance/')
+      setBudgetVariance(res.data)
+    } catch (err) {
+      setBudgetVarianceError(extractApiError(err, 'Unable to load budget variance report.'))
+    } finally {
+      setBudgetVarianceBusy(false)
+    }
+  }
 
   const handleDownload = async (format: 'csv' | 'pdf') => {
     if (isDownloading) return
@@ -423,9 +463,17 @@ export default function FinanceReportsPage() {
                     Export Overdue CSV
                   </button>
                 ) : null}
-                {report.exportMode === 'none' ? (
+                {report.exportMode === 'none' && report.id === 'budget-variance' ? (
+                  <button
+                    className="rounded-lg border border-emerald-600 px-3 py-1 text-xs text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50 transition"
+                    onClick={() => void loadBudgetVariance()}
+                    disabled={budgetVarianceBusy}
+                  >
+                    {budgetVarianceBusy ? 'Loading…' : 'Load Report'}
+                  </button>
+                ) : report.exportMode === 'none' ? (
                   <span className="rounded-lg border border-slate-800 px-3 py-1 text-xs text-slate-500">
-                    Planned: export from accounting pack
+                    Available from accounting pack
                   </span>
                 ) : null}
                 {report.exportMode === 'student-ledger' ? (
@@ -649,6 +697,83 @@ export default function FinanceReportsPage() {
           </table>
         </div>
       </section>
+
+      {(budgetVariance || budgetVarianceBusy || budgetVarianceError) && (
+        <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-display font-semibold">Budget Variance Report (IPSAS 24)</h2>
+              <p className="mt-1 text-sm text-slate-400">Budget vs actual spend — variance and utilisation by term.</p>
+            </div>
+            <button
+              onClick={() => void loadBudgetVariance()}
+              disabled={budgetVarianceBusy}
+              className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50 transition"
+            >
+              {budgetVarianceBusy ? 'Loading…' : 'Refresh'}
+            </button>
+          </div>
+          {budgetVarianceError && <p className="mb-4 text-sm text-rose-300">{budgetVarianceError}</p>}
+          {budgetVarianceBusy && <p className="text-sm text-slate-400">Loading budget variance data…</p>}
+          {budgetVariance && !budgetVarianceBusy && (
+            <>
+              {budgetVariance.rows.length === 0 ? (
+                <p className="text-sm text-slate-400">No budget records found. Create a budget on the Expenses page first.</p>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-slate-800">
+                  <table className="w-full text-sm text-slate-300">
+                    <thead className="bg-slate-800/60 text-xs uppercase text-slate-400">
+                      <tr>
+                        <th className="px-4 py-3 text-left">Academic Year</th>
+                        <th className="px-4 py-3 text-left">Term</th>
+                        <th className="px-4 py-3 text-right">Annual Budget</th>
+                        <th className="px-4 py-3 text-right">Actual Spend</th>
+                        <th className="px-4 py-3 text-right">Variance</th>
+                        <th className="px-4 py-3 text-right">Utilisation %</th>
+                        <th className="px-4 py-3 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {budgetVariance.rows.map((row) => (
+                        <tr key={row.budget_id} className="bg-slate-950/40">
+                          <td className="px-4 py-3">{row.academic_year}</td>
+                          <td className="px-4 py-3">{row.term}</td>
+                          <td className="px-4 py-3 text-right">{row.annual_budget.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right">{row.total_actual_spend.toLocaleString()}</td>
+                          <td className={`px-4 py-3 text-right font-semibold ${row.variance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {row.variance >= 0 ? '+' : ''}{row.variance.toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {row.utilization_pct !== null ? `${row.utilization_pct}%` : '—'}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${row.status === 'UNDER' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
+                              {row.status === 'UNDER' ? 'Under Budget' : 'Over Budget'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {budgetVariance.by_category.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="mb-3 text-sm font-semibold text-slate-300">Spend by Category</h3>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {budgetVariance.by_category.map((cat) => (
+                      <div key={cat.category} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                        <p className="text-xs uppercase text-slate-400 truncate">{cat.category}</p>
+                        <p className="mt-1 text-base font-semibold text-white">{cat.actual.toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      )}
     </div>
   )
 }

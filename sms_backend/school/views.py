@@ -354,6 +354,48 @@ class StudentViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(rows)
         return Response({"count": len(rows), "results": rows}, status=status.HTTP_200_OK)
 
+def _journal_get_or_create_account(code, name, account_type):
+    """Find or create a Chart of Account entry for auto-journaling."""
+    try:
+        account, _ = ChartOfAccount.objects.get_or_create(
+            code=code,
+            defaults={'name': name, 'account_type': account_type, 'is_active': True},
+        )
+        return account
+    except Exception:
+        return None
+
+
+def _auto_post_journal(entry_key, entry_date, memo, source_type, source_id, lines):
+    """
+    Create a balanced double-entry journal entry.
+    `lines` is a list of (account, debit, credit, description) tuples.
+    Skips silently if already posted or if any account is None.
+    """
+    try:
+        if JournalEntry.objects.filter(entry_key=entry_key).exists():
+            return
+        if any(acct is None for acct, _, _, _ in lines):
+            return
+        entry = JournalEntry.objects.create(
+            entry_date=entry_date,
+            memo=memo,
+            source_type=source_type,
+            source_id=source_id,
+            entry_key=entry_key,
+        )
+        for account, debit, credit, desc in lines:
+            JournalLine.objects.create(
+                entry=entry,
+                account=account,
+                debit=debit,
+                credit=credit,
+                description=desc,
+            )
+    except Exception:
+        pass
+
+
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.filter(is_active=True)
     serializer_class = InvoiceSerializer
@@ -449,6 +491,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 status=serializer.validated_data.get('status'),
                 is_active=serializer.validated_data.get('is_active'),
             )
+            # IPSAS: Auto double-entry journal — DR Accounts Receivable / CR Revenue
+            total = sum(float(li.get('amount', 0)) for li in line_items) if line_items else 0
+            if total > 0:
+                ar = _journal_get_or_create_account('1100', 'Accounts Receivable', 'ASSET')
+                rev = _journal_get_or_create_account('4000', 'Tuition & Fees Revenue', 'REVENUE')
+                _auto_post_journal(
+                    entry_key=f"INV-{invoice.id}",
+                    entry_date=invoice.issue_date or invoice.created_at.date(),
+                    memo=f"Invoice INV-{invoice.id} – Student {invoice.student_id}",
+                    source_type='Invoice',
+                    source_id=invoice.id,
+                    lines=[
+                        (ar, total, 0, 'Accounts Receivable'),
+                        (rev, 0, total, 'Tuition & Fees Revenue'),
+                    ],
+                )
             # Return the created invoice
             response_serializer = self.get_serializer(invoice)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -629,6 +687,22 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 reference_number=serializer.validated_data['reference_number'],
                 notes=serializer.validated_data.get('notes', '')
             )
+            # IPSAS: Auto double-entry journal — DR Cash & Bank / CR Accounts Receivable
+            amount = float(payment.amount or 0)
+            if amount > 0:
+                cash = _journal_get_or_create_account('1000', 'Cash and Bank', 'ASSET')
+                ar = _journal_get_or_create_account('1100', 'Accounts Receivable', 'ASSET')
+                _auto_post_journal(
+                    entry_key=f"PAY-{payment.id}",
+                    entry_date=payment.payment_date or payment.created_at.date(),
+                    memo=f"Payment {payment.receipt_number or payment.id} – {payment.payment_method}",
+                    source_type='Payment',
+                    source_id=payment.id,
+                    lines=[
+                        (cash, amount, 0, 'Cash received'),
+                        (ar, 0, amount, 'Accounts Receivable cleared'),
+                    ],
+                )
             response_serializer = self.get_serializer(payment)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -1371,6 +1445,25 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(expense_date__lte=date_to)
 
         return queryset.order_by('-expense_date', '-id')
+
+    def perform_create(self, serializer):
+        expense = serializer.save()
+        # IPSAS: Auto double-entry journal — DR Operating Expense / CR Cash & Bank
+        amount = float(expense.amount or 0)
+        if amount > 0:
+            exp_acct = _journal_get_or_create_account('6000', 'Operating Expenses', 'EXPENSE')
+            cash = _journal_get_or_create_account('1000', 'Cash and Bank', 'ASSET')
+            _auto_post_journal(
+                entry_key=f"EXP-{expense.id}",
+                entry_date=expense.expense_date,
+                memo=f"Expense: {expense.category} – {expense.vendor or ''}".strip(' –'),
+                source_type='Expense',
+                source_id=expense.id,
+                lines=[
+                    (exp_acct, amount, 0, expense.category),
+                    (cash, 0, amount, 'Cash disbursed'),
+                ],
+            )
 
     def perform_destroy(self, instance):
         instance.is_active = False
@@ -4967,6 +5060,83 @@ class FinanceArrearsByTermReportView(APIView):
 
         return Response({
             'rows': sorted(term_data.values(), key=lambda x: (x['term_name']))
+        })
+
+
+# ==========================================
+# IPSAS BUDGET VARIANCE REPORT
+# ==========================================
+
+class FinanceBudgetVarianceReportView(APIView):
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+
+    def get(self, request):
+        from collections import defaultdict
+        academic_year = request.query_params.get('academic_year')
+        term = request.query_params.get('term')
+
+        budgets_qs = Budget.objects.filter(is_active=True)
+        if academic_year:
+            budgets_qs = budgets_qs.filter(academic_year_id=academic_year)
+        if term:
+            budgets_qs = budgets_qs.filter(term_id=term)
+
+        expenses_qs = Expense.objects.all()
+        if term:
+            try:
+                term_obj = Term.objects.get(id=term)
+                expenses_qs = expenses_qs.filter(
+                    expense_date__gte=term_obj.start_date,
+                    expense_date__lte=term_obj.end_date,
+                )
+            except Exception:
+                pass
+        elif academic_year:
+            try:
+                year_obj = AcademicYear.objects.get(id=academic_year)
+                expenses_qs = expenses_qs.filter(
+                    expense_date__gte=year_obj.start_date,
+                    expense_date__lte=year_obj.end_date,
+                )
+            except Exception:
+                pass
+
+        expense_by_category = defaultdict(float)
+        for exp in expenses_qs:
+            expense_by_category[exp.category] += float(exp.amount or 0)
+
+        total_actual = sum(expense_by_category.values())
+
+        rows = []
+        for budget in budgets_qs.select_related('academic_year', 'term'):
+            annual = float(budget.annual_budget or 0)
+            monthly = float(budget.monthly_budget or 0)
+            quarterly = float(budget.quarterly_budget or 0)
+            variance = annual - total_actual
+            utilization_pct = round((total_actual / annual * 100), 1) if annual > 0 else None
+            rows.append({
+                'budget_id': budget.id,
+                'academic_year': budget.academic_year.name,
+                'term': budget.term.name,
+                'monthly_budget': monthly,
+                'quarterly_budget': quarterly,
+                'annual_budget': annual,
+                'total_actual_spend': round(total_actual, 2),
+                'variance': round(variance, 2),
+                'utilization_pct': utilization_pct,
+                'status': 'UNDER' if variance >= 0 else 'OVER',
+            })
+
+        by_category = [
+            {'category': cat, 'actual': round(amt, 2)}
+            for cat, amt in sorted(expense_by_category.items(), key=lambda x: -x[1])
+        ]
+
+        return Response({
+            'rows': rows,
+            'by_category': by_category,
+            'total_actual': round(total_actual, 2),
         })
 
 

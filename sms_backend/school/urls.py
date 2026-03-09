@@ -59,6 +59,7 @@ from .views import (
     FinanceVoteHeadAllocationReportView,
     FinanceClassBalancesReportView,
     FinanceArrearsByTermReportView,
+    FinanceBudgetVarianceReportView,
     FinanceReceiptPdfView,
     FinanceStudentLedgerView,
     RoleListView,
@@ -182,6 +183,7 @@ urlpatterns = [
     path('finance/reports/vote-head-allocation/', FinanceVoteHeadAllocationReportView.as_view(), name='finance_vote_head_allocation_report'),
     path('finance/reports/class-balances/', FinanceClassBalancesReportView.as_view(), name='finance_class_balances_report'),
     path('finance/reports/arrears-by-term/', FinanceArrearsByTermReportView.as_view(), name='finance_arrears_by_term_report'),
+    path('finance/reports/budget-variance/', FinanceBudgetVarianceReportView.as_view(), name='finance_budget_variance_report'),
     path('finance/payments/<int:pk>/receipt/pdf/', FinanceReceiptPdfView.as_view(), name='finance_receipt_pdf'),
     path('finance/students/<int:student_id>/ledger/', FinanceStudentLedgerView.as_view(), name='finance_student_ledger'),
 
