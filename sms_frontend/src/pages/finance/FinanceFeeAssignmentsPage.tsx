@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { extractApiErrorMessage } from '../../utils/forms'
+import { useCurrentAcademicContext } from '../../hooks/useCurrentAcademicContext'
 
 type FeeAssignment = {
   id: number
@@ -34,6 +35,7 @@ const statusBadgeClass = (isActive: boolean) =>
     : 'border-slate-600 text-slate-300'
 
 export default function FinanceFeeAssignmentsPage() {
+  const { context: academicContext } = useCurrentAcademicContext()
   const navigate = useNavigate()
   const location = useLocation()
   const [assignments, setAssignments] = useState<FeeAssignment[]>([])
@@ -50,11 +52,15 @@ export default function FinanceFeeAssignmentsPage() {
   const [studentFilter, setStudentFilter] = useState('all')
   const [feeFilter, setFeeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [termFilter, setTermFilter] = useState('all')
+  const [terms, setTerms] = useState<{ id: number; name: string }[]>([])
   const [page, setPage] = useState(1)
-  const pageSize = 8
-  const [flash, setFlash] = useState<string | null>(
-    (location.state as { flash?: string } | null)?.flash ?? null,
-  )
+
+  useEffect(() => {
+    if (academicContext) {
+      setTermFilter(academicContext.term?.id.toString() || 'all')
+    }
+  }, [academicContext])
 
   useEffect(() => {
     const state = location.state as { flash?: string } | null
@@ -69,7 +75,7 @@ export default function FinanceFeeAssignmentsPage() {
     const loadData = async () => {
       try {
         if (isMounted) setError(null)
-        const [assignmentRes, studentRes, feeRes] = await Promise.all([
+        const [assignmentRes, studentRes, feeRes, termRes] = await Promise.all([
           apiClient.get<FeeAssignment[] | { results: FeeAssignment[]; count: number }>(
             '/finance/fee-assignments/',
             {
@@ -78,6 +84,7 @@ export default function FinanceFeeAssignmentsPage() {
                 search: query.trim() || undefined,
                 student: studentFilter !== 'all' ? studentFilter : undefined,
                 fee_structure: feeFilter !== 'all' ? feeFilter : undefined,
+                term: termFilter !== 'all' ? termFilter : undefined,
                 is_active:
                   statusFilter === 'all' ? undefined : statusFilter === 'active' ? true : false,
               },
@@ -89,6 +96,7 @@ export default function FinanceFeeAssignmentsPage() {
           apiClient.get<FeeStructure[] | { results: FeeStructure[]; count: number }>(
             '/finance/fees/',
           ),
+          apiClient.get<{ id: number; name: string }[]>('/finance/terms/'),
         ])
         if (isMounted) {
           const normalized = normalizePaginatedResponse(assignmentRes.data)
@@ -97,6 +105,7 @@ export default function FinanceFeeAssignmentsPage() {
           setIsServerPaginated(normalized.isPaginated)
           setStudents(normalizePaginatedResponse(studentRes.data).items)
           setFees(normalizePaginatedResponse(feeRes.data).items)
+          setTerms(normalizePaginatedResponse(termRes.data).items)
         }
       } catch (err) {
         if (isMounted) {
@@ -124,7 +133,7 @@ export default function FinanceFeeAssignmentsPage() {
     return () => {
       isMounted = false
     }
-  }, [page, query, studentFilter, feeFilter, statusFilter])
+  }, [page, query, studentFilter, feeFilter, statusFilter, termFilter])
 
   const filteredAssignments = useMemo(() => {
     if (isServerPaginated) return assignments
@@ -244,6 +253,21 @@ export default function FinanceFeeAssignmentsPage() {
             </select>
             <select
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              value={termFilter}
+              onChange={(event) => {
+                setTermFilter(event.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="all">All terms</option>
+              {terms.map((t) => (
+                <option key={t.id} value={String(t.id)}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value as 'all' | 'active' | 'inactive')
@@ -261,6 +285,7 @@ export default function FinanceFeeAssignmentsPage() {
                 setStudentFilter('all')
                 setFeeFilter('all')
                 setStatusFilter('all')
+                setTermFilter(academicContext?.term?.id.toString() || 'all')
                 setPage(1)
               }}
             >

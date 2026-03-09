@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 import BackButton from '../../components/BackButton'
+import { useCurrentAcademicContext } from '../../hooks/useCurrentAcademicContext'
 
 type FeeStructure = {
   id: number
@@ -28,6 +29,7 @@ type Term = {
 }
 
 export default function FinanceFeeStructureFormPage() {
+  const { context: academicContext } = useCurrentAcademicContext()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
@@ -51,6 +53,16 @@ export default function FinanceFeeStructureFormPage() {
   const filteredTerms = formState.academic_year
     ? terms.filter((term) => String(term.academic_year_id) === formState.academic_year)
     : terms
+
+  useEffect(() => {
+    if (academicContext && !isEdit) {
+      setFormState((prev) => ({
+        ...prev,
+        academic_year: academicContext.academic_year?.id.toString() || '',
+        term: academicContext.term?.id.toString() || '',
+      }))
+    }
+  }, [academicContext, isEdit])
 
   useEffect(() => {
     let isMounted = true

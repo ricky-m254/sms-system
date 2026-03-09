@@ -5722,6 +5722,99 @@ class StoreOrderRequestViewSet(viewsets.ModelViewSet):
                 notes=item_data.get('notes', ''),
             )
 
+    @action(detail=True, methods=['post'], url_path='generate-expense')
+    def generate_expense(self, request, pk=None):
+        order = self.get_object()
+        if order.status not in ('APPROVED', 'FULFILLED'):
+            return Response({'error': 'Only approved or fulfilled orders can generate expenses.'}, status=400)
+        
+        # Calculate total cost from order items
+        total = sum(
+            float(item.quantity_approved or item.quantity_requested) * float(item.item.cost_price if item.item else 0)
+            for item in order.items.select_related('item').all()
+        )
+        
+        # Get or create expense
+        import datetime as dt
+        from school.models import Expense
+        expense = Expense.objects.create(
+            category='Store Purchase',
+            amount=max(total, 0.01),
+            expense_date=order.reviewed_at.date() if order.reviewed_at else dt.date.today(),
+            description=f'Store Order #{order.id}: {order.title}. {order.description}'.strip(),
+            approval_status='Approved',
+            vendor='Store Department',
+        )
+        return Response({'expense_id': expense.id, 'amount': total, 'message': 'Expense record created.'})
+
+class AcademicsCurrentContextView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        from academics.models import AcademicYear, Term
+        year = AcademicYear.objects.filter(is_current=True).first()
+        term = Term.objects.filter(is_current=True).first()
+        return Response({
+            'academic_year': {'id': year.id, 'name': year.name} if year else None,
+            'term': {'id': term.id, 'name': term.name} if term else None,
+        })
+
+class BulkOptionalChargeByClassView(APIView):
+    """
+    POST: Assigns an optional charge to every enrolled student in a given class.
+    Body: { class_id, optional_charge_id, term_id (optional) }
+    Returns: { created, skipped, student_count }
+    """
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+
+    def post(self, request):
+        class_id = request.data.get('class_id')
+        optional_charge_id = request.data.get('optional_charge_id')
+        term_id = request.data.get('term_id')
+
+        if not class_id:
+            return Response({'error': 'class_id is required.'}, status=400)
+        if not optional_charge_id:
+            return Response({'error': 'optional_charge_id is required.'}, status=400)
+
+        try:
+            school_class = SchoolClass.objects.get(id=class_id)
+        except SchoolClass.DoesNotExist:
+            return Response({'error': 'Class not found.'}, status=404)
+
+        try:
+            optional_charge = OptionalCharge.objects.get(id=optional_charge_id)
+        except OptionalCharge.DoesNotExist:
+            return Response({'error': 'Optional charge not found.'}, status=404)
+
+        enrollments = Enrollment.objects.filter(school_class_id=school_class.id, is_active=True)
+        if term_id:
+            enrollments = enrollments.filter(term_id=term_id)
+
+        student_ids = list(enrollments.values_list('student_id', flat=True).distinct())
+        if not student_ids:
+            return Response({'created': 0, 'skipped': 0, 'student_count': 0,
+                             'message': 'No enrolled students found in this class.'})
+
+        created_count = 0
+        skipped_count = 0
+        for student_id in student_ids:
+            _, created = StudentOptionalCharge.objects.get_or_create(
+                student_id=student_id,
+                optional_charge=optional_charge,
+            )
+            if created:
+                created_count += 1
+            else:
+                skipped_count += 1
+
+        return Response({
+            'created': created_count,
+            'skipped': skipped_count,
+            'student_count': len(student_ids),
+            'message': f'Assigned to {created_count} new students ({skipped_count} already had this charge).',
+        })
+
 
 class StoreOrderReviewView(APIView):
     permission_classes = [permissions.IsAuthenticated]

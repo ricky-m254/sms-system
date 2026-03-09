@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import BackButton from '../../components/BackButton'
 import PrintButton from '../../components/PrintButton'
+import { useCurrentAcademicContext } from '../../hooks/useCurrentAcademicContext'
 
 type OptionalCharge = {
   id: number
@@ -42,10 +43,12 @@ const CATEGORIES = [
 ]
 
 export default function FinanceOptionalChargesPage() {
+  const { context: academicContext } = useCurrentAcademicContext()
   const [charges, setCharges] = useState<OptionalCharge[]>([])
   const [years, setYears] = useState<AcademicYear[]>([])
   const [terms, setTerms] = useState<Term[]>([])
   const [students, setStudents] = useState<Student[]>([])
+  const [classes, setClasses] = useState<{ id: number; name: string; stream: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingCharge, setEditingCharge] = useState<OptionalCharge | null>(null)
@@ -54,7 +57,10 @@ export default function FinanceOptionalChargesPage() {
   const [showAssignForm, setShowAssignForm] = useState(false)
   const [assignTarget, setAssignTarget] = useState<OptionalCharge | null>(null)
   const [selectedStudents, setSelectedStudents] = useState<number[]>([])
+  const [selectedClass, setSelectedClass] = useState<string>('')
+  const [assignTab, setAssignTab] = useState<'student' | 'class'>('student')
   const [assigning, setAssigning] = useState(false)
+  const [assignResult, setAssignResult] = useState<string | null>(null)
 
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
   const [assignedStudents, setAssignedStudents] = useState<StudentOptionalCharge[]>([])
@@ -71,22 +77,34 @@ export default function FinanceOptionalChargesPage() {
   })
 
   useEffect(() => {
+    if (academicContext && !editingCharge) {
+      setForm(prev => ({
+        ...prev,
+        academic_year: academicContext.academic_year?.id.toString() || '',
+        term: academicContext.term?.id.toString() || '',
+      }))
+    }
+  }, [academicContext, editingCharge])
+
+  useEffect(() => {
     loadData()
   }, [])
 
   const loadData = async () => {
     setLoading(true)
     try {
-      const [chargesRes, yearsRes, termsRes, studentsRes] = await Promise.all([
+      const [chargesRes, yearsRes, termsRes, studentsRes, classesRes] = await Promise.all([
         apiClient.get('/finance/optional-charges/'),
         apiClient.get('/academics/years/'),
         apiClient.get('/finance/terms/'),
         apiClient.get('/students/?page_size=1000'),
+        apiClient.get('/finance/ref/classes/'),
       ])
       setCharges(chargesRes.data.results || chargesRes.data)
       setYears(yearsRes.data.results || yearsRes.data)
       setTerms(termsRes.data.results || termsRes.data)
       setStudents(studentsRes.data.results || studentsRes.data)
+      setClasses(classesRes.data.results || classesRes.data)
     } catch (error) {
       console.error('Failed to load optional charges data', error)
     } finally {
@@ -144,26 +162,44 @@ export default function FinanceOptionalChargesPage() {
   }
 
   const handleAssign = async () => {
-    if (!assignTarget || selectedStudents.length === 0) return
+    if (!assignTarget) return
     setAssigning(true)
+    setAssignResult(null)
     try {
-      await Promise.all(
-        selectedStudents.map((studentId) =>
-          apiClient.post('/finance/student-optional-charges/', {
-            student: studentId,
-            optional_charge: assignTarget.id,
-          })
+      if (assignTab === 'student') {
+        if (selectedStudents.length === 0) return
+        await Promise.all(
+          selectedStudents.map((studentId) =>
+            apiClient.post('/finance/student-optional-charges/', {
+              student: studentId,
+              optional_charge: assignTarget.id,
+            })
+          )
         )
-      )
-      setShowAssignForm(false)
-      setAssignTarget(null)
-      setSelectedStudents([])
-      if (expandedRow === assignTarget.id) {
-          fetchAssignedStudents(assignTarget.id)
+        setAssignResult(`Successfully assigned to ${selectedStudents.length} students.`)
+      } else {
+        if (!selectedClass) return
+        const res = await apiClient.post('/finance/optional-charges/by-class/', {
+          class_id: selectedClass,
+          optional_charge_id: assignTarget.id,
+          term_id: academicContext?.term?.id
+        })
+        setAssignResult(res.data.message)
       }
+      
+      setTimeout(() => {
+        setShowAssignForm(false)
+        setAssignTarget(null)
+        setSelectedStudents([])
+        setSelectedClass('')
+        setAssignResult(null)
+        if (expandedRow === assignTarget.id) {
+            fetchAssignedStudents(assignTarget.id)
+        }
+      }, 2000)
     } catch (error) {
-      console.error('Failed to assign students', error)
-      alert('Some assignments may have failed (possibly already assigned).')
+      console.error('Failed to assign', error)
+      setAssignResult('Failed to assign. Some students may already have this charge.')
     } finally {
       setAssigning(false)
     }
@@ -455,39 +491,85 @@ export default function FinanceOptionalChargesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <h2 className="text-xl font-display font-bold text-white mb-2">Assign "{assignTarget?.name}"</h2>
-            <p className="text-sm text-slate-400 mb-6">Select students to assign this charge to.</p>
+            <p className="text-sm text-slate-400 mb-6">Choose assignment method.</p>
             
-            <div className="max-h-96 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-4 mb-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {students.map((student) => (
-                        <label key={student.id} className="flex items-center gap-3 p-2 hover:bg-slate-900 rounded-lg cursor-pointer transition">
-                            <input
-                                type="checkbox"
-                                checked={selectedStudents.includes(student.id)}
-                                onChange={(e) => {
-                                    if (e.target.checked) {
-                                        setSelectedStudents([...selectedStudents, student.id])
-                                    } else {
-                                        setSelectedStudents(selectedStudents.filter(id => id !== student.id))
-                                    }
-                                }}
-                                className="rounded border-slate-700 bg-slate-950 text-emerald-500"
-                            />
-                            <div className="text-xs">
-                                <p className="font-medium text-slate-200">{student.first_name} {student.last_name}</p>
-                                <p className="text-slate-500">{student.admission_number}</p>
-                            </div>
-                        </label>
-                    ))}
-                </div>
+            <div className="flex border-b border-slate-800 mb-6">
+                <button 
+                    onClick={() => setAssignTab('student')}
+                    className={`px-4 py-2 text-sm font-medium transition ${assignTab === 'student' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-slate-400 hover:text-white'}`}
+                >
+                    By Student
+                </button>
+                <button 
+                    onClick={() => setAssignTab('class')}
+                    className={`px-4 py-2 text-sm font-medium transition ${assignTab === 'class' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-slate-400 hover:text-white'}`}
+                >
+                    By Class
+                </button>
             </div>
 
+            {assignTab === 'student' ? (
+                <div className="max-h-96 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {students.map((student) => (
+                            <label key={student.id} className="flex items-center gap-3 p-2 hover:bg-slate-900 rounded-lg cursor-pointer transition">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedStudents.includes(student.id)}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            setSelectedStudents([...selectedStudents, student.id])
+                                        } else {
+                                            setSelectedStudents(selectedStudents.filter(id => id !== student.id))
+                                        }
+                                    }}
+                                    className="rounded border-slate-700 bg-slate-950 text-emerald-500"
+                                />
+                                <div className="text-xs">
+                                    <p className="font-medium text-slate-200">{student.first_name} {student.last_name}</p>
+                                    <p className="text-slate-500">{student.admission_number}</p>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <div className="space-y-4 mb-6">
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">Select Class</label>
+                        <select
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                            className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                        >
+                            <option value="">Select a class...</option>
+                            {classes.map((cls) => (
+                                <option key={cls.id} value={cls.id}>{cls.name} - {cls.stream}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {academicContext?.term && (
+                        <p className="text-xs text-slate-500 italic">
+                            Assignment will be filtered for the current term: {academicContext.term.name}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {assignResult && (
+                <div className={`mb-4 p-3 rounded-lg text-sm ${assignResult.includes('Failed') ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                    {assignResult}
+                </div>
+            )}
+
             <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-400">{selectedStudents.length} students selected</p>
+                <p className="text-xs text-slate-400">
+                    {assignTab === 'student' ? `${selectedStudents.length} students selected` : 'Select a class to assign to all its students'}
+                </p>
                 <div className="flex gap-3">
                     <button
                         type="button"
-                        onClick={() => { setShowAssignForm(false); setSelectedStudents([]); }}
+                        onClick={() => { setShowAssignForm(false); setSelectedStudents([]); setSelectedClass(''); setAssignResult(null); }}
                         className="rounded-xl px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition"
                     >
                         Cancel
@@ -495,7 +577,7 @@ export default function FinanceOptionalChargesPage() {
                     <button
                         type="button"
                         onClick={handleAssign}
-                        disabled={assigning || selectedStudents.length === 0}
+                        disabled={assigning || (assignTab === 'student' ? selectedStudents.length === 0 : !selectedClass)}
                         className="rounded-xl bg-emerald-500 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition disabled:opacity-50"
                     >
                         {assigning ? 'Assigning...' : 'Assign Now'}

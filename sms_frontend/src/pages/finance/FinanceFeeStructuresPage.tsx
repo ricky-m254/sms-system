@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { extractApiErrorMessage } from '../../utils/forms'
+import { useCurrentAcademicContext } from '../../hooks/useCurrentAcademicContext'
 
 type FeeStructure = {
   id: number

@@ -23,6 +23,7 @@ const navSections = [
       { label: 'Vote Heads', to: '/modules/finance/vote-heads' },
       { label: 'Cashbook', to: '/modules/finance/cashbook' },
       { label: 'Arrears', to: '/modules/finance/arrears' },
+      { label: 'Store Requests', to: '/modules/finance/store-requests' },
       { label: 'Audit Reports', to: '/modules/finance/audit-reports' },
       { label: 'Settings', to: '/settings/finance' },
     ],

@@ -129,7 +129,13 @@ export default function StoreOrdersPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-slate-200 font-medium">{order.title}</span>
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[order.status] || ''}`}>{order.status}</span>
-                  <span className="text-xs text-slate-500">→ {order.send_to}</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                    order.send_to === 'FINANCE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                    order.send_to === 'ADMIN' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                    'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                  }`}>
+                    {order.send_to}
+                  </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">By {order.requested_by_name} · {order.created_at.slice(0, 10)}</p>
               </div>

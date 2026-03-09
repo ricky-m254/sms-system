@@ -1,0 +1,1 @@
+import{j as r}from"./index-BbOl36V9.js";function o({label:t="Print",className:e=""}){return r.jsxs("button",{onClick:()=>window.print(),className:`flex items-center gap-1.5 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-emerald-400 hover:text-emerald-400 transition ${e}`,children:["🖨 ",t]})}export{o as P};

@@ -39,6 +39,7 @@ const FinanceRefundsPage = lazy(() => import('./pages/finance/FinanceRefundsPage
 const FinanceVoteHeadsPage = lazy(() => import('./pages/finance/FinanceVoteHeadsPage'))
 const FinanceCashbookPage = lazy(() => import('./pages/finance/FinanceCashbookPage'))
 const FinanceArrearsPage = lazy(() => import('./pages/finance/FinanceArrearsPage'))
+const FinanceStoreRequestsPage = lazy(() => import('./pages/finance/FinanceStoreRequestsPage'))
 const FinanceStudentLedgerPage = lazy(() => import('./pages/finance/FinanceStudentLedgerPage'))
 const FinanceGeneralLedgerPage = lazy(() => import('./pages/finance/FinanceGeneralLedgerPage'))
 const FinanceExpenseLedgerPage = lazy(() => import('./pages/finance/FinanceExpenseLedgerPage'))
@@ -392,6 +393,7 @@ function App() {
           <Route path="vote-heads" element={<FinanceVoteHeadsPage />} />
           <Route path="cashbook" element={<FinanceCashbookPage />} />
           <Route path="arrears" element={<FinanceArrearsPage />} />
+          <Route path="store-requests" element={<FinanceStoreRequestsPage />} />
           <Route path="ledger" element={<FinanceStudentLedgerPage />} />
           <Route path="general-ledger" element={<FinanceGeneralLedgerPage />} />
           <Route path="expense-ledger" element={<FinanceExpenseLedgerPage />} />
