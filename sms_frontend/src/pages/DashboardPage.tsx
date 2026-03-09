@@ -60,6 +60,7 @@ const MODULE_OPERATIONAL_ROUTES: Record<string, string> = {
   MAINTENANCE: '/modules/maintenance/dashboard',
   ELEARNING: '/modules/elearning/dashboard',
   ANALYTICS: '/modules/analytics/dashboard',
+  REPORTING: '/modules/finance/audit-reports',
 }
 
 const MODULE_LABELS: Record<string, string> = {
