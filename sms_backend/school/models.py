@@ -1067,6 +1067,43 @@ class FeeAssignment(models.Model):
     def __str__(self):
         return f"{self.student} - {self.fee_structure.name}"
 
+class OptionalChargeCategory(models.TextChoices):
+    UNIFORM = 'UNIFORM', 'Uniform'
+    TRIP = 'TRIP', 'Trip'
+    BOOKS = 'BOOKS', 'Books'
+    ACTIVITY = 'ACTIVITY', 'Activity'
+    TRANSPORT = 'TRANSPORT', 'Transport'
+    MEALS = 'MEALS', 'Meals'
+    OTHER = 'OTHER', 'Other'
+
+class OptionalCharge(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=OptionalChargeCategory.choices, default=OptionalChargeCategory.OTHER)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    academic_year = models.ForeignKey('AcademicYear', on_delete=models.SET_NULL, null=True, blank=True)
+    term = models.ForeignKey('Term', on_delete=models.SET_NULL, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['category', 'name']
+    def __str__(self):
+        return f"{self.name} ({self.get_category_display()}) - {self.amount}"
+
+class StudentOptionalCharge(models.Model):
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='optional_charges')
+    optional_charge = models.ForeignKey(OptionalCharge, on_delete=models.CASCADE, related_name='student_assignments')
+    invoice = models.ForeignKey('Invoice', on_delete=models.SET_NULL, null=True, blank=True, related_name='optional_charges')
+    is_paid = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = [['student', 'optional_charge']]
+        ordering = ['-assigned_at']
+    def __str__(self):
+        return f"{self.student} — {self.optional_charge.name}"
+
 class ScholarshipAward(models.Model):
     AWARD_TYPE_CHOICES = [
         ('FIXED', 'Fixed Amount'),

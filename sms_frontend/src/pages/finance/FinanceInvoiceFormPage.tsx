@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
+import BackButton from '../../components/BackButton'
 
 type FinanceStudent = {
   id: number
@@ -397,13 +398,10 @@ export default function FinanceInvoiceFormPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-12">
+        <BackButton to="/modules/finance/invoices" label="Back to Invoices" />
+      </div>
       <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sticky top-0 z-20">
-        <button
-          onClick={() => navigate('/modules/finance/invoices')}
-          className="mb-3 flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
-        >
-          ← Back to Invoices
-        </button>
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">
           {isEdit ? 'Invoice (View Only)' : 'Create Invoice'}

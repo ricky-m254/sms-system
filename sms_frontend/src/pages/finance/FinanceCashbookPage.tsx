@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PrintButton from '../../components/PrintButton'
 
 type Entry = {
   id: number
@@ -125,6 +126,7 @@ export default function FinanceCashbookPage() {
           <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600">
             + Add Entry
           </button>
+          <PrintButton />
         </div>
         <div className="mt-4 flex gap-2">
           {(['CASH', 'BANK'] as const).map(bt => (

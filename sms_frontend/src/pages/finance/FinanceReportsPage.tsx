@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadBlob, extractFilename } from '../../utils/download'
+import PrintButton from '../../components/PrintButton'
 
 type FinanceSummary = {
   revenue_billed?: number
@@ -375,6 +376,7 @@ export default function FinanceReportsPage() {
             <p className="mt-2 text-sm text-slate-400">Live finance summary with CSV/PDF export.</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <PrintButton />
             <button
               className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('csv')}

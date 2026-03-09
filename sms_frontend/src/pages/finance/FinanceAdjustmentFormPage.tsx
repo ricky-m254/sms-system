@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
+import BackButton from '../../components/BackButton'
 
 type Invoice = {
   id: number
@@ -178,6 +179,9 @@ export default function FinanceAdjustmentFormPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-12">
+        <BackButton to="/modules/finance/adjustments" label="Back to Adjustments" />
+      </div>
       <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Create Adjustment</h1>

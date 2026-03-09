@@ -1,0 +1,1 @@
+import{j as e}from"./index-Bx5Hq3Y5.js";function s(){return e.jsxs("div",{className:"rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center",children:[e.jsx("h2",{className:"text-2xl font-bold text-white",children:"Student Enrollments"}),e.jsx("p",{className:"mt-2 text-slate-400",children:"Manage student subscriptions to meal plans."})]})}export{s as default};

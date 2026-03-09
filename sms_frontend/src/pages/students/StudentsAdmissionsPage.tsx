@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import BackButton from '../../components/BackButton'
 
 const pipelineStages = [
   'Inquiry',
@@ -742,6 +743,9 @@ export default function StudentsAdmissionsPage() {
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
           <div className="w-full max-w-[900px] max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+            <div className="mb-4">
+              <BackButton onClick={() => setIsFormOpen(false)} label="Back to Admissions" />
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-display font-semibold">New application</h3>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PrintButton from '../../components/PrintButton'
 
 type ArrearRow = {
   invoice_id: number
@@ -150,6 +151,7 @@ export default function FinanceArrearsPage() {
               + Add Carry Forward
             </button>
           )}
+          <PrintButton />
         </div>
         <div className="mt-4 flex gap-4 border-b border-slate-700">
           {(['arrears', 'carry-forward'] as const).map(t => (

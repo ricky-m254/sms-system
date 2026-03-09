@@ -7,6 +7,11 @@
     <title>Rynaty School Management System</title>
     <style>
       body { padding-bottom: 36px; }
+      @media print {
+        aside, nav, header nav, .no-print, button:not(.print-btn) { display: none !important; }
+        body { background: white !important; color: black !important; }
+        .print-area { display: block !important; }
+      }
     </style>
   </head>
   <body>

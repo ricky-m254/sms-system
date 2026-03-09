@@ -6,6 +6,7 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage } from '../../utils/forms'
 import { downloadBlob } from '../../utils/download'
+import PrintButton from '../../components/PrintButton'
 
 type Payment = {
   id: number
@@ -456,6 +457,7 @@ export default function FinancePaymentsPage() {
             <p className="mt-1 text-sm text-slate-400">From `/api/finance/payments/`</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <PrintButton />
             <input
               className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Admission no., invoice ref, receipt…"

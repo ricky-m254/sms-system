@@ -19,12 +19,21 @@ const navSections = [
       { label: 'Reports', to: '/modules/finance/reports' },
       { label: 'Scholarships', to: '/modules/finance/scholarships' },
       { label: 'Refunds', to: '/modules/finance/refunds' },
+      { label: 'Optional Charges', to: '/modules/finance/optional-charges' },
       { label: 'Vote Heads', to: '/modules/finance/vote-heads' },
       { label: 'Cashbook', to: '/modules/finance/cashbook' },
       { label: 'Arrears', to: '/modules/finance/arrears' },
-      { label: 'Student Ledger', to: '/modules/finance/ledger' },
       { label: 'Audit Reports', to: '/modules/finance/audit-reports' },
       { label: 'Settings', to: '/settings/finance' },
+    ],
+  },
+  {
+    title: 'Ledgers',
+    items: [
+      { label: 'Student Ledger', to: '/modules/finance/ledger' },
+      { label: 'General Ledger', to: '/modules/finance/general-ledger' },
+      { label: 'Expense Ledger', to: '/modules/finance/expense-ledger' },
+      { label: 'Budget Ledger', to: '/modules/finance/budget-ledger' },
     ],
   },
 ]

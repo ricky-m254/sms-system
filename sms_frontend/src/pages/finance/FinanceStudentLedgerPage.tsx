@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PrintButton from '../../components/PrintButton'
 
 type Student = { id: number; first_name: string; last_name: string; admission_number: string }
 
@@ -244,9 +245,7 @@ export default function FinanceStudentLedgerPage() {
             <p className="mt-1 text-sm text-slate-400">Full financial statement — invoices, payments, adjustments, carry-forwards</p>
           </div>
           {ledger && (
-            <button onClick={() => window.print()} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800">
-              Print Statement
-            </button>
+            <PrintButton label="Print Statement" />
           )}
         </div>
       </header>

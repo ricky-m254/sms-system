@@ -10,7 +10,7 @@ from .models import (
     MedicalRecord, ImmunizationRecord, ClinicVisit,
     PaymentReversalRequest, InvoiceInstallmentPlan, InvoiceInstallment, LateFeeRule, FeeReminderLog,
     InvoiceWriteOffRequest,
-    ScholarshipAward,
+    ScholarshipAward, OptionalCharge, StudentOptionalCharge,
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
     VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
@@ -543,6 +543,32 @@ class ScholarshipAwardSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_by', 'approved_by', 'created_at', 'updated_at']
+
+class OptionalChargeSerializer(serializers.ModelSerializer):
+    academic_year_name = serializers.CharField(source='academic_year.name', read_only=True)
+    term_name = serializers.CharField(source='term.name', read_only=True)
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
+
+    class Meta:
+        model = OptionalCharge
+        fields = [
+            'id', 'name', 'description', 'category', 'category_display',
+            'amount', 'academic_year', 'academic_year_name',
+            'term', 'term_name', 'is_active', 'created_at', 'updated_at'
+        ]
+
+class StudentOptionalChargeSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student', read_only=True)
+    charge_name = serializers.CharField(source='optional_charge.name', read_only=True)
+    charge_amount = serializers.DecimalField(source='optional_charge.amount', max_digits=12, decimal_places=2, read_only=True)
+    category = serializers.CharField(source='optional_charge.category', read_only=True)
+
+    class Meta:
+        model = StudentOptionalCharge
+        fields = [
+            'id', 'student', 'student_name', 'optional_charge', 'charge_name',
+            'charge_amount', 'category', 'invoice', 'is_paid', 'notes', 'assigned_at'
+        ]
 
 class InvoiceAdjustmentSerializer(serializers.ModelSerializer):
     adjusted_by_name = serializers.CharField(source='adjusted_by.username', read_only=True)

@@ -39,7 +39,7 @@ from .views import (
     StudentsDocumentsCsvExportView, StudentsDocumentsPdfExportView,
     FinanceStudentRefView, FinanceEnrollmentRefView, FinanceClassRefView, BulkFeeAssignByClassView,
     FeeAssignmentViewSet, InvoiceAdjustmentViewSet,
-    ScholarshipAwardViewSet,
+    ScholarshipAwardViewSet, OptionalChargeViewSet, StudentOptionalChargeViewSet,
     TenantSequenceResetView,
     AttendanceRecordViewSet,
     AttendanceSummaryView,
@@ -91,6 +91,8 @@ router.register(r'finance/terms', TermViewSet, basename='term')
 router.register(r'finance/fees', FeeStructureViewSet, basename='feestructure')
 router.register(r'finance/fee-assignments', FeeAssignmentViewSet, basename='feeassignment')
 router.register(r'finance/scholarships', ScholarshipAwardViewSet, basename='scholarshipaward')
+router.register(r'finance/optional-charges', OptionalChargeViewSet, basename='optional-charge')
+router.register(r'finance/student-optional-charges', StudentOptionalChargeViewSet, basename='student-optional-charge')
 router.register(r'finance/invoice-adjustments', InvoiceAdjustmentViewSet, basename='invoiceadjustment')
 router.register(r'finance/invoices', InvoiceViewSet, basename='invoice')
 router.register(r'finance/payments', PaymentViewSet, basename='payment')

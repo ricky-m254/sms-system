@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse, type PaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
+import BackButton from '../../components/BackButton'
 
 type FeeStructure = { id: number; name: string; amount?: number }
 type FinanceStudent = { id: number; admission_number: string; first_name: string; last_name: string }
@@ -173,6 +174,9 @@ export default function FinanceFeeAssignmentFormPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-12">
+        <BackButton to="/modules/finance/fee-assignments" label="Back to Fee Assignments" />
+      </div>
       <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PrintButton from '../../components/PrintButton'
 
 type Invoice = {
   id: number
@@ -607,6 +608,7 @@ export default function FinanceInvoicesPage() {
             <p className="mt-1 text-sm text-slate-400">From `/api/finance/invoices/`</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <PrintButton />
             <input
               className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search invoice or admission #"

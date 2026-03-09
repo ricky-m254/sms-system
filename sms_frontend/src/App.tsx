@@ -40,6 +40,10 @@ const FinanceVoteHeadsPage = lazy(() => import('./pages/finance/FinanceVoteHeads
 const FinanceCashbookPage = lazy(() => import('./pages/finance/FinanceCashbookPage'))
 const FinanceArrearsPage = lazy(() => import('./pages/finance/FinanceArrearsPage'))
 const FinanceStudentLedgerPage = lazy(() => import('./pages/finance/FinanceStudentLedgerPage'))
+const FinanceGeneralLedgerPage = lazy(() => import('./pages/finance/FinanceGeneralLedgerPage'))
+const FinanceExpenseLedgerPage = lazy(() => import('./pages/finance/FinanceExpenseLedgerPage'))
+const FinanceBudgetLedgerPage = lazy(() => import('./pages/finance/FinanceBudgetLedgerPage'))
+const FinanceOptionalChargesPage = lazy(() => import('./pages/finance/FinanceOptionalChargesPage'))
 const SettingsLayout = lazy(() => import('./pages/settings/SettingsLayout'))
 const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPage'))
 const SettingsUsersPage = lazy(() => import('./pages/settings/SettingsUsersPage'))
@@ -389,6 +393,10 @@ function App() {
           <Route path="cashbook" element={<FinanceCashbookPage />} />
           <Route path="arrears" element={<FinanceArrearsPage />} />
           <Route path="ledger" element={<FinanceStudentLedgerPage />} />
+          <Route path="general-ledger" element={<FinanceGeneralLedgerPage />} />
+          <Route path="expense-ledger" element={<FinanceExpenseLedgerPage />} />
+          <Route path="budget-ledger" element={<FinanceBudgetLedgerPage />} />
+          <Route path="optional-charges" element={<FinanceOptionalChargesPage />} />
           <Route path="audit-reports" element={<FinanceAuditReportsPage />} />
           <Route path="settings" element={<Navigate to="/settings/finance" replace />} />
         </Route>

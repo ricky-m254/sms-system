@@ -27,7 +27,7 @@ from .models import (
     MedicalRecord, ImmunizationRecord, ClinicVisit, SchoolProfile,
     PaymentReversalRequest, InvoiceInstallmentPlan, InvoiceInstallment, LateFeeRule, FeeReminderLog,
     InvoiceWriteOffRequest,
-    ScholarshipAward,
+    ScholarshipAward, OptionalCharge, StudentOptionalCharge,
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
     VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
@@ -45,6 +45,7 @@ from .serializers import (
     BudgetSerializer,
     FeeAssignmentSerializer, InvoiceAdjustmentSerializer,
     ScholarshipAwardSerializer,
+    OptionalChargeSerializer, StudentOptionalChargeSerializer,
     PaymentReversalRequestSerializer, InvoiceInstallmentPlanSerializer,
     InvoiceInstallmentSerializer, LateFeeRuleSerializer, FeeReminderLogSerializer,
     InvoiceWriteOffRequestSerializer,
@@ -1555,6 +1556,46 @@ class FeeAssignmentViewSet(viewsets.ModelViewSet):
             serializer.instance = assignment
         except Exception as exc:
             raise ValidationError(str(exc))
+
+
+class OptionalChargeViewSet(viewsets.ModelViewSet):
+    queryset = OptionalCharge.objects.all()
+    serializer_class = OptionalChargeSerializer
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+    pagination_class = FinanceResultsPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('academic_year', 'term')
+        category = self.request.query_params.get('category')
+        is_active = self.request.query_params.get('is_active')
+        if category:
+            queryset = queryset.filter(category=category)
+        if is_active is not None:
+            normalized = str(is_active).lower()
+            queryset = queryset.filter(is_active=(normalized in ('true', '1')))
+        return queryset
+
+class StudentOptionalChargeViewSet(viewsets.ModelViewSet):
+    queryset = StudentOptionalCharge.objects.all()
+    serializer_class = StudentOptionalChargeSerializer
+    permission_classes = [IsAccountant, HasModuleAccess]
+    module_key = "FINANCE"
+    pagination_class = FinanceResultsPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('student', 'optional_charge')
+        student = self.request.query_params.get('student')
+        optional_charge = self.request.query_params.get('optional_charge')
+        is_paid = self.request.query_params.get('is_paid')
+        if student:
+            queryset = queryset.filter(student_id=student)
+        if optional_charge:
+            queryset = queryset.filter(optional_charge_id=optional_charge)
+        if is_paid is not None:
+            normalized = str(is_paid).lower()
+            queryset = queryset.filter(is_paid=(normalized in ('true', '1')))
+        return queryset
 
 
 class ScholarshipAwardViewSet(viewsets.ModelViewSet):
