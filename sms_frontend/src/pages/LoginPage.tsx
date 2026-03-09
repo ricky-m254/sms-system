@@ -77,9 +77,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-10 px-4 py-10 sm:px-6 sm:py-16 md:flex-row">
         <div className="flex-1 space-y-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Rynaty School Management System</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-emerald-400 font-semibold">Tenant Portal</p>
           <h1 className="text-4xl font-display font-semibold leading-tight md:text-5xl">
-            Tenant login for the Student Management System
+            Rynaty School Management System
           </h1>
           <p className="text-base text-slate-300">
             Sign in to your assigned modules. Routing is determined by your role and

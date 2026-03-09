@@ -30,6 +30,7 @@ const FinanceFeeAssignmentFormPage = lazy(() => import('./pages/finance/FinanceF
 const FinanceAdjustmentsPage = lazy(() => import('./pages/finance/FinanceAdjustmentsPage'))
 const FinanceAdjustmentFormPage = lazy(() => import('./pages/finance/FinanceAdjustmentFormPage'))
 const FinanceReportsPage = lazy(() => import('./pages/finance/FinanceReportsPage'))
+const FinanceAuditReportsPage = lazy(() => import('./pages/finance/FinanceAuditReportsPage'))
 const FinanceAccountsPage = lazy(() => import('./pages/finance/FinanceAccountsPage'))
 const FinanceReconciliationPage = lazy(() => import('./pages/finance/FinanceReconciliationPage'))
 const FinanceScholarshipsPage = lazy(() => import('./pages/finance/FinanceScholarshipsPage'))
@@ -386,6 +387,7 @@ function App() {
           <Route path="cashbook" element={<FinanceCashbookPage />} />
           <Route path="arrears" element={<FinanceArrearsPage />} />
           <Route path="ledger" element={<FinanceStudentLedgerPage />} />
+          <Route path="audit-reports" element={<FinanceAuditReportsPage />} />
           <Route path="settings" element={<Navigate to="/settings/finance" replace />} />
         </Route>
         <Route

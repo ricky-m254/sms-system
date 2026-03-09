@@ -23,6 +23,7 @@ const navSections = [
       { label: 'Cashbook', to: '/modules/finance/cashbook' },
       { label: 'Arrears', to: '/modules/finance/arrears' },
       { label: 'Student Ledger', to: '/modules/finance/ledger' },
+      { label: 'Audit Reports', to: '/modules/finance/audit-reports' },
       { label: 'Settings', to: '/settings/finance' },
     ],
   },
