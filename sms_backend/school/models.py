@@ -1535,6 +1535,7 @@ class StoreOrderRequest(models.Model):
         ('REJECTED', 'Rejected'),
         ('FULFILLED', 'Fulfilled'),
     ]
+    request_code = models.CharField(max_length=30, blank=True, unique=True, null=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     requested_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, related_name='store_requests')
@@ -1543,11 +1544,20 @@ class StoreOrderRequest(models.Model):
     notes = models.TextField(blank=True)
     reviewed_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_store_requests')
     reviewed_at = models.DateTimeField(null=True, blank=True)
+    generated_expense = models.ForeignKey('Expense', on_delete=models.SET_NULL, null=True, blank=True, related_name='store_orders')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.request_code:
+            import datetime as _dt
+            year = self.created_at.year if self.created_at else _dt.date.today().year
+            self.request_code = f'REQ-{year}-{self.id:04d}'
+            StoreOrderRequest.objects.filter(pk=self.pk).update(request_code=self.request_code)
+
     def __str__(self):
-        return f"{self.title} ({self.status})"
+        return f"{self.request_code or self.id}: {self.title} ({self.status})"
 
     class Meta:
         ordering = ['-created_at']

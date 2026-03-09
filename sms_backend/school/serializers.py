@@ -884,15 +884,19 @@ class StoreOrderRequestSerializer(serializers.ModelSerializer):
     items = StoreOrderItemSerializer(many=True, read_only=True)
     requested_by_name = serializers.SerializerMethodField()
     reviewed_by_name = serializers.SerializerMethodField()
+    generated_expense_id = serializers.SerializerMethodField()
 
     class Meta:
         model = StoreOrderRequest
         fields = [
-            'id', 'title', 'description', 'requested_by', 'requested_by_name',
+            'id', 'request_code', 'title', 'description', 'requested_by', 'requested_by_name',
             'send_to', 'status', 'notes', 'reviewed_by', 'reviewed_by_name',
-            'reviewed_at', 'created_at', 'updated_at', 'items'
+            'reviewed_at', 'generated_expense_id', 'created_at', 'updated_at', 'items'
         ]
-        read_only_fields = ['requested_by', 'reviewed_by', 'reviewed_at', 'created_at', 'updated_at']
+        read_only_fields = ['request_code', 'requested_by', 'reviewed_by', 'reviewed_at', 'generated_expense_id', 'created_at', 'updated_at']
+
+    def get_generated_expense_id(self, obj):
+        return obj.generated_expense_id
 
     def get_requested_by_name(self, obj):
         if obj.requested_by:

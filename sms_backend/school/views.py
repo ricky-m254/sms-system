@@ -5725,26 +5725,37 @@ class StoreOrderRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='generate-expense')
     def generate_expense(self, request, pk=None):
         order = self.get_object()
+
+        # Prevent duplicate expense generation
+        if order.generated_expense_id:
+            return Response({
+                'already_generated': True,
+                'expense_id': order.generated_expense_id,
+                'message': f'Expense already generated (Expense #{order.generated_expense_id}).',
+            }, status=200)
+
         if order.status not in ('APPROVED', 'FULFILLED'):
             return Response({'error': 'Only approved or fulfilled orders can generate expenses.'}, status=400)
-        
+
         # Calculate total cost from order items
         total = sum(
             float(item.quantity_approved or item.quantity_requested) * float(item.item.cost_price if item.item else 0)
             for item in order.items.select_related('item').all()
         )
-        
-        # Get or create expense
+
         import datetime as dt
         from school.models import Expense
         expense = Expense.objects.create(
             category='Store Purchase',
             amount=max(total, 0.01),
             expense_date=order.reviewed_at.date() if order.reviewed_at else dt.date.today(),
-            description=f'Store Order #{order.id}: {order.title}. {order.description}'.strip(),
+            description=f'{order.request_code or ("Order #" + str(order.id))}: {order.title}. {order.description}'.strip(),
             approval_status='Approved',
             vendor='Store Department',
         )
+        # Link expense back to order so we can detect duplicates
+        order.generated_expense = expense
+        order.save(update_fields=['generated_expense'])
         return Response({'expense_id': expense.id, 'amount': total, 'message': 'Expense record created.'})
 
 class AcademicsCurrentContextView(APIView):

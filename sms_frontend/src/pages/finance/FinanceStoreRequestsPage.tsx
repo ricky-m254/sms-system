@@ -15,6 +15,7 @@ interface OrderItem {
 
 interface Order {
   id: number;
+  request_code: string | null;
   title: string;
   description: string;
   send_to: string;
@@ -23,6 +24,7 @@ interface Order {
   created_at: string;
   items: OrderItem[];
   notes: string;
+  generated_expense_id: number | null;
 }
 
 const STATUS_CONFIG: Record<string, { color: string; icon: any }> = {
@@ -69,7 +71,11 @@ export default function FinanceStoreRequestsPage() {
     setProcessing(orderId);
     try {
       const res = await apiClient.post(`/store/orders/${orderId}/generate-expense/`);
-      alert(`Expense created successfully! Expense ID: ${res.data.expense_id}`);
+      if (res.data.already_generated) {
+        alert(`Already sent — Expense #${res.data.expense_id} was previously created for this order.`);
+      } else {
+        alert(`Expense #${res.data.expense_id} created successfully.`);
+      }
       load();
     } catch (err: any) {
       alert(err.response?.data?.error || 'Failed to generate expense');
@@ -134,13 +140,18 @@ export default function FinanceStoreRequestsPage() {
             const totalCost = calculateTotal(order);
             const canGenerateExpense = order.status === 'APPROVED' || order.status === 'FULFILLED';
 
+            const alreadySent = !!order.generated_expense_id;
+
             return (
               <div key={order.id} className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors">
                 <div className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-slate-100">#{order.id}: {order.title}</h3>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                          {order.request_code || `REQ-#${order.id}`}
+                        </span>
+                        <h3 className="text-lg font-semibold text-slate-100">{order.title}</h3>
                         <span className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${Config.color}`}>
                           <StatusIcon size={10} />
                           {order.status}
@@ -162,14 +173,21 @@ export default function FinanceStoreRequestsPage() {
                         {formatCurrency(totalCost)}
                       </div>
                       {canGenerateExpense && (
-                        <button 
-                          onClick={() => generateExpense(order.id)}
-                          disabled={processing === order.id}
-                          className="mt-3 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50"
-                        >
-                          <Receipt size={14} />
-                          {processing === order.id ? 'Processing...' : 'Generate Expense'}
-                        </button>
+                        alreadySent ? (
+                          <div className="mt-3 flex items-center gap-2 bg-slate-700/60 text-slate-400 text-xs font-bold px-4 py-2 rounded-xl border border-slate-600/50 cursor-default">
+                            <Receipt size={14} className="text-emerald-500" />
+                            Already Sent · Exp #{order.generated_expense_id}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => generateExpense(order.id)}
+                            disabled={processing === order.id}
+                            className="mt-3 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50"
+                          >
+                            <Receipt size={14} />
+                            {processing === order.id ? 'Processing...' : 'Generate Expense'}
+                          </button>
+                        )
                       )}
                     </div>
                   </div>

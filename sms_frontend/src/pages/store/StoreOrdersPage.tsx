@@ -8,7 +8,7 @@ interface OrderItem {
   unit: string; quantity_requested: number; quantity_approved: number | null; notes: string;
 }
 interface Order {
-  id: number; title: string; description: string; send_to: string; status: string;
+  id: number; request_code: string | null; title: string; description: string; send_to: string; status: string;
   requested_by_name: string; reviewed_by_name: string; reviewed_at: string | null;
   created_at: string; notes: string; items: OrderItem[];
 }
@@ -127,6 +127,9 @@ export default function StoreOrdersPage() {
             <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => toggle(order.id)}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                    {order.request_code || `REQ-#${order.id}`}
+                  </span>
                   <span className="text-slate-200 font-medium">{order.title}</span>
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[order.status] || ''}`}>{order.status}</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
