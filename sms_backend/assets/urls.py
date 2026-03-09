@@ -5,16 +5,20 @@ from .views import (
     AssetViewSet,
     AssetAssignmentViewSet,
     AssetMaintenanceRecordViewSet,
-    AssetsDashboardView
+    AssetDepreciationViewSet,
+    RunDepreciationView,
+    AssetsDashboardView,
 )
 
 router = DefaultRouter()
 router.register(r'categories', AssetCategoryViewSet, basename='asset-category')
 router.register(r'assignments', AssetAssignmentViewSet, basename='asset-assignment')
 router.register(r'maintenance', AssetMaintenanceRecordViewSet, basename='asset-maintenance')
+router.register(r'depreciation', AssetDepreciationViewSet, basename='asset-depreciation')
 router.register(r'', AssetViewSet, basename='asset')
 
 urlpatterns = [
     path('dashboard/', AssetsDashboardView.as_view(), name='assets-dashboard'),
+    path('depreciation/run/', RunDepreciationView.as_view(), name='assets-run-depreciation'),
     path('', include(router.urls)),
 ]

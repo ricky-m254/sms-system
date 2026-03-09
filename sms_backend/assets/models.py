@@ -66,6 +66,23 @@ class AssetAssignment(models.Model):
     def __str__(self):
         return f"{self.asset.name} assigned to {self.assigned_to_name}"
 
+class AssetDepreciation(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='depreciation_records')
+    period_label = models.CharField(max_length=20, help_text="e.g. '2025' or '2025-Q1'")
+    depreciation_amount = models.DecimalField(max_digits=14, decimal_places=2)
+    accumulated_depreciation = models.DecimalField(max_digits=14, decimal_places=2)
+    net_book_value = models.DecimalField(max_digits=14, decimal_places=2)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('asset', 'period_label')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.asset.name} — {self.period_label}: -{self.depreciation_amount}"
+
+
 class AssetMaintenanceRecord(models.Model):
     MAINTENANCE_TYPE_CHOICES = [
         ('Preventive', 'Preventive'),

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AssetCategory, Asset, AssetAssignment, AssetMaintenanceRecord
+from .models import AssetCategory, Asset, AssetAssignment, AssetMaintenanceRecord, AssetDepreciation
 
 class AssetCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,4 +28,13 @@ class AssetMaintenanceRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssetMaintenanceRecord
+        fields = '__all__'
+
+
+class AssetDepreciationSerializer(serializers.ModelSerializer):
+    asset_name = serializers.CharField(source='asset.name', read_only=True)
+    asset_code = serializers.CharField(source='asset.asset_code', read_only=True)
+
+    class Meta:
+        model = AssetDepreciation
         fields = '__all__'

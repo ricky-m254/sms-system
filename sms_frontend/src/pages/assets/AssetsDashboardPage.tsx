@@ -8,6 +8,8 @@ type DashboardData = {
   retired: number
   disposed: number
   total_value: number
+  total_cost: number
+  total_accumulated_depreciation: number
   categories_count: number
   assignments_active: number
   maintenance_pending: number
@@ -21,6 +23,8 @@ export default function AssetsDashboardPage() {
     retired: 0,
     disposed: 0,
     total_value: 0,
+    total_cost: 0,
+    total_accumulated_depreciation: 0,
     categories_count: 0,
     assignments_active: 0,
     maintenance_pending: 0,
@@ -49,12 +53,15 @@ export default function AssetsDashboardPage() {
     }
   }, [])
 
+  const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const cards = [
     { label: 'Total Assets', value: data.total_assets, tone: 'text-emerald-300' },
     { label: 'Active', value: data.active, tone: 'text-sky-300' },
     { label: 'In Repair', value: data.in_repair, tone: 'text-amber-300' },
-    { label: 'Retired/Disposed', value: data.retired + data.disposed, tone: 'text-rose-300' },
-    { label: 'Total Value', value: `$${Number(data.total_value).toLocaleString()}`, tone: 'text-violet-300' },
+    { label: 'Retired / Disposed', value: data.retired + data.disposed, tone: 'text-rose-300' },
+    { label: 'Total Cost (Gross)', value: `$${fmt(data.total_cost)}`, tone: 'text-slate-300' },
+    { label: 'Accumulated Depreciation', value: `$${fmt(data.total_accumulated_depreciation)}`, tone: 'text-amber-300' },
+    { label: 'Net Book Value', value: `$${fmt(data.total_value)}`, tone: 'text-violet-300' },
     { label: 'Pending Maintenance', value: data.maintenance_pending, tone: 'text-orange-300' },
   ]
 
@@ -73,7 +80,7 @@ export default function AssetsDashboardPage() {
           <p className="text-sm text-slate-300">Loading dashboard...</p>
         </div>
       ) : (
-        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {cards.map((card) => (
             <article key={card.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
               <p className="text-xs uppercase tracking-wide text-slate-400">{card.label}</p>

@@ -9,6 +9,7 @@ const navItems = [
   { label: 'Categories', to: '/modules/assets/categories' },
   { label: 'Assignments', to: '/modules/assets/assignments' },
   { label: 'Maintenance', to: '/modules/assets/maintenance' },
+  { label: 'Depreciation', to: '/modules/assets/depreciation' },
 ]
 
 export default function AssetsLayout() {

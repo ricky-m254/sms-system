@@ -122,6 +122,7 @@ const AssetsRegistryPage = lazy(() => import('./pages/assets/AssetsRegistryPage'
 const AssetsCategoriesPage = lazy(() => import('./pages/assets/AssetsCategoriesPage'))
 const AssetsAssignmentsPage = lazy(() => import('./pages/assets/AssetsAssignmentsPage'))
 const AssetsMaintenancePage = lazy(() => import('./pages/assets/AssetsMaintenancePage'))
+const AssetsDepreciationPage = lazy(() => import('./pages/assets/AssetsDepreciationPage'))
 const PlatformLoginPage = lazy(() => import('./pages/platform/PlatformLoginPage'))
 const PlatformLayout = lazy(() => import('./pages/platform/PlatformLayout'))
 const PlatformOverviewPage = lazy(() => import('./pages/platform/PlatformOverviewPage'))
@@ -390,6 +391,7 @@ function App() {
           <Route path="categories" element={<AssetsCategoriesPage />} />
           <Route path="assignments" element={<AssetsAssignmentsPage />} />
           <Route path="maintenance" element={<AssetsMaintenancePage />} />
+          <Route path="depreciation" element={<AssetsDepreciationPage />} />
         </Route>
         <Route
           path="/modules/store/*"
