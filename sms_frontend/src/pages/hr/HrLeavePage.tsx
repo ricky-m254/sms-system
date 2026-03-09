@@ -294,6 +294,76 @@ export default function HrLeavePage() {
     }
   }
 
+  const [editingLeaveTypeId, setEditingLeaveTypeId] = useState<number | null>(null)
+  const [editLeaveTypeForm, setEditLeaveTypeForm] = useState(defaultLeaveTypeForm)
+  const [deletingLeaveTypeId, setDeletingLeaveTypeId] = useState<number | null>(null)
+  const [deletingLeavePolicyId, setDeletingLeavePolicyId] = useState<number | null>(null)
+
+  const startEditLeaveType = (t: LeaveType) => {
+    setEditingLeaveTypeId(t.id)
+    setEditLeaveTypeForm({
+      name: t.name,
+      code: t.code,
+      is_paid: t.is_paid,
+      requires_approval: true,
+      requires_document: false,
+      max_days_year: t.max_days_year != null ? String(t.max_days_year) : '',
+      notice_days: String(t.notice_days),
+      color: '#16A34A',
+    })
+  }
+
+  const saveLeaveTypeEdit = async () => {
+    if (!editingLeaveTypeId) return
+    setWorking(true)
+    setError(null)
+    try {
+      await apiClient.patch(`/hr/leave-types/${editingLeaveTypeId}/`, {
+        name: editLeaveTypeForm.name,
+        max_days_year: editLeaveTypeForm.max_days_year ? Number(editLeaveTypeForm.max_days_year) : null,
+        notice_days: Number(editLeaveTypeForm.notice_days || '0'),
+        is_paid: editLeaveTypeForm.is_paid,
+      })
+      setEditingLeaveTypeId(null)
+      setNotice('Leave type updated.')
+      await load()
+    } catch {
+      setError('Unable to update leave type.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const deleteLeaveType = async (id: number) => {
+    setWorking(true)
+    setError(null)
+    try {
+      await apiClient.delete(`/hr/leave-types/${id}/`)
+      setDeletingLeaveTypeId(null)
+      setNotice('Leave type deleted.')
+      await load()
+    } catch {
+      setError('Unable to delete leave type.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const deleteLeavePolicy = async (id: number) => {
+    setWorking(true)
+    setError(null)
+    try {
+      await apiClient.delete(`/hr/leave-policies/${id}/`)
+      setDeletingLeavePolicyId(null)
+      setNotice('Leave policy deleted.')
+      await load()
+    } catch {
+      setError('Unable to delete leave policy.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
   const cancelLeaveRequest = async (requestId: number) => {
     setWorking(true)
     setError(null)
@@ -354,12 +424,42 @@ export default function HrLeavePage() {
                 </div>
               )}
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {(loading ? [] : leaveTypes).map((row) => (
+                {(loading ? [] : leaveTypes).map((row) => editingLeaveTypeId === row.id ? (
+                  <div key={row.id} className="rounded-lg border border-emerald-600/40 bg-slate-950/80 p-3 space-y-2 col-span-1">
+                    <input value={editLeaveTypeForm.name} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                    <input value={editLeaveTypeForm.max_days_year} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year" type="number" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                    <input value={editLeaveTypeForm.notice_days} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Notice days" type="number" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                    <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                      <input type="checkbox" checked={editLeaveTypeForm.is_paid} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, is_paid: e.target.checked }))} />
+                      Paid leave
+                    </label>
+                    <div className="flex gap-2">
+                      <button onClick={saveLeaveTypeEdit} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
+                      <button onClick={() => setEditingLeaveTypeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                    </div>
+                  </div>
+                ) : deletingLeaveTypeId === row.id ? (
+                  <div key={row.id} className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-3">
+                    <p className="text-xs text-rose-200 mb-2">Delete "{row.name}"?</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => void deleteLeaveType(row.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Delete</button>
+                      <button onClick={() => setDeletingLeaveTypeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
                   <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
-                    <p className="font-semibold text-slate-100">{row.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{row.code}</p>
-                    <p className="text-xs text-slate-400 mt-1">Max: {row.max_days_year ?? 'Unlimited'} days/yr · Notice: {row.notice_days}d</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{row.is_paid ? 'Paid' : 'Unpaid'}</p>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-slate-100">{row.name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{row.code}</p>
+                        <p className="text-xs text-slate-400 mt-1">Max: {row.max_days_year ?? 'Unlimited'} days/yr · Notice: {row.notice_days}d</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{row.is_paid ? 'Paid' : 'Unpaid'}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col gap-1 ml-1">
+                        <button onClick={() => startEditLeaveType(row)} className="rounded px-2 py-0.5 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                        <button onClick={() => setDeletingLeaveTypeId(row.id)} className="rounded px-2 py-0.5 text-[10px] border border-rose-700/50 text-rose-300">Delete</button>
+                      </div>
+                    </div>
                   </div>
                 ))}
                 {!loading && leaveTypes.length === 0 && <p className="col-span-3 text-xs text-slate-500">No leave types yet. Create one above.</p>}
@@ -391,12 +491,25 @@ export default function HrLeavePage() {
                 </div>
               )}
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {(loading ? [] : leavePolicies).map((row) => (
+                {(loading ? [] : leavePolicies).map((row) => deletingLeavePolicyId === row.id ? (
+                  <div key={row.id} className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-3">
+                    <p className="text-xs text-rose-200 mb-2">Delete "{row.leave_type_name}" policy?</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => void deleteLeavePolicy(row.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Delete</button>
+                      <button onClick={() => setDeletingLeavePolicyId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
                   <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
-                    <p className="font-semibold text-slate-100">{row.leave_type_name}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{row.employment_type || 'All types'} · {row.accrual_method}</p>
-                    <p className="text-xs text-emerald-400 mt-1">{row.entitlement_days} days entitlement</p>
-                    <p className="text-xs text-slate-500">From {row.effective_from}</p>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-slate-100">{row.leave_type_name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{row.employment_type || 'All types'} · {row.accrual_method}</p>
+                        <p className="text-xs text-emerald-400 mt-1">{row.entitlement_days} days entitlement</p>
+                        <p className="text-xs text-slate-500">From {row.effective_from}</p>
+                      </div>
+                      <button onClick={() => setDeletingLeavePolicyId(row.id)} className="shrink-0 rounded px-2 py-0.5 text-[10px] border border-rose-700/50 text-rose-300 ml-1">Delete</button>
+                    </div>
                   </div>
                 ))}
                 {!loading && leavePolicies.length === 0 && <p className="col-span-3 text-xs text-slate-500">No leave policies yet. Create one above.</p>}

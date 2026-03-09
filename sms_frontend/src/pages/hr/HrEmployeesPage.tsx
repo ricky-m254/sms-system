@@ -61,6 +61,10 @@ export default function HrEmployeesPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState<NewEmployee>(initialForm)
   const [saving, setSaving] = useState(false)
+  const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState<Partial<NewEmployee>>({})
+  const [deletingEmployeeId, setDeletingEmployeeId] = useState<number | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -127,6 +131,60 @@ export default function HrEmployeesPage() {
     }
   }
 
+  const startEditEmployee = (emp: Employee) => {
+    setEditingEmployeeId(emp.id)
+    setEditForm({
+      first_name: emp.first_name,
+      last_name: emp.last_name,
+      middle_name: emp.middle_name,
+      employment_type: emp.employment_type as NewEmployee['employment_type'],
+      status: emp.status as NewEmployee['status'],
+      join_date: emp.join_date,
+      department: emp.department != null ? String(emp.department) : '',
+      position: emp.position != null ? String(emp.position) : '',
+    })
+  }
+
+  const saveEmployeeEdit = async () => {
+    if (!editingEmployeeId) return
+    setSaving(true)
+    setError(null)
+    try {
+      await apiClient.patch(`/hr/employees/${editingEmployeeId}/`, {
+        first_name: editForm.first_name,
+        middle_name: editForm.middle_name,
+        last_name: editForm.last_name,
+        employment_type: editForm.employment_type,
+        status: editForm.status,
+        join_date: editForm.join_date,
+        department: editForm.department ? Number(editForm.department) : null,
+        position: editForm.position ? Number(editForm.position) : null,
+      })
+      setEditingEmployeeId(null)
+      setNotice('Employee updated successfully.')
+      await load()
+    } catch {
+      setError('Unable to update employee record.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const deleteEmployee = async (id: number) => {
+    setSaving(true)
+    setError(null)
+    try {
+      await apiClient.patch(`/hr/employees/${id}/`, { status: 'Terminated' })
+      setDeletingEmployeeId(null)
+      setNotice('Employee deactivated.')
+      await load()
+    } catch {
+      setError('Unable to deactivate employee.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
@@ -137,6 +195,11 @@ export default function HrEmployeesPage() {
       {error ? (
         <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
           {error}
+        </div>
+      ) : null}
+      {notice ? (
+        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          {notice}
         </div>
       ) : null}
 
@@ -298,7 +361,45 @@ export default function HrEmployeesPage() {
               </tr>
             </thead>
             <tbody>
-              {(loading ? [] : filteredEmployees).map((employee) => (
+              {(loading ? [] : filteredEmployees).map((employee) => editingEmployeeId === employee.id ? (
+                <tr key={employee.id} className="border-t border-emerald-600/30 bg-slate-900/80">
+                  <td className="px-2 py-2 text-slate-400 text-xs">{employee.employee_id}</td>
+                  <td className="px-2 py-2" colSpan={4}>
+                    <div className="grid gap-1.5 sm:grid-cols-3">
+                      <input value={editForm.first_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, first_name: e.target.value }))} placeholder="First name" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
+                      <input value={editForm.middle_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, middle_name: e.target.value }))} placeholder="Middle name" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
+                      <input value={editForm.last_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, last_name: e.target.value }))} placeholder="Last name" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
+                      <select value={editForm.department ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+                        <option value="">No department</option>
+                        {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                      <select value={editForm.position ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, position: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+                        <option value="">No position</option>
+                        {positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                      </select>
+                      <select value={editForm.status ?? 'Active'} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value as NewEmployee['status'] }))} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+                        <option>Active</option><option>On Leave</option><option>Suspended</option><option>Terminated</option><option>Retired</option>
+                      </select>
+                    </div>
+                  </td>
+                  <td className="px-2 py-2" colSpan={3}>
+                    <div className="flex gap-2">
+                      <button onClick={saveEmployeeEdit} disabled={saving} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
+                      <button onClick={() => setEditingEmployeeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              ) : deletingEmployeeId === employee.id ? (
+                <tr key={employee.id} className="border-t border-rose-500/30 bg-rose-500/5">
+                  <td className="px-4 py-3" colSpan={8}>
+                    <div className="flex items-center gap-4">
+                      <p className="text-xs text-rose-200">Deactivate "{employee.full_name}" (set to Terminated)?</p>
+                      <button onClick={() => void deleteEmployee(employee.id)} disabled={saving} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Confirm</button>
+                      <button onClick={() => setDeletingEmployeeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
                 <tr key={employee.id} className="border-t border-slate-800">
                   <td className="px-4 py-3 text-slate-200">{employee.employee_id}</td>
                   <td className="px-4 py-3 text-slate-100">{employee.full_name}</td>
@@ -307,10 +408,12 @@ export default function HrEmployeesPage() {
                   <td className="px-4 py-3 text-slate-300">{employee.employment_type}</td>
                   <td className="px-4 py-3 text-slate-300">{employee.status}</td>
                   <td className="px-4 py-3 text-slate-300">{employee.join_date}</td>
-                  <td className="px-4 py-3 text-slate-300">
-                    <Link className="text-emerald-300 hover:text-emerald-200" to={`/modules/hr/employees/${employee.id}`}>
-                      Open
-                    </Link>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Link className="text-emerald-300 hover:text-emerald-200 text-xs" to={`/modules/hr/employees/${employee.id}`}>Open</Link>
+                      <button onClick={() => startEditEmployee(employee)} className="rounded px-2 py-0.5 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                      <button onClick={() => setDeletingEmployeeId(employee.id)} className="rounded px-2 py-0.5 text-[10px] border border-rose-700/50 text-rose-300">Deactivate</button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PayslipPrintModal from '../../components/PayslipPrintModal'
 
 type Employee = {
   id: number
@@ -31,11 +32,27 @@ type SalaryComponent = {
   is_statutory: boolean
 }
 
+type ComponentItem = {
+  name: string
+  component_type: 'Allowance' | 'Deduction'
+  amount_type: string
+  amount: number
+  is_taxable: boolean
+}
+
 type PayrollItem = {
   id: number
   payroll: number
+  payroll_month: number
+  payroll_year: number
+  payroll_payment_date: string | null
   employee: number
   employee_name: string
+  employee_id_str: string
+  department_name: string
+  position_name: string
+  currency: string
+  pay_frequency: string
   basic_salary: string
   total_allowances: string
   total_deductions: string
@@ -43,6 +60,7 @@ type PayrollItem = {
   net_salary: string
   days_worked: string
   overtime_hours: string
+  components: ComponentItem[]
   sent_at: string | null
 }
 
@@ -101,6 +119,15 @@ export default function HrPayrollPage() {
   const [paymentDate, setPaymentDate] = useState('')
   const [selectedPayrollId, setSelectedPayrollId] = useState('')
 
+  const [printSlip, setPrintSlip] = useState<PayrollItem | null>(null)
+  const [schoolName, setSchoolName] = useState('Rynaty School Management System')
+
+  const [editingStructureId, setEditingStructureId] = useState<number | null>(null)
+  const [editStructureForm, setEditStructureForm] = useState(defaultStructureForm)
+  const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
+  const [editComponentForm, setEditComponentForm] = useState(defaultComponentForm)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<{ type: 'structure' | 'component'; id: number } | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [working, setWorking] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -110,12 +137,15 @@ export default function HrPayrollPage() {
     setLoading(true)
     setError(null)
     try {
-      const [employeesRes, structuresRes, componentsRes, payrollsRes] = await Promise.all([
+      const [employeesRes, structuresRes, componentsRes, payrollsRes, profileRes] = await Promise.all([
         apiClient.get<Employee[] | { results: Employee[] }>('/hr/employees/'),
         apiClient.get<SalaryStructure[] | { results: SalaryStructure[] }>('/hr/salary-structures/'),
         apiClient.get<SalaryComponent[] | { results: SalaryComponent[] }>('/hr/salary-components/'),
         apiClient.get<PayrollBatch[] | { results: PayrollBatch[] }>('/hr/payrolls/'),
+        apiClient.get<{ name?: string }>('/school/profile/').catch(() => ({ data: {} })),
       ])
+      const profileName = (profileRes as { data: { name?: string } }).data?.name
+      if (profileName) setSchoolName(profileName)
 
       const employeeRows = asArray(employeesRes.data)
       const structureRows = asArray(structuresRes.data)
@@ -284,15 +314,107 @@ export default function HrPayrollPage() {
     }
   }
 
-  const downloadPayslip = async (payslipId: number) => {
+  const viewPayslip = (item: PayrollItem) => {
+    setPrintSlip(item)
+  }
+
+  const startEditStructure = (s: SalaryStructure) => {
+    setEditingStructureId(s.id)
+    setEditStructureForm({
+      employee: String(s.employee),
+      basic_salary: s.basic_salary,
+      currency: s.currency,
+      pay_frequency: s.pay_frequency,
+      effective_from: s.effective_from,
+      effective_to: s.effective_to ?? '',
+    })
+  }
+
+  const saveStructureEdit = async () => {
+    if (!editingStructureId) return
+    setWorking(true)
+    setError(null)
     try {
-      const response = await apiClient.get(`/hr/payslips/${payslipId}/pdf/`, { responseType: 'blob' })
-      downloadFromResponse(
-        response as { data: Blob; headers?: Record<string, unknown> },
-        `payslip_${payslipId}.txt`,
-      )
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to download payslip.'))
+      await apiClient.patch(`/hr/salary-structures/${editingStructureId}/`, {
+        basic_salary: Number(editStructureForm.basic_salary),
+        currency: editStructureForm.currency,
+        pay_frequency: editStructureForm.pay_frequency,
+        effective_from: editStructureForm.effective_from,
+        effective_to: editStructureForm.effective_to || null,
+      })
+      setEditingStructureId(null)
+      setNotice('Salary structure updated.')
+      await load()
+    } catch {
+      setError('Unable to update salary structure.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const deleteStructure = async (id: number) => {
+    setWorking(true)
+    setError(null)
+    try {
+      await apiClient.patch(`/hr/salary-structures/${id}/`, { is_active: false })
+      setConfirmDeleteId(null)
+      setNotice('Salary structure removed.')
+      await load()
+    } catch {
+      setError('Unable to remove salary structure.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const startEditComponent = (c: SalaryComponent) => {
+    setEditingComponentId(c.id)
+    setEditComponentForm({
+      structure: String(c.structure),
+      component_type: c.component_type,
+      name: c.name,
+      amount_type: c.amount_type,
+      amount: c.amount,
+      is_taxable: c.is_taxable,
+      is_statutory: c.is_statutory,
+    })
+  }
+
+  const saveComponentEdit = async () => {
+    if (!editingComponentId) return
+    setWorking(true)
+    setError(null)
+    try {
+      await apiClient.patch(`/hr/salary-components/${editingComponentId}/`, {
+        name: editComponentForm.name,
+        component_type: editComponentForm.component_type,
+        amount_type: editComponentForm.amount_type,
+        amount: Number(editComponentForm.amount),
+        is_taxable: editComponentForm.is_taxable,
+        is_statutory: editComponentForm.is_statutory,
+      })
+      setEditingComponentId(null)
+      setNotice('Salary component updated.')
+      await load()
+    } catch {
+      setError('Unable to update salary component.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const deleteComponent = async (id: number) => {
+    setWorking(true)
+    setError(null)
+    try {
+      await apiClient.patch(`/hr/salary-components/${id}/`, { is_active: false })
+      setConfirmDeleteId(null)
+      setNotice('Salary component removed.')
+      await load()
+    } catch {
+      setError('Unable to remove salary component.')
+    } finally {
+      setWorking(false)
     }
   }
 
@@ -678,10 +800,10 @@ export default function HrPayrollPage() {
                   <td className="px-2 py-2">{item.sent_at ? 'Yes' : 'No'}</td>
                   <td className="px-2 py-2">
                     <button
-                      onClick={() => void downloadPayslip(item.id)}
-                      className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200"
+                      onClick={() => viewPayslip(item)}
+                      className="rounded-md bg-emerald-500/20 px-2 py-1 text-[11px] font-semibold text-emerald-200"
                     >
-                      Download
+                      View / Print
                     </button>
                   </td>
                 </tr>
@@ -700,37 +822,106 @@ export default function HrPayrollPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <h2 className="text-sm font-semibold text-slate-100">Active Salary Structures</h2>
-          <div className="mt-3 space-y-2 text-xs text-slate-300">
-            {structures.map((structure) => (
-              <div key={structure.id} className="rounded-lg border border-slate-800 px-3 py-2">
-                <p className="font-semibold text-slate-100">{structure.employee_name}</p>
-                <p>
-                  {structure.currency} {structure.basic_salary} • {structure.pay_frequency}
-                </p>
-                <p>Effective: {structure.effective_from}{structure.effective_to ? ` to ${structure.effective_to}` : ''}</p>
+          <h2 className="mb-3 text-sm font-semibold text-slate-100">Active Salary Structures</h2>
+          <div className="space-y-2 text-xs">
+            {structures.map((s) => editingStructureId === s.id ? (
+              <div key={s.id} className="rounded-lg border border-emerald-600/40 bg-slate-950/80 p-3 space-y-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input type="number" value={editStructureForm.basic_salary} onChange={(e) => setEditStructureForm((p) => ({ ...p, basic_salary: e.target.value }))} placeholder="Basic salary" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                  <select value={editStructureForm.currency} onChange={(e) => setEditStructureForm((p) => ({ ...p, currency: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                    {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                  <select value={editStructureForm.pay_frequency} onChange={(e) => setEditStructureForm((p) => ({ ...p, pay_frequency: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                    <option>Monthly</option><option>Bi-weekly</option><option>Weekly</option>
+                  </select>
+                  <input type="date" value={editStructureForm.effective_from} onChange={(e) => setEditStructureForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={saveStructureEdit} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
+                  <button onClick={() => setEditingStructureId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                </div>
+              </div>
+            ) : confirmDeleteId?.type === 'structure' && confirmDeleteId.id === s.id ? (
+              <div key={s.id} className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-3">
+                <p className="text-xs text-rose-200 mb-2">Remove "{s.employee_name}" structure?</p>
+                <div className="flex gap-2">
+                  <button onClick={() => void deleteStructure(s.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Confirm Remove</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div key={s.id} className="flex items-start justify-between rounded-lg border border-slate-800 px-3 py-2 text-slate-300">
+                <div>
+                  <p className="font-semibold text-slate-100">{s.employee_name}</p>
+                  <p>{s.currency} {s.basic_salary} · {s.pay_frequency}</p>
+                  <p className="text-slate-400">From {s.effective_from}{s.effective_to ? ` to ${s.effective_to}` : ''}</p>
+                </div>
+                <div className="flex shrink-0 gap-1 ml-2">
+                  <button onClick={() => startEditStructure(s)} className="rounded px-2 py-1 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                  <button onClick={() => setConfirmDeleteId({ type: 'structure', id: s.id })} className="rounded px-2 py-1 text-[10px] border border-rose-700/50 text-rose-300">Remove</button>
+                </div>
               </div>
             ))}
-            {structures.length === 0 ? <p className="text-slate-400">No salary structures configured.</p> : null}
+            {structures.length === 0 && <p className="text-slate-400">No salary structures configured.</p>}
           </div>
         </article>
 
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <h2 className="text-sm font-semibold text-slate-100">Salary Components</h2>
-          <div className="mt-3 space-y-2 text-xs text-slate-300">
-            {components.map((component) => (
-              <div key={component.id} className="rounded-lg border border-slate-800 px-3 py-2">
-                <p className="font-semibold text-slate-100">{component.name}</p>
-                <p>
-                  {component.component_type} • {component.amount_type} {component.amount}
-                </p>
-                <p>{component.is_taxable ? 'Taxable' : 'Non-taxable'} • {component.is_statutory ? 'Statutory' : 'Optional'}</p>
+          <h2 className="mb-3 text-sm font-semibold text-slate-100">Salary Components</h2>
+          <div className="space-y-2 text-xs">
+            {components.map((c) => editingComponentId === c.id ? (
+              <div key={c.id} className="rounded-lg border border-emerald-600/40 bg-slate-950/80 p-3 space-y-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input value={editComponentForm.name} onChange={(e) => setEditComponentForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                  <select value={editComponentForm.component_type} onChange={(e) => setEditComponentForm((p) => ({ ...p, component_type: e.target.value as 'Allowance' | 'Deduction' }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                    <option value="Allowance">Allowance</option><option value="Deduction">Deduction</option>
+                  </select>
+                  <select value={editComponentForm.amount_type} onChange={(e) => setEditComponentForm((p) => ({ ...p, amount_type: e.target.value as 'Fixed' | 'Percentage' }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                    <option value="Fixed">Fixed</option><option value="Percentage">Percentage</option>
+                  </select>
+                  <div className="relative">
+                    <input type="number" value={editComponentForm.amount} onChange={(e) => setEditComponentForm((p) => ({ ...p, amount: e.target.value }))} placeholder="Amount" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 pr-7 text-sm" />
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">{editComponentForm.amount_type === 'Percentage' ? '%' : 'Ksh'}</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={saveComponentEdit} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
+                  <button onClick={() => setEditingComponentId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                </div>
+              </div>
+            ) : confirmDeleteId?.type === 'component' && confirmDeleteId.id === c.id ? (
+              <div key={c.id} className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-3">
+                <p className="text-xs text-rose-200 mb-2">Remove "{c.name}" component?</p>
+                <div className="flex gap-2">
+                  <button onClick={() => void deleteComponent(c.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Confirm Remove</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div key={c.id} className="flex items-start justify-between rounded-lg border border-slate-800 px-3 py-2 text-slate-300">
+                <div>
+                  <p className="font-semibold text-slate-100">{c.name}</p>
+                  <p className={c.component_type === 'Allowance' ? 'text-emerald-400' : 'text-rose-400'}>{c.component_type}</p>
+                  <p>{c.amount_type === 'Percentage' ? `${c.amount}% of basic` : `Ksh ${c.amount}`} · {c.is_taxable ? 'Taxable' : 'Non-taxable'}</p>
+                </div>
+                <div className="flex shrink-0 gap-1 ml-2">
+                  <button onClick={() => startEditComponent(c)} className="rounded px-2 py-1 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                  <button onClick={() => setConfirmDeleteId({ type: 'component', id: c.id })} className="rounded px-2 py-1 text-[10px] border border-rose-700/50 text-rose-300">Remove</button>
+                </div>
               </div>
             ))}
-            {components.length === 0 ? <p className="text-slate-400">No salary components configured.</p> : null}
+            {components.length === 0 && <p className="text-slate-400">No salary components configured.</p>}
           </div>
         </article>
       </section>
+
+      {printSlip && (
+        <PayslipPrintModal
+          payslip={printSlip}
+          schoolName={schoolName}
+          onClose={() => setPrintSlip(null)}
+        />
+      )}
     </div>
   )
 }

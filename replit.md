@@ -84,7 +84,7 @@ All 28 tenant modules are fully implemented (frontend + backend):
 - **Finance** — invoices, payments (receipt PDF download), expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs, vote heads, cashbook & bankbook, arrears management, balance carry-forward
 - **Academics** — structure, subjects, classes, gradebook, report cards, assignments, calendar, analytics
 - **Admissions** — inquiries, applications, reviews, assessments, interviews, decisions, enrollment, analytics
-- **HR** — employees, org chart, attendance, leave, payroll, recruitment, onboarding, performance, training, analytics
+- **HR** — employees (full CRUD incl. inline edit + deactivate), org chart, attendance, leave (leave types + policies CRUD), payroll (salary structures + components CRUD, printable payslip modal with school branding), recruitment, onboarding, performance, training, analytics
 - **Staff** — directory, profiles, departments/roles, attendance, performance, documents, analytics
 - **Communication** — messaging, notifications, email, SMS gateway, templates, announcements, analytics
 - **Library** — catalog, circulation, reservations, members, fines, inventory, acquisition, reports

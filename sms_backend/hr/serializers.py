@@ -407,14 +407,31 @@ class SalaryStructureSerializer(serializers.ModelSerializer):
 
 class PayrollItemSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
+    employee_id_str = serializers.SerializerMethodField()
+    department_name = serializers.SerializerMethodField()
+    position_name = serializers.SerializerMethodField()
+    currency = serializers.SerializerMethodField()
+    pay_frequency = serializers.SerializerMethodField()
+    components = serializers.SerializerMethodField()
+    payroll_month = serializers.IntegerField(source="payroll.month", read_only=True)
+    payroll_year = serializers.IntegerField(source="payroll.year", read_only=True)
+    payroll_payment_date = serializers.DateField(source="payroll.payment_date", read_only=True)
 
     class Meta:
         model = PayrollItem
         fields = [
             "id",
             "payroll",
+            "payroll_month",
+            "payroll_year",
+            "payroll_payment_date",
             "employee",
             "employee_name",
+            "employee_id_str",
+            "department_name",
+            "position_name",
+            "currency",
+            "pay_frequency",
             "basic_salary",
             "total_allowances",
             "total_deductions",
@@ -422,12 +439,18 @@ class PayrollItemSerializer(serializers.ModelSerializer):
             "net_salary",
             "days_worked",
             "overtime_hours",
+            "components",
             "pdf_file",
             "sent_at",
             "is_active",
         ]
         read_only_fields = [
             "employee_name",
+            "employee_id_str",
+            "department_name",
+            "position_name",
+            "currency",
+            "pay_frequency",
             "basic_salary",
             "total_allowances",
             "total_deductions",
@@ -435,12 +458,52 @@ class PayrollItemSerializer(serializers.ModelSerializer):
             "net_salary",
             "days_worked",
             "overtime_hours",
+            "components",
+            "payroll_month",
+            "payroll_year",
+            "payroll_payment_date",
             "pdf_file",
             "sent_at",
         ]
 
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}".strip()
+
+    def get_employee_id_str(self, obj):
+        return obj.employee.employee_id
+
+    def get_department_name(self, obj):
+        if obj.employee.department:
+            return obj.employee.department.name
+        return ""
+
+    def get_position_name(self, obj):
+        if obj.employee.position:
+            return obj.employee.position.title
+        return ""
+
+    def get_currency(self, obj):
+        structure = obj.employee.salary_structures.filter(is_active=True).order_by("-effective_from").first()
+        return structure.currency if structure else "KES"
+
+    def get_pay_frequency(self, obj):
+        structure = obj.employee.salary_structures.filter(is_active=True).order_by("-effective_from").first()
+        return structure.pay_frequency if structure else "Monthly"
+
+    def get_components(self, obj):
+        structure = obj.employee.salary_structures.filter(is_active=True).order_by("-effective_from").first()
+        if not structure:
+            return []
+        return [
+            {
+                "name": c.name,
+                "component_type": c.component_type,
+                "amount_type": c.amount_type,
+                "amount": float(c.amount if c.amount_type == "Fixed" else c.amount * float(obj.basic_salary) / 100),
+                "is_taxable": c.is_taxable,
+            }
+            for c in structure.components.filter(is_active=True)
+        ]
 
 
 class PayrollBatchSerializer(serializers.ModelSerializer):

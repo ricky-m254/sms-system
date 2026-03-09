@@ -64,6 +64,7 @@ from .serializers import (
     StoreOrderRequestSerializer,
     DispensaryVisitSerializer, DispensaryPrescriptionSerializer, DispensaryStockSerializer,
     DepartmentSerializer,
+    HrDepartmentSerializer,
 )
 
 
@@ -1475,7 +1476,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     """Shared department registry backed by hr.Department — all modules read from here."""
-    serializer_class = DepartmentSerializer
+    serializer_class = HrDepartmentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):

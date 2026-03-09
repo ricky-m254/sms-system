@@ -22,9 +22,16 @@ from hr.models import Staff
 from hr.models import Department as HrDepartment
 
 # ==========================================
-# SHARED DEPARTMENT SERIALIZER (backed by hr.Department)
+# DEPARTMENT SERIALIZERS
 # ==========================================
 class DepartmentSerializer(serializers.ModelSerializer):
+    """Used by academics module — backed by school.Department."""
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'description', 'is_active']
+
+class HrDepartmentSerializer(serializers.ModelSerializer):
+    """Shared cross-module serializer — backed by hr.Department (single source of truth)."""
     class Meta:
         model = HrDepartment
         fields = ['id', 'name', 'description', 'is_active']
