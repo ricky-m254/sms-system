@@ -75,6 +75,21 @@ const MODULE_LABELS: Record<string, string> = {
   ASSETS: 'Assets',
   STORE: 'Store & Inventory',
   DISPENSARY: 'Dispensary',
+  CLOCKIN: 'Clock In / Out',
+  TIMETABLE: 'Timetable',
+  TRANSPORT: 'Transport',
+  VISITOR_MGMT: 'Visitor Management',
+  EXAMINATIONS: 'Examinations',
+  ALUMNI: 'Alumni',
+  HOSTEL: 'Hostel',
+  PTM: 'Parent-Teacher Meetings',
+  SPORTS: 'Sports',
+  CAFETERIA: 'Cafeteria',
+  CURRICULUM: 'Curriculum',
+  MAINTENANCE: 'Maintenance',
+  ELEARNING: 'E-Learning',
+  ANALYTICS: 'Analytics',
+  REPORTING: 'Reporting',
 }
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
@@ -91,6 +106,21 @@ const MODULE_DESCRIPTIONS: Record<string, string> = {
   ASSETS: 'Asset register, inventory tracking and lifecycle controls.',
   STORE: 'Food and office inventory, stock movements, reorder alerts and order requests.',
   DISPENSARY: 'Student clinic visits, prescriptions, medication dispensing and referrals.',
+  CLOCKIN: 'Staff and student clock-in/out tracking and attendance records.',
+  TIMETABLE: 'Class schedules, room allocation and period management.',
+  TRANSPORT: 'Routes, vehicles, drivers and student transport assignment.',
+  VISITOR_MGMT: 'Visitor registration, badges, appointments and gate logs.',
+  EXAMINATIONS: 'Exam scheduling, marking schemes, results and transcripts.',
+  ALUMNI: 'Alumni directory, events, donations and engagement tracking.',
+  HOSTEL: 'Dormitory rooms, allocation, fees and student welfare.',
+  PTM: 'Parent-teacher meeting scheduling, slots and feedback.',
+  SPORTS: 'Teams, fixtures, results and student sports participation.',
+  CAFETERIA: 'Meal plans, orders, stock and cafeteria billing.',
+  CURRICULUM: 'Syllabus planning, learning objectives and coverage tracking.',
+  MAINTENANCE: 'Maintenance requests, work orders and facility management.',
+  ELEARNING: 'Online courses, content delivery and learner progress.',
+  ANALYTICS: 'Cross-module data insights, trends and KPI dashboards.',
+  REPORTING: 'Scheduled and on-demand reports across all modules.',
 }
 
 const MODULE_DISPLAY_ORDER = [
@@ -105,6 +135,21 @@ const MODULE_DISPLAY_ORDER = [
   'LIBRARY',
   'STORE',
   'DISPENSARY',
+  'CLOCKIN',
+  'TIMETABLE',
+  'TRANSPORT',
+  'VISITOR_MGMT',
+  'EXAMINATIONS',
+  'ALUMNI',
+  'HOSTEL',
+  'PTM',
+  'SPORTS',
+  'CAFETERIA',
+  'CURRICULUM',
+  'MAINTENANCE',
+  'ELEARNING',
+  'ANALYTICS',
+  'REPORTING',
 ]
 
 const MODULE_KEY_ALIASES: Record<string, string> = {
@@ -263,7 +308,7 @@ export default function DashboardPage() {
     if (finance && Number(finance.outstanding_receivables || 0) > 0) {
       tasks.push({
         title: 'Follow up outstanding balances',
-        detail: `Outstanding receivables: $${Number(finance.outstanding_receivables || 0).toLocaleString()}.`,
+        detail: `Outstanding receivables: Ksh ${Number(finance.outstanding_receivables || 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}.`,
         route: '/modules/finance/reports',
       })
     }
@@ -335,7 +380,7 @@ export default function DashboardPage() {
                 <article key={card.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
                   <p className="text-xs uppercase tracking-[0.25em] text-slate-400">{card.label}</p>
                   <p className={`mt-2 text-3xl font-semibold ${card.tone}`}>
-                    {card.isMoney ? `$${Number(card.value).toLocaleString()}` : Number(card.value).toLocaleString()}
+                    {card.isMoney ? `Ksh ${Number(card.value).toLocaleString('en-KE', { minimumFractionDigits: 2 })}` : Number(card.value).toLocaleString()}
                   </p>
                 </article>
               ))}

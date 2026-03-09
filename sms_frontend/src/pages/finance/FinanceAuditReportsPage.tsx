@@ -35,7 +35,7 @@ const IPSAS_REPORTS = [
 const ALL_REPORTS = [...MANAGEMENT_REPORTS, ...IPSAS_REPORTS]
 
 function fmtMoney(n: number) {
-  return Number(n || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return 'Ksh ' + Number(n || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function pdfHeader(doc: jsPDF, title: string, subtitle: string, pageW: number) {

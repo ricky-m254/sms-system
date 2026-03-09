@@ -230,25 +230,25 @@ export default function FinanceSummaryPage() {
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Revenue billed</p>
           <p className="mt-3 text-2xl font-display font-semibold">
-            {summary?.revenue_billed?.toLocaleString() ?? 0}
+            Ksh {Number(summary?.revenue_billed ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Cash collected</p>
           <p className="mt-3 text-2xl font-display font-semibold">
-            {summary?.cash_collected?.toLocaleString() ?? 0}
+            Ksh {Number(summary?.cash_collected ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
         <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Expenses</p>
           <p className="mt-3 text-2xl font-display font-semibold">
-            {summary?.total_expenses?.toLocaleString() ?? 0}
+            Ksh {Number(summary?.total_expenses ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
         <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Receivables</p>
           <p className="mt-3 text-2xl font-display font-semibold">
-            {summary?.outstanding_receivables?.toLocaleString() ?? 0}
+            Ksh {Number(summary?.outstanding_receivables ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
       </section>
@@ -267,7 +267,7 @@ export default function FinanceSummaryPage() {
                 <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }}
-                  formatter={(value: number) => Number(value).toLocaleString()}
+                  formatter={(value: number) => 'Ksh ' + Number(value).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
                 />
                 <Legend />
                 <Line
@@ -312,7 +312,7 @@ export default function FinanceSummaryPage() {
                 <YAxis stroke="#94a3b8" />
                 <Tooltip
                   contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }}
-                  formatter={(value: number) => Number(value).toLocaleString()}
+                  formatter={(value: number) => 'Ksh ' + Number(value).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {debtorsAging.map((entry) => {
@@ -345,7 +345,7 @@ export default function FinanceSummaryPage() {
                 <YAxis stroke="#94a3b8" />
                 <Tooltip
                   contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }}
-                  formatter={(value: number) => Number(value).toLocaleString()}
+                  formatter={(value: number) => 'Ksh ' + Number(value).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
                 />
                 <Bar dataKey="total" fill="#22c55e" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -363,7 +363,7 @@ export default function FinanceSummaryPage() {
                 <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ background: '#0f172a', border: '1px solid #1f2937' }}
-                  formatter={(value: number) => Number(value).toLocaleString()}
+                  formatter={(value: number) => 'Ksh ' + Number(value).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
                 />
                 <Legend />
                 <Line

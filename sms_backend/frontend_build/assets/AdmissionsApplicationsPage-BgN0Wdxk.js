@@ -1,0 +1,1 @@
+import{j as s}from"./index-BG8YAXv-.js";import t from"./StudentsAdmissionsPage-HoFLhvNY.js";import"./pagination-DjjjzeDo.js";import"./ConfirmDialog-Dve7-rK-.js";function n(){return s.jsx(t,{})}export{n as default};
