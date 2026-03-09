@@ -1475,21 +1475,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    """Shared department registry backed by hr.Department — all modules read from here."""
-    serializer_class = HrDepartmentSerializer
+    """Shared department endpoint — reads from school.Department (managed via Academics module)."""
+    serializer_class = DepartmentSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        from hr.models import Department as HrDepartment
-        return HrDepartment.objects.filter(is_active=True).order_by('name')
-
-    def perform_create(self, serializer):
-        import secrets
-        name = serializer.validated_data['name']
-        code = ''.join(c for c in name.upper().replace(' ', '_') if c.isalnum() or c == '_')[:20] or 'DEPT'
-        if serializer.Meta.model.objects.filter(code=code).exists():
-            code = (code[:16] + secrets.token_hex(2).upper())[:20]
-        serializer.save(code=code)
+    queryset = Department.objects.filter(is_active=True).order_by('name')
 
     def perform_destroy(self, instance):
         instance.is_active = False

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
@@ -182,6 +183,17 @@ export default function HrPayrollPage() {
 
   useEffect(() => {
     void load()
+    try {
+      const raw = localStorage.getItem('settings:finance')
+      if (raw) {
+        const parsed = JSON.parse(raw) as { defaultCurrency?: string }
+        if (parsed.defaultCurrency && CURRENCIES.includes(parsed.defaultCurrency)) {
+          setStructureForm((prev) => ({ ...prev, currency: parsed.defaultCurrency! }))
+        }
+      }
+    } catch {
+      // ignore localStorage read errors
+    }
   }, [])
 
   useEffect(() => {
@@ -440,8 +452,21 @@ export default function HrPayrollPage() {
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Payroll</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Salary Structures, Processing, and Payslips</h1>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Payroll</p>
+            <h1 className="mt-2 text-2xl font-display font-semibold">Salary Structures, Processing, and Payslips</h1>
+          </div>
+          <Link
+            to="/modules/finance"
+            className="shrink-0 rounded-xl border border-emerald-700/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20"
+          >
+            Finance Module →
+          </Link>
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          Default currency is read from Finance settings. Go to Finance → Settings to change it.
+        </p>
       </section>
 
       {error ? (
