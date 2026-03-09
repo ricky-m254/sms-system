@@ -1,0 +1,52 @@
+import { useEffect, useState } from 'react'
+import { apiClient } from '../../api/client'
+
+type EnrollmentTrend = {
+  date: string
+  count: number
+}
+
+export default function AnalyticsEnrollmentPage() {
+  const [data, setData] = useState<EnrollmentTrend[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    apiClient.get<EnrollmentTrend[]>('/analytics/enrollment-trend/')
+      .then(res => setData(res.data))
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  return (
+    <div className="space-y-6 font-sans">
+      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <h1 className="text-2xl font-display font-semibold text-white">Enrollment Trends</h1>
+        <p className="text-sm text-slate-400 mt-1">Historical view of student population growth.</p>
+      </header>
+
+      {isLoading ? (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300">Loading...</div>
+      ) : (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm font-sans">
+              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+                <tr>
+                  <th className="px-6 py-4">Academic Year / Period</th>
+                  <th className="px-6 py-4 text-right">Total Students</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {data.map((item, idx) => (
+                  <tr key={idx} className="bg-slate-950/40 hover:bg-slate-900/40 transition-colors font-sans">
+                    <td className="px-6 py-4 text-slate-200 font-sans">{item.date}</td>
+                    <td className="px-6 py-4 text-right text-emerald-400 font-semibold font-sans">{item.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

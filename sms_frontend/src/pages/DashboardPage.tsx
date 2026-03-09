@@ -46,6 +46,20 @@ const MODULE_OPERATIONAL_ROUTES: Record<string, string> = {
   PARENT_PORTAL: '/modules/parent-portal/dashboard',
   STORE: '/modules/store',
   DISPENSARY: '/modules/dispensary',
+  CLOCKIN: '/modules/clockin/dashboard',
+  TIMETABLE: '/modules/timetable/grid',
+  TRANSPORT: '/modules/transport/dashboard',
+  VISITOR_MGMT: '/modules/visitors/dashboard',
+  EXAMINATIONS: '/modules/examinations/dashboard',
+  ALUMNI: '/modules/alumni/dashboard',
+  HOSTEL: '/modules/hostel/dashboard',
+  PTM: '/modules/ptm/dashboard',
+  SPORTS: '/modules/sports/dashboard',
+  CAFETERIA: '/modules/cafeteria/dashboard',
+  CURRICULUM: '/modules/curriculum/dashboard',
+  MAINTENANCE: '/modules/maintenance/dashboard',
+  ELEARNING: '/modules/elearning/dashboard',
+  ANALYTICS: '/modules/analytics/dashboard',
 }
 
 const MODULE_LABELS: Record<string, string> = {

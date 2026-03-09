@@ -163,6 +163,82 @@ const TimetableCoveragePage = lazy(() => import('./pages/timetable/TimetableCove
 const TimetableChangeRequestsPage = lazy(() => import('./pages/timetable/TimetableChangeRequestsPage'))
 const TimetableStaffDutyPage = lazy(() => import('./pages/timetable/TimetableStaffDutyPage'))
 
+const TransportLayout = lazy(() => import('./pages/transport/TransportLayout'))
+const TransportDashboardPage = lazy(() => import('./pages/transport/TransportDashboardPage'))
+const TransportVehiclesPage = lazy(() => import('./pages/transport/TransportVehiclesPage'))
+const TransportRoutesPage = lazy(() => import('./pages/transport/TransportRoutesPage'))
+const TransportStopsPage = lazy(() => import('./pages/transport/TransportStopsPage'))
+const TransportStudentsPage = lazy(() => import('./pages/transport/TransportStudentsPage'))
+const TransportIncidentsPage = lazy(() => import('./pages/transport/TransportIncidentsPage'))
+
+const VisitorMgmtLayout = lazy(() => import('./pages/visitor_mgmt/VisitorMgmtLayout'))
+const VisitorDashboardPage = lazy(() => import('./pages/visitor_mgmt/VisitorDashboardPage'))
+const VisitorMgmtVisitorsPage = lazy(() => import('./pages/visitor_mgmt/VisitorMgmtVisitorsPage'))
+const VisitorMgmtAuthorizedPickupsPage = lazy(() => import('./pages/visitor_mgmt/VisitorMgmtAuthorizedPickupsPage'))
+const VisitorMgmtPickupLogsPage = lazy(() => import('./pages/visitor_mgmt/VisitorMgmtPickupLogsPage'))
+
+const ExaminationsLayout = lazy(() => import('./pages/examinations/ExaminationsLayout'))
+const ExaminationsDashboardPage = lazy(() => import('./pages/examinations/ExaminationsDashboardPage'))
+const ExaminationsSessionsPage = lazy(() => import('./pages/examinations/ExaminationsSessionsPage'))
+
+const AlumniLayout = lazy(() => import('./pages/alumni/AlumniLayout'))
+const AlumniDashboardPage = lazy(() => import('./pages/alumni/AlumniDashboardPage'))
+const AlumniProfilesPage = lazy(() => import('./pages/alumni/AlumniProfilesPage'))
+
+const HostelLayout = lazy(() => import('./pages/hostel/HostelLayout'))
+const HostelDashboardPage = lazy(() => import('./pages/hostel/HostelDashboardPage'))
+const DormitoriesPage = lazy(() => import('./pages/hostel/DormitoriesPage'))
+const BedSpacesPage = lazy(() => import('./pages/hostel/BedSpacesPage'))
+const HostelAllocationsPage = lazy(() => import('./pages/hostel/HostelAllocationsPage'))
+const HostelAttendancePage = lazy(() => import('./pages/hostel/HostelAttendancePage'))
+const HostelLeavePage = lazy(() => import('./pages/hostel/HostelLeavePage'))
+
+const PTMLayout = lazy(() => import('./pages/ptm/PTMLayout'))
+const PTMDashboardPage = lazy(() => import('./pages/ptm/PTMDashboardPage'))
+const PTMSessionsPage = lazy(() => import('./pages/ptm/PTMSessionsPage'))
+const PTMBookingsPage = lazy(() => import('./pages/ptm/PTMBookingsPage'))
+const MyPTMSlotsPage = lazy(() => import('./pages/ptm/MyPTMSlotsPage'))
+
+const SportsLayout = lazy(() => import('./pages/sports/SportsLayout'))
+const SportsDashboardPage = lazy(() => import('./pages/sports/SportsDashboardPage'))
+const SportsClubsPage = lazy(() => import('./pages/sports/SportsClubsPage'))
+const SportsTournamentsPage = lazy(() => import('./pages/sports/SportsTournamentsPage'))
+const SportsAwardsPage = lazy(() => import('./pages/sports/SportsAwardsPage'))
+
+const CafeteriaLayout = lazy(() => import('./pages/cafeteria/CafeteriaLayout'))
+const CafeteriaDashboardPage = lazy(() => import('./pages/cafeteria/CafeteriaDashboardPage'))
+const CafeteriaPlansPage = lazy(() => import('./pages/cafeteria/CafeteriaPlansPage'))
+const CafeteriaMenuPage = lazy(() => import('./pages/cafeteria/CafeteriaMenuPage'))
+const CafeteriaEnrollmentsPage = lazy(() => import('./pages/cafeteria/CafeteriaEnrollmentsPage'))
+const CafeteriaLogsPage = lazy(() => import('./pages/cafeteria/CafeteriaLogsPage'))
+
+const CurriculumLayout = lazy(() => import('./pages/academics/CurriculumLayout'))
+const CurriculumDashboardPage = lazy(() => import('./pages/academics/CurriculumDashboardPage'))
+const CurriculumSchemesPage = lazy(() => import('./pages/academics/CurriculumSchemesPage'))
+const CurriculumLessonsPage = lazy(() => import('./pages/academics/CurriculumLessonsPage'))
+const CurriculumResourcesPage = lazy(() => import('./pages/academics/CurriculumResourcesPage'))
+
+const MaintenanceLayout = lazy(() => import('./pages/assets/MaintenanceLayout'))
+const MaintenanceDashboardPage = lazy(() => import('./pages/assets/MaintenanceDashboardPage'))
+const MaintenanceRequestsPage = lazy(() => import('./pages/assets/MaintenanceRequestsPage'))
+const MaintenanceCategoriesPage = lazy(() => import('./pages/assets/MaintenanceCategoriesPage'))
+const MaintenanceChecklistPage = lazy(() => import('./pages/assets/MaintenanceChecklistPage'))
+
+const ELearningLayout = lazy(() => import('./pages/elearning/ELearningLayout'))
+const ELearningDashboardPage = lazy(() => import('./pages/elearning/ELearningDashboardPage'))
+const ELearningCoursesPage = lazy(() => import('./pages/elearning/ELearningCoursesPage'))
+const ELearningMaterialsPage = lazy(() => import('./pages/elearning/ELearningMaterialsPage'))
+const ELearningQuizzesPage = lazy(() => import('./pages/elearning/ELearningQuizzesPage'))
+const ELearningVirtualSessionsPage = lazy(() => import('./pages/elearning/ELearningVirtualSessionsPage'))
+
+const AnalyticsLayout = lazy(() => import('./pages/analytics/AnalyticsLayout'))
+const AnalyticsDashboardPage = lazy(() => import('./pages/analytics/AnalyticsDashboardPage'))
+const AnalyticsEnrollmentPage = lazy(() => import('./pages/analytics/AnalyticsEnrollmentPage'))
+const AnalyticsAttendancePage = lazy(() => import('./pages/analytics/AnalyticsAttendancePage'))
+const AnalyticsAtRiskPage = lazy(() => import('./pages/analytics/AnalyticsAtRiskPage'))
+
+const StudentIdCardsPage = lazy(() => import('./pages/students/StudentIdCardsPage'))
+
 function RouteLoader() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
@@ -194,6 +270,18 @@ function App() {
   const dispensaryEnabled = isModuleRouteEnabled('dispensary')
   const clockinEnabled = isModuleRouteEnabled('clockin')
   const timetableEnabled = isModuleRouteEnabled('timetable')
+  const transportEnabled = isModuleRouteEnabled('transport')
+  const visitorsEnabled = isModuleRouteEnabled('visitors')
+  const examinationsEnabled = isModuleRouteEnabled('examinations')
+  const alumniEnabled = isModuleRouteEnabled('alumni')
+  const hostelEnabled = isModuleRouteEnabled('hostel')
+  const ptmEnabled = isModuleRouteEnabled('ptm')
+  const sportsEnabled = isModuleRouteEnabled('sports')
+  const cafeteriaEnabled = isModuleRouteEnabled('cafeteria')
+  const curriculumEnabled = isModuleRouteEnabled('curriculum')
+  const maintenanceEnabled = isModuleRouteEnabled('maintenance')
+  const elearningEnabled = isModuleRouteEnabled('elearning')
+  const analyticsEnabled = isModuleRouteEnabled('analytics')
 
   return (
     <Suspense fallback={<RouteLoader />}>
@@ -464,6 +552,132 @@ function App() {
           <Route path="change-requests" element={<TimetableChangeRequestsPage />} />
           <Route path="staff-duties" element={<TimetableStaffDutyPage />} />
         </Route>
+        <Route
+          path="/modules/transport/*"
+          element={isTenantAuth && transportEnabled ? <TransportLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<TransportDashboardPage />} />
+          <Route path="dashboard" element={<TransportDashboardPage />} />
+          <Route path="vehicles" element={<TransportVehiclesPage />} />
+          <Route path="routes" element={<TransportRoutesPage />} />
+          <Route path="stops" element={<TransportStopsPage />} />
+          <Route path="students" element={<TransportStudentsPage />} />
+          <Route path="incidents" element={<TransportIncidentsPage />} />
+        </Route>
+        <Route
+          path="/modules/visitors/*"
+          element={isTenantAuth && visitorsEnabled ? <VisitorMgmtLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<VisitorDashboardPage />} />
+          <Route path="dashboard" element={<VisitorDashboardPage />} />
+          <Route path="visitors" element={<VisitorMgmtVisitorsPage />} />
+          <Route path="authorized-pickups" element={<VisitorMgmtAuthorizedPickupsPage />} />
+          <Route path="pickup-logs" element={<VisitorMgmtPickupLogsPage />} />
+        </Route>
+        <Route
+          path="/modules/examinations/*"
+          element={isTenantAuth && examinationsEnabled ? <ExaminationsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<ExaminationsDashboardPage />} />
+          <Route path="dashboard" element={<ExaminationsDashboardPage />} />
+          <Route path="sessions" element={<ExaminationsSessionsPage />} />
+        </Route>
+        <Route
+          path="/modules/alumni/*"
+          element={isTenantAuth && alumniEnabled ? <AlumniLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<AlumniDashboardPage />} />
+          <Route path="dashboard" element={<AlumniDashboardPage />} />
+          <Route path="profiles" element={<AlumniProfilesPage />} />
+        </Route>
+        <Route
+          path="/modules/hostel/*"
+          element={isTenantAuth && hostelEnabled ? <HostelLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<HostelDashboardPage />} />
+          <Route path="dashboard" element={<HostelDashboardPage />} />
+          <Route path="dormitories" element={<DormitoriesPage />} />
+          <Route path="beds" element={<BedSpacesPage />} />
+          <Route path="allocations" element={<HostelAllocationsPage />} />
+          <Route path="attendance" element={<HostelAttendancePage />} />
+          <Route path="leave" element={<HostelLeavePage />} />
+        </Route>
+        <Route
+          path="/modules/ptm/*"
+          element={isTenantAuth && ptmEnabled ? <PTMLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<PTMDashboardPage />} />
+          <Route path="dashboard" element={<PTMDashboardPage />} />
+          <Route path="sessions" element={<PTMSessionsPage />} />
+          <Route path="bookings" element={<PTMBookingsPage />} />
+          <Route path="my-slots" element={<MyPTMSlotsPage />} />
+        </Route>
+        <Route
+          path="/modules/sports/*"
+          element={isTenantAuth && sportsEnabled ? <SportsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<SportsDashboardPage />} />
+          <Route path="dashboard" element={<SportsDashboardPage />} />
+          <Route path="clubs" element={<SportsClubsPage />} />
+          <Route path="tournaments" element={<SportsTournamentsPage />} />
+          <Route path="awards" element={<SportsAwardsPage />} />
+        </Route>
+        <Route
+          path="/modules/cafeteria/*"
+          element={isTenantAuth && cafeteriaEnabled ? <CafeteriaLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<CafeteriaDashboardPage />} />
+          <Route path="dashboard" element={<CafeteriaDashboardPage />} />
+          <Route path="plans" element={<CafeteriaPlansPage />} />
+          <Route path="menu" element={<CafeteriaMenuPage />} />
+          <Route path="enrollments" element={<CafeteriaEnrollmentsPage />} />
+          <Route path="logs" element={<CafeteriaLogsPage />} />
+        </Route>
+        <Route
+          path="/modules/curriculum/*"
+          element={isTenantAuth && curriculumEnabled ? <CurriculumLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<CurriculumDashboardPage />} />
+          <Route path="dashboard" element={<CurriculumDashboardPage />} />
+          <Route path="schemes" element={<CurriculumSchemesPage />} />
+          <Route path="lessons" element={<CurriculumLessonsPage />} />
+          <Route path="resources" element={<CurriculumResourcesPage />} />
+        </Route>
+        <Route
+          path="/modules/maintenance/*"
+          element={isTenantAuth && maintenanceEnabled ? <MaintenanceLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<MaintenanceDashboardPage />} />
+          <Route path="dashboard" element={<MaintenanceDashboardPage />} />
+          <Route path="requests" element={<MaintenanceRequestsPage />} />
+          <Route path="categories" element={<MaintenanceCategoriesPage />} />
+          <Route path="checklist" element={<MaintenanceChecklistPage />} />
+        </Route>
+        <Route
+          path="/modules/elearning/*"
+          element={isTenantAuth && elearningEnabled ? <ELearningLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<ELearningDashboardPage />} />
+          <Route path="dashboard" element={<ELearningDashboardPage />} />
+          <Route path="courses" element={<ELearningCoursesPage />} />
+          <Route path="materials" element={<ELearningMaterialsPage />} />
+          <Route path="quizzes" element={<ELearningQuizzesPage />} />
+          <Route path="sessions" element={<ELearningVirtualSessionsPage />} />
+        </Route>
+        <Route
+          path="/modules/analytics/*"
+          element={isTenantAuth && analyticsEnabled ? <AnalyticsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<AnalyticsDashboardPage />} />
+          <Route path="dashboard" element={<AnalyticsDashboardPage />} />
+          <Route path="enrollment" element={<AnalyticsEnrollmentPage />} />
+          <Route path="attendance" element={<AnalyticsAttendancePage />} />
+          <Route path="at-risk" element={<AnalyticsAtRiskPage />} />
+        </Route>
+        <Route
+          path="/modules/students/id-cards"
+          element={isTenantAuth && studentsEnabled ? <StudentIdCardsPage /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        />
         <Route path="/modules/:moduleKey" element={<Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

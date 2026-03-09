@@ -78,6 +78,20 @@ class Command(BaseCommand):
                 ("REPORTING", "Reporting and Analytics"),
                 ("STORE", "Store & Inventory"),
                 ("DISPENSARY", "Dispensary"),
+                ("CLOCKIN", "Clock-In & Biometric Attendance"),
+                ("TIMETABLE", "School Timetable"),
+                ("TRANSPORT", "Transport Management"),
+                ("VISITOR_MGMT", "Visitor Management & Gate Security"),
+                ("EXAMINATIONS", "Examinations"),
+                ("ALUMNI", "Alumni Management"),
+                ("HOSTEL", "Hostel & Boarding"),
+                ("PTM", "Parent-Teacher Meetings"),
+                ("SPORTS", "Sports & Extracurricular"),
+                ("CAFETERIA", "Cafeteria & Food Service"),
+                ("CURRICULUM", "Curriculum & Lesson Planning"),
+                ("MAINTENANCE", "Maintenance Requests"),
+                ("ELEARNING", "E-Learning / LMS"),
+                ("ANALYTICS", "Executive Analytics Dashboard"),
             ]
             from school.models import Module
             for key, name in modules:

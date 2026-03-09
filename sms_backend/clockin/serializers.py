@@ -21,13 +21,25 @@ class SchoolShiftSerializer(serializers.ModelSerializer):
 class PersonRegistrySerializer(serializers.ModelSerializer):
     admission_number = serializers.ReadOnlyField(source='student.admission_number')
     employee_id = serializers.ReadOnlyField(source='employee.employee_id')
+    student_name = serializers.SerializerMethodField()
+    employee_name = serializers.SerializerMethodField()
 
     class Meta:
         model = PersonRegistry
         fields = '__all__'
 
+    def get_student_name(self, obj):
+        if obj.student:
+            return f"{obj.student.first_name} {obj.student.last_name}"
+        return None
+
+    def get_employee_name(self, obj):
+        if obj.employee:
+            return f"{obj.employee.first_name} {obj.employee.last_name}"
+        return None
+
 class ClockEventSerializer(serializers.ModelSerializer):
-    person_info = PersonRegistrySerializer(source='person', read_only=True)
+    person_display_name = serializers.ReadOnlyField(source='person.display_name')
     device_name = serializers.ReadOnlyField(source='device.name')
 
     class Meta:

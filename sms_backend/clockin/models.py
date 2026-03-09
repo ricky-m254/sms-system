@@ -19,7 +19,7 @@ class BiometricDevice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} ({self.device_id})"
+        return str(self.name)
 
 class SchoolShift(models.Model):
     PERSON_TYPE_CHOICES = [
@@ -37,7 +37,7 @@ class SchoolShift(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 class PersonRegistry(models.Model):
     PERSON_TYPE_CHOICES = [
@@ -55,7 +55,7 @@ class PersonRegistry(models.Model):
     notes = models.TextField(blank=True)
 
     def __str__(self):
-        return self.display_name
+        return str(self.display_name)
 
 class ClockEvent(models.Model):
     EVENT_TYPE_CHOICES = [
@@ -75,4 +75,4 @@ class ClockEvent(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return f"{self.person.display_name} - {self.event_type} at {self.timestamp}"
+        return f"{self.person.display_name if self.person else 'Unknown'} - {self.event_type} at {self.timestamp}"

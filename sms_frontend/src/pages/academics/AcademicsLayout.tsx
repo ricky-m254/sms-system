@@ -13,6 +13,7 @@ const navItems = [
   { label: 'Homework & Assignments', to: '/modules/academics/assignments' },
   { label: 'Academic Calendar', to: '/modules/academics/calendar' },
   { label: 'Academic Analytics', to: '/modules/academics/analytics' },
+  { label: 'Curriculum (Legacy)', to: '/modules/curriculum/dashboard' },
 ]
 
 export default function AcademicsLayout() {

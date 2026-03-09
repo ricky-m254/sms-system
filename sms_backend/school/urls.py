@@ -214,6 +214,18 @@ urlpatterns = [
     path('reporting/', include('reporting.urls')),
     path('clockin/', include('clockin.urls')),
     path('timetable/', include('timetable.urls')),
+    path('transport/', include('transport.urls')),
+    path('visitors/', include('visitor_mgmt.urls')),
+    path('examinations/', include('examinations.urls')),
+    path('alumni/', include('alumni.urls')),
+    path('hostel/', include('hostel.urls')),
+    path('ptm/', include('ptm.urls')),
+    path('sports/', include('sports.urls')),
+    path('cafeteria/', include('cafeteria.urls')),
+    path('curriculum/', include('curriculum.urls')),
+    path('maintenance/', include('maintenance.urls')),
+    path('elearning/', include('elearning.urls')),
+    path('analytics/', include('analytics.urls')),
 
     # 5. Tenant API Routes (Router)
     path('', include(router.urls)),

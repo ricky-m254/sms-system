@@ -90,9 +90,12 @@ class RunDepreciationView(APIView):
 
             if cat.depreciation_method == 'straight_line':
                 annual_dep = purchase_cost / Decimal(str(cat.useful_life_years))
-            else:
+            elif cat.depreciation_method == 'declining_balance':
                 rate = Decimal('2') / Decimal(str(cat.useful_life_years))
                 annual_dep = current_value * rate
+            else:
+                skipped.append(f"{asset.asset_code} (unknown method)")
+                continue
 
             annual_dep = annual_dep.quantize(Decimal('0.01'))
             if annual_dep > current_value:

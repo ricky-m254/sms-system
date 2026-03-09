@@ -1,20 +1,22 @@
 from django.db import models
-import uuid
+from decimal import Decimal
+from django.core.validators import MinValueValidator
 
 class AssetCategory(models.Model):
-    DEPRECIATION_CHOICES = [
+    DEPRECIATION_METHOD_CHOICES = [
+        ('none', 'None (No Depreciation)'),
         ('straight_line', 'Straight Line'),
-        ('declining_balance', 'Declining Balance'),
-        ('none', 'None'),
+        ('declining_balance', 'Declining Balance (200% / Double Declining)'),
     ]
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
-    depreciation_method = models.CharField(max_length=20, choices=DEPRECIATION_CHOICES, default='none')
-    useful_life_years = models.PositiveIntegerField(null=True, blank=True)
+    depreciation_method = models.CharField(max_length=20, choices=DEPRECIATION_METHOD_CHOICES, default='none')
+    useful_life_years = models.PositiveIntegerField(null=True, blank=True, help_text="Used for depreciation calculations")
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 class Asset(models.Model):
     STATUS_CHOICES = [
@@ -23,28 +25,17 @@ class Asset(models.Model):
         ('Retired', 'Retired'),
         ('Disposed', 'Disposed'),
     ]
-    CONDITION_CHOICES = [
-        ('Excellent', 'Excellent'),
-        ('Good', 'Good'),
-        ('Fair', 'Fair'),
-        ('Poor', 'Poor'),
-    ]
-    asset_code = models.CharField(max_length=50, unique=True, editable=False)
     name = models.CharField(max_length=200)
-    category = models.ForeignKey(AssetCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='assets')
-    description = models.TextField(blank=True)
-    serial_number = models.CharField(max_length=100, blank=True)
-    manufacturer = models.CharField(max_length=100, blank=True)
-    model = models.CharField(max_length=100, blank=True)
-    purchase_date = models.DateField(null=True, blank=True)
-    purchase_cost = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
-    current_value = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
+    asset_code = models.CharField(max_length=50, unique=True, blank=True)
+    category = models.ForeignKey(AssetCategory, on_delete=models.PROTECT, related_name='assets')
+    purchase_date = models.DateField()
+    purchase_cost = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
+    current_value = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
     location = models.CharField(max_length=200, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
-    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='Good')
-    notes = models.TextField(blank=True)
+    serial_number = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.asset_code} - {self.name}"
@@ -53,57 +44,51 @@ class AssetAssignment(models.Model):
     STATUS_CHOICES = [
         ('Active', 'Active'),
         ('Returned', 'Returned'),
+        ('Lost', 'Lost'),
+        ('Damaged', 'Damaged'),
     ]
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='assignments')
-    assigned_to_name = models.CharField(max_length=200)
-    assigned_by_name = models.CharField(max_length=200)
+    assigned_to_employee = models.ForeignKey('hr.Employee', on_delete=models.SET_NULL, null=True, blank=True)
+    assigned_to_student = models.ForeignKey('school.Student', on_delete=models.SET_NULL, null=True, blank=True)
     assigned_date = models.DateField()
+    return_due_date = models.DateField(null=True, blank=True)
     return_date = models.DateField(null=True, blank=True)
-    notes = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.asset.name} assigned to {self.assigned_to_name}"
-
-class AssetDepreciation(models.Model):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='depreciation_records')
-    period_label = models.CharField(max_length=20, help_text="e.g. '2025' or '2025-Q1'")
-    depreciation_amount = models.DecimalField(max_digits=14, decimal_places=2)
-    accumulated_depreciation = models.DecimalField(max_digits=14, decimal_places=2)
-    net_book_value = models.DecimalField(max_digits=14, decimal_places=2)
     notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('asset', 'period_label')
-        ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.asset.name} — {self.period_label}: -{self.depreciation_amount}"
-
+        return f"{self.asset.name} assigned to {self.assigned_to_employee or self.assigned_to_student}"
 
 class AssetMaintenanceRecord(models.Model):
-    MAINTENANCE_TYPE_CHOICES = [
-        ('Preventive', 'Preventive'),
-        ('Corrective', 'Corrective'),
-        ('Emergency', 'Emergency'),
-    ]
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
         ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
     ]
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='maintenance_records')
-    maintenance_type = models.CharField(max_length=20, choices=MAINTENANCE_TYPE_CHOICES)
-    description = models.TextField()
+    maintenance_type = models.CharField(max_length=100) # e.g., Repair, Service, Inspection
     scheduled_date = models.DateField()
-    completed_date = models.DateField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
-    technician_name = models.CharField(max_length=200)
+    completion_date = models.DateField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    performed_by = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.maintenance_type} for {self.asset.name}"
+        return f"{self.asset.name} - {self.maintenance_type} ({self.scheduled_date})"
+
+class AssetDepreciation(models.Model):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='depreciations')
+    period_label = models.CharField(max_length=50) # e.g., "FY 2024" or "2024-Q1"
+    depreciation_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    accumulated_depreciation = models.DecimalField(max_digits=12, decimal_places=2)
+    net_book_value = models.DecimalField(max_digits=12, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ('asset', 'period_label')
+
+    def __str__(self):
+        return f"{self.asset.asset_code} - {self.period_label}"

@@ -77,8 +77,10 @@ The shared PostgreSQL database contains:
 
 ## Modules
 
-All 12 tenant modules are fully implemented (frontend + backend):
-- **Students** — directory, attendance, behavior, medical, documents, reports
+All 28 tenant modules are fully implemented (frontend + backend):
+
+**Core Modules:**
+- **Students** — directory, attendance, behavior, medical, documents, reports; student ID card generator (printable)
 - **Finance** — invoices, payments (receipt PDF download), expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs, vote heads, cashbook & bankbook, arrears management, balance carry-forward
 - **Academics** — structure, subjects, classes, gradebook, report cards, assignments, calendar, analytics
 - **Admissions** — inquiries, applications, reviews, assessments, interviews, decisions, enrollment, analytics
@@ -87,11 +89,25 @@ All 12 tenant modules are fully implemented (frontend + backend):
 - **Communication** — messaging, notifications, email, SMS gateway, templates, announcements, analytics
 - **Library** — catalog, circulation, reservations, members, fines, inventory, acquisition, reports
 - **Parent Portal** — child academics, attendance, finance, communication, schedule, assignments
-- **Assets** — registry, categories, assignments, maintenance records, depreciation schedule (IPSAS 17), dashboard (added March 2026)
-- **Clock-In / Biometric Attendance** — fingerprint scanner integration, school shift configuration, auto-late detection, auto-updates school & HR attendance records, gate kiosk UI at `/kiosk/clockin` (no-auth), person registry (enroll students + staff), device management, reports; late arrivals auto-notify all HR/Admin users via communication.Notification (added March 2026)
-- **Timetable** — weekly slot schedule (teacher/subject/class/room per period), staff duty schedule for non-teaching staff, lesson coverage tracking (auto-flagged when teacher clocks in late), change request workflow (teachers/staff submit → HR/Admin approve/reject → requester notified), admin weekly grid with uncovered-lesson badges (added March 2026)
-- **Store & Inventory** — food + office item CRUD, stock receipt/issuance/adjustment movements, reorder-level alerts, low-stock view, order requests (sent to Finance/Admin/Both) with approve/reject workflow (added March 2026)
-- **Dispensary** — student clinic visit records with diagnosis, treatment, severity triage, referrals, follow-ups, per-visit prescription/medication dispensing, medication stock tracker with expiry and reorder alerts (added March 2026)
+- **Assets** — registry, categories, assignments, maintenance records, depreciation schedule (IPSAS 17), dashboard
+- **Store & Inventory** — food + office item CRUD, stock receipt/issuance/adjustment movements, reorder-level alerts, low-stock view, order requests with approve/reject workflow
+- **Dispensary** — student clinic visit records with diagnosis, treatment, severity triage, referrals, follow-ups, prescription/medication dispensing, medication stock tracker
+
+**Operational Modules (added March 2026):**
+- **Clock-In / Biometric Attendance** — fingerprint scanner integration, school shift configuration, auto-late detection, auto-updates school & HR attendance records, gate kiosk UI at `/kiosk/clockin` (no-auth), person registry, device management, reports; late arrivals auto-notify all HR/Admin users
+- **Timetable** — weekly slot schedule (teacher/subject/class/room per period), staff duty schedule, lesson coverage tracking (auto-flagged when teacher clocks in late), change request workflow (submit → HR/Admin approve/reject → notify)
+- **Transport Management** — vehicle fleet, bus routes with stop sequences, student bus pass assignments, driver management, incident tracking; dashboard
+- **Visitor Management & Gate Security** — visitor sign-in/out log (with badge number), authorized student pickup registry, pickup log with authorization tracking, dashboard stats
+- **Examinations** — exam sessions, paper scheduling (room, invigilator, marks), seat allocation, mark entry, grade boundaries, position/rank calculation, result analytics
+- **Alumni Management** — alumni directory (graduation year, institution, occupation, country), alumni events with attendee registration, dashboard
+- **Hostel / Boarding** — dormitories, bed space management, student allocations, hostel roll-call attendance (Morning/Evening/Night), leave management with approval workflow
+- **Parent-Teacher Meetings (PTM)** — session scheduling, teacher slot generation, parent booking system, meeting notes recording
+- **Sports & Extracurricular** — clubs (Sports/Academic/Arts/Community), member enrollment with roles, tournament tracking, student awards & achievements
+- **Cafeteria / Food Service** — meal plans, weekly menu planner, student enrollment by meal plan, meal service log, cafeteria wallet transactions
+- **Curriculum & Lesson Planning** — scheme of work per subject/class/term, weekly topic coverage tracking, lesson plan submission/approval workflow, teaching resource library
+- **Maintenance Requests** — facility issue reporting (Electrical/Plumbing/IT/Building etc.), priority management (Low/Medium/High/Urgent), assignment to maintenance staff, cost tracking, update timeline
+- **E-Learning / LMS** — course builder (subject/class/teacher), course materials (PDF/Video/Link/Note), online quizzes with MCQ/TF/Short Answer + auto-marking, virtual session scheduling (Zoom/Meet/Teams)
+- **Executive Analytics Dashboard** — school-wide KPIs (students, staff, finance), attendance trend chart, enrollment trend, at-risk students (absenteeism detection), auto-refresh every 60s
 
 ### Navigation
 - `ModuleToolbar` component in every module sidebar: back-to-dashboard button + module switcher
