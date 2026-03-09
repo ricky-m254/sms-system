@@ -88,6 +88,7 @@ export default function FinanceExpensesPage() {
   const [isSavingBudget, setIsSavingBudget] = useState(false)
   const [budgetNotice, setBudgetNotice] = useState<string | null>(null)
   const [showBudgetModal, setShowBudgetModal] = useState(false)
+  const [budgetModalMode, setBudgetModalMode] = useState<'create' | 'edit'>('create')
   const [budgetQuery, setBudgetQuery] = useState('')
   const [budgetDateFrom, setBudgetDateFrom] = useState('')
   const [budgetDateTo, setBudgetDateTo] = useState('')
@@ -450,7 +451,7 @@ export default function FinanceExpensesPage() {
       annual_budget: Number(annualBudget) || 0,
     }
     try {
-      if (selectedBudget?.id) {
+      if (budgetModalMode === 'edit' && selectedBudget?.id) {
         await apiClient.put(`/finance/budgets/${selectedBudget.id}/`, payload)
       } else {
         await apiClient.post('/finance/budgets/', payload)
@@ -636,6 +637,7 @@ export default function FinanceExpensesPage() {
           <div className="mt-3 grid gap-2">
             <button
               onClick={() => {
+                setBudgetModalMode('create')
                 setMonthlyBudget('')
                 setQuarterlyBudget('')
                 setAnnualBudget('')
@@ -650,6 +652,7 @@ export default function FinanceExpensesPage() {
             {selectedBudget && (
               <button
                 onClick={() => {
+                  setBudgetModalMode('edit')
                   setMonthlyBudget(String(selectedBudget.monthly_budget ?? ''))
                   setQuarterlyBudget(String(selectedBudget.quarterly_budget ?? ''))
                   setAnnualBudget(String(selectedBudget.annual_budget ?? ''))
@@ -982,7 +985,7 @@ export default function FinanceExpensesPage() {
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold">
-                {selectedBudget ? 'Edit Budget' : 'Create Budget'}
+                {budgetModalMode === 'edit' ? 'Edit Budget' : 'Create Budget'}
               </h2>
               <button onClick={() => { setShowBudgetModal(false); setBudgetNotice(null) }} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
             </div>
