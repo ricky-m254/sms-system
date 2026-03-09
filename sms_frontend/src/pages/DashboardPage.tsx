@@ -260,79 +260,68 @@ export default function DashboardPage() {
 
   const loadActivity = async () => {
     setActivityLoading(true)
-    const todayStr = new Date().toISOString().slice(0, 10)
-    const isToday = (dateStr: string) => (dateStr || '').slice(0, 10) === todayStr
     try {
       const [ordersRes, reversalsRes, writeoffsRes] = await Promise.allSettled([
-        apiClient.get('/store/orders/?page_size=100'),
-        apiClient.get('/finance/payment-reversals/?page_size=100'),
-        apiClient.get('/finance/write-offs/?page_size=100'),
+        apiClient.get('/store/orders/'),
+        apiClient.get('/finance/payment-reversals/'),
+        apiClient.get('/finance/write-offs/'),
       ])
 
-      const items: ActivityItem[] = []
+      const allItems: ActivityItem[] = []
 
       if (ordersRes.status === 'fulfilled') {
         const orders: any[] = ordersRes.value.data.results ?? ordersRes.value.data
         for (const o of orders) {
-          const needsApproval = o.status === 'PENDING'
-          if (isToday(o.created_at) || needsApproval) {
-            items.push({
-              id: o.id,
-              type: 'store_order',
-              label: `${o.request_code || `REQ-#${o.id}`}: ${o.title}`,
-              sub: `By ${o.requested_by_name || '—'} · Sent to: ${o.send_to}`,
-              status: o.status,
-              createdAt: o.created_at,
-              route: '/modules/store',
-              needsApproval,
-            })
-          }
+          allItems.push({
+            id: o.id,
+            type: 'store_order',
+            label: `${o.request_code || `REQ-#${o.id}`}: ${o.title}`,
+            sub: `By ${o.requested_by_name || '—'} · Sent to: ${o.send_to}`,
+            status: o.status,
+            createdAt: o.created_at,
+            route: '/modules/store',
+            needsApproval: o.status === 'PENDING',
+          })
         }
       }
 
       if (reversalsRes.status === 'fulfilled') {
         const reversals: any[] = reversalsRes.value.data.results ?? reversalsRes.value.data
         for (const r of reversals) {
-          const needsApproval = r.status === 'PENDING'
-          if (isToday(r.requested_at) || needsApproval) {
-            items.push({
-              id: r.id,
-              type: 'reversal',
-              label: `Payment Reversal #${r.id}`,
-              sub: r.reason ? r.reason.slice(0, 80) : 'No reason provided',
-              status: r.status,
-              createdAt: r.requested_at,
-              route: '/modules/finance/payments',
-              needsApproval,
-            })
-          }
+          allItems.push({
+            id: r.id,
+            type: 'reversal',
+            label: `Payment Reversal #${r.id}`,
+            sub: r.reason ? r.reason.slice(0, 80) : 'No reason provided',
+            status: r.status,
+            createdAt: r.requested_at,
+            route: '/modules/finance/payments',
+            needsApproval: r.status === 'PENDING',
+          })
         }
       }
 
       if (writeoffsRes.status === 'fulfilled') {
         const writeoffs: any[] = writeoffsRes.value.data.results ?? writeoffsRes.value.data
         for (const w of writeoffs) {
-          const needsApproval = w.status === 'PENDING'
-          if (isToday(w.requested_at || w.created_at) || needsApproval) {
-            items.push({
-              id: w.id,
-              type: 'writeoff',
-              label: `Write-off Request #${w.id}`,
-              sub: w.reason ? w.reason.slice(0, 80) : 'No reason provided',
-              status: w.status,
-              createdAt: w.requested_at || w.created_at,
-              route: '/modules/finance/payments',
-              needsApproval,
-            })
-          }
+          allItems.push({
+            id: w.id,
+            type: 'writeoff',
+            label: `Write-off Request #${w.id}`,
+            sub: w.reason ? w.reason.slice(0, 80) : 'No reason provided',
+            status: w.status,
+            createdAt: w.requested_at || w.created_at,
+            route: '/modules/finance/payments',
+            needsApproval: w.status === 'PENDING',
+          })
         }
       }
 
-      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      allItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
       setActivity({
-        todayItems: items.filter((i) => isToday(i.createdAt)),
-        pendingItems: items.filter((i) => i.needsApproval),
+        todayItems: allItems,
+        pendingItems: allItems.filter((i) => i.needsApproval),
       })
     } catch {
       // silently fail — activity panel is non-critical
@@ -673,90 +662,91 @@ export default function DashboardPage() {
               ) : null}
             </section>
 
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <h2 className="text-lg font-display font-semibold">Today's Tasks & Requests</h2>
-                  <p className="mt-1 text-sm text-slate-400">Live activity feed — requests made today and items awaiting approval.</p>
-                </div>
-                <button
-                  onClick={() => void loadActivity()}
-                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
-                >
-                  <RefreshCw size={13} />
-                  Refresh
-                </button>
-              </div>
-
-              {activityLoading ? (
-                <div className="mt-6 text-center text-sm text-slate-500">Loading activity...</div>
-              ) : (
-                <div className="mt-5 grid gap-5 lg:grid-cols-2">
-                  {/* Today's Requests */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Clock size={14} className="text-sky-400" />
-                      <span className="text-xs font-bold uppercase tracking-widest text-sky-400">Today's Requests</span>
-                      <span className="ml-auto text-xs font-bold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full">
-                        {activity.todayItems.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                      {activity.todayItems.length === 0 ? (
-                        <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-xs text-slate-500 text-center">
-                          No requests submitted today.
-                        </div>
-                      ) : activity.todayItems.map((item) => (
-                        <ActivityCard key={`today-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Needs Approval */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <AlertCircle size={14} className="text-amber-400" />
-                      <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Needs Approval</span>
-                      <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full ${activity.pendingItems.length > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700/40 text-slate-500'}`}>
-                        {activity.pendingItems.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                      {activity.pendingItems.length === 0 ? (
-                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs text-emerald-400 text-center flex items-center justify-center gap-2">
-                          <CheckCircle2 size={14} />
-                          No pending approvals. All caught up!
-                        </div>
-                      ) : activity.pendingItems.map((item) => (
-                        <ActivityCard key={`pending-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} highlight />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* General metric-based tasks */}
-              {todaysTasks.some(t => t.route !== '/dashboard') && (
-                <div className="mt-5 border-t border-slate-800 pt-5">
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">General Priorities</p>
-                  <div className="grid gap-2 md:grid-cols-2">
-                    {todaysTasks.filter(t => t.route !== '/dashboard').map((task) => (
-                      <button
-                        key={`${task.title}-${task.route}`}
-                        type="button"
-                        className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-left transition hover:border-emerald-400"
-                        onClick={() => navigate(task.route)}
-                      >
-                        <p className="text-sm font-semibold text-slate-100">{task.title}</p>
-                        <p className="mt-1 text-xs text-slate-400">{task.detail}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
           </>
         ) : null}
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="text-lg font-display font-semibold">Today's Tasks & Requests</h2>
+              <p className="mt-1 text-sm text-slate-400">All store requests and items awaiting your approval.</p>
+            </div>
+            <button
+              onClick={() => void loadActivity()}
+              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
+            >
+              <RefreshCw size={13} />
+              Refresh
+            </button>
+          </div>
+
+          {activityLoading ? (
+            <div className="mt-6 text-center text-sm text-slate-500">Loading activity...</div>
+          ) : (
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              {/* All Requests */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <ShoppingCart size={14} className="text-sky-400" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-sky-400">All Requests</span>
+                  <span className="ml-auto text-xs font-bold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full">
+                    {activity.todayItems.length}
+                  </span>
+                </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                  {activity.todayItems.length === 0 ? (
+                    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-xs text-slate-500 text-center">
+                      No store orders or requests found.
+                    </div>
+                  ) : activity.todayItems.map((item) => (
+                    <ActivityCard key={`all-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Needs Approval */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertCircle size={14} className="text-amber-400" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-amber-400">Needs Approval</span>
+                  <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full ${activity.pendingItems.length > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700/40 text-slate-500'}`}>
+                    {activity.pendingItems.length}
+                  </span>
+                </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                  {activity.pendingItems.length === 0 ? (
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs text-emerald-400 text-center flex items-center justify-center gap-2">
+                      <CheckCircle2 size={14} />
+                      No pending approvals. All caught up!
+                    </div>
+                  ) : activity.pendingItems.map((item) => (
+                    <ActivityCard key={`pending-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} highlight />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* General metric-based tasks */}
+          {todaysTasks.some(t => t.route !== '/dashboard') && (
+            <div className="mt-5 border-t border-slate-800 pt-5">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">General Priorities</p>
+              <div className="grid gap-2 md:grid-cols-2">
+                {todaysTasks.filter(t => t.route !== '/dashboard').map((task) => (
+                  <button
+                    key={`${task.title}-${task.route}`}
+                    type="button"
+                    className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-left transition hover:border-emerald-400"
+                    onClick={() => navigate(task.route)}
+                  >
+                    <p className="text-sm font-semibold text-slate-100">{task.title}</p>
+                    <p className="mt-1 text-xs text-slate-400">{task.detail}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
       </main>
     </div>
   )
