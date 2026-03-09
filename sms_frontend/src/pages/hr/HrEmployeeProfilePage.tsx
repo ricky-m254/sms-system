@@ -88,18 +88,20 @@ export default function HrEmployeeProfilePage() {
     setLoading(true)
     setError(null)
     try {
+      const toArr = <T,>(v: T[] | { results?: T[] } | null | undefined): T[] =>
+        !v ? [] : Array.isArray(v) ? v : v.results ?? []
       const [employeeRes, contactsRes, docsRes, expiringRes] = await Promise.all([
         apiClient.get<Employee>(`/hr/employees/${employeeId}/`),
-        apiClient.get<EmergencyContact[]>(`/hr/emergency-contacts/?employee=${employeeId}`),
-        apiClient.get<EmployeeDocument[]>(`/hr/documents/?employee=${employeeId}`),
-        apiClient.get<EmployeeDocument[]>(`/hr/documents/expiring/?days=45&employee=${employeeId}`),
+        apiClient.get<EmergencyContact[] | { results: EmergencyContact[] }>(`/hr/emergency-contacts/?employee=${employeeId}`),
+        apiClient.get<EmployeeDocument[] | { results: EmployeeDocument[] }>(`/hr/documents/?employee=${employeeId}`),
+        apiClient.get<EmployeeDocument[] | { results: EmployeeDocument[] }>(`/hr/documents/expiring/?days=45&employee=${employeeId}`),
       ])
       setEmployee(employeeRes.data)
-      setContacts(contactsRes.data)
-      setDocuments(docsRes.data)
-      setExpiringDocuments(expiringRes.data)
-    } catch {
-      setError('Unable to load employee profile details.')
+      setContacts(toArr(contactsRes.data))
+      setDocuments(toArr(docsRes.data))
+      setExpiringDocuments(toArr(expiringRes.data))
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to load employee profile. Please check the employee record exists.'))
     } finally {
       setLoading(false)
     }

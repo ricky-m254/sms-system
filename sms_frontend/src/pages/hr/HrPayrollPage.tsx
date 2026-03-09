@@ -59,10 +59,12 @@ type PayrollBatch = {
   items?: PayrollItem[]
 }
 
+const CURRENCIES = ['KES', 'USD', 'EUR', 'GBP', 'TZS', 'UGX']
+
 const defaultStructureForm = {
   employee: '',
   basic_salary: '',
-  currency: 'USD',
+  currency: 'KES',
   pay_frequency: 'Monthly',
   effective_from: '',
   effective_to: '',
@@ -173,7 +175,7 @@ export default function HrPayrollPage() {
       await apiClient.post('/hr/salary-structures/', {
         employee: Number(structureForm.employee),
         basic_salary: Number(structureForm.basic_salary),
-        currency: structureForm.currency.trim() || 'USD',
+        currency: structureForm.currency.trim() || 'KES',
         pay_frequency: structureForm.pay_frequency,
         effective_from: structureForm.effective_from,
         effective_to: structureForm.effective_to || null,
@@ -359,11 +361,13 @@ export default function HrPayrollPage() {
             </label>
             <label className="text-xs text-slate-300">
               Currency
-              <input
+              <select
                 value={structureForm.currency}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, currency: event.target.value }))}
                 className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
-              />
+              >
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
             </label>
             <label className="text-xs text-slate-300">
               Pay Frequency
@@ -458,15 +462,25 @@ export default function HrPayrollPage() {
               />
             </label>
             <label className="text-xs text-slate-300">
-              Amount
-              <input
-                value={componentForm.amount}
-                onChange={(event) => setComponentForm((prev) => ({ ...prev, amount: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
-                type="number"
-                min="0"
-                step="0.01"
-              />
+              {componentForm.amount_type === 'Percentage' ? 'Percentage of Basic (%)' : 'Fixed Amount (Ksh)'}
+              <div className="relative mt-1">
+                <input
+                  value={componentForm.amount}
+                  onChange={(event) => setComponentForm((prev) => ({ ...prev, amount: event.target.value }))}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 pr-8 text-sm"
+                  type="number"
+                  min="0"
+                  max={componentForm.amount_type === 'Percentage' ? '100' : undefined}
+                  step={componentForm.amount_type === 'Percentage' ? '0.01' : '0.01'}
+                  placeholder={componentForm.amount_type === 'Percentage' ? 'e.g. 5 for 5%' : '0.00'}
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                  {componentForm.amount_type === 'Percentage' ? '%' : 'Ksh'}
+                </span>
+              </div>
+              {componentForm.amount_type === 'Percentage' && (
+                <p className="mt-1 text-xs text-slate-500">This percentage is applied to the employee&apos;s basic salary.</p>
+              )}
             </label>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-300">

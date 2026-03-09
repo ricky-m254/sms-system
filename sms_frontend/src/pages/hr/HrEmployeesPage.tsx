@@ -67,13 +67,14 @@ export default function HrEmployeesPage() {
     setError(null)
     try {
       const [employeesRes, departmentsRes, positionsRes] = await Promise.all([
-        apiClient.get<Employee[]>('/hr/employees/'),
-        apiClient.get<Department[]>('/hr/departments/'),
-        apiClient.get<Position[]>('/hr/positions/'),
+        apiClient.get<Employee[] | { results: Employee[] }>('/hr/employees/'),
+        apiClient.get<Department[] | { results: Department[] }>('/school/departments/'),
+        apiClient.get<Position[] | { results: Position[] }>('/hr/positions/'),
       ])
-      setEmployees(employeesRes.data)
-      setDepartments(departmentsRes.data)
-      setPositions(positionsRes.data)
+      const asArr = <T,>(v: T[] | { results?: T[] }): T[] => Array.isArray(v) ? v : v.results ?? []
+      setEmployees(asArr(employeesRes.data))
+      setDepartments(asArr(departmentsRes.data))
+      setPositions(asArr(positionsRes.data))
     } catch {
       setError('Unable to load employee directory.')
     } finally {

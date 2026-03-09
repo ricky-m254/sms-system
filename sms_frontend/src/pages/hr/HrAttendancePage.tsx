@@ -183,7 +183,7 @@ export default function HrAttendancePage() {
       ].filter(Boolean)
 
       const [departmentsRes, employeesRes, recordsRes, summaryRes, reportRes, schedulesRes] = await Promise.all([
-        apiClient.get<Department[]>('/hr/departments/'),
+        apiClient.get<Department[]>('/school/departments/'),
         apiClient.get<EmployeeRow[]>('/hr/employees/'),
         apiClient.get<AttendanceRecord[]>(`/hr/attendance/${attendanceQuery}`),
         apiClient.get<AttendanceSummary>(`/hr/attendance/summary/?${summaryQueryParts.join('&')}`),

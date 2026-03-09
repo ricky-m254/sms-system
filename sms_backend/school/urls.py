@@ -6,6 +6,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .views import (
     EnrollmentViewSet, ExpenseViewSet, FeeStructureViewSet, MessageViewSet, 
     StaffViewSet, StudentViewSet, InvoiceViewSet, PaymentViewSet, 
+    DepartmentViewSet,
     BudgetViewSet,
     PaymentReversalRequestViewSet,
     InvoiceWriteOffRequestViewSet,
@@ -73,6 +74,9 @@ from .views import (
 # URL ROUTER (TENANT DATA)
 # ==========================================
 router = DefaultRouter()
+
+# Shared / cross-module
+router.register(r'departments', DepartmentViewSet, basename='department')
 
 # Modules
 router.register(r'students', StudentViewSet, basename='student')

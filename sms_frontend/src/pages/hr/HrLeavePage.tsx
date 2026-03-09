@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 
 type Employee = {
@@ -104,6 +104,7 @@ export default function HrLeavePage() {
   const [leaveTypeForm, setLeaveTypeForm] = useState(defaultLeaveTypeForm)
   const [leavePolicyForm, setLeavePolicyForm] = useState(defaultLeavePolicyForm)
   const [leaveRequestForm, setLeaveRequestForm] = useState(defaultLeaveRequestForm)
+  const [activeTab, setActiveTab] = useState<'types' | 'policies' | 'requests' | 'balances'>('requests')
   const [showTypeForm, setShowTypeForm] = useState(false)
   const [showPolicyForm, setShowPolicyForm] = useState(false)
   const [showRequestForm, setShowRequestForm] = useState(false)
@@ -115,22 +116,39 @@ export default function HrLeavePage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
+  const noticeDaysGiven = useMemo(() => {
+    if (!leaveRequestForm.start_date) return null
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const start = new Date(leaveRequestForm.start_date)
+    start.setHours(0, 0, 0, 0)
+    return Math.ceil((start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  }, [leaveRequestForm.start_date])
+
+  const selectedLeaveType = useMemo(
+    () => leaveTypes.find((t) => String(t.id) === leaveRequestForm.leave_type) ?? null,
+    [leaveTypes, leaveRequestForm.leave_type]
+  )
+
+  const toArr = <T,>(v: T[] | { results?: T[] } | null | undefined): T[] =>
+    !v ? [] : Array.isArray(v) ? v : v.results ?? []
+
   const load = async () => {
     setLoading(true)
     setError(null)
     try {
       const [employeesRes, leaveTypesRes, leavePoliciesRes, leaveRequestsRes, leaveCalendarRes] = await Promise.all([
-        apiClient.get<Employee[]>('/hr/employees/'),
-        apiClient.get<LeaveType[]>('/hr/leave-types/'),
-        apiClient.get<LeavePolicy[]>('/hr/leave-policies/'),
-        apiClient.get<LeaveRequest[]>('/hr/leave-requests/'),
-        apiClient.get<LeaveCalendarRow[]>('/hr/leave-calendar/'),
+        apiClient.get<Employee[] | { results: Employee[] }>('/hr/employees/'),
+        apiClient.get<LeaveType[] | { results: LeaveType[] }>('/hr/leave-types/'),
+        apiClient.get<LeavePolicy[] | { results: LeavePolicy[] }>('/hr/leave-policies/'),
+        apiClient.get<LeaveRequest[] | { results: LeaveRequest[] }>('/hr/leave-requests/'),
+        apiClient.get<LeaveCalendarRow[] | { results: LeaveCalendarRow[] }>('/hr/leave-calendar/'),
       ])
-      setEmployees(employeesRes.data)
-      setLeaveTypes(leaveTypesRes.data)
-      setLeavePolicies(leavePoliciesRes.data)
-      setLeaveRequests(leaveRequestsRes.data)
-      setLeaveCalendar(leaveCalendarRes.data)
+      setEmployees(toArr(employeesRes.data))
+      setLeaveTypes(toArr(leaveTypesRes.data))
+      setLeavePolicies(toArr(leavePoliciesRes.data))
+      setLeaveRequests(toArr(leaveRequestsRes.data))
+      setLeaveCalendar(toArr(leaveCalendarRes.data))
     } catch {
       setError('Unable to load leave management data.')
     } finally {
@@ -306,114 +324,149 @@ export default function HrLeavePage() {
         <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div>
       ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-100">Leave Types</h2>
+      <section className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <div className="flex border-b border-slate-800 overflow-x-auto">
+          {(['requests', 'types', 'policies', 'balances'] as const).map((tab) => (
             <button
-              onClick={() => setShowTypeForm((prev) => !prev)}
-              className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200"
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`shrink-0 px-5 py-3 text-sm font-semibold transition capitalize ${activeTab === tab ? 'border-b-2 border-emerald-500 text-emerald-400 bg-slate-950/40' : 'text-slate-400 hover:text-slate-200'}`}
             >
-              {showTypeForm ? 'Close' : 'Create'}
+              {tab === 'types' ? 'Leave Types' : tab === 'policies' ? 'Leave Policies' : tab === 'requests' ? 'New Request' : 'Balances'}
             </button>
-          </div>
-          {showTypeForm ? (
-            <div className="mt-3 grid gap-2">
-              <input value={leaveTypeForm.name} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <input value={leaveTypeForm.code} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, code: e.target.value }))} placeholder="Code" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <input value={leaveTypeForm.max_days_year} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <input value={leaveTypeForm.notice_days} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Notice days" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <button onClick={createLeaveType} disabled={working} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Save Leave Type</button>
-            </div>
-          ) : null}
-          <div className="mt-3 space-y-2 text-sm text-slate-300">
-            {(loading ? [] : leaveTypes).map((row) => (
-              <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
-                <p className="font-semibold text-slate-100">{row.name} ({row.code})</p>
-                <p className="text-xs text-slate-400">Max: {row.max_days_year ?? 'Unlimited'} | Notice: {row.notice_days}d</p>
-              </div>
-            ))}
-          </div>
-        </article>
+          ))}
+        </div>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-100">Leave Policies</h2>
-            <button
-              onClick={() => setShowPolicyForm((prev) => !prev)}
-              className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200"
-            >
-              {showPolicyForm ? 'Close' : 'Create'}
-            </button>
-          </div>
-          {showPolicyForm ? (
-            <div className="mt-3 grid gap-2">
-              <select value={leavePolicyForm.leave_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
-                <option value="">Leave type</option>
-                {leaveTypes.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
-              </select>
-              <select value={leavePolicyForm.employment_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, employment_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="">All</option>
-              </select>
-              <input value={leavePolicyForm.entitlement_days} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, entitlement_days: e.target.value }))} placeholder="Entitlement days" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <input type="date" value={leavePolicyForm.effective_from} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <button onClick={createLeavePolicy} disabled={working} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Save Policy</button>
-            </div>
-          ) : null}
-          <div className="mt-3 space-y-2 text-sm text-slate-300">
-            {(loading ? [] : leavePolicies).map((row) => (
-              <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
-                <p className="font-semibold text-slate-100">{row.leave_type_name} - {row.employment_type || 'All'}</p>
-                <p className="text-xs text-slate-400">Entitlement: {row.entitlement_days} | {row.accrual_method}</p>
+        <div className="p-5">
+          {activeTab === 'types' && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-slate-100">Leave Types</h2>
+                <button onClick={() => setShowTypeForm((prev) => !prev)} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200">{showTypeForm ? 'Close' : 'Create'}</button>
               </div>
-            ))}
-          </div>
-        </article>
+              {showTypeForm && (
+                <div className="mb-4 grid gap-2 sm:grid-cols-2">
+                  <input value={leaveTypeForm.name} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.code} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, code: e.target.value }))} placeholder="Code (e.g. ANNUAL)" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.max_days_year} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year (blank = unlimited)" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.notice_days} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Required notice days" type="number" min="0" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <button onClick={createLeaveType} disabled={working} className="sm:col-span-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Save Leave Type</button>
+                </div>
+              )}
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {(loading ? [] : leaveTypes).map((row) => (
+                  <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                    <p className="font-semibold text-slate-100">{row.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{row.code}</p>
+                    <p className="text-xs text-slate-400 mt-1">Max: {row.max_days_year ?? 'Unlimited'} days/yr · Notice: {row.notice_days}d</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{row.is_paid ? 'Paid' : 'Unpaid'}</p>
+                  </div>
+                ))}
+                {!loading && leaveTypes.length === 0 && <p className="col-span-3 text-xs text-slate-500">No leave types yet. Create one above.</p>}
+              </div>
+            </div>
+          )}
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-100">Leave Request</h2>
-            <button
-              onClick={() => setShowRequestForm((prev) => !prev)}
-              className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200"
-            >
-              {showRequestForm ? 'Close' : 'Create'}
-            </button>
-          </div>
-          {showRequestForm ? (
-            <div className="mt-3 grid gap-2">
-              <select value={leaveRequestForm.employee} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
-                <option value="">Employee</option>
+          {activeTab === 'policies' && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-slate-100">Leave Policies</h2>
+                <button onClick={() => setShowPolicyForm((prev) => !prev)} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200">{showPolicyForm ? 'Close' : 'Create'}</button>
+              </div>
+              {showPolicyForm && (
+                <div className="mb-4 grid gap-2 sm:grid-cols-2">
+                  <select value={leavePolicyForm.leave_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                    <option value="">Leave type</option>
+                    {leaveTypes.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
+                  </select>
+                  <select value={leavePolicyForm.employment_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, employment_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="">All employment types</option>
+                  </select>
+                  <input value={leavePolicyForm.entitlement_days} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, entitlement_days: e.target.value }))} placeholder="Entitlement days" type="number" min="0" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input type="date" value={leavePolicyForm.effective_from} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <button onClick={createLeavePolicy} disabled={working} className="sm:col-span-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Save Policy</button>
+                </div>
+              )}
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {(loading ? [] : leavePolicies).map((row) => (
+                  <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                    <p className="font-semibold text-slate-100">{row.leave_type_name}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{row.employment_type || 'All types'} · {row.accrual_method}</p>
+                    <p className="text-xs text-emerald-400 mt-1">{row.entitlement_days} days entitlement</p>
+                    <p className="text-xs text-slate-500">From {row.effective_from}</p>
+                  </div>
+                ))}
+                {!loading && leavePolicies.length === 0 && <p className="col-span-3 text-xs text-slate-500">No leave policies yet. Create one above.</p>}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'requests' && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-slate-100">New Leave Request</h2>
+                <button onClick={() => setShowRequestForm((prev) => !prev)} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200">{showRequestForm ? 'Close' : 'Open Form'}</button>
+              </div>
+              {showRequestForm && (
+                <div className="mb-4 grid gap-2 sm:grid-cols-2">
+                  <select value={leaveRequestForm.employee} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                    <option value="">Select employee</option>
+                    {employees.map((row) => <option key={row.id} value={row.id}>{row.employee_id} - {row.full_name}</option>)}
+                  </select>
+                  <select value={leaveRequestForm.leave_type} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                    <option value="">Leave type</option>
+                    {leaveTypes.map((row) => <option key={row.id} value={row.id}>{row.name}{row.notice_days > 0 ? ` (${row.notice_days}d notice)` : ''}</option>)}
+                  </select>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Start Date</label>
+                    <input type="date" value={leaveRequestForm.start_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, start_date: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                    {noticeDaysGiven !== null && (
+                      <p className={`mt-1 text-xs font-medium ${noticeDaysGiven < 0 ? 'text-rose-400' : selectedLeaveType && noticeDaysGiven < selectedLeaveType.notice_days ? 'text-amber-400' : 'text-emerald-400'}`}>
+                        {noticeDaysGiven < 0
+                          ? `⚠ Start date is ${Math.abs(noticeDaysGiven)} day(s) in the past`
+                          : `${noticeDaysGiven} day(s) notice given${selectedLeaveType && selectedLeaveType.notice_days > 0 ? ` · ${selectedLeaveType.notice_days} required` : ''}`}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">End Date</label>
+                    <input type="date" value={leaveRequestForm.end_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, end_date: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  </div>
+                  <textarea value={leaveRequestForm.reason} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Reason for leave" className="sm:col-span-2 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" rows={2} />
+                  <button onClick={createLeaveRequest} disabled={working} className="sm:col-span-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Submit Request</button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'balances' && (
+            <div>
+              <h2 className="text-sm font-semibold text-slate-100 mb-4">Leave Balances by Employee</h2>
+              <select value={selectedEmployeeForBalance} onChange={(e) => setSelectedEmployeeForBalance(e.target.value)} className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                <option value="">Select employee</option>
                 {employees.map((row) => <option key={row.id} value={row.id}>{row.employee_id} - {row.full_name}</option>)}
               </select>
-              <select value={leaveRequestForm.leave_type} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
-                <option value="">Leave type</option>
-                {leaveTypes.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
-              </select>
-              <input type="date" value={leaveRequestForm.start_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, start_date: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <input type="date" value={leaveRequestForm.end_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, end_date: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <textarea value={leaveRequestForm.reason} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Reason" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-              <button onClick={createLeaveRequest} disabled={working} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Submit Request</button>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {balances.map((row) => (
+                  <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                    <p className="font-semibold text-slate-100">{row.leave_type_name}</p>
+                    <p className="text-xs text-slate-500">{row.year}</p>
+                    <div className="mt-2 flex gap-3 text-xs">
+                      <span className="text-emerald-400">Available: {row.available}</span>
+                      <span className="text-slate-400">Used: {row.used}</span>
+                      <span className="text-amber-400">Pending: {row.pending}</span>
+                    </div>
+                  </div>
+                ))}
+                {balances.length === 0 && selectedEmployeeForBalance && <p className="col-span-3 text-xs text-slate-500">No leave balances found for this employee.</p>}
+                {!selectedEmployeeForBalance && <p className="col-span-3 text-xs text-slate-500">Select an employee to view their leave balances.</p>}
+              </div>
             </div>
-          ) : null}
-          <div className="mt-3">
-            <select value={selectedEmployeeForBalance} onChange={(e) => setSelectedEmployeeForBalance(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
-              <option value="">Select employee for balance</option>
-              {employees.map((row) => <option key={row.id} value={row.id}>{row.employee_id} - {row.full_name}</option>)}
-            </select>
-            <div className="mt-2 space-y-2 text-sm text-slate-300">
-              {balances.map((row) => (
-                <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
-                  <p className="font-semibold text-slate-100">{row.leave_type_name} ({row.year})</p>
-                  <p className="text-xs text-slate-400">Available: {row.available} | Used: {row.used} | Pending: {row.pending}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </article>
+          )}
+        </div>
       </section>
 
       <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">

@@ -84,7 +84,7 @@ export default function HrRecruitmentPage() {
     setError(null)
     try {
       const [departmentsRes, positionsRes, postingsRes, applicationsRes, interviewsRes] = await Promise.all([
-        apiClient.get<Department[] | { results: Department[] }>('/hr/departments/'),
+        apiClient.get<Department[] | { results: Department[] }>('/school/departments/'),
         apiClient.get<Position[] | { results: Position[] }>('/hr/positions/'),
         apiClient.get<JobPosting[] | { results: JobPosting[] }>('/hr/job-postings/'),
         apiClient.get<JobApplication[] | { results: JobApplication[] }>('/hr/applications/'),

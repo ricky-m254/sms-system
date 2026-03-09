@@ -24,6 +24,7 @@ from .models import (
     FeeStructure, Expense, Budget, InvoiceLineItem, AttendanceRecord, BehaviorIncident,
     FeeAssignment, InvoiceAdjustment, Module, UserModuleAssignment,
     Role, UserProfile, AdmissionDocument, StudentDocument,
+    Department,
     MedicalRecord, ImmunizationRecord, ClinicVisit, SchoolProfile,
     PaymentReversalRequest, InvoiceInstallmentPlan, InvoiceInstallment, LateFeeRule, FeeReminderLog,
     InvoiceWriteOffRequest,
@@ -62,6 +63,7 @@ from .serializers import (
     StoreCategorySerializer, StoreItemSerializer, StoreTransactionSerializer,
     StoreOrderRequestSerializer,
     DispensaryVisitSerializer, DispensaryPrescriptionSerializer, DispensaryStockSerializer,
+    DepartmentSerializer,
 )
 
 
@@ -1469,6 +1471,17 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+
+class DepartmentViewSet(viewsets.ModelViewSet):
+    """Shared department registry — used by all modules for department dropdowns."""
+    queryset = Department.objects.filter(is_active=True).order_by('name')
+    serializer_class = DepartmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save(update_fields=['is_active'])
 
 
 class BudgetViewSet(viewsets.ModelViewSet):

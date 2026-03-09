@@ -7,6 +7,7 @@ from .models import (
     FeeAssignment, InvoiceAdjustment, Module, UserModuleAssignment, TenantModule, ModuleSetting,
     AcademicYear, Term, SchoolClass, AdmissionApplication, AdmissionDocument, StudentDocument, AttendanceRecord, BehaviorIncident,
     Budget,
+    Department,
     MedicalRecord, ImmunizationRecord, ClinicVisit,
     PaymentReversalRequest, InvoiceInstallmentPlan, InvoiceInstallment, LateFeeRule, FeeReminderLog,
     InvoiceWriteOffRequest,
@@ -18,6 +19,14 @@ from .models import (
     DispensaryVisit, DispensaryPrescription, DispensaryStock
 )
 from hr.models import Staff
+
+# ==========================================
+# SHARED DEPARTMENT SERIALIZER
+# ==========================================
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'description', 'is_active']
 
 # ==========================================
 # ACADEMIC & STUDENT SERIALIZERS    
