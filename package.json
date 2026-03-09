@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "cd sms_frontend && npm install && npm run build && mkdir -p ../sms_backend/frontend_build && cp -r dist/* ../sms_backend/frontend_build/ && cd ../sms_backend && python manage.py collectstatic --noinput"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-slot": "^1.2.4",

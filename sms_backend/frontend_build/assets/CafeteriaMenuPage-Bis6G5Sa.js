@@ -1,0 +1,1 @@
+import{j as e}from"./index-B-pg8dWM.js";function a(){return e.jsxs("div",{className:"rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center",children:[e.jsx("h2",{className:"text-2xl font-bold text-white",children:"Weekly Menu"}),e.jsx("p",{className:"mt-2 text-slate-400",children:"Plan and publish the weekly cafeteria schedule."})]})}export{a as default};
