@@ -191,7 +191,7 @@ export default function DashboardPage() {
   }, [assignedModuleKeys])
 
   const displayUnavailableModules = (data?.unavailable_modules ?? []).filter(
-    (key) => key !== 'ASSETS',
+    (key) => !MODULE_OPERATIONAL_ROUTES[key],
   )
 
   const statsCards = data
