@@ -113,6 +113,33 @@ All 28 tenant modules are fully implemented (frontend + backend):
 - `ModuleToolbar` component in every module sidebar: back-to-dashboard button + module switcher
 - All delete operations use `ConfirmDialog` for admin confirmation before any data is removed
 
+## Deployment (Production)
+
+**Target:** Autoscale (Replit)
+
+**Build step:**
+```
+cd sms_frontend && npm run build
+mkdir -p ../sms_backend/frontend_build
+cp -r dist/* ../sms_backend/frontend_build/
+cd ../sms_backend && python manage.py collectstatic --noinput
+```
+
+**Run step:**
+```
+cd sms_backend && python manage.py migrate --noinput && gunicorn --bind=0.0.0.0:3000 --workers=2 --timeout=120 config.wsgi:application
+```
+
+**How it works:**
+- React is built to `sms_frontend/dist`, copied to `sms_backend/frontend_build/`
+- Django/whitenoise serves the React SPA from `frontend_build/`
+- A catch-all URL pattern in `config/urls.py` serves `index.html` for all non-API routes
+- Replit's `REPLIT_DOMAINS` env var is automatically added to Django `ALLOWED_HOSTS`
+- `DATABASE_URL` env var is picked up automatically for PostgreSQL
+- Port 3000 used for gunicorn in production
+
+**Branding:** Rynaty School Management System by Rynatyspace Technologies
+
 ## Key Notes
 
 - Run `python manage.py seed_demo` to (re)create the demo school tenant
