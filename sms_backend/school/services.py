@@ -693,6 +693,8 @@ class FinanceService:
             raise ValueError("Cannot write off a void invoice.")
         if amount > invoice.balance_due:
             raise ValueError(f"Write-off amount ({amount}) exceeds current balance ({invoice.balance_due}).")
+        if InvoiceWriteOffRequest.objects.filter(invoice=invoice, status='PENDING').exists():
+            raise ValueError("A pending write-off request already exists for this invoice. Please wait for it to be reviewed.")
         return InvoiceWriteOffRequest.objects.create(
             invoice=invoice,
             amount=amount,
@@ -740,6 +742,8 @@ class FinanceService:
     def request_payment_reversal(payment, reason, requested_by):
         if not payment.is_active:
             raise ValueError("Payment is already inactive/reversed.")
+        if PaymentReversalRequest.objects.filter(payment=payment, status='PENDING').exists():
+            raise ValueError("A pending reversal request already exists for this payment. Please wait for it to be reviewed.")
         return PaymentReversalRequest.objects.create(
             payment=payment,
             reason=reason,
