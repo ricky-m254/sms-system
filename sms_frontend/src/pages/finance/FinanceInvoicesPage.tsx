@@ -837,14 +837,14 @@ export default function FinanceInvoicesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
           <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-950 p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-display font-semibold">Invoice detail</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
-                  className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
                   onClick={() => setSelectedInvoiceId(null)}
                 >
-                  Close
+                  ← Back
                 </button>
+                <h3 className="text-lg font-display font-semibold">Invoice detail</h3>
               </div>
             </div>
             <div className="mt-4 grid gap-6 lg:grid-cols-3">

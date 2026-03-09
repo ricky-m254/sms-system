@@ -633,12 +633,36 @@ export default function FinanceExpensesPage() {
               </p>
             )}
           </div>
-          <button
-            onClick={() => setShowBudgetModal(true)}
-            className="mt-3 w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-emerald-400 transition"
-          >
-            {selectedBudget ? 'Edit Budget' : '+ Create Budget'}
-          </button>
+          <div className="mt-3 grid gap-2">
+            <button
+              onClick={() => {
+                setMonthlyBudget('')
+                setQuarterlyBudget('')
+                setAnnualBudget('')
+                setBudgetTouched(false)
+                setBudgetNotice(null)
+                setShowBudgetModal(true)
+              }}
+              className="w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-emerald-400 transition"
+            >
+              + Create Budget
+            </button>
+            {selectedBudget && (
+              <button
+                onClick={() => {
+                  setMonthlyBudget(String(selectedBudget.monthly_budget ?? ''))
+                  setQuarterlyBudget(String(selectedBudget.quarterly_budget ?? ''))
+                  setAnnualBudget(String(selectedBudget.annual_budget ?? ''))
+                  setBudgetTouched(false)
+                  setBudgetNotice(null)
+                  setShowBudgetModal(true)
+                }}
+                className="w-full rounded-lg border border-slate-600 px-3 py-2 text-xs text-slate-300 hover:text-white hover:border-slate-400 transition"
+              >
+                Edit Budget
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
