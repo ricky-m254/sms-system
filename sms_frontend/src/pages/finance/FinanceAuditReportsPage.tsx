@@ -4,7 +4,6 @@ import autoTable from 'jspdf-autotable'
 import { apiClient } from '../../api/client'
 
 type AcademicYear = { id: number; name: string; start_date: string; end_date: string }
-type Term = { id: number; name: string; academic_year_id?: number; academic_year?: number }
 
 type InvoiceRow = { invoice_number: string; student_name?: string; total_amount: number; status: string; issue_date: string; due_date: string }
 type PaymentRow = { receipt_number: string; student_name?: string; amount: number; payment_date: string; payment_method: string }
@@ -72,7 +71,6 @@ function lastY(doc: jsPDF, fallback: number): number {
 
 export default function FinanceAuditReportsPage() {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
-  const [terms, setTerms] = useState<Term[]>([])
   const [selectedYear, setSelectedYear] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -94,10 +92,6 @@ export default function FinanceAuditReportsPage() {
         setDateFrom(yr.start_date?.slice(0, 10) ?? '')
         setDateTo(yr.end_date?.slice(0, 10) ?? '')
       }
-    }).catch(() => {})
-    apiClient.get<{ results?: Term[] } | Term[]>('/academics/terms/').then((r) => {
-      const items = Array.isArray(r.data) ? r.data : (r.data as { results?: Term[] }).results ?? []
-      setTerms(items)
     }).catch(() => {})
   }, [])
 
@@ -153,8 +147,6 @@ export default function FinanceAuditReportsPage() {
       const yearLabel = yearObj?.name ?? 'All Periods'
       const periodLabel = dateFrom && dateTo ? `${dateFrom} to ${dateTo}` : yearLabel
       const generatedAt = new Date().toLocaleString()
-      const schoolTerms = terms.filter((t) => !selectedYear || Number(t.academic_year_id ?? t.academic_year) === Number(selectedYear))
-      const _ = schoolTerms // suppress unused warning
 
       const totalBilled = data.invoices.reduce((s, r) => s + Number(r.total_amount || 0), 0)
       const totalCollected = data.payments.reduce((s, r) => s + Number(r.amount || 0), 0)

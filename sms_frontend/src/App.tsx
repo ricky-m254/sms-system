@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuthStore } from './store/auth'
 import { isModuleRouteEnabled } from './config/moduleFocus'
+import Footer from './components/Footer'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
@@ -285,6 +286,7 @@ function App() {
   const analyticsEnabled = isModuleRouteEnabled('analytics')
 
   return (
+    <>
     <Suspense fallback={<RouteLoader />}>
       <Routes>
         <Route
@@ -684,6 +686,8 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    <Footer />
+    </>
   )
 }
 
