@@ -148,6 +148,14 @@ const DispensaryDashboardPage = lazy(() => import('./pages/dispensary/Dispensary
 const DispensaryVisitsPage = lazy(() => import('./pages/dispensary/DispensaryVisitsPage'))
 const DispensaryStockPage = lazy(() => import('./pages/dispensary/DispensaryStockPage'))
 
+const ClockInLayout = lazy(() => import('./pages/clockin/ClockInLayout'))
+const ClockInDashboardPage = lazy(() => import('./pages/clockin/ClockInDashboardPage'))
+const ClockInKioskPage = lazy(() => import('./pages/clockin/ClockInKioskPage'))
+const ClockInRegistryPage = lazy(() => import('./pages/clockin/ClockInRegistryPage'))
+const ClockInDevicesPage = lazy(() => import('./pages/clockin/ClockInDevicesPage'))
+const ClockInShiftsPage = lazy(() => import('./pages/clockin/ClockInShiftsPage'))
+const ClockInReportsPage = lazy(() => import('./pages/clockin/ClockInReportsPage'))
+
 function RouteLoader() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
@@ -177,6 +185,7 @@ function App() {
   const settingsEnabled = isModuleRouteEnabled('settings')
   const storeEnabled = isModuleRouteEnabled('store')
   const dispensaryEnabled = isModuleRouteEnabled('dispensary')
+  const clockinEnabled = isModuleRouteEnabled('clockin')
 
   return (
     <Suspense fallback={<RouteLoader />}>
@@ -419,6 +428,22 @@ function App() {
           <Route path="users" element={<SettingsUsersPage />} />
           <Route path="roles" element={<SettingsRolesPage />} />
           <Route path=":module" element={<ModuleSettingsPage />} />
+        </Route>
+        <Route
+          path="/kiosk/clockin"
+          element={<ClockInKioskPage />}
+        />
+        <Route
+          path="/modules/clockin/*"
+          element={isTenantAuth && clockinEnabled ? <ClockInLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<Navigate to="/modules/clockin/dashboard" replace />} />
+          <Route path="dashboard" element={<ClockInDashboardPage />} />
+          <Route path="kiosk" element={<ClockInKioskPage />} />
+          <Route path="registry" element={<ClockInRegistryPage />} />
+          <Route path="devices" element={<ClockInDevicesPage />} />
+          <Route path="shifts" element={<ClockInShiftsPage />} />
+          <Route path="reports" element={<ClockInReportsPage />} />
         </Route>
         <Route path="/modules/:moduleKey" element={<Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -87,7 +87,8 @@ All 12 tenant modules are fully implemented (frontend + backend):
 - **Communication** — messaging, notifications, email, SMS gateway, templates, announcements, analytics
 - **Library** — catalog, circulation, reservations, members, fines, inventory, acquisition, reports
 - **Parent Portal** — child academics, attendance, finance, communication, schedule, assignments
-- **Assets** — registry, categories, assignments, maintenance records, dashboard (added March 2026)
+- **Assets** — registry, categories, assignments, maintenance records, depreciation schedule (IPSAS 17), dashboard (added March 2026)
+- **Clock-In / Biometric Attendance** — fingerprint scanner integration, school shift configuration, auto-late detection, auto-updates school & HR attendance records, gate kiosk UI at `/kiosk/clockin` (no-auth), person registry (enroll students + staff), device management, reports (added March 2026)
 - **Store & Inventory** — food + office item CRUD, stock receipt/issuance/adjustment movements, reorder-level alerts, low-stock view, order requests (sent to Finance/Admin/Both) with approve/reject workflow (added March 2026)
 - **Dispensary** — student clinic visit records with diagnosis, treatment, severity triage, referrals, follow-ups, per-visit prescription/medication dispensing, medication stock tracker with expiry and reorder alerts (added March 2026)
 

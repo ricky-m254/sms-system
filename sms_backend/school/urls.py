@@ -212,6 +212,7 @@ urlpatterns = [
     path('library/', include('library.urls')),
     path('parent-portal/', include('parent_portal.urls')),
     path('reporting/', include('reporting.urls')),
+    path('clockin/', include('clockin.urls')),
 
     # 5. Tenant API Routes (Router)
     path('', include(router.urls)),
