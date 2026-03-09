@@ -482,6 +482,7 @@ class BudgetSerializer(serializers.ModelSerializer):
         model = Budget
         fields = [
             'id',
+            'name',
             'academic_year',
             'academic_year_name',
             'term',

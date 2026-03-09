@@ -44,6 +44,7 @@ type Term = {
 
 type Budget = {
   id?: number
+  name?: string
   academic_year: number
   term: number
   monthly_budget: number
@@ -81,6 +82,7 @@ export default function FinanceExpensesPage() {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState('')
   const [selectedTerm, setSelectedTerm] = useState('')
   const [budgets, setBudgets] = useState<Budget[]>([])
+  const [budgetName, setBudgetName] = useState('')
   const [monthlyBudget, setMonthlyBudget] = useState('')
   const [quarterlyBudget, setQuarterlyBudget] = useState('')
   const [annualBudget, setAnnualBudget] = useState('')
@@ -444,6 +446,7 @@ export default function FinanceExpensesPage() {
     setIsSavingBudget(true)
     setBudgetNotice(null)
     const payload = {
+      name: budgetName.trim() || 'General Budget',
       academic_year: Number(selectedAcademicYear),
       term: Number(selectedTerm),
       monthly_budget: Number(monthlyBudget) || 0,
@@ -456,8 +459,8 @@ export default function FinanceExpensesPage() {
         await apiClient.put(`/finance/budgets/${selectedBudget.id}/`, payload)
         savedMessage = 'Budget updated successfully.'
       } else {
-        const resp = await apiClient.post('/finance/budgets/', payload)
-        savedMessage = resp.status === 201 ? 'Budget created successfully.' : 'Budget updated for this term (already existed).'
+        await apiClient.post('/finance/budgets/', payload)
+        savedMessage = 'Budget created successfully.'
       }
       await (async () => {
         const response = await apiClient.get<Budget[] | { results: Budget[]; count: number }>(
@@ -641,6 +644,7 @@ export default function FinanceExpensesPage() {
             <button
               onClick={() => {
                 setBudgetModalMode('create')
+                setBudgetName('')
                 setMonthlyBudget('')
                 setQuarterlyBudget('')
                 setAnnualBudget('')
@@ -656,6 +660,7 @@ export default function FinanceExpensesPage() {
               <button
                 onClick={() => {
                   setBudgetModalMode('edit')
+                  setBudgetName(selectedBudget.name ?? '')
                   setMonthlyBudget(String(selectedBudget.monthly_budget ?? ''))
                   setQuarterlyBudget(String(selectedBudget.quarterly_budget ?? ''))
                   setAnnualBudget(String(selectedBudget.annual_budget ?? ''))
@@ -950,6 +955,7 @@ export default function FinanceExpensesPage() {
           <table className="min-w-[920px] w-full text-left text-sm">
             <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
               <tr>
+                <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Term</th>
                 <th className="px-4 py-3">Monthly</th>
                 <th className="px-4 py-3">Quarterly</th>
@@ -961,6 +967,7 @@ export default function FinanceExpensesPage() {
             <tbody className="divide-y divide-slate-800">
               {filteredBudgets.map((budget) => (
                 <tr key={`${budget.id ?? 'local'}-${budget.term}`} className="bg-slate-950/60">
+                  <td className="px-4 py-3 font-medium">{budget.name || 'General Budget'}</td>
                   <td className="px-4 py-3">
                     {budget.term_name ?? terms.find((term) => term.id === budget.term)?.name ?? budget.term}
                   </td>
@@ -973,7 +980,7 @@ export default function FinanceExpensesPage() {
               ))}
               {filteredBudgets.length === 0 ? (
                 <tr className="bg-slate-950/60">
-                  <td className="px-4 py-3 text-slate-400" colSpan={6}>
+                  <td className="px-4 py-3 text-slate-400" colSpan={7}>
                     No budget records found.
                   </td>
                 </tr>
@@ -993,6 +1000,16 @@ export default function FinanceExpensesPage() {
               <button onClick={() => { setShowBudgetModal(false); setBudgetNotice(null) }} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
             </div>
             <div className="grid gap-4">
+              <label className="block">
+                <span className="text-xs text-slate-400 mb-1 block">Budget Name</span>
+                <input
+                  type="text"
+                  placeholder="e.g. Operations Budget Q1"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  value={budgetName}
+                  onChange={(e) => setBudgetName(e.target.value)}
+                />
+              </label>
               <label className="block">
                 <span className="text-xs text-slate-400 mb-1 block">Academic Year</span>
                 <select

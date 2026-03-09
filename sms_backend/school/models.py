@@ -908,10 +908,11 @@ class Expense(models.Model):
 
 class Budget(models.Model):
     """
-    Budget envelope scoped by academic year + term.
+    Budget envelope scoped by academic year + term + name (multiple per term allowed).
     """
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
     term = models.ForeignKey(Term, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, default='General Budget')
     monthly_budget = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -936,10 +937,10 @@ class Budget(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('academic_year', 'term')
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Budget {self.academic_year} / {self.term}"
+        return f"{self.name} — {self.academic_year} / {self.term}"
 
 class PaymentAllocation(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='allocations')
