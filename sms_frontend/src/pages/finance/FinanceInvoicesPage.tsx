@@ -834,9 +834,9 @@ export default function FinanceInvoicesPage() {
       </section>
 
       {selectedInvoiceId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-950 p-6">
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6">
+          <div className="flex w-full max-w-4xl max-h-[90vh] flex-col rounded-2xl border border-slate-800 bg-slate-950">
+            <div className="flex flex-shrink-0 items-center justify-between rounded-t-2xl border-b border-slate-800 bg-slate-950 px-6 py-4">
               <div className="flex items-center gap-3">
                 <button
                   className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
@@ -846,8 +846,15 @@ export default function FinanceInvoicesPage() {
                 </button>
                 <h3 className="text-lg font-display font-semibold">Invoice detail</h3>
               </div>
+              <button
+                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-400 hover:text-white transition"
+                onClick={() => setSelectedInvoiceId(null)}
+              >
+                ✕ Close
+              </button>
             </div>
-            <div className="mt-4 grid gap-6 lg:grid-cols-3">
+            <div className="flex-1 overflow-y-auto p-6">
+            <div className="grid gap-6 lg:grid-cols-3">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
                 <h4 className="text-base font-semibold">INV-{selectedInvoiceId}</h4>
                 {invoiceDetail ? (
@@ -1117,6 +1124,7 @@ export default function FinanceInvoicesPage() {
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>

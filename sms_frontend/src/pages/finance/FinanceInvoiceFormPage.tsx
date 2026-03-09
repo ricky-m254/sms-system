@@ -397,7 +397,7 @@ export default function FinanceInvoiceFormPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sticky top-0 z-20">
         <button
           onClick={() => navigate('/modules/finance/invoices')}
           className="mb-3 flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
