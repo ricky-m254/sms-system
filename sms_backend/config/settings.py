@@ -146,6 +146,7 @@ TENANT_APPS = [
     "communication",
     "reporting",
     "clockin",
+    "timetable",
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",

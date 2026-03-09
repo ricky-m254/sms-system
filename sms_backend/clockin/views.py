@@ -11,9 +11,25 @@ from .serializers import (
     ClockEventSerializer
 )
 from school.permissions import HasModuleAccess
-from school.models import AttendanceRecord as StudentAttendanceRecord
+from school.models import AttendanceRecord as StudentAttendanceRecord, UserProfile
 from hr.models import AttendanceRecord as EmployeeAttendanceRecord
+from communication.models import Notification
 from django.db.models import Q
+
+def _notify_admins(title, message, priority='Important', action_url=''):
+    admin_users = UserProfile.objects.filter(
+        role__name__in=['ADMIN', 'TENANT_SUPER_ADMIN']
+    ).select_related('user')
+    for up in admin_users:
+        Notification.objects.create(
+            recipient=up.user,
+            notification_type='HR',
+            title=title,
+            message=message,
+            priority=priority,
+            action_url=action_url,
+            delivery_status='Sent',
+        )
 
 class ClockInModuleMixin:
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
@@ -105,6 +121,54 @@ class ScanView(APIView):
             date=event_date,
             is_late=is_late
         )
+
+        if is_late:
+            minutes_late = 0
+            shift = SchoolShift.objects.filter(
+                Q(person_type='ALL') | Q(person_type=person.person_type),
+                is_active=True
+            ).first()
+            if shift:
+                arrival = datetime.combine(event_date, shift.expected_arrival)
+                if timezone.is_aware(event_timestamp):
+                    arrival = timezone.make_aware(arrival)
+                minutes_late = max(0, int((event_timestamp - arrival).total_seconds() / 60) - shift.grace_period_minutes)
+            
+            event_time_str = event_timestamp.strftime("%H:%M")
+            _notify_admins(
+                title=f"Late Arrival: {person.display_name}",
+                message=f"{person.display_name} ({person.get_person_type_display()}) clocked in at {event_time_str} — {minutes_late} min(s) late.",
+                priority='Important',
+                action_url='/modules/clockin/dashboard',
+            )
+
+            # Timetable Integration: Auto-flag uncovered lessons for teachers
+            if person.person_type == 'TEACHER' and person.employee and person.employee.user:
+                try:
+                    from timetable.models import TimetableSlot, LessonCoverage
+                    today_weekday = event_date.isoweekday() # 1=Mon, 5=Fri
+                    if 1 <= today_weekday <= 5:
+                        current_time = event_timestamp.time()
+                        # Slots that started before or at clock-in time
+                        affected_slots = TimetableSlot.objects.filter(
+                            day_of_week=today_weekday,
+                            teacher=person.employee.user,
+                            start_time__lte=current_time,
+                            is_active=True
+                        )
+                        for slot in affected_slots:
+                            LessonCoverage.objects.get_or_create(
+                                slot=slot,
+                                date=event_date,
+                                defaults={
+                                    'original_teacher': person.employee.user,
+                                    'status': 'Uncovered',
+                                    'auto_flagged': True,
+                                    'notes': f'Auto-flagged due to late arrival at {event_time_str}'
+                                }
+                            )
+                except Exception as te:
+                    print(f"Timetable integration failed: {te}")
 
         # 7. Auto-update Attendance
         attendance_updated = False

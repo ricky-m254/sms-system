@@ -156,6 +156,13 @@ const ClockInDevicesPage = lazy(() => import('./pages/clockin/ClockInDevicesPage
 const ClockInShiftsPage = lazy(() => import('./pages/clockin/ClockInShiftsPage'))
 const ClockInReportsPage = lazy(() => import('./pages/clockin/ClockInReportsPage'))
 
+const TimetableLayout = lazy(() => import('./pages/timetable/TimetableLayout'))
+const TimetableGridPage = lazy(() => import('./pages/timetable/TimetableGridPage'))
+const TimetableMySchedulePage = lazy(() => import('./pages/timetable/TimetableMySchedulePage'))
+const TimetableCoveragePage = lazy(() => import('./pages/timetable/TimetableCoveragePage'))
+const TimetableChangeRequestsPage = lazy(() => import('./pages/timetable/TimetableChangeRequestsPage'))
+const TimetableStaffDutyPage = lazy(() => import('./pages/timetable/TimetableStaffDutyPage'))
+
 function RouteLoader() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
@@ -186,6 +193,7 @@ function App() {
   const storeEnabled = isModuleRouteEnabled('store')
   const dispensaryEnabled = isModuleRouteEnabled('dispensary')
   const clockinEnabled = isModuleRouteEnabled('clockin')
+  const timetableEnabled = isModuleRouteEnabled('timetable')
 
   return (
     <Suspense fallback={<RouteLoader />}>
@@ -444,6 +452,17 @@ function App() {
           <Route path="devices" element={<ClockInDevicesPage />} />
           <Route path="shifts" element={<ClockInShiftsPage />} />
           <Route path="reports" element={<ClockInReportsPage />} />
+        </Route>
+        <Route
+          path="/modules/timetable/*"
+          element={isTenantAuth && timetableEnabled ? <TimetableLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<Navigate to="/modules/timetable/grid" replace />} />
+          <Route path="grid" element={<TimetableGridPage />} />
+          <Route path="my-schedule" element={<TimetableMySchedulePage />} />
+          <Route path="coverage" element={<TimetableCoveragePage />} />
+          <Route path="change-requests" element={<TimetableChangeRequestsPage />} />
+          <Route path="staff-duties" element={<TimetableStaffDutyPage />} />
         </Route>
         <Route path="/modules/:moduleKey" element={<Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
