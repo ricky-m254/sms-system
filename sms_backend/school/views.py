@@ -1398,6 +1398,27 @@ class BudgetViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(term_id=term)
         return queryset.order_by('-updated_at', '-id')
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        academic_year = serializer.validated_data.get('academic_year')
+        term = serializer.validated_data.get('term')
+        defaults = {
+            'monthly_budget': serializer.validated_data.get('monthly_budget', 0),
+            'quarterly_budget': serializer.validated_data.get('quarterly_budget', 0),
+            'annual_budget': serializer.validated_data.get('annual_budget', 0),
+            'categories': serializer.validated_data.get('categories', []),
+            'is_active': True,
+        }
+        instance, created = Budget.objects.update_or_create(
+            academic_year=academic_year,
+            term=term,
+            defaults=defaults,
+        )
+        out = self.get_serializer(instance)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(out.data, status=status_code)
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save(update_fields=['is_active', 'updated_at'])

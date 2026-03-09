@@ -451,10 +451,13 @@ export default function FinanceExpensesPage() {
       annual_budget: Number(annualBudget) || 0,
     }
     try {
+      let savedMessage = 'Budget saved.'
       if (budgetModalMode === 'edit' && selectedBudget?.id) {
         await apiClient.put(`/finance/budgets/${selectedBudget.id}/`, payload)
+        savedMessage = 'Budget updated successfully.'
       } else {
-        await apiClient.post('/finance/budgets/', payload)
+        const resp = await apiClient.post('/finance/budgets/', payload)
+        savedMessage = resp.status === 201 ? 'Budget created successfully.' : 'Budget updated for this term (already existed).'
       }
       await (async () => {
         const response = await apiClient.get<Budget[] | { results: Budget[]; count: number }>(
@@ -463,7 +466,7 @@ export default function FinanceExpensesPage() {
         )
         setBudgets(normalizePaginatedResponse(response.data).items)
       })()
-      setBudgetNotice('Budget saved successfully.')
+      setBudgetNotice(savedMessage)
     } catch (err) {
       setBudgetNotice(extractApiErrorMessage(err, 'Budget API unavailable. Save failed.'))
     } finally {
