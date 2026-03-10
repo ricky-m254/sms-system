@@ -410,9 +410,9 @@ export default function HrEmployeesPage() {
                   <td className="px-4 py-3 text-slate-300">{employee.join_date}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Link className="text-emerald-300 hover:text-emerald-200 text-xs" to={`/modules/hr/employees/${employee.id}`}>Open</Link>
-                      <button onClick={() => startEditEmployee(employee)} className="rounded px-2 py-0.5 text-[10px] border border-slate-700 text-slate-300">Edit</button>
-                      <button onClick={() => setDeletingEmployeeId(employee.id)} className="rounded px-2 py-0.5 text-[10px] border border-rose-700/50 text-rose-300">Deactivate</button>
+                      <Link className="rounded-md px-2 py-1 text-xs font-semibold text-emerald-300 hover:text-emerald-200 border border-emerald-700/40" to={`/modules/hr/employees/${employee.id}`}>Open</Link>
+                      <button onClick={() => startEditEmployee(employee)} className="rounded-md px-2 py-1 text-xs font-semibold border border-slate-600 text-slate-200 hover:bg-slate-700/50">Edit</button>
+                      <button onClick={() => setDeletingEmployeeId(employee.id)} className="rounded-md px-2 py-1 text-xs font-semibold border border-rose-600/50 text-rose-300 hover:bg-rose-500/10">Delete</button>
                     </div>
                   </td>
                 </tr>

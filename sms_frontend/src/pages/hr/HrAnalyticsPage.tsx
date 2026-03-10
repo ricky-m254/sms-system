@@ -131,29 +131,6 @@ export default function HrAnalyticsPage() {
       (payrollCosts?.by_month ?? []).map((row) => [String(row.month), row.gross, row.deductions, row.net]),
     )
 
-  const exportSnapshotJson = () => {
-    const payload = {
-      year: Number(year),
-      month: Number(month),
-      summary,
-      turnover,
-      attendance,
-      leave,
-      diversity,
-      payroll_costs: payrollCosts,
-      headcount,
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = `hr_analytics_snapshot_${year}_${month}.json`
-    document.body.appendChild(anchor)
-    anchor.click()
-    anchor.remove()
-    URL.revokeObjectURL(url)
-  }
-
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
@@ -174,7 +151,6 @@ export default function HrAnalyticsPage() {
           </label>
           <button onClick={() => void load(year, month)} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 sm:self-end">Refresh</button>
           <button onClick={exportHeadcount} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:self-end">Export Headcount</button>
-          <button onClick={exportSnapshotJson} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:self-end">Export Snapshot</button>
         </div>
       </section>
 

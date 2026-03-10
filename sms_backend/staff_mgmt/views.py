@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from school.permissions import HasModuleAccess
+from school.models import Department as SchoolDepartment
 from .models import (
     StaffMember,
     StaffQualification,
@@ -218,6 +219,10 @@ class StaffEmergencyContactViewSet(StaffModuleAccessMixin, viewsets.ModelViewSet
 class StaffDepartmentViewSet(StaffModuleAccessMixin, viewsets.ModelViewSet):
     queryset = StaffDepartment.objects.filter(is_active=True).order_by("name")
     serializer_class = StaffDepartmentSerializer
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        SchoolDepartment.objects.get_or_create(name=instance.name, defaults={"description": instance.description or ""})
 
     def perform_destroy(self, instance):
         instance.is_active = False

@@ -5,7 +5,7 @@ import { extractApiErrorMessage } from '../../utils/forms'
 import ConfirmDialog from '../../components/ConfirmDialog'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
-type DocumentRow = { id: number; staff: number; staff_name: string; title: string; document_type: string; verification_status: string; expiry_date: string | null }
+type DocumentRow = { id: number; staff: number; staff_name: string; title: string; document_type: string; verification_status: string; expiry_date: string | null; file: string; file_size: number; mime_type: string }
 
 function asArray<T>(value: T[] | { results?: T[] }): T[] {
   if (Array.isArray(value)) return value
@@ -113,21 +113,35 @@ export default function StaffDocumentsPage() {
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <h2 className="text-sm font-semibold">Documents ({documents.length})</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
-            {documents.map((row) => (
-              <div key={row.id} className="flex items-center justify-between rounded-lg bg-slate-950/60 px-3 py-2">
-                <div>
-                  <p>{row.title}</p>
-                  <p className="text-slate-400">{row.staff_name} | {row.document_type} | {row.verification_status}</p>
+            {documents.map((row) => {
+              const rawFileName = row.file ? row.file.split('/').pop() ?? '' : ''
+              const fileSizeKb = row.file_size ? (row.file_size / 1024).toFixed(1) + ' KB' : ''
+              return (
+                <div key={row.id} className="rounded-lg bg-slate-950/60 px-3 py-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-slate-100 truncate">{row.title}</p>
+                      <p className="text-slate-400 mt-0.5">{row.staff_name} · {row.document_type}</p>
+                      {rawFileName ? (
+                        <p className="text-slate-500 mt-0.5 truncate">
+                          📎 {rawFileName}{fileSizeKb ? ` (${fileSizeKb})` : ''}
+                        </p>
+                      ) : null}
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${row.verification_status === 'Verified' ? 'bg-emerald-500/10 text-emerald-400' : row.verification_status === 'Rejected' ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                      {row.verification_status}
+                    </span>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {row.verification_status !== 'Verified' ? (
+                      <button onClick={() => verify(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Verify</button>
+                    ) : null}
+                    <button onClick={() => download(row.id)} className="rounded-lg border border-emerald-700/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">⬇ Download</button>
+                    <button onClick={() => setDeleteTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  {row.verification_status !== 'Verified' ? (
-                    <button onClick={() => verify(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Verify</button>
-                  ) : null}
-                  <button onClick={() => download(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Download</button>
-                  <button onClick={() => setDeleteTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
             {documents.length === 0 ? <p className="text-slate-500">No documents uploaded.</p> : null}
           </div>
         </article>
