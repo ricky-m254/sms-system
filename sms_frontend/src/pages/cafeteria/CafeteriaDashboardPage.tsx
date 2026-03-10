@@ -16,10 +16,10 @@ export default function CafeteriaDashboardPage() {
   if (loading) return <div className="p-8 text-slate-400 animate-pulse">Loading dashboard...</div>;
 
   const cards = [
-    { label: "Today's Meals", value: stats?.today_meal_count ?? 0, icon: Utensils, color: 'text-emerald-400' },
+    { label: "Today's Meals Served", value: stats?.today_meal_count ?? 0, icon: Utensils, color: 'text-emerald-400' },
     { label: 'Enrolled Students', value: stats?.enrolled_students ?? 0, icon: Users, color: 'text-blue-400' },
-    { label: "This Week's Plans", value: stats?.active_meal_plans ?? 0, icon: ClipboardList, color: 'text-amber-400' },
-    { label: 'Recent Transactions', value: stats?.recent_transactions ?? 0, icon: Wallet, color: 'text-purple-400' },
+    { label: "This Week's Menus", value: stats?.this_week_menu_count ?? 0, icon: ClipboardList, color: 'text-amber-400' },
+    { label: 'Total Meal Records', value: stats?.today_meal_count ?? 0, icon: Wallet, color: 'text-purple-400' },
   ];
 
   return (
