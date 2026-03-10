@@ -14,6 +14,7 @@ const navSections = [
       { label: 'Fee Structures', to: '/modules/finance/fee-structures' },
       { label: 'Fee Assignments', to: '/modules/finance/fee-assignments' },
       { label: 'Adjustments', to: '/modules/finance/adjustments' },
+      { label: 'Dispensary Records', to: '/modules/finance/dispensary' },
       { label: 'Accounts', to: '/modules/finance/accounts' },
       { label: 'Reconciliation', to: '/modules/finance/reconciliation' },
       { label: 'Reports', to: '/modules/finance/reports' },

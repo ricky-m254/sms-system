@@ -1,53 +1,82 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 
+type Employee = { id: number; first_name: string; last_name: string; employee_id: string }
 type StaffDutySlot = {
-  id: number
-  employee: number
-  employee_name: string
-  day_of_week: number
-  duty_start: string
-  duty_end: string
-  location: string
-  description: string
-  is_active: boolean
-  notes: string
+  id: number; employee: number; employee_name: string; day_of_week: number
+  duty_start: string; duty_end: string; location: string; description: string; is_active: boolean; notes: string
 }
+
+function asArray<T>(v: T[] | { results?: T[] }): T[] {
+  if (Array.isArray(v)) return v
+  return Array.isArray(v.results) ? v.results : []
+}
+
+const days = [
+  { id: 1, label: 'Monday' }, { id: 2, label: 'Tuesday' }, { id: 3, label: 'Wednesday' },
+  { id: 4, label: 'Thursday' }, { id: 5, label: 'Friday' },
+]
+const getDayLabel = (id: number) => days.find(d => d.id === id)?.label || 'Unknown'
 
 export default function TimetableStaffDutyPage() {
   const [dutySlots, setDutySlots] = useState<StaffDutySlot[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [dayFilter, setDayFilter] = useState<string>('')
+  const [modal, setModal] = useState(false)
+  const [editing, setEditing] = useState<StaffDutySlot | null>(null)
+  const [empId, setEmpId] = useState<number | ''>('')
+  const [dayOfWeek, setDayOfWeek] = useState('1')
+  const [dutyStart, setDutyStart] = useState('07:30')
+  const [dutyEnd, setDutyEnd] = useState('08:00')
+  const [location, setLocation] = useState('')
+  const [description, setDescription] = useState('')
 
   const fetchDuties = async () => {
     setIsLoading(true)
     try {
-      const params: any = {}
-      if (dayFilter) params.day_of_week = dayFilter
-      const res = await apiClient.get('/timetable/duty-slots/', { params })
-      setDutySlots(res.data.results || res.data)
+      const [rd, re] = await Promise.all([
+        apiClient.get<StaffDutySlot[] | { results: StaffDutySlot[] }>('/timetable/duty-slots/', { params: dayFilter ? { day_of_week: dayFilter } : {} }),
+        apiClient.get<Employee[] | { results: Employee[] }>('/hr/employees/'),
+      ])
+      setDutySlots(asArray(rd.data)); setEmployees(asArray(re.data))
       setError(null)
-    } catch (err) {
-      setError('Failed to load staff duty slots.')
-    } finally {
-      setIsLoading(false)
-    }
+    } catch { setError('Failed to load staff duty slots.') }
+    finally { setIsLoading(false) }
   }
 
-  useEffect(() => {
-    fetchDuties()
-  }, [dayFilter])
+  useEffect(() => { void fetchDuties() }, [dayFilter])
 
-  const days = [
-    { id: 1, label: 'Monday' },
-    { id: 2, label: 'Tuesday' },
-    { id: 3, label: 'Wednesday' },
-    { id: 4, label: 'Thursday' },
-    { id: 5, label: 'Friday' },
-  ]
+  const openCreate = () => {
+    setEditing(null); setEmpId(''); setDayOfWeek('1'); setDutyStart('07:30'); setDutyEnd('08:00'); setLocation(''); setDescription('')
+    setModal(true)
+  }
 
-  const getDayLabel = (id: number) => days.find(d => d.id === id)?.label || 'Unknown'
+  const openEdit = (d: StaffDutySlot) => {
+    setEditing(d); setEmpId(d.employee); setDayOfWeek(String(d.day_of_week)); setDutyStart(d.duty_start.substring(0,5)); setDutyEnd(d.duty_end.substring(0,5)); setLocation(d.location); setDescription(d.description)
+    setModal(true)
+  }
+
+  const save = async () => {
+    if (!empId || !location.trim()) return
+    setError(null)
+    try {
+      const p = { employee: empId, day_of_week: Number(dayOfWeek), duty_start: dutyStart, duty_end: dutyEnd, location: location.trim(), description: description.trim(), is_active: true }
+      if (editing) { await apiClient.put(`/timetable/duty-slots/${editing.id}/`, p); setNotice('Duty updated.') }
+      else { await apiClient.post('/timetable/duty-slots/', p); setNotice('Duty added.') }
+      setModal(false); await fetchDuties()
+    } catch { setError('Unable to save duty slot.') }
+  }
+
+  const del = async (id: number) => {
+    if (!confirm('Delete this duty assignment?')) return
+    try { await apiClient.delete(`/timetable/duty-slots/${id}/`); await fetchDuties() }
+    catch { setError('Unable to delete duty.') }
+  }
+
+  const empLabel = (emp: Employee) => `${emp.first_name} ${emp.last_name}`.trim() || emp.employee_id
 
   return (
     <div className="space-y-6">
@@ -56,10 +85,13 @@ export default function TimetableStaffDutyPage() {
           <h1 className="text-xl font-display font-semibold text-emerald-400">Staff Duties</h1>
           <p className="mt-1 text-sm text-slate-400">Non-teaching staff duty assignments and locations.</p>
         </div>
-        <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
+        <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
           + Add Duty
         </button>
       </header>
+
+      {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
+      {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <div className="flex flex-wrap gap-4 mb-6">
@@ -72,8 +104,6 @@ export default function TimetableStaffDutyPage() {
             {days.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
           </select>
         </div>
-
-        {error && <p className="text-rose-400 text-sm mb-4">{error}</p>}
 
         {isLoading ? (
           <div className="py-12 text-center">
@@ -89,38 +119,29 @@ export default function TimetableStaffDutyPage() {
                   <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Location</th>
                   <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Time</th>
                   <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Description</th>
-                  <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Action</th>
+                  <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {dutySlots.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-500 italic">No duty assignments found.</td>
-                  </tr>
+                  <tr><td colSpan={6} className="p-8 text-center text-slate-500 italic">No duty assignments found.</td></tr>
                 ) : (
                   dutySlots.map((duty) => (
                     <tr key={duty.id} className="hover:bg-slate-800/30 transition-colors group">
+                      <td className="p-4 border-b border-slate-800"><p className="font-semibold text-slate-200">{duty.employee_name}</p></td>
+                      <td className="p-4 border-b border-slate-800 text-slate-300 font-medium">{getDayLabel(duty.day_of_week)}</td>
                       <td className="p-4 border-b border-slate-800">
-                        <p className="font-semibold text-slate-200">{duty.employee_name}</p>
-                      </td>
-                      <td className="p-4 border-b border-slate-800 text-slate-300 font-medium">
-                        {getDayLabel(duty.day_of_week)}
-                      </td>
-                      <td className="p-4 border-b border-slate-800">
-                         <span className="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded text-xs border border-emerald-500/20">
-                            {duty.location}
-                         </span>
+                        <span className="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded text-xs border border-emerald-500/20">{duty.location}</span>
                       </td>
                       <td className="p-4 border-b border-slate-800 text-slate-300 font-mono text-xs">
                         {duty.duty_start.substring(0,5)} - {duty.duty_end.substring(0,5)}
                       </td>
-                      <td className="p-4 border-b border-slate-800 text-xs text-slate-400 max-w-[200px] truncate">
-                        {duty.description}
-                      </td>
+                      <td className="p-4 border-b border-slate-800 text-xs text-slate-400 max-w-[200px] truncate">{duty.description}</td>
                       <td className="p-4 border-b border-slate-800">
-                        <button className="text-[10px] uppercase font-bold tracking-wider text-slate-400 hover:text-emerald-400 transition-colors px-3 py-1.5 rounded-lg border border-slate-800 hover:border-emerald-500/50">
-                          Request Change
-                        </button>
+                        <div className="flex gap-2">
+                          <button onClick={() => openEdit(duty)} className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800 transition">Edit</button>
+                          <button onClick={() => del(duty.id)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-3 py-1 text-xs text-rose-300 hover:bg-rose-500/20 transition">Delete</button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -130,6 +151,31 @@ export default function TimetableStaffDutyPage() {
           </div>
         )}
       </section>
+
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3">
+            <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Duty' : 'Add Duty'}</h2>
+            <select value={empId} onChange={e => setEmpId(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+              <option value="">Select employee</option>
+              {employees.map(e => <option key={e.id} value={e.id}>{empLabel(e)}</option>)}
+            </select>
+            <select value={dayOfWeek} onChange={e => setDayOfWeek(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+              {days.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
+            </select>
+            <div className="grid grid-cols-2 gap-3">
+              <input type="time" value={dutyStart} onChange={e => setDutyStart(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+              <input type="time" value={dutyEnd} onChange={e => setDutyEnd(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+            </div>
+            <input value={location} onChange={e => setLocation(e.target.value)} placeholder="Location / Station" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm resize-none" />
+            <div className="flex gap-3 pt-1">
+              <button onClick={save} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200">{editing ? 'Update' : 'Add'}</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

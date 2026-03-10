@@ -182,20 +182,21 @@ export default function StaffDepartmentsRolesPage() {
         </article>
 
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <h2 className="text-sm font-semibold">Departments <span className="text-xs font-normal text-slate-500">(from Academics)</span></h2>
+          <h2 className="text-sm font-semibold">All Departments</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
-            {schoolDepts.length > 0 ? schoolDepts.map((row) => (
-              <div key={row.id} className="rounded-lg bg-slate-950/60 px-3 py-2">
+            {departments.map((row) => (
+              <div key={`staff-${row.id}`} className="rounded-lg bg-slate-950/60 px-3 py-2">
                 <p className="font-medium">{row.name}</p>
-                {row.description ? <p className="text-slate-500 truncate">{row.description}</p> : null}
-              </div>
-            )) : departments.map((row) => (
-              <div key={row.id} className="rounded-lg bg-slate-950/60 px-3 py-2">
-                <p>{row.name}</p>
-                <p className="text-slate-400">{row.code} - {row.department_type}</p>
+                <p className="text-slate-500">{row.code} · {row.department_type}</p>
               </div>
             ))}
-            {schoolDepts.length === 0 && departments.length === 0 ? <p className="text-slate-500">No departments yet.</p> : null}
+            {schoolDepts.filter(sd => !departments.some(d => d.name.toLowerCase() === sd.name.toLowerCase())).map((row) => (
+              <div key={`school-${row.id}`} className="rounded-lg bg-slate-950/60 px-3 py-2 border border-blue-500/10">
+                <p className="font-medium">{row.name}</p>
+                {row.description ? <p className="text-slate-500 truncate">{row.description}</p> : <p className="text-slate-600">Academic dept.</p>}
+              </div>
+            ))}
+            {departments.length === 0 && schoolDepts.length === 0 ? <p className="text-slate-500">No departments yet.</p> : null}
           </div>
         </article>
       </section>

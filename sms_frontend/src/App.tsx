@@ -18,6 +18,7 @@ const StudentsReportsPage = lazy(() => import('./pages/students/StudentsReportsP
 const StudentProfilePage = lazy(() => import('./pages/students/StudentProfilePage'))
 const FinanceLayout = lazy(() => import('./pages/finance/FinanceLayout'))
 const FinanceSummaryPage = lazy(() => import('./pages/finance/FinanceSummaryPage'))
+const FinanceDispensaryPage = lazy(() => import('./pages/finance/FinanceDispensaryPage'))
 const FinanceInvoicesPage = lazy(() => import('./pages/finance/FinanceInvoicesPage'))
 const FinanceInvoiceFormPage = lazy(() => import('./pages/finance/FinanceInvoiceFormPage'))
 const FinancePaymentsPage = lazy(() => import('./pages/finance/FinancePaymentsPage'))
@@ -189,6 +190,10 @@ const VisitorMgmtPickupLogsPage = lazy(() => import('./pages/visitor_mgmt/Visito
 const ExaminationsLayout = lazy(() => import('./pages/examinations/ExaminationsLayout'))
 const ExaminationsDashboardPage = lazy(() => import('./pages/examinations/ExaminationsDashboardPage'))
 const ExaminationsSessionsPage = lazy(() => import('./pages/examinations/ExaminationsSessionsPage'))
+const ExaminationsPapersPage = lazy(() => import('./pages/examinations/ExaminationsPapersPage'))
+const ExaminationsSeatsPage = lazy(() => import('./pages/examinations/ExaminationsSeatsPage'))
+const ExaminationsResultsPage = lazy(() => import('./pages/examinations/ExaminationsResultsPage'))
+const ExaminationsGradesPage = lazy(() => import('./pages/examinations/ExaminationsGradesPage'))
 
 const AlumniLayout = lazy(() => import('./pages/alumni/AlumniLayout'))
 const AlumniDashboardPage = lazy(() => import('./pages/alumni/AlumniDashboardPage'))
@@ -386,6 +391,7 @@ function App() {
           <Route path="fee-assignments/:id/edit" element={<FinanceFeeAssignmentFormPage />} />
           <Route path="adjustments" element={<FinanceAdjustmentsPage />} />
           <Route path="adjustments/new" element={<FinanceAdjustmentFormPage />} />
+          <Route path="dispensary" element={<FinanceDispensaryPage />} />
           <Route path="budgets" element={<Navigate to="/modules/finance/expenses" replace />} />
           <Route path="accounts" element={<FinanceAccountsPage />} />
           <Route path="reconciliation" element={<FinanceReconciliationPage />} />
@@ -599,6 +605,10 @@ function App() {
           <Route index element={<ExaminationsDashboardPage />} />
           <Route path="dashboard" element={<ExaminationsDashboardPage />} />
           <Route path="sessions" element={<ExaminationsSessionsPage />} />
+          <Route path="papers" element={<ExaminationsPapersPage />} />
+          <Route path="seats" element={<ExaminationsSeatsPage />} />
+          <Route path="results" element={<ExaminationsResultsPage />} />
+          <Route path="grades" element={<ExaminationsGradesPage />} />
         </Route>
         <Route
           path="/modules/alumni/*"
