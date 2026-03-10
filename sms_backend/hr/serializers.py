@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from school.models import Department as SchoolDepartment
 from .models import (
     Staff,
     Department,
@@ -38,25 +39,20 @@ class StaffSerializer(serializers.ModelSerializer):
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
-    parent_name = serializers.CharField(source="parent.name", read_only=True)
     head_name = serializers.SerializerMethodField()
 
     class Meta:
-        model = Department
+        model = SchoolDepartment
         fields = [
             "id",
             "name",
-            "code",
-            "parent",
-            "parent_name",
+            "description",
             "head",
             "head_name",
-            "description",
-            "budget",
             "is_active",
             "created_at",
         ]
-        read_only_fields = ["created_at", "parent_name", "head_name"]
+        read_only_fields = ["created_at", "head_name"]
 
     def get_head_name(self, obj):
         if not obj.head:

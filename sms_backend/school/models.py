@@ -1640,3 +1640,40 @@ class DispensaryStock(models.Model):
     class Meta:
         ordering = ['medication_name']
         verbose_name_plural = 'Dispensary Stock'
+
+
+class DispensaryDeliveryNote(models.Model):
+    STATUS_CHOICES = [('Pending', 'Pending'), ('Received', 'Received'), ('Cancelled', 'Cancelled')]
+
+    reference_number = models.CharField(max_length=60, blank=True)
+    supplier = models.CharField(max_length=200)
+    delivery_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    notes = models.TextField(blank=True)
+    finance_expense_id = models.PositiveIntegerField(null=True, blank=True)
+    received_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='delivery_notes_received')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.reference_number or 'DN'} - {self.supplier} ({self.delivery_date})"
+
+    class Meta:
+        ordering = ['-delivery_date', '-created_at']
+
+
+class DispensaryDeliveryItem(models.Model):
+    delivery_note = models.ForeignKey(DispensaryDeliveryNote, on_delete=models.CASCADE, related_name='items')
+    medication_name = models.CharField(max_length=200)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    unit = models.CharField(max_length=30, default='tablets')
+    unit_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_cost = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    stock = models.ForeignKey(DispensaryStock, on_delete=models.SET_NULL, null=True, blank=True, related_name='delivery_items')
+
+    def save(self, *args, **kwargs):
+        self.total_cost = self.quantity * self.unit_cost
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.medication_name} x{self.quantity}"

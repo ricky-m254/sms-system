@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from school.permissions import HasModuleAccess, IsSchoolAdmin
+from school.models import Department as SchoolDepartment
 from .events import staff_created, staff_updated, staff_deactivated
 from .models import (
     AttendanceRecord,
@@ -255,7 +256,7 @@ class EmployeeDocumentViewSet(HrModuleAccessMixin, viewsets.ModelViewSet):
 
 
 class DepartmentViewSet(HrModuleAccessMixin, viewsets.ModelViewSet):
-    queryset = Department.objects.filter(is_active=True).order_by("name")
+    queryset = SchoolDepartment.objects.filter(is_active=True).order_by("name")
     serializer_class = DepartmentSerializer
 
     def perform_destroy(self, instance):
@@ -270,15 +271,15 @@ class DepartmentViewSet(HrModuleAccessMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="org-chart")
     def org_chart(self, request):
-        departments = Department.objects.filter(is_active=True).order_by("name")
+        departments = SchoolDepartment.objects.filter(is_active=True).order_by("name")
         data = []
         for department in departments:
             data.append(
                 {
                     "id": department.id,
                     "name": department.name,
-                    "code": department.code,
-                    "parent_id": department.parent_id,
+                    "code": "",
+                    "parent_id": None,
                     "head": (
                         f"{department.head.first_name} {department.head.last_name}".strip()
                         if department.head

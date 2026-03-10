@@ -16,7 +16,8 @@ from .models import (
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
     VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
     StoreCategory, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
-    DispensaryVisit, DispensaryPrescription, DispensaryStock
+    DispensaryVisit, DispensaryPrescription, DispensaryStock,
+    DispensaryDeliveryNote, DispensaryDeliveryItem,
 )
 from hr.models import Staff
 from hr.models import Department as HrDepartment
@@ -974,3 +975,33 @@ class DispensaryStockSerializer(serializers.ModelSerializer):
             'updated_at', 'created_at'
         ]
         read_only_fields = ['updated_at', 'created_at']
+
+
+class DispensaryDeliveryItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DispensaryDeliveryItem
+        fields = ['id', 'medication_name', 'quantity', 'unit', 'unit_cost', 'total_cost', 'stock']
+        read_only_fields = ['total_cost']
+
+
+class DispensaryDeliveryNoteSerializer(serializers.ModelSerializer):
+    items = DispensaryDeliveryItemSerializer(many=True, read_only=True)
+    received_by_name = serializers.SerializerMethodField()
+    grand_total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DispensaryDeliveryNote
+        fields = [
+            'id', 'reference_number', 'supplier', 'delivery_date', 'status',
+            'notes', 'finance_expense_id', 'received_by', 'received_by_name',
+            'items', 'grand_total', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'received_by_name', 'grand_total']
+
+    def get_received_by_name(self, obj):
+        if obj.received_by:
+            return f"{obj.received_by.first_name} {obj.received_by.last_name}".strip() or obj.received_by.username
+        return ''
+
+    def get_grand_total(self, obj):
+        return str(sum(item.total_cost for item in obj.items.all()))

@@ -33,7 +33,8 @@ from .models import (
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
     VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
     StoreCategory, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
-    DispensaryVisit, DispensaryPrescription, DispensaryStock
+    DispensaryVisit, DispensaryPrescription, DispensaryStock,
+    DispensaryDeliveryNote, DispensaryDeliveryItem,
 )
 from hr.models import Staff
 from academics.models import AcademicYear, Term, SchoolClass
@@ -6000,3 +6001,67 @@ class DispensaryDashboardView(APIView):
             'referred_count': referred_count,
             'recent_visits': recent_visits,
         })
+
+
+class DispensaryDeliveryNoteViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import DispensaryDeliveryNoteSerializer
+        return DispensaryDeliveryNoteSerializer
+
+    def get_queryset(self):
+        qs = DispensaryDeliveryNote.objects.prefetch_related('items').select_related('received_by').all()
+        supplier = self.request.query_params.get('supplier')
+        if supplier:
+            qs = qs.filter(supplier__icontains=supplier)
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+    def perform_create(self, serializer):
+        note = serializer.save(received_by=self.request.user)
+        items_data = self.request.data.get('items', [])
+        for item in items_data:
+            DispensaryDeliveryItem.objects.create(
+                delivery_note=note,
+                medication_name=item.get('medication_name', ''),
+                quantity=item.get('quantity', 0),
+                unit=item.get('unit', 'tablets'),
+                unit_cost=item.get('unit_cost', 0),
+                stock_id=item.get('stock') or None,
+            )
+
+    @action(detail=True, methods=['post'], url_path='mark-received')
+    def mark_received(self, request, pk=None):
+        note = self.get_object()
+        note.status = 'Received'
+        note.received_by = request.user
+        note.save(update_fields=['status', 'received_by'])
+        for item in note.items.all():
+            if item.stock:
+                item.stock.current_quantity += item.quantity
+                item.stock.save(update_fields=['current_quantity'])
+        from .serializers import DispensaryDeliveryNoteSerializer
+        return Response(DispensaryDeliveryNoteSerializer(note).data)
+
+    @action(detail=True, methods=['post'], url_path='link-finance')
+    def link_finance(self, request, pk=None):
+        from .serializers import DispensaryDeliveryNoteSerializer
+        note = self.get_object()
+        from .models import Expense
+        grand_total = sum(item.total_cost for item in note.items.all())
+        try:
+            expense = Expense.objects.create(
+                amount=grand_total,
+                description=f"Dispensary delivery - {note.supplier} ({note.delivery_date})",
+                expense_type='Supplies',
+                date=note.delivery_date,
+                notes=f"Auto-linked from Delivery Note {note.reference_number or note.id}",
+            )
+            note.finance_expense_id = expense.id
+            note.save(update_fields=['finance_expense_id'])
+        except Exception:
+            pass
+        return Response(DispensaryDeliveryNoteSerializer(note).data)

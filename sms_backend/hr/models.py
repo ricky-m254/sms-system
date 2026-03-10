@@ -37,7 +37,7 @@ class Department(models.Model):
 
 class Position(models.Model):
     title = models.CharField(max_length=120)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="positions")
+    department = models.ForeignKey("school.Department", on_delete=models.SET_NULL, null=True, blank=True, related_name="hr_positions")
     description = models.TextField(blank=True)
     responsibilities = models.TextField(blank=True)
     qualifications = models.TextField(blank=True)
@@ -97,7 +97,7 @@ class Employee(models.Model):
     blood_group = models.CharField(max_length=10, blank=True)
     medical_conditions = models.TextField(blank=True)
 
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
+    department = models.ForeignKey("school.Department", on_delete=models.SET_NULL, null=True, blank=True, related_name="hr_employees")
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
     employment_type = models.CharField(max_length=20, choices=EMPLOYMENT_TYPE_CHOICES, default="Full-time")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Active")
@@ -178,7 +178,7 @@ class EmployeeDocument(models.Model):
 
 class WorkSchedule(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name="schedules")
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="schedules")
+    department = models.ForeignKey("school.Department", on_delete=models.SET_NULL, null=True, blank=True, related_name="hr_schedules")
     shift_start = models.TimeField()
     shift_end = models.TimeField()
     working_days = models.JSONField(default=list)
@@ -432,7 +432,7 @@ class JobPosting(models.Model):
     STATUS_CHOICES = [("Draft", "Draft"), ("Open", "Open"), ("Closed", "Closed")]
 
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True, related_name="job_postings")
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="job_postings")
+    department = models.ForeignKey("school.Department", on_delete=models.SET_NULL, null=True, blank=True, related_name="hr_job_postings")
     title = models.CharField(max_length=160)
     description = models.TextField(blank=True)
     requirements = models.TextField(blank=True)
