@@ -6033,6 +6033,20 @@ class DispensaryDeliveryNoteViewSet(viewsets.ModelViewSet):
                 stock_id=item.get('stock') or None,
             )
 
+    @action(detail=True, methods=['post'], url_path='add-item')
+    def add_item(self, request, pk=None):
+        from .serializers import DispensaryDeliveryNoteSerializer
+        note = self.get_object()
+        DispensaryDeliveryItem.objects.create(
+            delivery_note=note,
+            medication_name=request.data.get('medication_name', ''),
+            quantity=request.data.get('quantity', 0),
+            unit=request.data.get('unit', 'tablets'),
+            unit_cost=request.data.get('unit_cost', 0),
+        )
+        note.refresh_from_db()
+        return Response(DispensaryDeliveryNoteSerializer(note).data)
+
     @action(detail=True, methods=['post'], url_path='mark-received')
     def mark_received(self, request, pk=None):
         note = self.get_object()
@@ -6065,3 +6079,22 @@ class DispensaryDeliveryNoteViewSet(viewsets.ModelViewSet):
         except Exception:
             pass
         return Response(DispensaryDeliveryNoteSerializer(note).data)
+
+
+class DispensaryOutsideTreatmentViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import DispensaryOutsideTreatmentSerializer
+        return DispensaryOutsideTreatmentSerializer
+
+    def get_queryset(self):
+        from .models import DispensaryOutsideTreatment
+        qs = DispensaryOutsideTreatment.objects.select_related('student').all()
+        patient_type = self.request.query_params.get('patient_type')
+        if patient_type:
+            qs = qs.filter(patient_type=patient_type)
+        facility = self.request.query_params.get('facility')
+        if facility:
+            qs = qs.filter(facility_name__icontains=facility)
+        return qs

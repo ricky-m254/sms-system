@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type ObservationRow = { id: number; staff_name: string; observation_date: string; overall_rating: string | null; status: string }
@@ -20,6 +21,14 @@ export default function StaffPerformancePage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
+  const [deleteObsTarget, setDeleteObsTarget] = useState<ObservationRow | null>(null)
+  const [deletingObs, setDeletingObs] = useState(false)
+  const [deleteObsError, setDeleteObsError] = useState<string | null>(null)
+
+  const [deleteAppTarget, setDeleteAppTarget] = useState<AppraisalRow | null>(null)
+  const [deletingApp, setDeletingApp] = useState(false)
+  const [deleteAppError, setDeleteAppError] = useState<string | null>(null)
+
   const load = async () => {
     setError(null)
     try {
@@ -36,64 +45,54 @@ export default function StaffPerformancePage() {
     }
   }
 
-  useEffect(() => {
-    void load()
-  }, [])
+  useEffect(() => { void load() }, [])
 
   const createObservation = async () => {
     if (!selectedStaff || !observationDate) return
-    setError(null)
-    setNotice(null)
+    setError(null); setNotice(null)
     try {
-      await apiClient.post('/staff/observations/', {
-        staff: selectedStaff,
-        observer: selectedStaff,
-        observation_date: observationDate,
-        status: 'Draft',
-      })
+      await apiClient.post('/staff/observations/', { staff: selectedStaff, observer: selectedStaff, observation_date: observationDate, status: 'Draft' })
       setNotice('Observation created.')
       await load()
-    } catch {
-      setError('Unable to create observation.')
-    }
+    } catch { setError('Unable to create observation.') }
   }
 
   const submitObservation = async (id: number) => {
     setError(null)
-    try {
-      await apiClient.post(`/staff/observations/${id}/submit/`)
-      await load()
-    } catch {
-      setError('Unable to submit observation.')
-    }
+    try { await apiClient.post(`/staff/observations/${id}/submit/`); await load() }
+    catch { setError('Unable to submit observation.') }
+  }
+
+  const confirmDeleteObs = async () => {
+    if (!deleteObsTarget) return
+    setDeletingObs(true); setDeleteObsError(null)
+    try { await apiClient.delete(`/staff/observations/${deleteObsTarget.id}/`); setDeleteObsTarget(null); await load() }
+    catch { setDeleteObsError('Unable to delete observation.') }
+    finally { setDeletingObs(false) }
   }
 
   const createAppraisal = async () => {
     if (!selectedStaff || !appraisalPeriod.trim()) return
-    setError(null)
-    setNotice(null)
+    setError(null); setNotice(null)
     try {
-      await apiClient.post('/staff/appraisals/', {
-        staff: selectedStaff,
-        appraiser: selectedStaff,
-        appraisal_period: appraisalPeriod.trim(),
-        status: 'Draft',
-      })
+      await apiClient.post('/staff/appraisals/', { staff: selectedStaff, appraiser: selectedStaff, appraisal_period: appraisalPeriod.trim(), status: 'Draft' })
       setNotice('Appraisal created.')
       await load()
-    } catch {
-      setError('Unable to create appraisal.')
-    }
+    } catch { setError('Unable to create appraisal.') }
   }
 
   const approveAppraisal = async (id: number) => {
     setError(null)
-    try {
-      await apiClient.post(`/staff/appraisals/${id}/approve/`)
-      await load()
-    } catch {
-      setError('Unable to approve appraisal.')
-    }
+    try { await apiClient.post(`/staff/appraisals/${id}/approve/`); await load() }
+    catch { setError('Unable to approve appraisal.') }
+  }
+
+  const confirmDeleteApp = async () => {
+    if (!deleteAppTarget) return
+    setDeletingApp(true); setDeleteAppError(null)
+    try { await apiClient.delete(`/staff/appraisals/${deleteAppTarget.id}/`); setDeleteAppTarget(null); await load() }
+    catch { setDeleteAppError('Unable to delete appraisal.') }
+    finally { setDeletingApp(false) }
   }
 
   return (
@@ -123,11 +122,15 @@ export default function StaffPerformancePage() {
                   <p>{row.staff_name}</p>
                   <p className="text-slate-400">{row.observation_date} | {row.status}</p>
                 </div>
-                {row.status === 'Draft' ? (
-                  <button onClick={() => submitObservation(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Submit</button>
-                ) : null}
+                <div className="flex gap-2">
+                  {row.status === 'Draft' ? (
+                    <button onClick={() => submitObservation(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Submit</button>
+                  ) : null}
+                  <button onClick={() => setDeleteObsTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
+                </div>
               </div>
             ))}
+            {observations.length === 0 ? <p className="text-slate-500">No observations recorded.</p> : null}
           </div>
         </article>
 
@@ -145,14 +148,21 @@ export default function StaffPerformancePage() {
                   <p>{row.staff_name}</p>
                   <p className="text-slate-400">{row.appraisal_period} | {row.status}</p>
                 </div>
-                {row.status !== 'Approved' ? (
-                  <button onClick={() => approveAppraisal(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Approve</button>
-                ) : null}
+                <div className="flex gap-2">
+                  {row.status !== 'Approved' ? (
+                    <button onClick={() => approveAppraisal(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Approve</button>
+                  ) : null}
+                  <button onClick={() => setDeleteAppTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
+                </div>
               </div>
             ))}
+            {appraisals.length === 0 ? <p className="text-slate-500">No appraisals recorded.</p> : null}
           </div>
         </article>
       </section>
+
+      <ConfirmDialog open={!!deleteObsTarget} title="Delete Observation" description={`Delete observation for "${deleteObsTarget?.staff_name}"?`} confirmLabel="Delete" isProcessing={deletingObs} error={deleteObsError} onConfirm={confirmDeleteObs} onCancel={() => setDeleteObsTarget(null)} />
+      <ConfirmDialog open={!!deleteAppTarget} title="Delete Appraisal" description={`Delete appraisal "${deleteAppTarget?.appraisal_period}" for "${deleteAppTarget?.staff_name}"?`} confirmLabel="Delete" isProcessing={deletingApp} error={deleteAppError} onConfirm={confirmDeleteApp} onCancel={() => setDeleteAppTarget(null)} />
     </div>
   )
 }

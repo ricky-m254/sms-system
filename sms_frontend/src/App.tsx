@@ -154,6 +154,8 @@ const DispensaryLayout = lazy(() => import('./pages/dispensary/DispensaryLayout'
 const DispensaryDashboardPage = lazy(() => import('./pages/dispensary/DispensaryDashboardPage'))
 const DispensaryVisitsPage = lazy(() => import('./pages/dispensary/DispensaryVisitsPage'))
 const DispensaryStockPage = lazy(() => import('./pages/dispensary/DispensaryStockPage'))
+const DispensaryDeliveryNotesPage = lazy(() => import('./pages/dispensary/DispensaryDeliveryNotesPage'))
+const DispensaryOutsideTreatmentsPage = lazy(() => import('./pages/dispensary/DispensaryOutsideTreatmentsPage'))
 
 const ClockInLayout = lazy(() => import('./pages/clockin/ClockInLayout'))
 const ClockInDashboardPage = lazy(() => import('./pages/clockin/ClockInDashboardPage'))
@@ -529,6 +531,8 @@ function App() {
           <Route index element={<DispensaryDashboardPage />} />
           <Route path="visits" element={<DispensaryVisitsPage />} />
           <Route path="stock" element={<DispensaryStockPage />} />
+          <Route path="delivery-notes" element={<DispensaryDeliveryNotesPage />} />
+          <Route path="outside-treatments" element={<DispensaryOutsideTreatmentsPage />} />
         </Route>
         <Route
           path="/settings"

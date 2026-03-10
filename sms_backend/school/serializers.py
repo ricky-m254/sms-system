@@ -1005,3 +1005,23 @@ class DispensaryDeliveryNoteSerializer(serializers.ModelSerializer):
 
     def get_grand_total(self, obj):
         return str(sum(item.total_cost for item in obj.items.all()))
+
+
+class DispensaryOutsideTreatmentSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import DispensaryOutsideTreatment
+        model = DispensaryOutsideTreatment
+        fields = [
+            'id', 'patient_name', 'patient_type', 'student', 'student_name',
+            'referral_date', 'facility_name', 'reason', 'diagnosis',
+            'treatment_given', 'cost', 'follow_up_date', 'notes',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'student_name']
+
+    def get_student_name(self, obj):
+        if obj.student:
+            return obj.student.full_name
+        return ''

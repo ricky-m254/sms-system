@@ -104,9 +104,11 @@ All 28 tenant modules are fully implemented (frontend + backend):
 - **Parent-Teacher Meetings (PTM)** — session scheduling, teacher slot generation, parent booking system, meeting notes recording
 - **Sports & Extracurricular** — clubs (Sports/Academic/Arts/Community), member enrollment with roles, tournament tracking, student awards & achievements
 - **Cafeteria / Food Service** — meal plans, weekly menu planner, student enrollment by meal plan, meal service log, cafeteria wallet transactions
-- **Curriculum & Lesson Planning** — scheme of work per subject/class/term, weekly topic coverage tracking, lesson plan submission/approval workflow, teaching resource library
+- **Curriculum & Lesson Planning** — scheme of work per subject/class/term (full CRUD), weekly topic coverage tracking, lesson plan submission/approval workflow (full CRUD), teaching resource library (full CRUD)
 - **Maintenance Requests** — facility issue reporting (Electrical/Plumbing/IT/Building etc.), priority management (Low/Medium/High/Urgent), assignment to maintenance staff, cost tracking, update timeline
-- **E-Learning / LMS** — course builder (subject/class/teacher), course materials (PDF/Video/Link/Note), online quizzes with MCQ/TF/Short Answer + auto-marking, virtual session scheduling (Zoom/Meet/Teams)
+- **E-Learning / LMS** — course builder (subject/class/teacher, full CRUD), course materials (PDF/Video/Link/Note, full CRUD), online quizzes with MCQ/TF/Short Answer + auto-marking (full CRUD), virtual session scheduling Zoom/Meet/Teams (full CRUD)
+- **Dispensary** — patient visits, medication stock, delivery notes (create/items/mark-received/link-finance), outside treatments (external referral tracking with patient/facility/cost/diagnosis), dashboard
+- **Assets** — assignments with return dialog capturing returnedBy name + role/department; depreciation schedule with "Send to Finance" button that posts to /finance/expenses/
 - **Executive Analytics Dashboard** — school-wide KPIs (students, staff, finance), attendance trend chart, enrollment trend, at-risk students (absenteeism detection), auto-refresh every 60s
 
 ### Navigation

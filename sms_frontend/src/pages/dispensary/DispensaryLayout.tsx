@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, Pill, BarChart2, Stethoscope } from 'lucide-react'
+import { LayoutDashboard, Users, Pill, BarChart2, Stethoscope, ClipboardList, ExternalLink } from 'lucide-react'
 import ModuleToolbar from '../../components/ModuleToolbar'
 import { useAuthStore } from '../../store/auth'
 
@@ -8,6 +8,8 @@ const NAV_ITEMS = [
   { to: '/modules/dispensary', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/modules/dispensary/visits', label: 'Patient Visits', icon: Users },
   { to: '/modules/dispensary/stock', label: 'Medication Stock', icon: Pill },
+  { to: '/modules/dispensary/delivery-notes', label: 'Delivery Notes', icon: ClipboardList },
+  { to: '/modules/dispensary/outside-treatments', label: 'Outside Treatments', icon: ExternalLink },
   { to: '/modules/dispensary/reports', label: 'Reports', icon: BarChart2 },
 ]
 

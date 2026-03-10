@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type DocumentRow = { id: number; staff: number; staff_name: string; title: string; document_type: string; verification_status: string; expiry_date: string | null }
@@ -22,6 +23,10 @@ export default function StaffDocumentsPage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
+  const [deleteTarget, setDeleteTarget] = useState<DocumentRow | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   const load = async () => {
     setError(null)
     try {
@@ -38,27 +43,19 @@ export default function StaffDocumentsPage() {
     }
   }
 
-  useEffect(() => {
-    void load()
-  }, [])
+  useEffect(() => { void load() }, [])
 
   const upload = async () => {
     if (!selectedStaff || !title.trim() || !file) return
-    setError(null)
-    setNotice(null)
+    setError(null); setNotice(null)
     try {
       const form = new FormData()
       form.append('staff', String(selectedStaff))
       form.append('title', title.trim())
       form.append('document_type', documentType)
       form.append('file', file)
-      await apiClient.post('/staff/documents/', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      setTitle('')
-      setFile(null)
-      setNotice('Document uploaded.')
-      await load()
+      await apiClient.post('/staff/documents/', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      setTitle(''); setFile(null); setNotice('Document uploaded.'); await load()
     } catch {
       setError('Unable to upload document.')
     }
@@ -66,12 +63,8 @@ export default function StaffDocumentsPage() {
 
   const verify = async (id: number) => {
     setError(null)
-    try {
-      await apiClient.post(`/staff/documents/${id}/verify/`)
-      await load()
-    } catch {
-      setError('Unable to verify document.')
-    }
+    try { await apiClient.post(`/staff/documents/${id}/verify/`); await load() }
+    catch { setError('Unable to verify document.') }
   }
 
   const download = async (id: number) => {
@@ -81,6 +74,14 @@ export default function StaffDocumentsPage() {
     } catch (err) {
       setError(extractApiErrorMessage(err, 'Unable to download document.'))
     }
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true); setDeleteError(null)
+    try { await apiClient.delete(`/staff/documents/${deleteTarget.id}/`); setDeleteTarget(null); await load() }
+    catch { setDeleteError('Unable to delete document.') }
+    finally { setDeleting(false) }
   }
 
   return (
@@ -101,13 +102,7 @@ export default function StaffDocumentsPage() {
           </select>
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Document title" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
           <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-            <option>Contract</option>
-            <option>Certificate</option>
-            <option>License</option>
-            <option>ID</option>
-            <option>Medical</option>
-            <option>Performance</option>
-            <option>Other</option>
+            <option>Contract</option><option>Certificate</option><option>License</option><option>ID</option><option>Medical</option><option>Performance</option><option>Other</option>
           </select>
           <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
           <button onClick={upload} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Upload</button>
@@ -116,7 +111,7 @@ export default function StaffDocumentsPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <h2 className="text-sm font-semibold">Documents</h2>
+          <h2 className="text-sm font-semibold">Documents ({documents.length})</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {documents.map((row) => (
               <div key={row.id} className="flex items-center justify-between rounded-lg bg-slate-950/60 px-3 py-2">
@@ -129,9 +124,11 @@ export default function StaffDocumentsPage() {
                     <button onClick={() => verify(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Verify</button>
                   ) : null}
                   <button onClick={() => download(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Download</button>
+                  <button onClick={() => setDeleteTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
                 </div>
               </div>
             ))}
+            {documents.length === 0 ? <p className="text-slate-500">No documents uploaded.</p> : null}
           </div>
         </article>
 
@@ -144,9 +141,12 @@ export default function StaffDocumentsPage() {
                 <p className="text-slate-400">{row.staff_name} | Expiry: {row.expiry_date ?? 'N/A'}</p>
               </div>
             ))}
+            {expiring.length === 0 ? <p className="text-slate-500">No documents expiring soon.</p> : null}
           </div>
         </article>
       </section>
+
+      <ConfirmDialog open={!!deleteTarget} title="Delete Document" description={`Delete "${deleteTarget?.title}"?`} confirmLabel="Delete" isProcessing={deleting} error={deleteError} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} />
     </div>
   )
 }

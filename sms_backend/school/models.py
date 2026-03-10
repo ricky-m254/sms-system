@@ -1677,3 +1677,27 @@ class DispensaryDeliveryItem(models.Model):
 
     def __str__(self):
         return f"{self.medication_name} x{self.quantity}"
+
+
+class DispensaryOutsideTreatment(models.Model):
+    PATIENT_TYPE_CHOICES = [('Student', 'Student'), ('Staff', 'Staff'), ('Other', 'Other')]
+
+    patient_name = models.CharField(max_length=200)
+    patient_type = models.CharField(max_length=20, choices=PATIENT_TYPE_CHOICES, default='Student')
+    student = models.ForeignKey('Student', on_delete=models.SET_NULL, null=True, blank=True, related_name='outside_treatments')
+    referral_date = models.DateField()
+    facility_name = models.CharField(max_length=200)
+    reason = models.TextField(blank=True)
+    diagnosis = models.TextField(blank=True)
+    treatment_given = models.TextField(blank=True)
+    cost = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    follow_up_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.patient_name} - {self.facility_name} ({self.referral_date})"
+
+    class Meta:
+        ordering = ['-referral_date', '-created_at']

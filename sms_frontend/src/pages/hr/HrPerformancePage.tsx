@@ -1,45 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import ConfirmDialog from '../../components/ConfirmDialog'
 
 type Employee = { id: number; employee_id: string; full_name: string }
-type PerformanceGoal = {
-  id: number
-  employee: number
-  employee_name: string
-  title: string
-  status: string
-  target_date: string | null
-  weight: string
-}
-type PerformanceReview = {
-  id: number
-  employee: number
-  employee_name: string
-  reviewer: number | null
-  reviewer_name: string
-  review_period: string
-  overall_rating: string | null
-  status: string
-}
+type PerformanceGoal = { id: number; employee: number; employee_name: string; title: string; status: string; target_date: string | null; weight: string }
+type PerformanceReview = { id: number; employee: number; employee_name: string; reviewer: number | null; reviewer_name: string; review_period: string; overall_rating: string | null; status: string }
 
-const defaultGoalForm = {
-  employee: '',
-  title: '',
-  description: '',
-  target_date: '',
-  status: 'Not Started',
-  weight: '0',
-}
-
-const defaultReviewForm = {
-  employee: '',
-  reviewer: '',
-  review_period: '',
-  overall_rating: '',
-  strengths: '',
-  areas_improvement: '',
-  status: 'Draft',
-}
+const defaultGoalForm = { employee: '', title: '', description: '', target_date: '', status: 'Not Started', weight: '0' }
+const defaultReviewForm = { employee: '', reviewer: '', review_period: '', overall_rating: '', strengths: '', areas_improvement: '', status: 'Draft' }
 
 function asArray<T>(value: T[] | { results?: T[] }): T[] {
   if (Array.isArray(value)) return value
@@ -47,9 +15,7 @@ function asArray<T>(value: T[] | { results?: T[] }): T[] {
 }
 
 function statusBadgeClass(status: string) {
-  if (status === 'Achieved' || status === 'Submitted' || status === 'Acknowledged') {
-    return 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-200'
-  }
+  if (status === 'Achieved' || status === 'Submitted' || status === 'Acknowledged') return 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-200'
   if (status === 'In Progress') return 'border border-sky-500/30 bg-sky-500/15 text-sky-200'
   if (status === 'Not Achieved') return 'border border-rose-500/30 bg-rose-500/15 text-rose-200'
   return 'border border-slate-600 bg-slate-800/70 text-slate-200'
@@ -60,12 +26,8 @@ function downloadCsv(filename: string, headers: string[], rows: string[][]) {
   const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  document.body.appendChild(anchor)
-  anchor.click()
-  anchor.remove()
-  URL.revokeObjectURL(url)
+  anchor.href = url; anchor.download = filename
+  document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url)
 }
 
 export default function HrPerformancePage() {
@@ -82,9 +44,16 @@ export default function HrPerformancePage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
+  const [deleteGoalTarget, setDeleteGoalTarget] = useState<PerformanceGoal | null>(null)
+  const [deletingGoal, setDeletingGoal] = useState(false)
+  const [deleteGoalError, setDeleteGoalError] = useState<string | null>(null)
+
+  const [deleteReviewTarget, setDeleteReviewTarget] = useState<PerformanceReview | null>(null)
+  const [deletingReview, setDeletingReview] = useState(false)
+  const [deleteReviewError, setDeleteReviewError] = useState<string | null>(null)
+
   const load = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true); setError(null)
     try {
       const [empRes, goalRes, reviewRes] = await Promise.all([
         apiClient.get<Employee[] | { results: Employee[] }>('/hr/employees/'),
@@ -92,34 +61,22 @@ export default function HrPerformancePage() {
         apiClient.get<PerformanceReview[] | { results: PerformanceReview[] }>('/hr/performance-reviews/'),
       ])
       const employeeRows = asArray(empRes.data)
-      setEmployees(employeeRows)
-      setGoals(asArray(goalRes.data))
-      setReviews(asArray(reviewRes.data))
+      setEmployees(employeeRows); setGoals(asArray(goalRes.data)); setReviews(asArray(reviewRes.data))
       if (employeeRows.length > 0) {
         setGoalForm((prev) => ({ ...prev, employee: prev.employee || String(employeeRows[0].id) }))
-        setReviewForm((prev) => ({
-          ...prev,
-          employee: prev.employee || String(employeeRows[0].id),
-          reviewer: prev.reviewer || String(employeeRows[0].id),
-        }))
+        setReviewForm((prev) => ({ ...prev, employee: prev.employee || String(employeeRows[0].id), reviewer: prev.reviewer || String(employeeRows[0].id) }))
       }
-    } catch {
-      setError('Unable to load performance data.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setError('Unable to load performance data.') }
+    finally { setLoading(false) }
   }
 
-  useEffect(() => {
-    void load()
-  }, [])
+  useEffect(() => { void load() }, [])
 
   const filteredGoals = useMemo(() => {
     const query = search.trim().toLowerCase()
     return goals.filter((goal) => {
       const statusOk = goalStatusFilter === 'All' || goal.status === goalStatusFilter
-      const text = `${goal.title} ${goal.employee_name}`.toLowerCase()
-      const searchOk = !query || text.includes(query)
+      const searchOk = !query || `${goal.title} ${goal.employee_name}`.toLowerCase().includes(query)
       return statusOk && searchOk
     })
   }, [goals, search, goalStatusFilter])
@@ -128,95 +85,56 @@ export default function HrPerformancePage() {
     const query = search.trim().toLowerCase()
     return reviews.filter((review) => {
       const statusOk = reviewStatusFilter === 'All' || review.status === reviewStatusFilter
-      const text = `${review.employee_name} ${review.reviewer_name} ${review.review_period}`.toLowerCase()
-      const searchOk = !query || text.includes(query)
+      const searchOk = !query || `${review.employee_name} ${review.reviewer_name} ${review.review_period}`.toLowerCase().includes(query)
       return statusOk && searchOk
     })
   }, [reviews, search, reviewStatusFilter])
 
   const createGoal = async () => {
-    if (!goalForm.employee || !goalForm.title.trim()) {
-      setError('Employee and goal title are required.')
-      return
-    }
-    setWorking(true)
-    setError(null)
-    setNotice(null)
+    if (!goalForm.employee || !goalForm.title.trim()) { setError('Employee and goal title are required.'); return }
+    setWorking(true); setError(null); setNotice(null)
     try {
-      await apiClient.post('/hr/performance-goals/', {
-        employee: Number(goalForm.employee),
-        title: goalForm.title.trim(),
-        description: goalForm.description,
-        target_date: goalForm.target_date || null,
-        status: goalForm.status,
-        weight: Number(goalForm.weight || '0'),
-      })
-      setGoalForm((prev) => ({ ...defaultGoalForm, employee: prev.employee }))
-      setNotice('Performance goal created.')
-      await load()
-    } catch {
-      setError('Unable to create performance goal.')
-    } finally {
-      setWorking(false)
-    }
+      await apiClient.post('/hr/performance-goals/', { employee: Number(goalForm.employee), title: goalForm.title.trim(), description: goalForm.description, target_date: goalForm.target_date || null, status: goalForm.status, weight: Number(goalForm.weight || '0') })
+      setGoalForm((prev) => ({ ...defaultGoalForm, employee: prev.employee })); setNotice('Performance goal created.'); await load()
+    } catch { setError('Unable to create performance goal.') }
+    finally { setWorking(false) }
   }
 
   const createReview = async () => {
-    if (!reviewForm.employee || !reviewForm.review_period.trim()) {
-      setError('Employee and review period are required.')
-      return
-    }
-    setWorking(true)
-    setError(null)
-    setNotice(null)
+    if (!reviewForm.employee || !reviewForm.review_period.trim()) { setError('Employee and review period are required.'); return }
+    setWorking(true); setError(null); setNotice(null)
     try {
-      await apiClient.post('/hr/performance-reviews/', {
-        employee: Number(reviewForm.employee),
-        reviewer: reviewForm.reviewer ? Number(reviewForm.reviewer) : null,
-        review_period: reviewForm.review_period.trim(),
-        overall_rating: reviewForm.overall_rating ? Number(reviewForm.overall_rating) : null,
-        strengths: reviewForm.strengths,
-        areas_improvement: reviewForm.areas_improvement,
-        status: reviewForm.status,
-      })
-      setReviewForm((prev) => ({ ...defaultReviewForm, employee: prev.employee, reviewer: prev.reviewer }))
-      setNotice('Performance review created.')
-      await load()
-    } catch {
-      setError('Unable to create performance review.')
-    } finally {
-      setWorking(false)
-    }
+      await apiClient.post('/hr/performance-reviews/', { employee: Number(reviewForm.employee), reviewer: reviewForm.reviewer ? Number(reviewForm.reviewer) : null, review_period: reviewForm.review_period.trim(), overall_rating: reviewForm.overall_rating ? Number(reviewForm.overall_rating) : null, strengths: reviewForm.strengths, areas_improvement: reviewForm.areas_improvement, status: reviewForm.status })
+      setReviewForm((prev) => ({ ...defaultReviewForm, employee: prev.employee, reviewer: prev.reviewer })); setNotice('Performance review created.'); await load()
+    } catch { setError('Unable to create performance review.') }
+    finally { setWorking(false) }
   }
 
   const submitReview = async (id: number) => {
-    setWorking(true)
-    setError(null)
-    setNotice(null)
-    try {
-      await apiClient.post(`/hr/performance-reviews/${id}/submit/`, {})
-      setNotice('Performance review submitted.')
-      await load()
-    } catch {
-      setError('Unable to submit review.')
-    } finally {
-      setWorking(false)
-    }
+    setWorking(true); setError(null); setNotice(null)
+    try { await apiClient.post(`/hr/performance-reviews/${id}/submit/`, {}); setNotice('Performance review submitted.'); await load() }
+    catch { setError('Unable to submit review.') }
+    finally { setWorking(false) }
   }
 
-  const exportGoals = () =>
-    downloadCsv(
-      'hr_performance_goals.csv',
-      ['Title', 'Employee', 'Status', 'Target Date', 'Weight %'],
-      filteredGoals.map((goal) => [goal.title, goal.employee_name, goal.status, goal.target_date || '', goal.weight]),
-    )
+  const confirmDeleteGoal = async () => {
+    if (!deleteGoalTarget) return
+    setDeletingGoal(true); setDeleteGoalError(null)
+    try { await apiClient.delete(`/hr/performance-goals/${deleteGoalTarget.id}/`); setDeleteGoalTarget(null); await load() }
+    catch { setDeleteGoalError('Unable to delete goal.') }
+    finally { setDeletingGoal(false) }
+  }
 
-  const exportReviews = () =>
-    downloadCsv(
-      'hr_performance_reviews.csv',
-      ['Employee', 'Reviewer', 'Review Period', 'Status', 'Rating'],
-      filteredReviews.map((review) => [review.employee_name, review.reviewer_name || '', review.review_period, review.status, review.overall_rating || '']),
-    )
+  const confirmDeleteReview = async () => {
+    if (!deleteReviewTarget) return
+    setDeletingReview(true); setDeleteReviewError(null)
+    try { await apiClient.delete(`/hr/performance-reviews/${deleteReviewTarget.id}/`); setDeleteReviewTarget(null); await load() }
+    catch { setDeleteReviewError('Unable to delete review.') }
+    finally { setDeletingReview(false) }
+  }
+
+  const exportGoals = () => downloadCsv('hr_performance_goals.csv', ['Title', 'Employee', 'Status', 'Target Date', 'Weight %'], filteredGoals.map((goal) => [goal.title, goal.employee_name, goal.status, goal.target_date || '', goal.weight]))
+  const exportReviews = () => downloadCsv('hr_performance_reviews.csv', ['Employee', 'Reviewer', 'Review Period', 'Status', 'Rating'], filteredReviews.map((review) => [review.employee_name, review.reviewer_name || '', review.review_period, review.status, review.overall_rating || '']))
 
   return (
     <div className="space-y-6">
@@ -224,7 +142,6 @@ export default function HrPerformancePage() {
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Performance Management</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Goals, Reviews, and Appraisal Tracking</h1>
       </section>
-
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
@@ -296,11 +213,16 @@ export default function HrPerformancePage() {
             {filteredGoals.map((goal) => (
               <div key={goal.id} className="rounded-lg border border-slate-800 px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-slate-100">{goal.title}</p>
-                  <span className={`rounded-full px-2 py-1 text-[10px] ${statusBadgeClass(goal.status)}`}>{goal.status}</span>
+                  <div>
+                    <p className="font-semibold text-slate-100">{goal.title}</p>
+                    <p className="mt-1">{goal.employee_name}</p>
+                    <p>Target: {goal.target_date || '-'} | Weight: {goal.weight}%</p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className={`rounded-full px-2 py-1 text-[10px] ${statusBadgeClass(goal.status)}`}>{goal.status}</span>
+                    <button onClick={() => setDeleteGoalTarget(goal)} className="text-[11px] font-semibold text-rose-400 hover:text-rose-300">Delete</button>
+                  </div>
                 </div>
-                <p className="mt-1">{goal.employee_name}</p>
-                <p>Target: {goal.target_date || '-'} | Weight: {goal.weight}%</p>
               </div>
             ))}
             {!loading && filteredGoals.length === 0 ? <p className="text-slate-400">No goals match filters.</p> : null}
@@ -321,18 +243,26 @@ export default function HrPerformancePage() {
             {filteredReviews.map((review) => (
               <div key={review.id} className="rounded-lg border border-slate-800 px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-slate-100">{review.employee_name} | {review.review_period}</p>
-                  <span className={`rounded-full px-2 py-1 text-[10px] ${statusBadgeClass(review.status)}`}>{review.status}</span>
+                  <div>
+                    <p className="font-semibold text-slate-100">{review.employee_name} | {review.review_period}</p>
+                    <p className="mt-1">Reviewer: {review.reviewer_name || '-'}</p>
+                    <p>Rating: {review.overall_rating || '-'}</p>
+                    <button onClick={() => void submitReview(review.id)} disabled={working} className="mt-2 rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200 disabled:opacity-60">Submit</button>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className={`rounded-full px-2 py-1 text-[10px] ${statusBadgeClass(review.status)}`}>{review.status}</span>
+                    <button onClick={() => setDeleteReviewTarget(review)} className="text-[11px] font-semibold text-rose-400 hover:text-rose-300">Delete</button>
+                  </div>
                 </div>
-                <p className="mt-1">Reviewer: {review.reviewer_name || '-'}</p>
-                <p>Rating: {review.overall_rating || '-'}</p>
-                <button onClick={() => void submitReview(review.id)} disabled={working} className="mt-2 rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200 disabled:opacity-60">Submit</button>
               </div>
             ))}
             {!loading && filteredReviews.length === 0 ? <p className="text-slate-400">No reviews match filters.</p> : null}
           </div>
         </article>
       </section>
+
+      <ConfirmDialog open={!!deleteGoalTarget} title="Delete Goal" description={`Delete goal "${deleteGoalTarget?.title}"?`} confirmLabel="Delete" isProcessing={deletingGoal} error={deleteGoalError} onConfirm={confirmDeleteGoal} onCancel={() => setDeleteGoalTarget(null)} />
+      <ConfirmDialog open={!!deleteReviewTarget} title="Delete Review" description={`Delete review for "${deleteReviewTarget?.employee_name}" (${deleteReviewTarget?.review_period})?`} confirmLabel="Delete" isProcessing={deletingReview} error={deleteReviewError} onConfirm={confirmDeleteReview} onCancel={() => setDeleteReviewTarget(null)} />
     </div>
   )
 }
