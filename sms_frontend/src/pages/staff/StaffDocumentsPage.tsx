@@ -28,19 +28,22 @@ export default function StaffDocumentsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const load = async () => {
-    setError(null)
     try {
-      const [staffResponse, docsResponse, expiringResponse] = await Promise.all([
-        apiClient.get<StaffRow[] | { results: StaffRow[] }>('/staff/'),
-        apiClient.get<DocumentRow[] | { results: DocumentRow[] }>('/staff/documents/'),
-        apiClient.get<DocumentRow[] | { results: DocumentRow[] }>('/staff/documents/expiring/'),
-      ])
-      setStaff(asArray(staffResponse.data))
-      setDocuments(asArray(docsResponse.data))
-      setExpiring(asArray(expiringResponse.data))
+      const staffRes = await apiClient.get<StaffRow[] | { results: StaffRow[] }>('/staff/')
+      setStaff(asArray(staffRes.data))
+    } catch { /* staff load failure is non-critical */ }
+
+    try {
+      const docsRes = await apiClient.get<DocumentRow[] | { results: DocumentRow[] }>('/staff/documents/')
+      setDocuments(asArray(docsRes.data))
     } catch {
-      setError('Unable to load staff documents.')
+      setError('Unable to load documents.')
     }
+
+    try {
+      const expRes = await apiClient.get<DocumentRow[] | { results: DocumentRow[] }>('/staff/documents/expiring/')
+      setExpiring(asArray(expRes.data))
+    } catch { /* expiring load failure is non-critical */ }
   }
 
   useEffect(() => { void load() }, [])

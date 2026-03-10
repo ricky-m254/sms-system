@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 
-type Department = { id: number; name: string; code: string; department_type: string }
+type StaffDept = { id: number; name: string; code: string; department_type: string }
+type SchoolDept = { id: number; name: string; description: string; is_active: boolean }
 type Role = { id: number; name: string; code: string; level: number }
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type Assignment = { id: number; staff_name: string; department_name: string; role_name: string; is_primary: boolean }
@@ -12,7 +13,8 @@ function asArray<T>(value: T[] | { results?: T[] }): T[] {
 }
 
 export default function StaffDepartmentsRolesPage() {
-  const [departments, setDepartments] = useState<Department[]>([])
+  const [departments, setDepartments] = useState<StaffDept[]>([])
+  const [schoolDepts, setSchoolDepts] = useState<SchoolDept[]>([])
   const [roles, setRoles] = useState<Role[]>([])
   const [staff, setStaff] = useState<StaffRow[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
@@ -32,7 +34,7 @@ export default function StaffDepartmentsRolesPage() {
     setError(null)
     try {
       const [d, r, s, a] = await Promise.all([
-        apiClient.get<Department[] | { results: Department[] }>('/staff/departments/'),
+        apiClient.get<StaffDept[] | { results: StaffDept[] }>('/staff/departments/'),
         apiClient.get<Role[] | { results: Role[] }>('/staff/roles/'),
         apiClient.get<StaffRow[] | { results: StaffRow[] }>('/staff/'),
         apiClient.get<Assignment[] | { results: Assignment[] }>('/staff/assignments/'),
@@ -44,6 +46,10 @@ export default function StaffDepartmentsRolesPage() {
     } catch {
       setError('Unable to load departments and roles data.')
     }
+    try {
+      const sdRes = await apiClient.get<SchoolDept[] | { results: SchoolDept[] }>('/school/departments/')
+      setSchoolDepts(asArray(sdRes.data).filter(d => d.is_active !== false))
+    } catch { /* academic departments load failure is non-critical */ }
   }
 
   useEffect(() => {
@@ -176,14 +182,20 @@ export default function StaffDepartmentsRolesPage() {
         </article>
 
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-          <h2 className="text-sm font-semibold">Departments</h2>
+          <h2 className="text-sm font-semibold">Departments <span className="text-xs font-normal text-slate-500">(from Academics)</span></h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
-            {departments.map((row) => (
+            {schoolDepts.length > 0 ? schoolDepts.map((row) => (
+              <div key={row.id} className="rounded-lg bg-slate-950/60 px-3 py-2">
+                <p className="font-medium">{row.name}</p>
+                {row.description ? <p className="text-slate-500 truncate">{row.description}</p> : null}
+              </div>
+            )) : departments.map((row) => (
               <div key={row.id} className="rounded-lg bg-slate-950/60 px-3 py-2">
                 <p>{row.name}</p>
                 <p className="text-slate-400">{row.code} - {row.department_type}</p>
               </div>
             ))}
+            {schoolDepts.length === 0 && departments.length === 0 ? <p className="text-slate-500">No departments yet.</p> : null}
           </div>
         </article>
       </section>
