@@ -19,7 +19,7 @@ export default function SportsDashboardPage() {
     { label: 'Active Clubs', value: stats?.active_clubs ?? 0, icon: Users, color: 'text-blue-400' },
     { label: 'Total Members', value: stats?.total_members ?? 0, icon: Calendar, color: 'text-emerald-400' },
     { label: 'Upcoming Tournaments', value: stats?.upcoming_tournaments ?? 0, icon: Trophy, color: 'text-amber-400' },
-    { label: 'Recent Awards', value: stats?.recent_awards ?? 0, icon: Award, color: 'text-purple-400' },
+    { label: 'Recent Awards', value: Array.isArray(stats?.recent_awards) ? stats.recent_awards.length : (stats?.recent_awards ?? 0), icon: Award, color: 'text-purple-400' },
   ];
 
   return (

@@ -12,12 +12,13 @@ type Paper = {
   subject_name: string
   school_class: number
   class_name: string
-  paper_code: string
-  max_marks: number
-  date: string
+  exam_date: string
   start_time: string
-  duration_minutes: number
-  venue: string
+  end_time: string
+  exam_room: string
+  total_marks: number
+  pass_mark: number
+  notes: string
 }
 
 function asArray<T>(v: T[] | { results?: T[] }): T[] {
@@ -38,12 +39,13 @@ export default function ExaminationsPapersPage() {
   const [sessionId, setSessionId] = useState<number | ''>('')
   const [subjectId, setSubjectId] = useState<number | ''>('')
   const [classId, setClassId] = useState<number | ''>('')
-  const [paperCode, setPaperCode] = useState('')
-  const [maxMarks, setMaxMarks] = useState('100')
-  const [date, setDate] = useState('')
+  const [examDate, setExamDate] = useState('')
   const [startTime, setStartTime] = useState('09:00')
-  const [duration, setDuration] = useState('120')
-  const [venue, setVenue] = useState('')
+  const [endTime, setEndTime] = useState('11:00')
+  const [examRoom, setExamRoom] = useState('')
+  const [totalMarks, setTotalMarks] = useState('100')
+  const [passMark, setPassMark] = useState('40')
+  const [notes, setNotes] = useState('')
 
   const load = async () => {
     try {
@@ -68,12 +70,14 @@ export default function ExaminationsPapersPage() {
     setSessionId(filterSession || '')
     setSubjectId('')
     setClassId('')
-    setPaperCode('')
-    setMaxMarks('100')
-    setDate('')
+    setExamDate('')
     setStartTime('09:00')
-    setDuration('120')
-    setVenue('')
+    setEndTime('11:00')
+    setExamRoom('')
+    setTotalMarks('100')
+    setPassMark('40')
+    setNotes('')
+    setError(null)
     setModal(true)
   }
 
@@ -82,18 +86,20 @@ export default function ExaminationsPapersPage() {
     setSessionId(p.session)
     setSubjectId(p.subject)
     setClassId(p.school_class)
-    setPaperCode(p.paper_code)
-    setMaxMarks(String(p.max_marks))
-    setDate(p.date)
+    setExamDate(p.exam_date)
     setStartTime(p.start_time?.substring(0, 5) || '')
-    setDuration(String(p.duration_minutes))
-    setVenue(p.venue)
+    setEndTime(p.end_time?.substring(0, 5) || '')
+    setExamRoom(p.exam_room || '')
+    setTotalMarks(String(p.total_marks))
+    setPassMark(String(p.pass_mark))
+    setNotes(p.notes || '')
+    setError(null)
     setModal(true)
   }
 
   const save = async () => {
-    if (!sessionId || !subjectId || !classId || !date || !startTime) {
-      setError('Session, Subject, Class, Date and Start Time are required.')
+    if (!sessionId || !subjectId || !classId || !examDate || !startTime || !endTime) {
+      setError('Session, Subject, Class, Date, Start Time and End Time are required.')
       return
     }
     setError(null)
@@ -102,12 +108,13 @@ export default function ExaminationsPapersPage() {
         session: sessionId,
         subject: subjectId,
         school_class: classId,
-        paper_code: paperCode.trim(),
-        max_marks: Number(maxMarks),
-        date,
+        exam_date: examDate,
         start_time: startTime,
-        duration_minutes: Number(duration),
-        venue: venue.trim(),
+        end_time: endTime,
+        exam_room: examRoom.trim(),
+        total_marks: Number(totalMarks) || 100,
+        pass_mark: Number(passMark) || 40,
+        notes: notes.trim(),
       }
       if (editing) {
         await apiClient.put(`/examinations/papers/${editing.id}/`, payload)
@@ -151,13 +158,13 @@ export default function ExaminationsPapersPage() {
         <table className="w-full text-left text-sm text-slate-300">
           <thead className="border-b border-slate-800 bg-slate-950/50 text-slate-400 uppercase text-xs">
             <tr>
-              <th className="px-4 py-3">Code</th>
               <th className="px-4 py-3">Subject</th>
               <th className="px-4 py-3">Class</th>
               <th className="px-4 py-3">Session</th>
               <th className="px-4 py-3">Date</th>
+              <th className="px-4 py-3">Time</th>
               <th className="px-4 py-3">Marks</th>
-              <th className="px-4 py-3">Duration</th>
+              <th className="px-4 py-3">Room</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -166,13 +173,13 @@ export default function ExaminationsPapersPage() {
               <tr><td colSpan={8} className="px-4 py-10 text-center text-slate-500">No exam papers found.</td></tr>
             ) : papers.map(p => (
               <tr key={p.id} className="hover:bg-slate-800/40 transition">
-                <td className="px-4 py-3 font-mono font-semibold text-white">{p.paper_code || '—'}</td>
-                <td className="px-4 py-3">{p.subject_name}</td>
+                <td className="px-4 py-3 font-medium text-white">{p.subject_name}</td>
                 <td className="px-4 py-3 text-slate-400">{p.class_name || classes.find(c => c.id === p.school_class)?.display_name || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{p.session_name}</td>
-                <td className="px-4 py-3 font-mono text-xs">{p.date}</td>
-                <td className="px-4 py-3">{p.max_marks}</td>
-                <td className="px-4 py-3 text-slate-400">{p.duration_minutes} min</td>
+                <td className="px-4 py-3 font-mono text-xs">{p.exam_date}</td>
+                <td className="px-4 py-3 font-mono text-xs">{p.start_time?.substring(0, 5)} – {p.end_time?.substring(0, 5)}</td>
+                <td className="px-4 py-3 text-slate-400">{p.total_marks} / {p.pass_mark}</td>
+                <td className="px-4 py-3 text-slate-500 text-xs">{p.exam_room || '—'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => openEdit(p)} className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800">Edit</button>
@@ -215,31 +222,42 @@ export default function ExaminationsPapersPage() {
               </select>
             </div>
 
-            <input value={paperCode} onChange={e => setPaperCode(e.target.value)} placeholder="Paper code (optional)" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">Max marks</label>
-                <input type="number" value={maxMarks} onChange={e => setMaxMarks(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">Duration (min)</label>
-                <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-              </div>
+            <div>
+              <label className="text-xs text-slate-400 mb-1 block">Exam Date *</label>
+              <input type="date" value={examDate} onChange={e => setExamDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Date *</label>
-                <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">Start time *</label>
+                <label className="text-xs text-slate-400 mb-1 block">Start Time *</label>
                 <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
               </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">End Time *</label>
+                <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+              </div>
             </div>
 
-            <input value={venue} onChange={e => setVenue(e.target.value)} placeholder="Venue / Room" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Total Marks</label>
+                <input type="number" min="1" value={totalMarks} onChange={e => setTotalMarks(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Pass Mark</label>
+                <input type="number" min="0" value={passMark} onChange={e => setPassMark(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-400 mb-1 block">Exam Room</label>
+              <input value={examRoom} onChange={e => setExamRoom(e.target.value)} placeholder="Room / Hall" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-400 mb-1 block">Notes</label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm resize-none" />
+            </div>
 
             <div className="flex gap-3 pt-1">
               <button onClick={save} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200">{editing ? 'Update' : 'Add'}</button>

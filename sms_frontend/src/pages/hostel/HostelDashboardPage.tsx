@@ -48,7 +48,7 @@ export default function HostelDashboardPage() {
         <h1 className="text-2xl font-display font-bold text-white">Hostel Dashboard</h1>
         <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2 text-emerald-400 border border-emerald-500/20">
           <TrendingUp className="h-4 w-4" />
-          <span className="text-sm font-medium">Occupancy: {stats?.occupancy_rate.toFixed(1)}%</span>
+          <span className="text-sm font-medium">Occupancy: {(stats?.occupancy_rate ?? 0).toFixed(1)}%</span>
         </div>
       </div>
 

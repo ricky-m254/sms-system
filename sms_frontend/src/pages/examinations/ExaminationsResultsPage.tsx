@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 
 type Session = { id: number; name: string }
-type Paper = { id: number; subject_name: string; max_marks: number; session: number }
+type Paper = { id: number; subject_name: string; total_marks: number; session: number }
 type Student = { id: number; full_name: string; admission_number: string }
 type Result = { id: number; paper: number; paper_name: string; student: number; student_name: string; marks_obtained: number; grade: string; remarks: string; is_absent: boolean }
 
@@ -74,7 +74,7 @@ export default function ExaminationsResultsPage() {
     catch { setError('Unable to delete result.') }
   }
 
-  const maxMarksFor = (papId: number | '') => papers.find(p => p.id === papId)?.max_marks ?? 100
+  const maxMarksFor = (papId: number | '') => papers.find(p => p.id === papId)?.total_marks ?? 100
 
   return (
     <div className="space-y-6">
@@ -124,7 +124,7 @@ export default function ExaminationsResultsPage() {
             <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Result' : 'Record Result'}</h2>
             <select value={paperId} onChange={e => setPaperId(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
               <option value="">Select paper</option>
-              {papers.map(p => <option key={p.id} value={p.id}>{p.subject_name} (/{p.max_marks})</option>)}
+              {papers.map(p => <option key={p.id} value={p.id}>{p.subject_name} (/{p.total_marks})</option>)}
             </select>
             <select value={studentId} onChange={e => setStudentId(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
               <option value="">Select student</option>

@@ -36,8 +36,8 @@ export default function TimetableCoveragePage() {
         apiClient.get('/hr/employees/?position=Teacher')
       ])
       
-      setCoverageRecords(allRes.data.results || allRes.data)
-      setUncoveredLessons(todayUncoveredRes.data)
+      setCoverageRecords(allRes.data.results || allRes.data || [])
+      setUncoveredLessons(todayUncoveredRes.data.uncovered || [])
       
       const teacherData = teacherRes.data.results || teacherRes.data
       setTeachers(teacherData.map((t: any) => ({ 
