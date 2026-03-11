@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
+import PrintButton from '../../components/PrintButton'
 
 type Session = { id: number; name: string }
 type Paper = { id: number; subject_name: string; total_marks: number; session: number }
@@ -80,7 +81,10 @@ export default function ExaminationsResultsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><p className="text-xs uppercase tracking-[0.3em] text-slate-400">Examinations</p><h1 className="mt-1 text-2xl font-display font-bold text-white">Results Entry</h1></div>
-        <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">+ Record Result</button>
+        <div className="flex gap-2">
+          <PrintButton printId="results-print-area" label="Print Results" title="Exam Results" />
+          <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">+ Record Result</button>
+        </div>
       </div>
       {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
@@ -94,6 +98,27 @@ export default function ExaminationsResultsPage() {
           {filteredPapers.map(p => <option key={p.id} value={p.id}>{p.subject_name}</option>)}
         </select>
       </div>
+      {/* Hidden print area */}
+      <div id="results-print-area" className="hidden">
+        <div className="print-header"><h1>Exam Results</h1></div>
+        <table>
+          <thead><tr><th>Student</th><th>Adm. No.</th><th>Paper / Subject</th><th>Marks</th><th>Grade</th><th>Status</th><th>Remarks</th></tr></thead>
+          <tbody>
+            {results.map(r => (
+              <tr key={r.id}>
+                <td>{r.student_name}</td>
+                <td>{(r as any).admission_number || '—'}</td>
+                <td>{r.paper_name}</td>
+                <td>{r.is_absent ? 'ABS' : `${r.marks_obtained} / ${maxMarksFor(r.paper)}`}</td>
+                <td>{r.grade || '—'}</td>
+                <td>{r.is_absent ? 'Absent' : 'Sat'}</td>
+                <td>{r.remarks}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
         <table className="w-full text-left text-sm text-slate-300">
           <thead className="border-b border-slate-800 bg-slate-950/50 text-slate-400 uppercase text-xs">

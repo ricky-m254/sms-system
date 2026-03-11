@@ -195,6 +195,8 @@ const ExaminationsPapersPage = lazy(() => import('./pages/examinations/Examinati
 const ExaminationsSeatsPage = lazy(() => import('./pages/examinations/ExaminationsSeatsPage'))
 const ExaminationsResultsPage = lazy(() => import('./pages/examinations/ExaminationsResultsPage'))
 const ExaminationsGradesPage = lazy(() => import('./pages/examinations/ExaminationsGradesPage'))
+const ExaminationsExamSettersPage = lazy(() => import('./pages/examinations/ExaminationsExamSettersPage'))
+const ExaminationsPaperUploadsPage = lazy(() => import('./pages/examinations/ExaminationsPaperUploadsPage'))
 
 const AlumniLayout = lazy(() => import('./pages/alumni/AlumniLayout'))
 const AlumniDashboardPage = lazy(() => import('./pages/alumni/AlumniDashboardPage'))
@@ -611,6 +613,8 @@ function App() {
           <Route path="seats" element={<ExaminationsSeatsPage />} />
           <Route path="results" element={<ExaminationsResultsPage />} />
           <Route path="grades" element={<ExaminationsGradesPage />} />
+          <Route path="exam-setters" element={<ExaminationsExamSettersPage />} />
+          <Route path="paper-uploads" element={<ExaminationsPaperUploadsPage />} />
         </Route>
         <Route
           path="/modules/alumni/*"

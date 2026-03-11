@@ -10,6 +10,8 @@ const navItems = [
   { label: 'Seat Allocation', to: '/modules/examinations/seats' },
   { label: 'Results Entry', to: '/modules/examinations/results' },
   { label: 'Grade Boundaries', to: '/modules/examinations/grades' },
+  { label: 'Exam Setters', to: '/modules/examinations/exam-setters' },
+  { label: 'Paper Uploads', to: '/modules/examinations/paper-uploads' },
 ]
 
 export default function ExaminationsLayout() {

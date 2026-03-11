@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
+import PrintButton from '../../components/PrintButton'
 
 type Session = { id: number; name: string }
 type Subject = { id: number; name: string }
@@ -141,7 +142,10 @@ export default function ExaminationsPapersPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Examinations</p>
           <h1 className="mt-1 text-2xl font-display font-bold text-white">Exam Papers</h1>
         </div>
-        <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">+ Add Paper</button>
+        <div className="flex gap-2">
+          <PrintButton printId="papers-print-area" label="Print Schedule" title="Exam Papers Schedule" />
+          <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">+ Add Paper</button>
+        </div>
       </div>
 
       {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
@@ -152,6 +156,27 @@ export default function ExaminationsPapersPage() {
           <option value="">All sessions</option>
           {sessions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
+      </div>
+
+      {/* Hidden print area */}
+      <div id="papers-print-area" className="hidden">
+        <div className="print-header"><h1>Exam Papers Schedule</h1></div>
+        <table>
+          <thead><tr><th>Subject</th><th>Class</th><th>Session</th><th>Date</th><th>Time</th><th>Total/Pass</th><th>Room</th></tr></thead>
+          <tbody>
+            {papers.map(p => (
+              <tr key={p.id}>
+                <td>{p.subject_name}</td>
+                <td>{p.class_name}</td>
+                <td>{p.session_name}</td>
+                <td>{p.exam_date}</td>
+                <td>{p.start_time?.substring(0,5)} – {p.end_time?.substring(0,5)}</td>
+                <td>{p.total_marks} / {p.pass_mark}</td>
+                <td>{p.exam_room || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">

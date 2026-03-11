@@ -66,6 +66,47 @@ class ExamResult(models.Model):
     def __str__(self):
         return f"{self.student} - {self.paper} Result"
 
+class ExamPaperUpload(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved for Print'),
+        ('printed', 'Printed'),
+        ('rejected', 'Rejected'),
+    ]
+    session = models.ForeignKey(ExamSession, on_delete=models.CASCADE, related_name='paper_uploads')
+    subject = models.ForeignKey('school.Subject', on_delete=models.CASCADE)
+    school_class = models.ForeignKey('school.SchoolClass', on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='exam_uploads')
+    file = models.FileField(upload_to='exam_papers/')
+    filename_original = models.CharField(max_length=255, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    print_copies = models.PositiveIntegerField(default=1)
+    notes = models.TextField(blank=True)
+    reviewed_by = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_exam_uploads')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.subject} — {self.school_class} ({self.get_status_display()})"
+
+
+class ExamSetterAssignment(models.Model):
+    session = models.ForeignKey(ExamSession, on_delete=models.CASCADE, related_name='setter_assignments')
+    subject = models.ForeignKey('school.Subject', on_delete=models.CASCADE)
+    school_class = models.ForeignKey('school.SchoolClass', on_delete=models.CASCADE)
+    teacher = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='exam_setter_assignments')
+    deadline = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    assigned_by = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL, related_name='exam_assignments_made')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('session', 'subject', 'school_class')
+
+    def __str__(self):
+        return f"{self.subject} — {self.school_class} → {self.teacher}"
+
+
 class ExamGradeBoundary(models.Model):
     session = models.ForeignKey(ExamSession, on_delete=models.CASCADE, related_name='grade_boundaries')
     grade = models.CharField(max_length=5)

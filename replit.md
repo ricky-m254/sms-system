@@ -98,7 +98,7 @@ All 28 tenant modules are fully implemented (frontend + backend):
 - **Timetable** — weekly slot schedule (teacher/subject/class/room per period), staff duty schedule, lesson coverage tracking (auto-flagged when teacher clocks in late), change request workflow (submit → HR/Admin approve/reject → notify)
 - **Transport Management** — vehicle fleet, bus routes with stop sequences, student bus pass assignments, driver management, incident tracking; dashboard
 - **Visitor Management & Gate Security** — visitor sign-in/out log (with badge number), authorized student pickup registry, pickup log with authorization tracking, dashboard stats
-- **Examinations** — exam sessions, paper scheduling (room, invigilator, marks), seat allocation, mark entry, grade boundaries, position/rank calculation, result analytics
+- **Examinations** — exam sessions, paper scheduling (room, invigilator, marks), seat allocation, mark entry, grade boundaries, position/rank calculation, result analytics; **exam setter assignments** (assign teacher per subject/class/session); **exam paper upload workflow** (teacher uploads file → secretary reviews/approves/marks printed); **print buttons** on Papers, Results, Setter List, Upload Queue pages
 - **Alumni Management** — alumni directory (graduation year, institution, occupation, country), alumni events with attendee registration, dashboard
 - **Hostel / Boarding** — dormitories, bed space management, student allocations, hostel roll-call attendance (Morning/Evening/Night), leave management with approval workflow
 - **Parent-Teacher Meetings (PTM)** — session scheduling, teacher slot generation, parent booking system, meeting notes recording
