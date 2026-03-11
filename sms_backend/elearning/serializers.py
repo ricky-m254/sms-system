@@ -48,6 +48,9 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = '__all__'
+        extra_kwargs = {
+            'teacher': {'required': False},
+        }
 
     def get_teacher_name(self, obj):
         if obj.teacher:
