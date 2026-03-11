@@ -109,7 +109,7 @@ class VirtualSession(models.Model):
     session_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
-    meeting_link = models.CharField(max_length=500)
+    meeting_link = models.CharField(max_length=500, blank=True)
     platform = models.CharField(max_length=20, choices=PLATFORMS, default='Zoom')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
