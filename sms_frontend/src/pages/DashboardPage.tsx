@@ -518,19 +518,22 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-6xl flex flex-col gap-6 px-5 py-7 sm:px-8">
 
         {/* ── Greeting Header ─────────────────────────── */}
-        <header className="flex items-start justify-between gap-4 animate-fade-in-up">
-          <div className="flex items-center gap-4">
-            <GreetingOrb period={greeting.period} />
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-0.5"
+        <header className="flex items-start justify-between gap-3 animate-fade-in-up">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="flex-shrink-0 scale-75 sm:scale-100 origin-left">
+              <GreetingOrb period={greeting.period} />
+            </div>
+            <div className="min-w-0">
+              <p className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.2em] mb-0.5"
                 style={{ color: 'rgba(16,185,129,0.7)' }}>
                 Rynaty School Management
               </p>
-              <h1 className="text-2xl font-display font-bold text-white leading-tight">
+              <h1 className="text-xl sm:text-2xl font-display font-bold text-white leading-tight truncate">
                 {greeting.text}
               </h1>
-              <p className="text-[13px] mt-0.5" style={{ color: '#475569' }}>
-                {schoolName ?? tenantId ?? 'Dashboard'} · {new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              <p className="text-[11px] sm:text-[13px] mt-0.5 truncate" style={{ color: '#475569' }}>
+                {schoolName ?? tenantId ?? 'Dashboard'} · <span className="hidden sm:inline">{new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <span className="sm:hidden">{new Date().toLocaleDateString('en-KE', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </p>
             </div>
           </div>

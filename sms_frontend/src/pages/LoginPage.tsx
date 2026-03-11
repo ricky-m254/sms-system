@@ -81,7 +81,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden" style={{ background: '#070b12' }}>
+    <div className="min-h-screen flex flex-col lg:flex-row overflow-x-hidden" style={{ background: '#070b12' }}>
 
       {/* ── Left brand panel ────────────────────────── */}
       <div
@@ -163,7 +163,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right form panel ────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 sm:px-8 sm:py-12 relative overflow-hidden min-h-screen lg:min-h-0">
         {/* Faint ambient glow behind form */}
         <div
           className="absolute pointer-events-none opacity-30"
