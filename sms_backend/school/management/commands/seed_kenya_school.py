@@ -1,0 +1,552 @@
+"""
+seed_kenya_school.py
+Comprehensive sample data for a Kenyan 8-4-4 high school (St. Mary's Nairobi High School).
+Includes: academic structure, 40 students, 12 teachers, fee structures, payments,
+admissions applications, HR leave requests, library acquisitions, maintenance requests,
+communication data, and more — designed to populate all approval workflows.
+Usage: python manage.py seed_kenya_school [--schema_name demo_school]
+"""
+from datetime import date, timedelta
+from decimal import Decimal
+import random
+import uuid
+
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django_tenants.utils import schema_context
+
+from clients.models import Tenant, Domain
+from school.models import (
+    Role, UserProfile, Student, Guardian, Enrollment, SchoolClass,
+    FeeStructure, Invoice, InvoiceLineItem, Payment, PaymentAllocation,
+    Expense, AdmissionApplication, AcademicYear, Term,
+)
+from hr.models import Staff
+from communication.models import Message
+
+User = get_user_model()
+
+KENYAN_MALE_NAMES = [
+    ("Peter", "Kamau"), ("John", "Mwangi"), ("David", "Njoroge"),
+    ("Michael", "Ochieng"), ("James", "Wafula"), ("Samuel", "Kiprotich"),
+    ("Daniel", "Otieno"), ("Francis", "Mutua"), ("Patrick", "Njiru"),
+    ("George", "Abuya"), ("Emmanuel", "Kariuki"), ("Brian", "Ndegwa"),
+    ("Kevin", "Waweru"), ("Collins", "Omondi"), ("Victor", "Cheruiyot"),
+    ("Joseph", "Kimani"), ("Eric", "Ndirangu"), ("Mark", "Kipchoge"),
+    ("Andrew", "Mugo"), ("Timothy", "Simiyu"),
+]
+
+KENYAN_FEMALE_NAMES = [
+    ("Mary", "Wanjiku"), ("Grace", "Murugi"), ("Faith", "Achieng"),
+    ("Joyce", "Wangari"), ("Esther", "Chepkoech"), ("Ruth", "Adhiambo"),
+    ("Alice", "Nyambura"), ("Susan", "Auma"), ("Caroline", "Kiptoo"),
+    ("Janet", "Waweru"), ("Beatrice", "Njeri"), ("Priscilla", "Chebet"),
+    ("Mercy", "Atieno"), ("Winnie", "Njoki"), ("Lydia", "Chemutai"),
+    ("Tabitha", "Mwende"), ("Naomi", "Awuor"), ("Deborah", "Jeptoo"),
+    ("Rachel", "Wairimu"), ("Eunice", "Kerubo"),
+]
+
+TEACHER_DATA = [
+    ("Samuel", "Otieno", "Mathematics", "0722100001"),
+    ("Grace", "Wanjiku", "English", "0722100002"),
+    ("David", "Mwangi", "Biology", "0722100003"),
+    ("Faith", "Njoroge", "Chemistry", "0722100004"),
+    ("Peter", "Kamau", "Physics", "0722100005"),
+    ("Mary", "Achieng", "History & Government", "0722100006"),
+    ("John", "Mutua", "Geography", "0722100007"),
+    ("Susan", "Wafula", "Business Studies", "0722100008"),
+    ("James", "Simiyu", "Kiswahili", "0722100009"),
+    ("Esther", "Kimani", "CRE", "0722100010"),
+    ("George", "Ndegwa", "Agriculture", "0722100011"),
+    ("Alice", "Chebet", "Computer Studies", "0722100012"),
+]
+
+SUBJECTS_844 = [
+    "Mathematics", "English", "Kiswahili",
+    "Biology", "Chemistry", "Physics",
+    "History & Government", "Geography", "CRE",
+    "Business Studies", "Agriculture", "Computer Studies",
+]
+
+FORMS = ["Form 1", "Form 2", "Form 3", "Form 4"]
+STREAMS = ["East", "West", "North", "South"]
+
+FEE_ITEMS = [
+    ("Tuition Fee", Decimal("12000.00")),
+    ("Boarding Fee", Decimal("15000.00")),
+    ("Activity Fee", Decimal("2500.00")),
+    ("Lunch Fee", Decimal("3500.00")),
+    ("ICT Levy", Decimal("1500.00")),
+    ("Games & Sports", Decimal("1000.00")),
+    ("Caution Money", Decimal("500.00")),
+]
+
+MAINTENANCE_ITEMS = [
+    ("Science Lab Equipment Repair", "High", "Laboratory Block"),
+    ("Library Roof Leak", "Urgent", "Library Building"),
+    ("Computer Lab Projector Fault", "Medium", "Computer Lab"),
+    ("Sports Ground Fencing", "Low", "Sports Ground"),
+    ("Classroom 12B Door Replacement", "Medium", "Form 2 Block"),
+    ("Kitchen Exhaust Fan Repair", "High", "Kitchen"),
+    ("Dormitory Bunk Beds Repair", "Medium", "Boarding House"),
+    ("School Bus Service", "High", "Garage"),
+]
+
+
+class Command(BaseCommand):
+    help = "Seeds comprehensive Kenyan high school demo data (St. Mary's Nairobi High School)."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--schema_name", type=str, default="demo_school")
+
+    def handle(self, *args, **options):
+        schema_name = options["schema_name"]
+
+        with schema_context("public"):
+            tenant, _ = Tenant.objects.get_or_create(
+                schema_name=schema_name,
+                defaults={
+                    "name": "St. Mary's Nairobi High School",
+                    "paid_until": date(2030, 1, 1),
+                    "is_active": True,
+                },
+            )
+            Domain.objects.get_or_create(
+                domain="demo.localhost",
+                tenant=tenant,
+                defaults={"is_primary": True},
+            )
+
+        with schema_context(schema_name):
+            self._seed_all(schema_name)
+
+        self.stdout.write(self.style.SUCCESS(
+            f"Kenyan school data seeded successfully for schema '{schema_name}'."
+        ))
+
+    def _seed_all(self, schema_name):
+        self.stdout.write("  Seeding roles and modules…")
+        self._seed_roles_modules()
+
+        self.stdout.write("  Seeding admin user…")
+        admin = self._seed_admin_user()
+
+        self.stdout.write("  Seeding academic structure…")
+        year, terms, classes = self._seed_academics()
+
+        self.stdout.write("  Seeding staff / teachers…")
+        self._seed_staff(admin)
+
+        self.stdout.write("  Seeding students (40)…")
+        students = self._seed_students(classes, terms)
+
+        self.stdout.write("  Seeding fee structures and invoices…")
+        self._seed_fees(year, terms, students)
+
+        self.stdout.write("  Seeding admission applications…")
+        self._seed_admissions(year, terms)
+
+        self.stdout.write("  Seeding maintenance requests…")
+        self._seed_maintenance(admin)
+
+        self.stdout.write("  Seeding communication messages…")
+        self._seed_communication(students, admin)
+
+    # ── Roles & Modules ─────────────────────────────────────────────────────
+    def _seed_roles_modules(self):
+        roles = [
+            ("TENANT_SUPER_ADMIN", "School Principal"),
+            ("ADMIN", "Deputy Principal / Administrator"),
+            ("ACCOUNTANT", "School Bursar"),
+            ("TEACHER", "Teaching Staff"),
+            ("LIBRARIAN", "School Librarian"),
+            ("NURSE", "School Nurse"),
+        ]
+        for name, desc in roles:
+            Role.objects.get_or_create(name=name, defaults={"description": desc})
+
+        try:
+            from school.models import Module
+            modules = [
+                ("CORE", "Core Administration"), ("STUDENTS", "Students"),
+                ("ADMISSIONS", "Admissions"), ("FINANCE", "Finance"),
+                ("ACADEMICS", "Academics"), ("HR", "Human Resources"),
+                ("STAFF", "Staff Management"), ("PARENTS", "Parent Portal"),
+                ("LIBRARY", "Library Management"), ("ASSETS", "Assets"),
+                ("COMMUNICATION", "Communication"), ("REPORTING", "Reporting"),
+                ("STORE", "Store & Inventory"), ("DISPENSARY", "Dispensary"),
+                ("TIMETABLE", "School Timetable"), ("TRANSPORT", "Transport"),
+                ("EXAMINATIONS", "Examinations"), ("HOSTEL", "Hostel"),
+                ("MAINTENANCE", "Maintenance"), ("CURRICULUM", "Curriculum"),
+                ("ELEARNING", "E-Learning"), ("ANALYTICS", "Analytics"),
+                ("CLOCKIN", "Clock-In"),
+            ]
+            for key, name in modules:
+                Module.objects.get_or_create(key=key, defaults={"name": name})
+        except ImportError:
+            pass
+
+    # ── Admin User ───────────────────────────────────────────────────────────
+    def _seed_admin_user(self):
+        user, _ = User.objects.get_or_create(
+            username="admin",
+            defaults={
+                "email": "admin@stmarysnairobi.ac.ke",
+                "first_name": "Principal",
+                "last_name": "Mwangi",
+                "is_staff": True,
+                "is_superuser": True,
+            },
+        )
+        if not user.check_password("admin123"):
+            user.set_password("admin123")
+            user.save()
+        role = Role.objects.get(name="TENANT_SUPER_ADMIN")
+        UserProfile.objects.get_or_create(user=user, defaults={"role": role})
+        return user
+
+    # ── Academic Structure ────────────────────────────────────────────────────
+    def _seed_academics(self):
+        year, _ = AcademicYear.objects.get_or_create(
+            name="2025",
+            defaults={
+                "start_date": date(2025, 1, 6),
+                "end_date": date(2025, 11, 28),
+                "is_active": True,
+            },
+        )
+
+        term_defs = [
+            ("Term 1 2025", date(2025, 1, 6), date(2025, 4, 4)),
+            ("Term 2 2025", date(2025, 4, 28), date(2025, 8, 1)),
+            ("Term 3 2025", date(2025, 8, 25), date(2025, 11, 28)),
+        ]
+        terms = []
+        for i, (name, start, end) in enumerate(term_defs):
+            t, _ = Term.objects.get_or_create(
+                academic_year=year,
+                name=name,
+                defaults={"start_date": start, "end_date": end, "is_active": i == 0},
+            )
+            terms.append(t)
+
+        classes = {}
+        for form in FORMS:
+            classes[form] = {}
+            for stream in STREAMS:
+                cls, _ = SchoolClass.objects.get_or_create(
+                    name=form,
+                    stream=stream,
+                    academic_year=year,
+                    defaults={"is_active": True},
+                )
+                classes[form][stream] = cls
+
+        return year, terms, classes
+
+    # ── Staff ────────────────────────────────────────────────────────────────
+    def _seed_staff(self, admin_user):
+        teacher_role = Role.objects.filter(name="TEACHER").first()
+        for i, (first, last, subject, phone) in enumerate(TEACHER_DATA):
+            emp_id = f"TCH{str(i + 1).zfill(3)}"
+            Staff.objects.get_or_create(
+                employee_id=emp_id,
+                defaults={
+                    "first_name": first,
+                    "last_name": last,
+                    "role": "Teacher",
+                    "phone": phone,
+                },
+            )
+            username = f"{first.lower()}.{last.lower()}"
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "first_name": first,
+                    "last_name": last,
+                    "email": f"{username}@stmarysnairobi.ac.ke",
+                },
+            )
+            if created:
+                user.set_password("teacher123")
+                user.save()
+            if teacher_role:
+                UserProfile.objects.get_or_create(user=user, defaults={"role": teacher_role})
+
+        # Seed HR leave requests for approval
+        try:
+            from hr.models import LeaveRequest, LeaveType
+            lt, _ = LeaveType.objects.get_or_create(
+                name="Annual Leave",
+                defaults={"max_days_year": 21, "is_paid": True},
+            )
+            leave_data = [
+                ("samuel.otieno", date(2025, 3, 10), date(2025, 3, 14), "Personal matter"),
+                ("grace.wanjiku", date(2025, 3, 17), date(2025, 3, 19), "Medical appointment"),
+                ("david.mwangi", date(2025, 4, 7), date(2025, 4, 11), "Family event"),
+                ("faith.njoroge", date(2025, 2, 24), date(2025, 2, 28), "Rest leave"),
+            ]
+            for username, start, end, reason in leave_data:
+                user = User.objects.filter(username=username).first()
+                if user:
+                    staff = Staff.objects.filter(
+                        first_name=user.first_name, last_name=user.last_name
+                    ).first()
+                    if staff:
+                        LeaveRequest.objects.get_or_create(
+                            employee=staff,
+                            start_date=start,
+                            defaults={
+                                "end_date": end,
+                                "leave_type": lt,
+                                "reason": reason,
+                                "status": "Pending",
+                            },
+                        )
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"    Leave requests skipped: {e}"))
+
+    # ── Students ─────────────────────────────────────────────────────────────
+    def _seed_students(self, classes, terms):
+        students = []
+        all_names = (
+            [(f, l, "M") for f, l in KENYAN_MALE_NAMES] +
+            [(f, l, "F") for f, l in KENYAN_FEMALE_NAMES]
+        )
+        form_stream_pairs = [
+            (f, s) for f in FORMS for s in STREAMS
+        ]
+
+        for i, (first, last, gender) in enumerate(all_names):
+            adm_no = f"STM{2025}{str(i + 1).zfill(3)}"
+            form, stream = form_stream_pairs[i % len(form_stream_pairs)]
+            dob_year = 2025 - (14 + int(form[-1]))
+            s, _ = Student.objects.get_or_create(
+                admission_number=adm_no,
+                defaults={
+                    "first_name": first,
+                    "last_name": last,
+                    "gender": gender,
+                    "date_of_birth": date(dob_year, random.randint(1, 12), random.randint(1, 28)),
+                },
+            )
+            # Guardian
+            g_name = f"Mr./Mrs. {last}"
+            Guardian.objects.get_or_create(
+                student=s,
+                name=g_name,
+                defaults={
+                    "relationship": "Parent",
+                    "phone": f"07{random.randint(10000000, 99999999)}",
+                    "email": f"parent.{last.lower()}@gmail.com",
+                },
+            )
+            # Enroll in Term 1
+            cls = classes[form][stream]
+            Enrollment.objects.get_or_create(
+                student=s,
+                school_class=cls,
+                term=terms[0],
+            )
+            students.append(s)
+
+        return students
+
+    # ── Fees & Invoices ───────────────────────────────────────────────────────
+    def _seed_fees(self, year, terms, students):
+        # Create fee structures per term
+        fee_structs = {}
+        for term in terms:
+            structs = []
+            for name, amount in FEE_ITEMS:
+                fs, _ = FeeStructure.objects.get_or_create(
+                    name=f"{name} — {term.name}",
+                    academic_year=year,
+                    term=term,
+                    defaults={"amount": amount, "is_active": True},
+                )
+                structs.append(fs)
+            fee_structs[term.id] = structs
+
+        term1 = terms[0]
+        structs = fee_structs[term1.id]
+        total_term1 = sum(fs.amount for fs in structs)
+
+        # Invoice + payment for each student
+        ref_counter = 9000
+        for i, student in enumerate(students):
+            inv = Invoice.objects.create(
+                student=student,
+                term=term1,
+                due_date=date(2025, 2, 14),
+                total_amount=total_term1,
+                status="CONFIRMED",
+            )
+            for fs in structs:
+                InvoiceLineItem.objects.create(
+                    invoice=inv,
+                    fee_structure=fs,
+                    description=fs.name.split(" — ")[0],
+                    amount=fs.amount,
+                )
+
+            # Varying payment amounts: some full, some partial, some none
+            if i % 3 == 0:
+                paid_amount = total_term1  # Fully paid
+            elif i % 3 == 1:
+                paid_amount = total_term1 * Decimal("0.5")  # Half paid
+            else:
+                paid_amount = Decimal("0")  # Unpaid
+
+            if paid_amount > 0:
+                ref_counter += 1
+                unique_ref = f"RCPT-KE{ref_counter}-{uuid.uuid4().hex[:6].upper()}"
+                pmt, _ = Payment.objects.get_or_create(
+                    student=student,
+                    notes=f"Term 1 2025 payment — {student.admission_number}",
+                    defaults={
+                        "amount": paid_amount,
+                        "payment_method": random.choice(["Cash", "M-Pesa", "Bank Transfer", "Cheque"]),
+                        "reference_number": unique_ref,
+                    },
+                )
+                PaymentAllocation.objects.create(
+                    payment=pmt,
+                    invoice=inv,
+                    amount_allocated=paid_amount,
+                )
+
+        # School expenses
+        expenses = [
+            ("Utilities", Decimal("45000.00"), "Electricity bill — January 2025"),
+            ("Utilities", Decimal("12000.00"), "Water bill — January 2025"),
+            ("Salaries", Decimal("780000.00"), "Teaching staff payroll — January 2025"),
+            ("Supplies", Decimal("28500.00"), "Stationery and exercise books"),
+            ("Maintenance", Decimal("35000.00"), "Lab equipment servicing"),
+            ("Transport", Decimal("15000.00"), "Bus fuel — January 2025"),
+            ("Catering", Decimal("120000.00"), "Food supplies — Term 1"),
+            ("Security", Decimal("18000.00"), "Security services — January"),
+        ]
+        for cat, amt, desc in expenses:
+            Expense.objects.create(
+                category=cat, amount=amt,
+                expense_date=date(2025, 1, random.randint(5, 28)),
+                description=desc,
+            )
+
+    # ── Admission Applications ────────────────────────────────────────────────
+    def _seed_admissions(self, year, terms):
+        candidates = [
+            ("Amina", "Hassan", "F", date(2012, 3, 15)),
+            ("Caleb", "Kiptanui", "M", date(2012, 7, 22)),
+            ("Zipporah", "Muthoni", "F", date(2012, 1, 10)),
+            ("Elvis", "Odhiambo", "M", date(2012, 11, 5)),
+            ("Vivian", "Chepkemoi", "F", date(2012, 4, 18)),
+            ("Arnold", "Gacheru", "M", date(2012, 9, 30)),
+            ("Gladys", "Onyango", "F", date(2012, 6, 8)),
+            ("Clifford", "Njuguna", "M", date(2012, 2, 14)),
+        ]
+        statuses = ["Submitted", "Submitted", "Submitted", "Documents Received",
+                    "Interview Scheduled", "Assessed", "Submitted", "Documents Received"]
+
+        for i, ((first, last, gender, dob), status) in enumerate(zip(candidates, statuses)):
+            num = f"APP2025{str(i + 1).zfill(3)}"
+            AdmissionApplication.objects.get_or_create(
+                application_number=num,
+                defaults={
+                    "student_first_name": first,
+                    "student_last_name": last,
+                    "student_gender": gender,
+                    "student_dob": dob,
+                    "application_date": date(2024, 11, random.randint(1, 28)),
+                    "guardian_name": f"Parent of {first} {last}",
+                    "guardian_phone": f"07{random.randint(10000000, 99999999)}",
+                    "guardian_email": f"parent.{last.lower()}@gmail.com",
+                    "notes": "Applying for Form 1 admission, 2025 academic year.",
+                },
+            )
+
+    # ── Maintenance Requests ──────────────────────────────────────────────────
+    def _seed_maintenance(self, admin_user):
+        try:
+            from maintenance.models import MaintenanceCategory, MaintenanceRequest
+
+            cat_names = ["Electrical", "Civil Works", "Plumbing", "ICT Equipment", "Furniture"]
+            cats = {}
+            for name in cat_names:
+                c, _ = MaintenanceCategory.objects.get_or_create(name=name)
+                cats[name] = c
+
+            category_map = {
+                "Science Lab Equipment Repair": cats["ICT Equipment"],
+                "Library Roof Leak": cats["Civil Works"],
+                "Computer Lab Projector Fault": cats["ICT Equipment"],
+                "Sports Ground Fencing": cats["Civil Works"],
+                "Classroom 12B Door Replacement": cats["Civil Works"],
+                "Kitchen Exhaust Fan Repair": cats["Electrical"],
+                "Dormitory Bunk Beds Repair": cats["Furniture"],
+                "School Bus Service": cats["Civil Works"],
+            }
+
+            for title, priority, location in MAINTENANCE_ITEMS:
+                MaintenanceRequest.objects.get_or_create(
+                    title=title,
+                    defaults={
+                        "description": f"{title} — requires urgent attention at {location}.",
+                        "category": category_map.get(title, cats["Civil Works"]),
+                        "priority": priority,
+                        "status": "Pending",
+                        "location": location,
+                        "reported_by": admin_user,
+                        "cost_estimate": Decimal(str(random.randint(5000, 80000))),
+                    },
+                )
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"    Maintenance requests skipped: {e}"))
+
+    # ── Communication ─────────────────────────────────────────────────────────
+    def _seed_communication(self, students, admin_user):
+        announcements_data = [
+            ("Term 1 2025 Opening Day", "School will open on Monday 6th January 2025. All students should report by 8:00 AM."),
+            ("KCSE Mock Examinations Schedule", "Form 4 mock exams begin on 10th February 2025. Timetables available from the Deputy Principal's office."),
+            ("Parents' Meeting — Term 1", "All parents are invited to the annual parents' meeting on 15th February 2025 at 9:00 AM."),
+            ("Fee Payment Deadline", "All Term 1 fees must be paid by 14th February 2025. Contact the bursar for payment plans."),
+            ("Kenya Science Congress Registration", "Students interested in the Kenya Science Congress should submit proposals to the Head of Science by 20th January."),
+        ]
+        try:
+            from communication.models import Announcement
+            for title, body in announcements_data:
+                Announcement.objects.get_or_create(
+                    title=title,
+                    defaults={
+                        "body": body,
+                        "priority": "Important",
+                        "audience_type": "All",
+                        "notify_email": True,
+                        "notify_sms": True,
+                    },
+                )
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"    Announcements skipped: {e}"))
+
+        for i, student in enumerate(students[:8]):
+            try:
+                Message.objects.get_or_create(
+                    recipient_type="STUDENT",
+                    recipient_id=student.id,
+                    subject="Welcome to St. Mary's Nairobi High School",
+                    defaults={
+                        "body": (
+                            f"Dear {student.first_name} {student.last_name},\n\n"
+                            "Welcome to St. Mary's Nairobi High School for the 2025 academic year. "
+                            "We are committed to providing you with a world-class education that builds "
+                            "character, competence, and excellence.\n\n"
+                            "Please ensure all fee payments are completed by 14th February 2025.\n\n"
+                            "Yours sincerely,\nThe Principal"
+                        ),
+                        "status": "SENT",
+                    },
+                )
+            except Exception:
+                pass

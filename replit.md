@@ -1,6 +1,6 @@
-# School Management System (SMS)
+# Rynaty School Management System
 
-A multi-tenant school management system built with Django (backend) and React/Vite (frontend).
+A multi-tenant school management system built by Rynatyspace Technologies. Django 4.2 backend, React/Vite frontend, PostgreSQL schema-per-tenant, IPSAS-compliant finance. 28 modules.
 
 ## Architecture
 

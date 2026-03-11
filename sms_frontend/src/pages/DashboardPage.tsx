@@ -7,7 +7,7 @@ import {
   AlertCircle, ArrowRight, BarChart2, BookOpen, Building2, CheckCircle2,
   ChevronDown, ChevronRight, DollarSign, GraduationCap, MessageSquare,
   Play, RefreshCw, ShoppingCart, Undo2, Users, Zap,
-  Sun, CloudSun, Moon, FileText, LayoutGrid, TrendingDown,
+  FileText, LayoutGrid, TrendingDown,
   Settings, ClipboardList, CreditCard, CalendarDays, UserCheck,
 } from 'lucide-react'
 import { apiClient } from '../api/client'
@@ -17,39 +17,152 @@ import { isBackendModuleEnabled } from '../config/moduleFocus'
 function GreetingOrb({ period }: { period: 'morning' | 'afternoon' | 'evening' }) {
   if (period === 'morning') return (
     <div className="relative flex-shrink-0">
-      <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
-        style={{
-          background: 'linear-gradient(135deg, #fb923c 0%, #fbbf24 100%)',
-          boxShadow: '0 0 40px rgba(251,191,36,0.5), 0 8px 32px rgba(251,191,36,0.25)',
-        }}>
-        <Sun size={26} strokeWidth={1.5} className="text-white drop-shadow-lg" />
+      <div className="w-14 h-14 rounded-[18px] overflow-hidden"
+        style={{ boxShadow: '0 0 44px rgba(244,165,52,0.58), 0 8px 32px rgba(244,165,52,0.32), inset 0 0 0 1px rgba(255,210,80,0.18)' }}>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <defs>
+            <linearGradient id="sky-m" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#060418" />
+              <stop offset="26%" stopColor="#3a1050" />
+              <stop offset="50%" stopColor="#842030" />
+              <stop offset="68%" stopColor="#d25018" />
+              <stop offset="83%" stopColor="#e88020" />
+              <stop offset="100%" stopColor="#f4b83c" />
+            </linearGradient>
+            <radialGradient id="sun-gm" cx="50%" cy="100%" r="62%">
+              <stop offset="0%" stopColor="#fff7d4" stopOpacity="1" />
+              <stop offset="18%" stopColor="#ffe060" stopOpacity="0.85" />
+              <stop offset="42%" stopColor="#f49018" stopOpacity="0.5" />
+              <stop offset="72%" stopColor="#d44010" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#8c2020" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="56" height="56" fill="url(#sky-m)" />
+          <ellipse cx="28" cy="56" rx="32" ry="24" fill="url(#sun-gm)" />
+          <rect x="0" y="33" width="56" height="10" fill="#f07c20" opacity="0.1" />
+          <circle cx="28" cy="48" r="10" fill="#fff9d0" opacity="0.9" />
+          <circle cx="28" cy="48" r="8" fill="#fffce8" />
+          <circle cx="28" cy="48" r="5.5" fill="#fffff2" />
+          <line x1="28" y1="37" x2="28" y2="29" stroke="#ffe87a" strokeWidth="0.85" strokeOpacity="0.55" strokeLinecap="round" />
+          <line x1="35" y1="38.5" x2="40.5" y2="31.5" stroke="#ffe87a" strokeWidth="0.85" strokeOpacity="0.48" strokeLinecap="round" />
+          <line x1="21" y1="38.5" x2="15.5" y2="31.5" stroke="#ffe87a" strokeWidth="0.85" strokeOpacity="0.48" strokeLinecap="round" />
+          <line x1="39" y1="42" x2="46" y2="37" stroke="#ffd860" strokeWidth="0.75" strokeOpacity="0.35" strokeLinecap="round" />
+          <line x1="17" y1="42" x2="10" y2="37" stroke="#ffd860" strokeWidth="0.75" strokeOpacity="0.35" strokeLinecap="round" />
+          <line x1="32.5" y1="37" x2="36" y2="29" stroke="#ffe060" strokeWidth="0.65" strokeOpacity="0.38" strokeLinecap="round" />
+          <line x1="23.5" y1="37" x2="20" y2="29" stroke="#ffe060" strokeWidth="0.65" strokeOpacity="0.38" strokeLinecap="round" />
+          <ellipse cx="44" cy="12" rx="6.5" ry="2.5" fill="#d46030" opacity="0.35" />
+          <ellipse cx="41" cy="11" rx="4.5" ry="2" fill="#f0944a" opacity="0.25" />
+          <ellipse cx="9" cy="17" rx="5" ry="2.2" fill="#aa3045" opacity="0.3" />
+          <ellipse cx="12" cy="16" rx="3.5" ry="1.6" fill="#c84858" opacity="0.2" />
+          <ellipse cx="28" cy="8" rx="5.5" ry="1.8" fill="#6a1832" opacity="0.22" />
+          <path d="M14 23 Q15.5 21 17 23" fill="none" stroke="#f8a050" strokeWidth="0.75" strokeOpacity="0.68" strokeLinecap="round" />
+          <path d="M21 18 Q22.5 16 24 18" fill="none" stroke="#f8b870" strokeWidth="0.7" strokeOpacity="0.62" strokeLinecap="round" />
+          <path d="M34 21 Q35.5 19 37 21" fill="none" stroke="#f09040" strokeWidth="0.75" strokeOpacity="0.55" strokeLinecap="round" />
+          <path d="M0 40 Q6 31 13 35 Q19 39 26 33 Q32 27 39 34 Q45 39 56 32 L56 56 L0 56 Z" fill="#1e0c06" opacity="0.72" />
+          <path d="M0 44 Q7 38 15 42 Q22 46 28 40 Q34 34 42 41 Q48 46 56 41 L56 56 L0 56 Z" fill="#100403" />
+          <line x1="7" y1="43" x2="7" y2="47" stroke="#100403" strokeWidth="1.3" strokeLinecap="round" />
+          <ellipse cx="7" cy="42" rx="4.5" ry="1.8" fill="#100403" />
+          <line x1="47" y1="43" x2="47" y2="47" stroke="#100403" strokeWidth="1.3" strokeLinecap="round" />
+          <ellipse cx="47" cy="42.5" rx="4" ry="1.6" fill="#100403" />
+        </svg>
       </div>
       <div className="absolute inset-0 rounded-[18px] animate-pulse"
-        style={{ boxShadow: '0 0 28px rgba(251,191,36,0.4)', animationDuration: '2s' }} />
+        style={{ boxShadow: '0 0 32px rgba(244,165,52,0.5)', animationDuration: '2.5s' }} />
     </div>
   )
   if (period === 'afternoon') return (
     <div className="relative flex-shrink-0">
-      <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
-        style={{
-          background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
-          boxShadow: '0 0 40px rgba(56,189,248,0.4), 0 8px 32px rgba(56,189,248,0.2)',
-        }}>
-        <CloudSun size={26} strokeWidth={1.5} className="text-white drop-shadow-lg" />
+      <div className="w-14 h-14 rounded-[18px] overflow-hidden"
+        style={{ boxShadow: '0 0 36px rgba(56,189,248,0.45), 0 8px 28px rgba(56,189,248,0.22), inset 0 0 0 1px rgba(180,230,255,0.12)' }}>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <defs>
+            <linearGradient id="sky-a" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0858a8" />
+              <stop offset="38%" stopColor="#2488cc" />
+              <stop offset="72%" stopColor="#58b8e0" />
+              <stop offset="100%" stopColor="#9ad4ee" />
+            </linearGradient>
+            <radialGradient id="sun-ga" cx="50%" cy="21%" r="22%">
+              <stop offset="0%" stopColor="#fffff4" stopOpacity="1" />
+              <stop offset="30%" stopColor="#fff8c0" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#64b8e0" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="56" height="56" fill="url(#sky-a)" />
+          <circle cx="28" cy="12" r="14" fill="url(#sun-ga)" opacity="0.65" />
+          <circle cx="28" cy="12" r="7.5" fill="#fffef0" opacity="0.96" />
+          <circle cx="28" cy="12" r="5.5" fill="#fffff8" />
+          <ellipse cx="45" cy="21" rx="7.5" ry="3.5" fill="white" opacity="0.92" />
+          <ellipse cx="48" cy="22" rx="5.5" ry="3" fill="white" opacity="0.88" />
+          <ellipse cx="41" cy="22" rx="4.5" ry="2.8" fill="white" opacity="0.85" />
+          <ellipse cx="11" cy="30" rx="7" ry="3.2" fill="white" opacity="0.85" />
+          <ellipse cx="15" cy="31" rx="5" ry="2.8" fill="white" opacity="0.8" />
+          <ellipse cx="7" cy="31" rx="4" ry="2.5" fill="white" opacity="0.78" />
+          <rect x="0" y="37" width="56" height="5" fill="white" opacity="0.07" />
+          <path d="M0 40 Q8 33 18 37 Q28 41 38 35 Q47 30 56 38 L56 56 L0 56 Z" fill="#1a4820" opacity="0.82" />
+          <path d="M0 47 Q10 41 20 45 Q30 49 38 43 Q46 38 56 45 L56 56 L0 56 Z" fill="#102e0e" />
+          <line x1="15" y1="43" x2="15" y2="48" stroke="#102e0e" strokeWidth="1.2" strokeLinecap="round" />
+          <ellipse cx="15" cy="41.5" rx="4.5" ry="3.5" fill="#0d2c0c" />
+          <line x1="40" y1="44" x2="40" y2="49" stroke="#102e0e" strokeWidth="1.2" strokeLinecap="round" />
+          <ellipse cx="40" cy="42.5" rx="4" ry="3" fill="#0d2c0c" />
+        </svg>
       </div>
     </div>
   )
   return (
     <div className="relative flex-shrink-0">
-      <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
-        style={{
-          background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
-          boxShadow: '0 0 40px rgba(129,140,248,0.4), 0 8px 32px rgba(129,140,248,0.2)',
-        }}>
-        <Moon size={26} strokeWidth={1.5} className="text-white drop-shadow-lg" />
+      <div className="w-14 h-14 rounded-[18px] overflow-hidden"
+        style={{ boxShadow: '0 0 36px rgba(129,140,248,0.45), 0 8px 28px rgba(129,140,248,0.25), inset 0 0 0 1px rgba(160,150,255,0.12)' }}>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <defs>
+            <linearGradient id="sky-e" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#060416" />
+              <stop offset="35%" stopColor="#0e0838" />
+              <stop offset="65%" stopColor="#1a1460" />
+              <stop offset="100%" stopColor="#221870" />
+            </linearGradient>
+          </defs>
+          <rect width="56" height="56" fill="url(#sky-e)" />
+          <circle cx="8" cy="8" r="0.8" fill="#e8e2ff" opacity="0.88" />
+          <circle cx="19" cy="5" r="0.7" fill="#dcd8ff" opacity="0.82" />
+          <circle cx="34" cy="7" r="0.9" fill="#f0ecff" opacity="0.92" />
+          <circle cx="47" cy="10" r="0.7" fill="#e4e0ff" opacity="0.85" />
+          <circle cx="12" cy="18" r="0.55" fill="#d8d4ff" opacity="0.72" />
+          <circle cx="43" cy="23" r="0.65" fill="#e8e4ff" opacity="0.78" />
+          <circle cx="5" cy="28" r="0.5" fill="#d0ccf0" opacity="0.65" />
+          <circle cx="50" cy="31" r="0.7" fill="#e0dcff" opacity="0.7" />
+          <circle cx="28" cy="11" r="0.45" fill="#f4f0ff" opacity="0.62" />
+          <circle cx="38" cy="16" r="0.5" fill="#e8e4ff" opacity="0.68" />
+          <circle cx="38" cy="15" r="7" fill="#f0e8c4" opacity="0.95" />
+          <circle cx="41.5" cy="14" r="6.4" fill="#1a1460" />
+          <circle cx="38" cy="15" r="9.5" fill="#b8b0f0" opacity="0.1" />
+          <rect x="0" y="47" width="7" height="9" fill="#080416" />
+          <rect x="2" y="43" width="5" height="13" fill="#080416" />
+          <rect x="6" y="45" width="3" height="11" fill="#080416" />
+          <rect x="9" y="41" width="6" height="15" fill="#080416" />
+          <rect x="14" y="46" width="4" height="10" fill="#080416" />
+          <rect x="17" y="44" width="5" height="12" fill="#080416" />
+          <rect x="21" y="48" width="5" height="8" fill="#080416" />
+          <rect x="25" y="45" width="4" height="11" fill="#080416" />
+          <rect x="28" y="42" width="5" height="14" fill="#080416" />
+          <rect x="32" y="47" width="6" height="9" fill="#080416" />
+          <rect x="37" y="44" width="4" height="12" fill="#080416" />
+          <rect x="40" y="46" width="5" height="10" fill="#080416" />
+          <rect x="44" y="43" width="5" height="13" fill="#080416" />
+          <rect x="48" y="45" width="4" height="11" fill="#080416" />
+          <rect x="51" y="47" width="5" height="9" fill="#080416" />
+          <rect x="4" y="44" width="1.5" height="1" fill="#f4d060" opacity="0.68" />
+          <rect x="10" y="42" width="1.5" height="1" fill="#f4d060" opacity="0.6" />
+          <rect x="12" y="45" width="1.5" height="1" fill="#ffa030" opacity="0.5" />
+          <rect x="30" y="43" width="1.5" height="1" fill="#f4d060" opacity="0.62" />
+          <rect x="45" y="44" width="1.5" height="1" fill="#f4d060" opacity="0.55" />
+          <rect x="49" y="46" width="1.5" height="1" fill="#f4d060" opacity="0.58" />
+          <rect x="18" y="45" width="1.5" height="1" fill="#80d0ff" opacity="0.45" />
+          <rect x="36" y="45" width="1.5" height="1" fill="#f4d060" opacity="0.5" />
+        </svg>
       </div>
       <div className="absolute inset-0 rounded-[18px] animate-pulse"
-        style={{ boxShadow: '0 0 24px rgba(129,140,248,0.35)', animationDuration: '3s' }} />
+        style={{ boxShadow: '0 0 24px rgba(129,140,248,0.4)', animationDuration: '3s' }} />
     </div>
   )
 }

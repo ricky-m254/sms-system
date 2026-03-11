@@ -6,7 +6,7 @@ import {
   AlertTriangle, Loader2, DollarSign, RotateCcw, SlidersHorizontal,
   Package, CalendarDays, BookOpen, LayoutGrid, ArrowLeft, Zap,
   Search, ChevronRight, Clock, SquareStack, X, Check, HelpCircle,
-  TrendingUp, AlertCircle,
+  TrendingUp, AlertCircle, UserPlus, Wrench,
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -424,6 +424,116 @@ const CATEGORIES: CategoryDef[] = [
         requestedAt: asStr(r.created_at),
         ageHours: ageHours(r.created_at as string),
         moduleRoute: '/modules/timetable/grid',
+        raw: r,
+      }
+    }),
+  },
+  // ─── Admissions Applications ────────────────────────────────────────────────
+  {
+    key: 'admissions',
+    label: 'Admissions',
+    shortLabel: 'Admissions',
+    LucideIcon: UserPlus,
+    gradient: 'from-cyan-500/20 via-cyan-500/5 to-transparent',
+    borderColor: '#06b6d4',
+    glowColor: 'shadow-cyan-500/20',
+    textClass: 'text-cyan-400',
+    badgeBg: 'bg-cyan-500/15',
+    badgeText: 'text-cyan-300',
+    listUrl: '/admissions/applications/?status=Submitted&limit=50',
+    moduleRoute: '/modules/admissions',
+    moduleLabel: 'Admissions',
+    approveEndpoint: (id) => ({ method: 'patch', url: `/admissions/applications/${id}/` }),
+    rejectEndpoint: (id) => ({ method: 'patch', url: `/admissions/applications/${id}/` }),
+    approvePayload: (n) => ({ status: 'Admitted', review_notes: n }),
+    rejectPayload: (n) => ({ status: 'Rejected', review_notes: n }),
+    adapter: (rows) => rows.map((r) => {
+      const firstName = asStr(r.student_first_name)
+      const lastName = asStr(r.student_last_name)
+      const fullName = `${firstName} ${lastName}`.trim()
+      const appNum = asStr(r.application_number || `APP-${r.id}`)
+      const desiredClass = asStr(r.desired_class || '—')
+      const parentName = asStr(r.parent_name || '—')
+      const parentPhone = asStr(r.parent_phone || '—')
+      return {
+        id: r.id as number,
+        title: `${fullName} — ${desiredClass} Admission`,
+        subtitle: `Application ${appNum} · Parent: ${parentName}`,
+        chips: [
+          { label: 'App #', value: appNum, mono: true, color: 'cyan' },
+          { label: 'Class', value: desiredClass, color: 'blue' },
+          { label: 'Status', value: asStr(r.status), color: 'amber' },
+        ],
+        details: [
+          { label: 'Applicant', value: fullName },
+          { label: 'Application No.', value: appNum, mono: true },
+          { label: 'Gender', value: asStr(r.student_gender || '—') },
+          { label: 'Date of Birth', value: asStr(r.date_of_birth || '—') },
+          { label: 'Desired Class', value: desiredClass },
+          { label: 'Parent / Guardian', value: parentName },
+          { label: 'Parent Phone', value: parentPhone, mono: true },
+          { label: 'Parent Email', value: asStr(r.parent_email || '—') },
+          { label: 'Current Status', value: asStr(r.status || '—') },
+          { label: 'Applied On', value: fmtDate(r.created_at as string) },
+        ],
+        requestedBy: parentName,
+        requestedAt: asStr(r.created_at),
+        ageHours: ageHours(r.created_at as string),
+        moduleRoute: '/modules/admissions',
+        raw: r,
+      }
+    }),
+  },
+  // ─── Maintenance Requests ───────────────────────────────────────────────────
+  {
+    key: 'maintenance',
+    label: 'Maintenance',
+    shortLabel: 'Maintenance',
+    LucideIcon: Wrench,
+    gradient: 'from-orange-500/20 via-orange-500/5 to-transparent',
+    borderColor: '#f97316',
+    glowColor: 'shadow-orange-500/20',
+    textClass: 'text-orange-400',
+    badgeBg: 'bg-orange-500/15',
+    badgeText: 'text-orange-300',
+    listUrl: '/maintenance/requests/?status=Pending&limit=50',
+    moduleRoute: '/modules/maintenance',
+    moduleLabel: 'Maintenance',
+    approveEndpoint: (id) => ({ method: 'patch', url: `/maintenance/requests/${id}/` }),
+    rejectEndpoint: (id) => ({ method: 'patch', url: `/maintenance/requests/${id}/` }),
+    approvePayload: (n) => ({ status: 'Approved', notes: n }),
+    rejectPayload: (n) => ({ status: 'Rejected', notes: n }),
+    adapter: (rows) => rows.map((r) => {
+      const category = r.category as Record<string, unknown> | null ?? {}
+      const catName = asStr(category.name || '—')
+      const assignedTo = r.assigned_to as Record<string, unknown> | null ?? {}
+      const assigneeName = asStr(assignedTo.full_name || assignedTo.first_name || '—')
+      const reporter = r.reported_by as Record<string, unknown> | null ?? {}
+      const reporterName = asStr(reporter.full_name || reporter.username || r.reported_by)
+      return {
+        id: r.id as number,
+        title: asStr(r.title || `Maintenance Request #${r.id}`),
+        subtitle: `${catName} · ${asStr(r.location || '—')}`,
+        chips: [
+          { label: 'Priority', value: asStr(r.priority || '—'), color: r.priority === 'Urgent' ? 'red' : r.priority === 'High' ? 'amber' : 'default' },
+          { label: 'Category', value: catName, color: 'orange' },
+        ],
+        details: [
+          { label: 'Title', value: asStr(r.title), wide: true },
+          { label: 'Description', value: asStr(r.description || '—'), wide: true },
+          { label: 'Category', value: catName },
+          { label: 'Priority', value: asStr(r.priority || '—') },
+          { label: 'Location', value: asStr(r.location || '—') },
+          { label: 'Cost Estimate', value: fmtKsh(r.cost_estimate) },
+          { label: 'Assigned To', value: assigneeName },
+          { label: 'Reported By', value: reporterName },
+          { label: 'Due Date', value: asStr(r.due_date || 'Not set') },
+          { label: 'Submitted', value: fmtDate(r.created_at as string) },
+        ],
+        requestedBy: reporterName,
+        requestedAt: asStr(r.created_at),
+        ageHours: ageHours(r.created_at as string),
+        moduleRoute: '/modules/maintenance',
         raw: r,
       }
     }),
