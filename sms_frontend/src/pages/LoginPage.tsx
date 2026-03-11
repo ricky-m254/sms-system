@@ -1,149 +1,323 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
+import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Globe } from 'lucide-react'
 
-type LoginResponse = {
-  access: string
-  refresh: string
-}
+type LoginResponse  = { access: string; refresh: string }
+type RoutingResponse = { user: string; role: string | null; permissions?: string[] }
+type LoginError    = { detail?: string }
 
-type RoutingResponse = {
-  user: string
-  role: string | null
-  permissions?: string[]
-}
+const FEATURES = [
+  { icon: GraduationCap, label: '28 Integrated Modules', sub: 'From admissions to alumni' },
+  { icon: BarChart3,    label: 'Real-time Analytics',   sub: 'Live KPIs and reports'     },
+  { icon: Shield,       label: 'IPSAS-Compliant Finance', sub: 'Full audit trail'         },
+  { icon: Globe,        label: 'Multi-tenant Ready',    sub: 'Scalable school network'   },
+]
 
-type LoginError = {
-  detail?: string
+function FloatingOrb({ size, color, top, left, delay }: {
+  size: number; color: string; top: string; left: string; delay: number
+}) {
+  return (
+    <div
+      className="absolute rounded-full pointer-events-none blur-3xl opacity-20 animate-pulse"
+      style={{
+        width: size, height: size,
+        background: color,
+        top, left,
+        animationDelay: `${delay}s`,
+        animationDuration: '4s',
+      }}
+    />
+  )
 }
 
 export default function LoginPage() {
-  const navigate = useNavigate()
-  const setTokens = useAuthStore((state) => state.setTokens)
-  const setTenant = useAuthStore((state) => state.setTenant)
-  const setAuthMode = useAuthStore((state) => state.setAuthMode)
-  const setUsername = useAuthStore((state) => state.setUsername)
-  const setRole = useAuthStore((state) => state.setRole)
-  const setPermissions = useAuthStore((state) => state.setPermissions)
-  const storedTenant = useAuthStore((state) => state.tenantId)
+  const navigate    = useNavigate()
+  const setTokens   = useAuthStore(s => s.setTokens)
+  const setTenant   = useAuthStore(s => s.setTenant)
+  const setAuthMode = useAuthStore(s => s.setAuthMode)
+  const setUsername = useAuthStore(s => s.setUsername)
+  const setRole     = useAuthStore(s => s.setRole)
+  const setPermissions = useAuthStore(s => s.setPermissions)
+  const storedTenant   = useAuthStore(s => s.tenantId)
 
-  const [username, setUsernameInput] = useState('')
-  const [password, setPassword] = useState('')
-  const [tenantId, setTenantId] = useState(storedTenant ?? 'demo_school')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [username,  setUsernameInput] = useState('')
+  const [password,  setPassword]      = useState('')
+  const [tenantId,  setTenantId]      = useState(storedTenant ?? 'demo_school')
+  const [error,     setError]         = useState<string | null>(null)
+  const [isLoading, setIsLoading]     = useState(false)
+  const [showPass,  setShowPass]      = useState(false)
+  const [mounted,   setMounted]       = useState(false)
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  useEffect(() => { setMounted(true) }, [])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     setError(null)
     setIsLoading(true)
-
     try {
       setTenant(tenantId.trim() || null)
       setAuthMode('tenant')
       setUsername(username.trim())
-      const response = await apiClient.post<LoginResponse>('/auth/login/', {
-        username: username.trim(),
-        password,
-      })
-      setTokens(response.data.access, response.data.refresh)
+      const res     = await apiClient.post<LoginResponse>('/auth/login/', { username: username.trim(), password })
+      setTokens(res.data.access, res.data.refresh)
       const routing = await apiClient.get<RoutingResponse>('/dashboard/routing/')
       setRole(routing.data.role ?? null)
       setPermissions(routing.data.permissions ?? [])
       try {
-        localStorage.setItem(
-          'sms_user',
-          JSON.stringify({
-            id: routing.data.user,
-            username: routing.data.user,
-            role: routing.data.role,
-            permissions: routing.data.permissions ?? [],
-          }),
-        )
-      } catch {
-        // ignore
-      }
+        localStorage.setItem('sms_user', JSON.stringify({
+          id: routing.data.user, username: routing.data.user,
+          role: routing.data.role, permissions: routing.data.permissions ?? [],
+        }))
+      } catch { /* ignore */ }
       navigate('/dashboard')
     } catch (err) {
-      const message = (err as { response?: { data?: LoginError } })?.response?.data?.detail
-      setError(message ?? 'Login failed. Please check your credentials.')
+      const msg = (err as { response?: { data?: LoginError } })?.response?.data?.detail
+      setError(msg ?? 'Invalid credentials. Please check your details.')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-10 px-4 py-10 sm:px-6 sm:py-16 md:flex-row">
-        <div className="flex-1 space-y-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-emerald-400 font-semibold">Tenant Portal</p>
-          <h1 className="text-4xl font-display font-semibold leading-tight md:text-5xl">
-            Rynaty School Management System
+    <div className="min-h-screen flex overflow-hidden" style={{ background: '#070b12' }}>
+
+      {/* ── Left brand panel ────────────────────────── */}
+      <div
+        className="relative hidden lg:flex flex-col justify-between w-[480px] xl:w-[520px] flex-shrink-0 overflow-hidden"
+        style={{
+          background: 'linear-gradient(150deg, #0d1f3c 0%, #070b12 50%, #0a1628 100%)',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        {/* Animated ambient orbs */}
+        <FloatingOrb size={400} color="radial-gradient(circle, #10b98140, transparent)" top="-10%" left="-20%" delay={0} />
+        <FloatingOrb size={300} color="radial-gradient(circle, #0ea5e930, transparent)" top="50%" left="60%"  delay={2} />
+        <FloatingOrb size={250} color="radial-gradient(circle, #8b5cf620, transparent)" top="70%" left="-5%"  delay={1} />
+
+        {/* Subtle grid overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+
+        {/* Brand content */}
+        <div className={`relative z-10 p-10 pt-14 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          {/* Logo mark */}
+          <div className="flex items-center gap-3 mb-12">
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-2xl"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+            >
+              R
+            </div>
+            <div>
+              <p className="text-white font-bold text-base font-display leading-none">Rynaty</p>
+              <p className="text-emerald-400/70 text-[11px] font-medium mt-0.5">School Management System</p>
+            </div>
+          </div>
+
+          <h1 className="text-4xl xl:text-[44px] font-display font-bold text-white leading-[1.15] mb-4">
+            Every school,<br />
+            <span style={{
+              background: 'linear-gradient(90deg, #10b981, #0ea5e9)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>brilliantly managed.</span>
           </h1>
-          <p className="text-base text-slate-300">
-            Sign in to your assigned modules. Routing is determined by your role and
-            module access.
+          <p className="text-slate-400 text-[15px] leading-relaxed mb-10 max-w-sm">
+            Sign in to access your school's command centre — from admissions to analytics, everything in one place.
           </p>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">
-            <p className="font-semibold text-white">Tips for local dev</p>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>Tenant header uses `X-Tenant-ID`.</li>
-              <li>Backend default base URL is `http://demo.localhost:8000`.</li>
-              <li>Login endpoint: `/api/auth/login/`.</li>
-            </ul>
+
+          {/* Feature list */}
+          <div className="space-y-4">
+            {FEATURES.map((f, i) => (
+              <div
+                key={f.label}
+                className={`flex items-center gap-3.5 transition-all duration-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+                style={{ transitionDelay: `${i * 80 + 200}ms` }}
+              >
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                  <f.icon size={15} className="text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-slate-200 leading-none">{f.label}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{f.sub}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-2xl sm:p-8">
-          <h2 className="text-xl font-display font-semibold">Sign in</h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Use your tenant credentials to continue.
+
+        {/* Bottom attribution */}
+        <div className="relative z-10 p-10">
+          <p className="text-[11px] text-slate-700">
+            © {new Date().getFullYear()} Rynatyspace Technologies. All rights reserved.
           </p>
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            <label className="block text-sm">
-              Tenant ID
+        </div>
+      </div>
+
+      {/* ── Right form panel ────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+        {/* Faint ambient glow behind form */}
+        <div
+          className="absolute pointer-events-none opacity-30"
+          style={{
+            width: 500, height: 500,
+            background: 'radial-gradient(circle, #10b98115 0%, transparent 70%)',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%,-50%)',
+          }}
+        />
+
+        <div
+          className={`relative w-full max-w-[380px] transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        >
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+            >R</div>
+            <p className="text-white font-bold font-display">Rynaty SMS</p>
+          </div>
+
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-1.5">Welcome back</h2>
+            <p className="text-slate-500 text-[13px]">Sign in with your tenant credentials to continue.</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+            {/* Tenant ID */}
+            <div>
+              <label className="block text-[12px] font-semibold text-slate-400 mb-1.5 uppercase tracking-widest">
+                Tenant ID
+              </label>
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
-                placeholder="demo_school"
                 value={tenantId}
-                onChange={(event) => setTenantId(event.target.value)}
+                onChange={e => setTenantId(e.target.value)}
+                placeholder="demo_school"
+                autoComplete="organization"
+                className="w-full rounded-xl px-4 py-3 text-[13px] text-white placeholder-slate-600 outline-none transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor = 'rgba(16,185,129,0.5)'
+                  e.target.style.background = 'rgba(16,185,129,0.04)'
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = 'rgba(255,255,255,0.09)'
+                  e.target.style.background = 'rgba(255,255,255,0.04)'
+                }}
               />
-            </label>
-            <label className="block text-sm">
-              Username
+            </div>
+
+            {/* Username */}
+            <div>
+              <label className="block text-[12px] font-semibold text-slate-400 mb-1.5 uppercase tracking-widest">
+                Username
+              </label>
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
-                placeholder="admin"
                 value={username}
-                onChange={(event) => setUsernameInput(event.target.value)}
+                onChange={e => setUsernameInput(e.target.value)}
+                placeholder="admin"
+                autoComplete="username"
+                className="w-full rounded-xl px-4 py-3 text-[13px] text-white placeholder-slate-600 outline-none transition-all duration-200"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor = 'rgba(16,185,129,0.5)'
+                  e.target.style.background = 'rgba(16,185,129,0.04)'
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = 'rgba(255,255,255,0.09)'
+                  e.target.style.background = 'rgba(255,255,255,0.04)'
+                }}
               />
-            </label>
-            <label className="block text-sm">
-              Password
-              <input
-                type="password"
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
-            {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-[12px] font-semibold text-slate-400 mb-1.5 uppercase tracking-widest">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="w-full rounded-xl px-4 py-3 pr-11 text-[13px] text-white placeholder-slate-600 outline-none transition-all duration-200"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.09)',
+                  }}
+                  onFocus={e => {
+                    e.target.style.borderColor = 'rgba(16,185,129,0.5)'
+                    e.target.style.background = 'rgba(16,185,129,0.04)'
+                  }}
+                  onBlur={e => {
+                    e.target.style.borderColor = 'rgba(255,255,255,0.09)'
+                    e.target.style.background = 'rgba(255,255,255,0.04)'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(s => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition p-1"
+                  tabIndex={-1}
+                >
+                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="rounded-xl px-4 py-3 text-[12px] text-rose-300 flex items-start gap-2 animate-fade-in"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <span className="mt-0.5 flex-shrink-0">⚠</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Submit */}
             <button
-              className="w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"
               disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2.5 rounded-xl py-3.5 text-[13px] font-bold text-white transition-all duration-200 mt-2
+                disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading
+                ? <><Loader2 size={15} className="animate-spin" /> Signing in…</>
+                : <><span>Sign in to your school</span><ArrowRight size={15} /></>
+              }
             </button>
           </form>
-          <p className="mt-4 text-center text-xs text-slate-400">
-            Platform admin?{' '}
+
+          {/* Platform admin link */}
+          <p className="mt-6 text-center text-[12px] text-slate-600">
+            Platform administrator?{' '}
             <button
               type="button"
-              className="text-emerald-300 hover:text-emerald-200"
+              className="font-semibold transition hover:opacity-80"
+              style={{ color: '#10b981' }}
               onClick={() => navigate('/platform/login')}
             >
-              Use Super Admin login
+              Super Admin login →
             </button>
           </p>
         </div>

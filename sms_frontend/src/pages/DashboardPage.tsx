@@ -231,19 +231,27 @@ function ActivityCard({ item, onNavigate, highlight }: { item: ActivityItem; onN
   const time = item.createdAt ? new Date(item.createdAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }) : ''
   return (
     <div
-      className={`flex items-start gap-3 rounded-xl border p-3.5 transition cursor-pointer hover:border-emerald-500/50 ${highlight ? 'border-amber-500/30 bg-amber-500/5' : 'border-slate-800 bg-slate-950/40'}`}
+      className={`group flex items-start gap-3 rounded-2xl border p-3.5 transition-all cursor-pointer
+        ${highlight
+          ? 'border-amber-500/25 bg-amber-500/[0.04] hover:border-amber-500/50'
+          : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1]'
+        }`}
       onClick={onNavigate}
     >
-      <div className={`flex-shrink-0 rounded-lg p-2 ${cfg.bg}`}><Icon size={14} className={cfg.color} /></div>
+      <div className={`flex-shrink-0 rounded-xl p-2 ${cfg.bg}`}>
+        <Icon size={13} className={cfg.color} />
+      </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-xs font-semibold text-slate-200 leading-tight truncate">{item.label}</p>
-          <span className={`flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${STATUS_BADGE[item.status] || 'bg-slate-700 text-slate-400'}`}>{item.status}</span>
+          <p className="text-[12px] font-semibold text-slate-200 leading-tight truncate">{item.label}</p>
+          <span className={`flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${STATUS_BADGE[item.status] || 'bg-slate-700/80 text-slate-400'}`}>
+            {item.status}
+          </span>
         </div>
-        <p className="mt-0.5 text-[11px] text-slate-500 truncate">{item.sub}</p>
+        <p className="mt-0.5 text-[11px] text-slate-600 truncate">{item.sub}</p>
         <div className="flex items-center justify-between mt-1.5">
-          <span className="text-[10px] text-slate-600">{cfg.label} {time && `· ${time}`}</span>
-          <ArrowRight size={11} className="text-slate-600" />
+          <span className="text-[10px] text-slate-700">{cfg.label}{time && ` · ${time}`}</span>
+          <ArrowRight size={10} className="text-slate-700 group-hover:text-slate-500 transition" />
         </div>
       </div>
     </div>
@@ -256,32 +264,53 @@ function SystemGroupCard({
   const [open, setOpen] = useState(false)
   const Icon = group.icon
   const assignedCount = group.modules.filter(m => assignedKeys.has(m)).length
+  const hasAny = assignedCount > 0
 
   return (
-    <div className={`rounded-2xl border ${open ? group.borderColor : 'border-slate-800'} bg-slate-900/60 transition-all`}>
+    <div
+      className={`rounded-2xl border overflow-hidden transition-all duration-200 ${
+        open ? '' : 'hover:border-white/[0.1]'
+      }`}
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+        borderColor: open ? group.borderColor.replace('border-', '').replace('/30', '') + '50' : 'rgba(255,255,255,0.07)',
+      }}
+    >
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-4 p-5 text-left"
+        className="w-full flex items-center gap-4 p-5 text-left group"
       >
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${group.bgColor}`}>
-          <Icon className={`w-5 h-5 ${group.color}`} />
+        <div
+          className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${group.bgColor}`}
+          style={{ flexShrink: 0 }}
+        >
+          <Icon className={`w-[18px] h-[18px] ${group.color}`} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-slate-100">{group.label}</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${assignedCount > 0 ? `${group.bgColor} ${group.color}` : 'bg-slate-800 text-slate-500'}`}>
+            <span className="text-[13px] font-semibold text-slate-100 font-display">{group.label}</span>
+            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+              hasAny ? `${group.bgColor} ${group.color}` : 'bg-white/[0.04] text-slate-600'
+            }`}>
               {assignedCount}/{group.modules.length}
             </span>
           </div>
-          <p className="mt-0.5 text-xs text-slate-400 leading-relaxed">{group.description}</p>
+          <p className="mt-0.5 text-[11px] text-slate-500 leading-relaxed line-clamp-1">{group.description}</p>
         </div>
-        {open
-          ? <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />}
+        <div className={`flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all
+          ${open ? 'bg-white/[0.07] rotate-0' : 'bg-transparent group-hover:bg-white/[0.04]'}`}>
+          {open
+            ? <ChevronDown size={13} className="text-slate-400" />
+            : <ChevronRight size={13} className="text-slate-600" />
+          }
+        </div>
       </button>
 
       {open && (
-        <div className="px-5 pb-5 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-slate-800/60">
+        <div
+          className="px-5 pb-5 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        >
           {group.modules.map(modKey => {
             const isAssigned = assignedKeys.has(modKey)
             const route = MODULE_ROUTES[modKey]
@@ -290,14 +319,14 @@ function SystemGroupCard({
                 key={modKey}
                 onClick={() => isAssigned && route && onNavigate(route)}
                 disabled={!isAssigned || !route}
-                className={`rounded-xl border px-3 py-2.5 text-left transition ${
+                className={`rounded-xl px-3 py-2.5 text-left transition-all ${
                   isAssigned
-                    ? `${group.borderColor} ${group.bgColor} ${group.color} hover:opacity-80`
-                    : 'border-slate-800 bg-slate-950/30 text-slate-600 cursor-not-allowed'
-                }`}
+                    ? `${group.bgColor} ${group.color} border hover:opacity-90 hover:scale-[1.02]`
+                    : 'bg-white/[0.02] text-slate-700 cursor-not-allowed border border-white/[0.04]'
+                } ${isAssigned ? group.borderColor : ''}`}
               >
-                <p className="text-xs font-semibold">{MODULE_LABELS[modKey] ?? modKey}</p>
-                <p className={`text-[10px] mt-0.5 ${isAssigned ? 'opacity-70' : 'text-slate-700'}`}>
+                <p className="text-[11px] font-semibold">{MODULE_LABELS[modKey] ?? modKey}</p>
+                <p className={`text-[10px] mt-0.5 ${isAssigned ? 'opacity-60' : 'text-slate-800'}`}>
                   {isAssigned ? 'Open →' : 'Not assigned'}
                 </p>
               </button>
@@ -424,101 +453,160 @@ export default function DashboardPage() {
     return tasks
   }, [data])
 
+  // Greeting
+  const greeting = (() => {
+    const h = new Date().getHours()
+    const name = username ?? 'there'
+    if (h < 12) return { text: `Good morning, ${name}`, emoji: '☀️' }
+    if (h < 17) return { text: `Good afternoon, ${name}`, emoji: '⛅' }
+    return { text: `Good evening, ${name}`, emoji: '🌙' }
+  })()
+
+  const KPI_CARDS = data ? [
+    { label: 'Active Students',   value: data.summary.students?.active ?? 0,                     color: '#38bdf8', icon: '🎓', isMoney: false },
+    { label: 'Applications',      value: data.summary.admissions?.applications ?? 0,              color: '#a78bfa', icon: '📋', isMoney: false },
+    { label: 'Outstanding (Ksh)', value: data.summary.finance?.outstanding_receivables ?? 0,      color: '#fb7185', icon: '💰', isMoney: true  },
+    { label: 'Active Modules',    value: assignedModuleKeys.length,                               color: '#34d399', icon: '📦', isMoney: false },
+    { label: 'System Areas',      value: SYSTEM_GROUPS.length,                                    color: '#fbbf24', icon: '🏛️', isMoney: false },
+  ] : []
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-30 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+    <div className="min-h-screen text-white" style={{ background: '#070b12' }}>
+      <main className="mx-auto max-w-6xl flex flex-col gap-6 px-5 py-7 sm:px-8">
+
+        {/* ── Greeting Header ─────────────────────────── */}
+        <header className="flex items-start justify-between gap-4 animate-fade-in-up">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Rynaty School Management</p>
-            <h1 className="text-xl font-display font-semibold text-white">
-              {schoolName ?? tenantId ?? 'Dashboard'}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-1"
+              style={{ color: 'rgba(16,185,129,0.7)' }}>
+              Rynaty School Management
+            </p>
+            <h1 className="text-2xl font-display font-bold text-white leading-tight">
+              {greeting.emoji} {greeting.text}
             </h1>
+            <p className="text-[13px] mt-1" style={{ color: '#475569' }}>
+              {schoolName ?? tenantId ?? 'Dashboard'} · {new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:block text-xs text-slate-500">{username}</span>
-            <button onClick={() => void loadSummary()} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-emerald-400 transition flex items-center gap-1.5">
-              <RefreshCw size={12} /> Refresh
-            </button>
-            <button onClick={handleLogout} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500 transition">
-              Log out
-            </button>
-          </div>
-        </div>
-      </header>
+          <button
+            onClick={() => void loadSummary()}
+            className="flex-shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-medium transition-all hover:opacity-80"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: '#94a3b8' }}
+          >
+            <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+        </header>
 
-      <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
-
-        {isLoading && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-            <p className="text-sm text-slate-400 animate-pulse">Loading dashboard...</p>
+        {/* ── Error ───────────────────────────────────── */}
+        {error && (
+          <div className="rounded-2xl px-5 py-4 text-[13px] text-rose-300 animate-fade-in"
+            style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)' }}>
+            {error}
           </div>
         )}
-        {error && (
-          <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4">
-            <p className="text-sm text-rose-300">{error}</p>
+
+        {/* ── Skeleton ────────────────────────────────── */}
+        {isLoading && !data && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="rounded-2xl h-20 skeleton" />
+            ))}
           </div>
         )}
 
         {data && (
           <>
-            {/* KPI Strip */}
-            <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-              {[
-                { label: 'Active Students', value: data.summary.students?.active ?? 0, tone: 'text-sky-300' },
-                { label: 'Applications', value: data.summary.admissions?.applications ?? 0, tone: 'text-violet-300' },
-                { label: 'Outstanding (Ksh)', value: data.summary.finance?.outstanding_receivables ?? 0, tone: 'text-rose-300', isMoney: true },
-                { label: 'Assigned Modules', value: assignedModuleKeys.length, tone: 'text-emerald-300' },
-                { label: 'System Areas', value: SYSTEM_GROUPS.length, tone: 'text-amber-300' },
-              ].map(card => (
-                <article key={card.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{card.label}</p>
-                  <p className={`mt-1.5 text-2xl font-semibold ${card.tone}`}>
+            {/* ── KPI Strip ───────────────────────────── */}
+            <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5 animate-fade-in-up delay-100">
+              {KPI_CARDS.map((card, i) => (
+                <article
+                  key={card.label}
+                  className={`relative rounded-2xl p-4 overflow-hidden animate-scale-in`}
+                  style={{
+                    background: 'rgba(255,255,255,0.025)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    animationDelay: `${i * 60}ms`,
+                    borderLeft: `3px solid ${card.color}40`,
+                  }}
+                >
+                  {/* Glow */}
+                  <div
+                    className="absolute top-0 right-0 w-16 h-16 rounded-full pointer-events-none opacity-10 blur-xl"
+                    style={{ background: card.color, transform: 'translate(20%,-20%)' }}
+                  />
+                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-2 relative"
+                    style={{ color: 'rgba(148,163,184,0.7)' }}>
+                    {card.label}
+                  </p>
+                  <p
+                    className="text-[22px] font-display font-bold relative leading-none"
+                    style={{ color: card.color }}
+                  >
                     {card.isMoney
-                      ? `${Number(card.value).toLocaleString('en-KE', { minimumFractionDigits: 0 })}`
-                      : Number(card.value).toLocaleString()}
+                      ? Number(card.value).toLocaleString('en-KE', { notation: 'compact', maximumFractionDigits: 1 })
+                      : Number(card.value).toLocaleString()
+                    }
                   </p>
                 </article>
               ))}
             </section>
 
-            {/* Quick Actions — role-based */}
+            {/* ── Quick Actions ────────────────────────── */}
             {(() => {
               const roleKey = (userRole ?? 'DEFAULT').toUpperCase()
               const quickActions = ROLE_QUICK_ACTIONS[roleKey] ?? ROLE_QUICK_ACTIONS['DEFAULT']
               const roleLabel: Record<string, string> = {
-                TENANT_SUPER_ADMIN: 'Super Admin', ADMIN: 'Admin', TEACHER: 'Teacher',
-                ACCOUNTANT: 'Accountant / Bursar', DEFAULT: '',
+                TENANT_SUPER_ADMIN: 'Super Admin', ADMIN: 'Admin',
+                TEACHER: 'Teacher', ACCOUNTANT: 'Accountant', DEFAULT: '',
               }
               return (
-                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+                <section
+                  className="rounded-2xl p-5 animate-fade-in-up delay-200"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-amber-400" />
-                      <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-widest">Quick Actions</h2>
+                      <div className="w-6 h-6 rounded-lg flex items-center justify-center"
+                        style={{ background: 'rgba(251,191,36,0.12)' }}>
+                        <Zap size={13} className="text-amber-400" />
+                      </div>
+                      <h2 className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-300">Quick Actions</h2>
                     </div>
                     {roleLabel[roleKey] && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 border border-slate-700">
+                      <span
+                        className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#64748b' }}
+                      >
                         {roleLabel[roleKey]}
                       </span>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-                    {quickActions.map(action => {
+                  <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                    {quickActions.map((action, i) => {
                       const enabled = action.module === 'CORE' || assignedSet.has(action.module)
                       return (
                         <button
                           key={action.label}
                           onClick={() => enabled && navigate(action.route)}
                           disabled={!enabled}
-                          className={`flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3.5 text-xs font-semibold text-center transition ${
-                            enabled
-                              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400 hover:scale-[1.02]'
-                              : 'border-slate-800 bg-slate-900/30 text-slate-600 cursor-not-allowed'
-                          }`}
+                          className={`group flex flex-col items-center gap-2 rounded-2xl px-2 py-4 text-center transition-all duration-150 animate-scale-in
+                            ${enabled
+                              ? 'hover:scale-[1.04] active:scale-[0.98]'
+                              : 'cursor-not-allowed opacity-35'
+                            }`}
+                          style={{
+                            background: enabled ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.02)',
+                            border: `1px solid ${enabled ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                            animationDelay: `${i * 40 + 200}ms`,
+                          }}
+                          onMouseEnter={e => { if (enabled) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(16,185,129,0.12)' }}
+                          onMouseLeave={e => { if (enabled) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(16,185,129,0.06)' }}
                         >
-                          {action.icon && <span className="text-base leading-none">{action.icon}</span>}
-                          <span>{action.label}</span>
+                          <span className="text-xl leading-none">{action.icon ?? '⚡'}</span>
+                          <span className="text-[11px] font-semibold leading-tight text-slate-300 group-hover:text-white transition">
+                            {action.label}
+                          </span>
                         </button>
                       )
                     })}
@@ -527,66 +615,78 @@ export default function DashboardPage() {
               )
             })()}
 
-            {/* System Groups */}
-            <section>
-              <div className="mb-4 flex items-center justify-between">
+            {/* ── System Areas ─────────────────────────── */}
+            <section className="animate-fade-in-up delay-300">
+              <div className="flex items-end justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-display font-semibold text-white">System Areas</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Click any area to expand and access its modules.</p>
+                  <h2 className="text-[16px] font-display font-bold text-white">System Areas</h2>
+                  <p className="text-[11px] mt-0.5" style={{ color: '#475569' }}>Expand any area to access its modules.</p>
                 </div>
-                <span className="text-xs text-slate-500">{assignedModuleKeys.length} modules assigned</span>
+                <span className="text-[11px]" style={{ color: '#334155' }}>
+                  {assignedModuleKeys.length} modules assigned
+                </span>
               </div>
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-2.5 md:grid-cols-2">
                 {SYSTEM_GROUPS.map(group => (
-                  <SystemGroupCard
-                    key={group.key}
-                    group={group}
-                    assignedKeys={assignedSet}
-                    onNavigate={navigate}
-                  />
+                  <SystemGroupCard key={group.key} group={group} assignedKeys={assignedSet} onNavigate={navigate} />
                 ))}
               </div>
             </section>
 
-            {/* Charts */}
-            <section className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">Module Activity Snapshot</h2>
-                <p className="mt-1 text-xs text-slate-500">Combined totals across active module summaries.</p>
-                <div className="mt-4 h-64">
+            {/* ── Charts ───────────────────────────────── */}
+            <section className="grid gap-5 lg:grid-cols-2 animate-fade-in-up delay-400">
+              <div
+                className="rounded-2xl p-5"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <h2 className="text-[12px] font-bold text-slate-300 uppercase tracking-[0.1em] mb-0.5">Activity Snapshot</h2>
+                <p className="text-[11px] mb-5" style={{ color: '#475569' }}>Combined totals across active modules.</p>
+                <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={moduleSummaryChartData}>
-                      <XAxis dataKey="module" tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                      <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '12px' }} />
-                      <Bar dataKey="total" fill="#34d399" radius={[4, 4, 0, 0]} />
+                    <BarChart data={moduleSummaryChartData} barSize={22}>
+                      <XAxis dataKey="module" tick={{ fill: '#475569', fontSize: 9 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: '#475569', fontSize: 9 }} axisLine={false} tickLine={false} width={30} />
+                      <Tooltip
+                        contentStyle={{ background: '#0d1421', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '11px', color: '#e2e8f0' }}
+                        cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                      />
+                      <Bar dataKey="total" fill="#10b981" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">Finance Breakdown</h2>
-                <p className="mt-1 text-xs text-slate-500">Available when Finance module is assigned.</p>
-                <div className="mt-4 h-64">
+
+              <div
+                className="rounded-2xl p-5"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <h2 className="text-[12px] font-bold text-slate-300 uppercase tracking-[0.1em] mb-0.5">Finance Breakdown</h2>
+                <p className="text-[11px] mb-4" style={{ color: '#475569' }}>Available when Finance module is assigned.</p>
+                <div className="h-56">
                   {financeBreakdownData.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-sm text-slate-600">No finance data available.</div>
+                    <div className="h-full flex items-center justify-center text-[12px]" style={{ color: '#334155' }}>
+                      No finance data available.
+                    </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie data={financeBreakdownData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90}>
+                        <Pie data={financeBreakdownData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3}>
                           {financeBreakdownData.map(entry => <Cell key={entry.name} fill={entry.color} />)}
                         </Pie>
-                        <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '12px' }} />
+                        <Tooltip contentStyle={{ background: '#0d1421', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '11px', color: '#e2e8f0' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   )}
                 </div>
                 {financeBreakdownData.length > 0 && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="mt-2 grid grid-cols-2 gap-2">
                     {financeBreakdownData.map(d => (
-                      <div key={d.name} className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                        <span>{d.name}: <span className="text-slate-200 font-medium">Ksh {Number(d.value).toLocaleString('en-KE', { minimumFractionDigits: 0 })}</span></span>
+                      <div key={d.name} className="flex items-center gap-2 text-[11px]">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                        <span style={{ color: '#64748b' }}>{d.name}:</span>
+                        <span className="text-slate-300 font-semibold">
+                          {Number(d.value).toLocaleString('en-KE', { notation: 'compact', maximumFractionDigits: 1 })}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -594,21 +694,33 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            {/* Summary details */}
+            {/* ── Summary Highlights ───────────────────── */}
             {Object.keys(data.summary).length > 0 && (
-              <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wider mb-4">Summary Highlights</h2>
+              <section
+                className="rounded-2xl p-5 animate-fade-in-up delay-500"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <h2 className="text-[12px] font-bold text-slate-300 uppercase tracking-[0.1em] mb-5">Summary Highlights</h2>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {Object.entries(data.summary).map(([key, values]) => (
-                    <article key={key} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-emerald-300 mb-3">
+                    <article
+                      key={key}
+                      className="rounded-xl p-4"
+                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    >
+                      <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-3"
+                        style={{ color: 'rgba(16,185,129,0.8)' }}>
                         {MODULE_LABELS[normalizeModuleKey(key)] ?? normalizeModuleKey(key)}
                       </p>
                       <div className="space-y-1.5">
                         {Object.entries(values).map(([label, value]) => (
-                          <div key={label} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-1.5">
-                            <span className="text-xs text-slate-400">{label.replace(/_/g, ' ')}</span>
-                            <span className="text-xs font-semibold text-slate-100">{Number(value).toLocaleString()}</span>
+                          <div
+                            key={label}
+                            className="flex items-center justify-between rounded-lg px-3 py-1.5"
+                            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+                          >
+                            <span className="text-[11px]" style={{ color: '#64748b' }}>{label.replace(/_/g, ' ')}</span>
+                            <span className="text-[11px] font-bold text-slate-200">{Number(value).toLocaleString()}</span>
                           </div>
                         ))}
                       </div>
@@ -620,63 +732,113 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* Activity & Tasks */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        {/* ── Activity & Tasks ─────────────────────────── */}
+        <section
+          className="rounded-2xl p-5 animate-fade-in-up delay-400"
+          style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+        >
           <div className="flex items-center justify-between gap-4 flex-wrap mb-5">
             <div>
-              <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">Tasks & Requests</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Store requests and items awaiting approval.</p>
+              <h2 className="text-[12px] font-bold text-slate-300 uppercase tracking-[0.1em]">Tasks & Requests</h2>
+              <p className="mt-0.5 text-[11px]" style={{ color: '#475569' }}>Store orders and items awaiting approval.</p>
             </div>
-            <button onClick={() => void loadActivity()} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition">
-              <RefreshCw size={13} /> Refresh
+            <button
+              onClick={() => void loadActivity()}
+              className="flex items-center gap-1.5 text-[12px] transition-all hover:opacity-80"
+              style={{ color: '#475569' }}
+            >
+              <RefreshCw size={12} className={activityLoading ? 'animate-spin' : ''} />
+              Refresh
             </button>
           </div>
 
           {activityLoading ? (
-            <p className="text-sm text-slate-500 animate-pulse">Loading activity...</p>
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => <div key={i} className="h-14 skeleton rounded-2xl" />)}
+            </div>
           ) : (
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <ShoppingCart size={13} className="text-sky-400" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-sky-400">All Requests</span>
-                  <span className="ml-auto text-[10px] font-bold bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full">{activity.todayItems.length}</span>
+                  <ShoppingCart size={12} className="text-sky-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-sky-400">All Requests</span>
+                  <span className="ml-auto text-[9px] font-bold bg-sky-500/15 text-sky-300 px-2 py-0.5 rounded-full">
+                    {activity.todayItems.length}
+                  </span>
                 </div>
-                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                   {activity.todayItems.length === 0
-                    ? <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-xs text-slate-500 text-center">No requests found.</div>
-                    : activity.todayItems.map(item => <ActivityCard key={`all-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} />)}
+                    ? (
+                      <div
+                        className="rounded-2xl p-5 text-[12px] text-center"
+                        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', color: '#475569' }}
+                      >
+                        No requests found.
+                      </div>
+                    )
+                    : activity.todayItems.map(item => (
+                      <ActivityCard key={`all-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} />
+                    ))
+                  }
                 </div>
               </div>
+
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle size={13} className="text-amber-400" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400">Needs Approval</span>
-                  <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${activity.pendingItems.length > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700/40 text-slate-500'}`}>{activity.pendingItems.length}</span>
+                  <AlertCircle size={12} className="text-amber-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Needs Approval</span>
+                  <span className={`ml-auto text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                    activity.pendingItems.length > 0
+                      ? 'bg-amber-500/15 text-amber-300'
+                      : 'bg-white/[0.04] text-slate-600'
+                  }`}>{activity.pendingItems.length}</span>
                 </div>
-                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                   {activity.pendingItems.length === 0
-                    ? <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs text-emerald-400 text-center flex items-center justify-center gap-2"><CheckCircle2 size={13} /> All caught up! No pending approvals.</div>
-                    : activity.pendingItems.map(item => <ActivityCard key={`pending-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} highlight />)}
+                    ? (
+                      <div
+                        className="rounded-2xl p-5 text-[12px] text-center flex items-center justify-center gap-2"
+                        style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.15)', color: 'rgba(16,185,129,0.7)' }}
+                      >
+                        <CheckCircle2 size={13} /> All caught up — no pending approvals.
+                      </div>
+                    )
+                    : activity.pendingItems.map(item => (
+                      <ActivityCard key={`pending-${item.type}-${item.id}`} item={item} onNavigate={() => navigate(item.route)} highlight />
+                    ))
+                  }
                 </div>
               </div>
             </div>
           )}
 
           {todaysTasks.length > 0 && (
-            <div className="mt-5 border-t border-slate-800 pt-5">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-3">General Priorities</p>
+            <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: '#334155' }}>
+                Action Required
+              </p>
               <div className="grid gap-2 md:grid-cols-2">
                 {todaysTasks.map(task => (
-                  <button key={`${task.title}-${task.route}`} type="button" className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-left transition hover:border-emerald-400" onClick={() => navigate(task.route)}>
-                    <p className="text-sm font-semibold text-slate-100">{task.title}</p>
-                    <p className="mt-1 text-xs text-slate-400">{task.detail}</p>
+                  <button
+                    key={`${task.title}-${task.route}`}
+                    type="button"
+                    className="group rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
+                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    onClick={() => navigate(task.route)}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(16,185,129,0.3)')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)')}
+                  >
+                    <p className="text-[13px] font-semibold text-slate-200 group-hover:text-white transition">{task.title}</p>
+                    <p className="mt-1 text-[11px]" style={{ color: '#475569' }}>{task.detail}</p>
                   </button>
                 ))}
               </div>
             </div>
           )}
         </section>
+
+        {/* Bottom padding */}
+        <div className="h-4" />
       </main>
     </div>
   )
