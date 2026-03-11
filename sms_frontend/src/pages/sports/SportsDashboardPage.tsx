@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sportsApi } from '../../api/sports_cafeteria';
 import { Trophy, Users, Calendar, Award } from 'lucide-react';
 
 export default function SportsDashboardPage() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,10 +43,10 @@ export default function SportsDashboardPage() {
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
         <div className="flex gap-4">
-          <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition font-medium">
+          <button onClick={() => navigate('/modules/sports/clubs')} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition font-medium">
             Register New Club
           </button>
-          <button className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-white rounded-xl transition font-medium">
+          <button onClick={() => navigate('/modules/sports/tournaments')} className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-white rounded-xl transition font-medium">
             Schedule Tournament
           </button>
         </div>

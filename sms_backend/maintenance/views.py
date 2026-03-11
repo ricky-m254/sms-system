@@ -18,6 +18,9 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     module_key = "MAINTENANCE"
     filterset_fields = ['category', 'priority', 'status', 'reported_by', 'assigned_to', 'asset']
 
+    def perform_create(self, serializer):
+        serializer.save(reported_by=self.request.user)
+
 class MaintenanceChecklistViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceChecklist.objects.all().order_by('id')
     serializer_class = MaintenanceChecklistSerializer

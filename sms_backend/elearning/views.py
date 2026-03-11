@@ -18,6 +18,9 @@ class CourseViewSet(viewsets.ModelViewSet):
     module_key = 'ELEARNING'
     filterset_fields = ['teacher', 'school_class', 'term', 'is_published']
 
+    def perform_create(self, serializer):
+        serializer.save(teacher=self.request.user)
+
 
 class CourseMaterialViewSet(viewsets.ModelViewSet):
     queryset = CourseMaterial.objects.all().order_by('sequence')

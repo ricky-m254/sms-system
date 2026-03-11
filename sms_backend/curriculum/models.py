@@ -61,7 +61,7 @@ class LearningResource(models.Model):
     subject = models.ForeignKey('school.Subject', on_delete=models.CASCADE)
     grade_level = models.ForeignKey('school.GradeLevel', on_delete=models.SET_NULL, null=True, blank=True)
     file = models.FileField(upload_to='curriculum/resources/', null=True, blank=True)
-    external_url = models.URLField(blank=True)
+    external_url = models.CharField(max_length=500, blank=True)
     description = models.TextField(blank=True)
     uploaded_by = models.ForeignKey('auth.User', null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
