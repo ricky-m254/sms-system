@@ -433,11 +433,7 @@ export default function StudentsMedicalPage() {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`rounded-xl px-3 py-1 text-xs ${
-                  activeTab === tab
-                    ? 'bg-emerald-500/20 text-emerald-200'
-                    : 'border border-slate-800 text-slate-300'
-                }`}
+                className={`pill-tab-btn ${activeTab === tab ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}

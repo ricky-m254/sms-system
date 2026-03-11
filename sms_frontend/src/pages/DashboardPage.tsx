@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronRight, DollarSign, GraduationCap, MessageSquare,
   Play, RefreshCw, ShoppingCart, Undo2, Users, Zap,
   Sun, CloudSun, Moon, FileText, LayoutGrid, TrendingDown,
+  Settings, ClipboardList, CreditCard, CalendarDays, UserCheck,
 } from 'lucide-react'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
@@ -213,46 +214,47 @@ const SYSTEM_GROUPS: SystemGroup[] = [
   },
 ]
 
-const ROLE_QUICK_ACTIONS: Record<string, { label: string; route: string; module: string; icon?: string }[]> = {
+type QuickAction = { label: string; route: string; module: string; Icon: React.ElementType; color: string }
+const ROLE_QUICK_ACTIONS: Record<string, QuickAction[]> = {
   TENANT_SUPER_ADMIN: [
-    { label: 'Approvals', route: '/dashboard/approvals', module: 'CORE', icon: '⚡' },
-    { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
-    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
-    { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
-    { label: 'View Reports', route: '/modules/analytics/dashboard', module: 'ANALYTICS', icon: '📊' },
-    { label: 'System Settings', route: '/settings/school-profile', module: 'CORE', icon: '⚙️' },
+    { label: 'Approvals',         route: '/dashboard/approvals',                    module: 'CORE',          Icon: Zap,          color: '#fbbf24' },
+    { label: 'Admit Student',     route: '/modules/admissions/dashboard',           module: 'ADMISSIONS',    Icon: GraduationCap,color: '#10b981' },
+    { label: 'Create Invoice',    route: '/modules/finance/invoices',               module: 'FINANCE',       Icon: FileText,     color: '#38bdf8' },
+    { label: 'Announcements',     route: '/modules/communication/dashboard',        module: 'COMMUNICATION', Icon: MessageSquare,color: '#a78bfa' },
+    { label: 'View Reports',      route: '/modules/analytics/dashboard',            module: 'ANALYTICS',     Icon: BarChart2,    color: '#34d399' },
+    { label: 'System Settings',   route: '/settings/school-profile',               module: 'CORE',          Icon: Settings,     color: '#94a3b8' },
   ],
   ADMIN: [
-    { label: 'Approvals', route: '/dashboard/approvals', module: 'CORE', icon: '⚡' },
-    { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
-    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
-    { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
-    { label: 'Add Exam', route: '/modules/examinations/dashboard', module: 'EXAMINATIONS', icon: '📝' },
-    { label: 'Register Visitor', route: '/modules/visitors/dashboard', module: 'VISITOR_MGMT', icon: '🪪' },
+    { label: 'Approvals',         route: '/dashboard/approvals',                    module: 'CORE',          Icon: Zap,          color: '#fbbf24' },
+    { label: 'Admit Student',     route: '/modules/admissions/dashboard',           module: 'ADMISSIONS',    Icon: GraduationCap,color: '#10b981' },
+    { label: 'Create Invoice',    route: '/modules/finance/invoices',               module: 'FINANCE',       Icon: FileText,     color: '#38bdf8' },
+    { label: 'Announcements',     route: '/modules/communication/dashboard',        module: 'COMMUNICATION', Icon: MessageSquare,color: '#a78bfa' },
+    { label: 'Add Exam',          route: '/modules/examinations/dashboard',         module: 'EXAMINATIONS',  Icon: ClipboardList,color: '#818cf8' },
+    { label: 'Register Visitor',  route: '/modules/visitors/dashboard',             module: 'VISITOR_MGMT',  Icon: UserCheck,    color: '#2dd4bf' },
   ],
   ACCOUNTANT: [
-    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
-    { label: 'Record Payment', route: '/modules/finance/payments', module: 'FINANCE', icon: '💰' },
-    { label: 'View Outstanding', route: '/modules/finance/arrears', module: 'FINANCE', icon: '⚠️' },
-    { label: 'Fee Structure', route: '/modules/finance/fees', module: 'FINANCE', icon: '📋' },
-    { label: 'Financial Reports', route: '/modules/finance/audit-reports', module: 'FINANCE', icon: '📊' },
-    { label: 'Daily Collections', route: '/modules/finance/payments', module: 'FINANCE', icon: '💳' },
+    { label: 'Create Invoice',    route: '/modules/finance/invoices',               module: 'FINANCE',       Icon: FileText,     color: '#38bdf8' },
+    { label: 'Record Payment',    route: '/modules/finance/payments',               module: 'FINANCE',       Icon: DollarSign,   color: '#10b981' },
+    { label: 'View Outstanding',  route: '/modules/finance/arrears',                module: 'FINANCE',       Icon: AlertCircle,  color: '#fb7185' },
+    { label: 'Fee Structure',     route: '/modules/finance/fees',                   module: 'FINANCE',       Icon: BookOpen,     color: '#fbbf24' },
+    { label: 'Finance Reports',   route: '/modules/finance/audit-reports',          module: 'FINANCE',       Icon: BarChart2,    color: '#34d399' },
+    { label: 'Collections',       route: '/modules/finance/payments',               module: 'FINANCE',       Icon: CreditCard,   color: '#22d3ee' },
   ],
   TEACHER: [
-    { label: 'Mark Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS', icon: '✅' },
-    { label: 'Enter Marks', route: '/modules/examinations/marks', module: 'EXAMINATIONS', icon: '📝' },
-    { label: 'View Timetable', route: '/modules/timetable/grid', module: 'TIMETABLE', icon: '📅' },
-    { label: 'My Classes', route: '/modules/academics/dashboard', module: 'ACADEMICS', icon: '🏫' },
-    { label: 'Student Records', route: '/modules/students', module: 'STUDENTS', icon: '👤' },
-    { label: 'Send Message', route: '/modules/communication/messaging', module: 'COMMUNICATION', icon: '💬' },
+    { label: 'Attendance',        route: '/modules/academics/attendance',           module: 'ACADEMICS',     Icon: CheckCircle2, color: '#10b981' },
+    { label: 'Enter Marks',       route: '/modules/examinations/marks',             module: 'EXAMINATIONS',  Icon: ClipboardList,color: '#818cf8' },
+    { label: 'Timetable',         route: '/modules/timetable/grid',                 module: 'TIMETABLE',     Icon: CalendarDays, color: '#38bdf8' },
+    { label: 'My Classes',        route: '/modules/academics/dashboard',            module: 'ACADEMICS',     Icon: BookOpen,     color: '#fbbf24' },
+    { label: 'Students',          route: '/modules/students',                       module: 'STUDENTS',      Icon: Users,        color: '#60a5fa' },
+    { label: 'Send Message',      route: '/modules/communication/messaging',        module: 'COMMUNICATION', Icon: MessageSquare,color: '#a78bfa' },
   ],
   DEFAULT: [
-    { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
-    { label: 'Record Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS', icon: '✅' },
-    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
-    { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
-    { label: 'Add Examination', route: '/modules/examinations/dashboard', module: 'EXAMINATIONS', icon: '📝' },
-    { label: 'Register Visitor', route: '/modules/visitors/dashboard', module: 'VISITOR_MGMT', icon: '🪪' },
+    { label: 'Admit Student',     route: '/modules/admissions/dashboard',           module: 'ADMISSIONS',    Icon: GraduationCap,color: '#10b981' },
+    { label: 'Attendance',        route: '/modules/academics/attendance',           module: 'ACADEMICS',     Icon: CheckCircle2, color: '#34d399' },
+    { label: 'Create Invoice',    route: '/modules/finance/invoices',               module: 'FINANCE',       Icon: FileText,     color: '#38bdf8' },
+    { label: 'Announcements',     route: '/modules/communication/dashboard',        module: 'COMMUNICATION', Icon: MessageSquare,color: '#a78bfa' },
+    { label: 'Add Examination',   route: '/modules/examinations/dashboard',         module: 'EXAMINATIONS',  Icon: ClipboardList,color: '#818cf8' },
+    { label: 'Register Visitor',  route: '/modules/visitors/dashboard',             module: 'VISITOR_MGMT',  Icon: UserCheck,    color: '#2dd4bf' },
   ],
 }
 
@@ -655,8 +657,20 @@ export default function DashboardPage() {
                           onMouseEnter={e => { if (enabled) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(16,185,129,0.12)' }}
                           onMouseLeave={e => { if (enabled) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(16,185,129,0.06)' }}
                         >
-                          <span className="text-xl leading-none">{action.icon ?? '⚡'}</span>
-                          <span className="text-[11px] font-semibold leading-tight text-slate-300 group-hover:text-white transition">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 group-hover:scale-110 group-hover:shadow-lg"
+                            style={{
+                              background: enabled ? `${action.color}22` : 'rgba(255,255,255,0.04)',
+                              boxShadow: enabled ? `0 0 0 1px ${action.color}28` : 'none',
+                            }}
+                          >
+                            <action.Icon
+                              size={17}
+                              strokeWidth={1.75}
+                              style={{ color: enabled ? action.color : '#475569' }}
+                            />
+                          </div>
+                          <span className="text-[11px] font-semibold leading-tight text-slate-400 group-hover:text-white transition">
                             {action.label}
                           </span>
                         </button>
