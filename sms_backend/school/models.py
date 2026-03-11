@@ -14,13 +14,24 @@ class SchoolProfile(models.Model):
 
     school_name = models.CharField(max_length=255)
     logo = models.ImageField(upload_to='school_logos/', blank=True, null=True)
+    motto = models.CharField(max_length=255, blank=True, help_text="School motto / tagline")
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
-    
+    email_address = models.EmailField(blank=True)
+    website = models.URLField(blank=True)
+    county = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, default='Kenya')
+
+    # --- Branding ---
+    primary_color = models.CharField(max_length=16, default='#10b981', help_text="Hex color e.g. #10b981")
+    secondary_color = models.CharField(max_length=16, default='#0ea5e9')
+    font_family = models.CharField(max_length=50, default='Inter', blank=True)
+
     # --- Finance Settings ---
     currency = models.CharField(max_length=10, default='KES', help_text="e.g. KES, USD")
     tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     receipt_prefix = models.CharField(max_length=10, default='RCT-')
+    invoice_prefix = models.CharField(max_length=10, default='INV-')
     admission_number_mode = models.CharField(
         max_length=20,
         choices=ADMISSION_NUMBER_MODE_CHOICES,
@@ -28,7 +39,20 @@ class SchoolProfile(models.Model):
     )
     admission_number_prefix = models.CharField(max_length=20, default="ADM-")
     admission_number_padding = models.PositiveIntegerField(default=4)
-    
+
+    # --- Communication Settings ---
+    smtp_host = models.CharField(max_length=255, blank=True)
+    smtp_port = models.PositiveIntegerField(default=587)
+    smtp_user = models.CharField(max_length=255, blank=True)
+    smtp_password = models.CharField(max_length=255, blank=True)
+    smtp_use_tls = models.BooleanField(default=True)
+    sms_provider = models.CharField(max_length=50, blank=True, help_text="e.g. africastalking, twilio")
+    sms_api_key = models.CharField(max_length=255, blank=True)
+    sms_username = models.CharField(max_length=100, blank=True)
+    sms_sender_id = models.CharField(max_length=20, blank=True)
+    whatsapp_api_key = models.CharField(max_length=255, blank=True)
+    whatsapp_phone_id = models.CharField(max_length=100, blank=True)
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

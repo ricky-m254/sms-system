@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuthStore } from './store/auth'
 import { isModuleRouteEnabled } from './config/moduleFocus'
 import Footer from './components/Footer'
+const AppShell = lazy(() => import('./components/AppShell'))
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
@@ -51,6 +52,15 @@ const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPag
 const SettingsUsersPage = lazy(() => import('./pages/settings/SettingsUsersPage'))
 const SettingsRolesPage = lazy(() => import('./pages/settings/SettingsRolesPage'))
 const SettingsSchoolProfilePage = lazy(() => import('./pages/settings/SettingsSchoolProfilePage'))
+const SettingsGlobalPage = lazy(() => import('./pages/settings/SettingsGlobalPage'))
+const SettingsCommunicationPage = lazy(() => import('./pages/settings/SettingsCommunicationPage'))
+const SettingsAcademicsConfigPage = lazy(() => import('./pages/settings/SettingsAcademicsConfigPage'))
+const SettingsExaminationsConfigPage = lazy(() => import('./pages/settings/SettingsExaminationsConfigPage'))
+const SettingsTimetableConfigPage = lazy(() => import('./pages/settings/SettingsTimetableConfigPage'))
+const SettingsLibraryConfigPage = lazy(() => import('./pages/settings/SettingsLibraryConfigPage'))
+const SettingsTransportConfigPage = lazy(() => import('./pages/settings/SettingsTransportConfigPage'))
+const SettingsHostelConfigPage = lazy(() => import('./pages/settings/SettingsHostelConfigPage'))
+const SettingsSecurityPage = lazy(() => import('./pages/settings/SettingsSecurityPage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
 const ParentsDirectoryPage = lazy(() => import('./pages/parents/ParentsDirectoryPage'))
@@ -320,8 +330,10 @@ function App() {
         />
         <Route
           path="/dashboard"
-          element={isTenantAuth ? <DashboardPage /> : <Navigate to={isPlatformAuth ? '/platform' : '/login'} replace />}
-        />
+          element={isTenantAuth ? <AppShell /> : <Navigate to={isPlatformAuth ? '/platform' : '/login'} replace />}
+        >
+          <Route index element={<DashboardPage />} />
+        </Route>
         <Route
           path="/platform/*"
           element={isPlatformAuth ? <PlatformLayout /> : <Navigate to="/platform/login" replace />}
@@ -549,6 +561,15 @@ function App() {
         >
           <Route index element={<Navigate to="/settings/school-profile" replace />} />
           <Route path="school-profile" element={<SettingsSchoolProfilePage />} />
+          <Route path="global" element={<SettingsGlobalPage />} />
+          <Route path="communication" element={<SettingsCommunicationPage />} />
+          <Route path="academics" element={<SettingsAcademicsConfigPage />} />
+          <Route path="examinations" element={<SettingsExaminationsConfigPage />} />
+          <Route path="timetable" element={<SettingsTimetableConfigPage />} />
+          <Route path="library" element={<SettingsLibraryConfigPage />} />
+          <Route path="transport" element={<SettingsTransportConfigPage />} />
+          <Route path="hostel" element={<SettingsHostelConfigPage />} />
+          <Route path="security" element={<SettingsSecurityPage />} />
           <Route path="users" element={<SettingsUsersPage />} />
           <Route path="roles" element={<SettingsRolesPage />} />
           <Route path=":module" element={<ModuleSettingsPage />} />

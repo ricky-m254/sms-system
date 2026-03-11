@@ -89,19 +89,47 @@ class SchoolProfileSerializer(serializers.ModelSerializer):
             'school_name',
             'logo',
             'logo_url',
+            'motto',
             'address',
             'phone',
+            'email_address',
+            'website',
+            'county',
+            'country',
+            'primary_color',
+            'secondary_color',
+            'font_family',
             'currency',
             'tax_percentage',
             'receipt_prefix',
+            'invoice_prefix',
             'admission_number_mode',
             'admission_number_prefix',
             'admission_number_padding',
+            'smtp_host',
+            'smtp_port',
+            'smtp_user',
+            'smtp_password',
+            'smtp_use_tls',
+            'sms_provider',
+            'sms_api_key',
+            'sms_username',
+            'sms_sender_id',
+            'whatsapp_api_key',
+            'whatsapp_phone_id',
             'is_active',
         ]
         read_only_fields = ['id', 'logo_url']
+        extra_kwargs = {
+            'smtp_password': {'write_only': True},
+            'sms_api_key': {'write_only': True},
+            'whatsapp_api_key': {'write_only': True},
+        }
 
     def get_logo_url(self, obj):
+        request = self.context.get('request')
+        if obj.logo and request:
+            return request.build_absolute_uri(obj.logo.url)
         return obj.logo.url if obj.logo else None
 
 # ==========================================
