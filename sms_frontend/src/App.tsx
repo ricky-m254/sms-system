@@ -50,6 +50,7 @@ const SettingsLayout = lazy(() => import('./pages/settings/SettingsLayout'))
 const ModuleSettingsPage = lazy(() => import('./pages/settings/ModuleSettingsPage'))
 const SettingsUsersPage = lazy(() => import('./pages/settings/SettingsUsersPage'))
 const SettingsRolesPage = lazy(() => import('./pages/settings/SettingsRolesPage'))
+const SettingsSchoolProfilePage = lazy(() => import('./pages/settings/SettingsSchoolProfilePage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
 const ParentsDirectoryPage = lazy(() => import('./pages/parents/ParentsDirectoryPage'))
@@ -544,7 +545,8 @@ function App() {
           path="/settings"
           element={isTenantAuth && settingsEnabled ? <SettingsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
-          <Route index element={<Navigate to="/settings/global" replace />} />
+          <Route index element={<Navigate to="/settings/school-profile" replace />} />
+          <Route path="school-profile" element={<SettingsSchoolProfilePage />} />
           <Route path="users" element={<SettingsUsersPage />} />
           <Route path="roles" element={<SettingsRolesPage />} />
           <Route path=":module" element={<ModuleSettingsPage />} />
