@@ -7,10 +7,51 @@ import {
   AlertCircle, ArrowRight, BarChart2, BookOpen, Building2, CheckCircle2,
   ChevronDown, ChevronRight, DollarSign, GraduationCap, MessageSquare,
   Play, RefreshCw, ShoppingCart, Undo2, Users, Zap,
+  Sun, CloudSun, Moon, FileText, LayoutGrid, TrendingDown,
 } from 'lucide-react'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { isBackendModuleEnabled } from '../config/moduleFocus'
+
+function GreetingOrb({ period }: { period: 'morning' | 'afternoon' | 'evening' }) {
+  if (period === 'morning') return (
+    <div className="relative flex-shrink-0">
+      <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, #fb923c 0%, #fbbf24 100%)',
+          boxShadow: '0 0 40px rgba(251,191,36,0.5), 0 8px 32px rgba(251,191,36,0.25)',
+        }}>
+        <Sun size={26} strokeWidth={1.5} className="text-white drop-shadow-lg" />
+      </div>
+      <div className="absolute inset-0 rounded-[18px] animate-pulse"
+        style={{ boxShadow: '0 0 28px rgba(251,191,36,0.4)', animationDuration: '2s' }} />
+    </div>
+  )
+  if (period === 'afternoon') return (
+    <div className="relative flex-shrink-0">
+      <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+          boxShadow: '0 0 40px rgba(56,189,248,0.4), 0 8px 32px rgba(56,189,248,0.2)',
+        }}>
+        <CloudSun size={26} strokeWidth={1.5} className="text-white drop-shadow-lg" />
+      </div>
+    </div>
+  )
+  return (
+    <div className="relative flex-shrink-0">
+      <div className="w-14 h-14 rounded-[18px] flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
+          boxShadow: '0 0 40px rgba(129,140,248,0.4), 0 8px 32px rgba(129,140,248,0.2)',
+        }}>
+        <Moon size={26} strokeWidth={1.5} className="text-white drop-shadow-lg" />
+      </div>
+      <div className="absolute inset-0 rounded-[18px] animate-pulse"
+        style={{ boxShadow: '0 0 24px rgba(129,140,248,0.35)', animationDuration: '3s' }} />
+    </div>
+  )
+}
 
 type DashboardSummary = {
   modules: string[]
@@ -457,17 +498,17 @@ export default function DashboardPage() {
   const greeting = (() => {
     const h = new Date().getHours()
     const name = username ?? 'there'
-    if (h < 12) return { text: `Good morning, ${name}`, emoji: '☀️' }
-    if (h < 17) return { text: `Good afternoon, ${name}`, emoji: '⛅' }
-    return { text: `Good evening, ${name}`, emoji: '🌙' }
+    if (h < 12) return { text: `Good morning, ${name}`, period: 'morning' as const }
+    if (h < 17) return { text: `Good afternoon, ${name}`, period: 'afternoon' as const }
+    return { text: `Good evening, ${name}`, period: 'evening' as const }
   })()
 
   const KPI_CARDS = data ? [
-    { label: 'Active Students',   value: data.summary.students?.active ?? 0,                     color: '#38bdf8', icon: '🎓', isMoney: false },
-    { label: 'Applications',      value: data.summary.admissions?.applications ?? 0,              color: '#a78bfa', icon: '📋', isMoney: false },
-    { label: 'Outstanding (Ksh)', value: data.summary.finance?.outstanding_receivables ?? 0,      color: '#fb7185', icon: '💰', isMoney: true  },
-    { label: 'Active Modules',    value: assignedModuleKeys.length,                               color: '#34d399', icon: '📦', isMoney: false },
-    { label: 'System Areas',      value: SYSTEM_GROUPS.length,                                    color: '#fbbf24', icon: '🏛️', isMoney: false },
+    { label: 'Active Students',   value: data.summary.students?.active ?? 0,                color: '#38bdf8', Icon: Users,        isMoney: false },
+    { label: 'Applications',      value: data.summary.admissions?.applications ?? 0,         color: '#a78bfa', Icon: FileText,     isMoney: false },
+    { label: 'Outstanding (Ksh)', value: data.summary.finance?.outstanding_receivables ?? 0, color: '#fb7185', Icon: TrendingDown, isMoney: true  },
+    { label: 'Active Modules',    value: assignedModuleKeys.length,                          color: '#34d399', Icon: LayoutGrid,   isMoney: false },
+    { label: 'System Areas',      value: SYSTEM_GROUPS.length,                               color: '#fbbf24', Icon: Building2,    isMoney: false },
   ] : []
 
   return (
@@ -476,17 +517,20 @@ export default function DashboardPage() {
 
         {/* ── Greeting Header ─────────────────────────── */}
         <header className="flex items-start justify-between gap-4 animate-fade-in-up">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-1"
-              style={{ color: 'rgba(16,185,129,0.7)' }}>
-              Rynaty School Management
-            </p>
-            <h1 className="text-2xl font-display font-bold text-white leading-tight">
-              {greeting.emoji} {greeting.text}
-            </h1>
-            <p className="text-[13px] mt-1" style={{ color: '#475569' }}>
-              {schoolName ?? tenantId ?? 'Dashboard'} · {new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+          <div className="flex items-center gap-4">
+            <GreetingOrb period={greeting.period} />
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-0.5"
+                style={{ color: 'rgba(16,185,129,0.7)' }}>
+                Rynaty School Management
+              </p>
+              <h1 className="text-2xl font-display font-bold text-white leading-tight">
+                {greeting.text}
+              </h1>
+              <p className="text-[13px] mt-0.5" style={{ color: '#475569' }}>
+                {schoolName ?? tenantId ?? 'Dashboard'} · {new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
           </div>
           <button
             onClick={() => void loadSummary()}
@@ -522,27 +566,35 @@ export default function DashboardPage() {
               {KPI_CARDS.map((card, i) => (
                 <article
                   key={card.label}
-                  className={`relative rounded-2xl p-4 overflow-hidden animate-scale-in`}
+                  className="relative rounded-2xl p-4 overflow-hidden animate-scale-in cursor-default transition-transform duration-150 hover:scale-[1.02] hover:-translate-y-0.5"
                   style={{
                     background: 'rgba(255,255,255,0.025)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    border: `1px solid rgba(255,255,255,0.07)`,
                     animationDelay: `${i * 60}ms`,
-                    borderLeft: `3px solid ${card.color}40`,
+                    borderLeft: `3px solid ${card.color}55`,
+                  }}
+                  onMouseMove={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect()
+                    e.currentTarget.style.background = `radial-gradient(160px circle at ${e.clientX - r.left}px ${e.clientY - r.top}px, ${card.color}1a, rgba(255,255,255,0.018))`
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.025)'
                   }}
                 >
-                  {/* Glow */}
-                  <div
-                    className="absolute top-0 right-0 w-16 h-16 rounded-full pointer-events-none opacity-10 blur-xl"
-                    style={{ background: card.color, transform: 'translate(20%,-20%)' }}
-                  />
-                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-2 relative"
-                    style={{ color: 'rgba(148,163,184,0.7)' }}>
+                  {/* Corner icon orb */}
+                  <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center"
+                    style={{ background: `${card.color}18`, border: `1px solid ${card.color}28` }}>
+                    <card.Icon size={14} style={{ color: card.color }} />
+                  </div>
+                  {/* Background glow blob */}
+                  <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full pointer-events-none blur-2xl opacity-20"
+                    style={{ background: card.color }} />
+                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-2.5 relative"
+                    style={{ color: 'rgba(148,163,184,0.65)' }}>
                     {card.label}
                   </p>
-                  <p
-                    className="text-[22px] font-display font-bold relative leading-none"
-                    style={{ color: card.color }}
-                  >
+                  <p className="text-[24px] font-display font-bold relative leading-none"
+                    style={{ color: card.color }}>
                     {card.isMoney
                       ? Number(card.value).toLocaleString('en-KE', { notation: 'compact', maximumFractionDigits: 1 })
                       : Number(card.value).toLocaleString()

@@ -101,9 +101,16 @@ export default function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(['student', 'academic']))
   const [branding, setBranding] = useState<SchoolBranding | null>(null)
+  const [cursor, setCursor] = useState({ x: -2000, y: -2000 })
   const location = useLocation()
   const navigate = useNavigate()
   const { username, role, logout } = useAuthStore(s => ({ username: s.username, role: s.role, logout: s.logout }))
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => setCursor({ x: e.clientX, y: e.clientY })
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [])
 
   useEffect(() => {
     apiClient.get<Record<string, unknown>>('/school/profile/').then(r => {
@@ -411,6 +418,16 @@ export default function AppShell() {
           </button>
         </div>
       </aside>
+
+      {/* ── Cursor spotlight overlay (glass glow follows mouse) ── */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          zIndex: 9998,
+          background: `radial-gradient(700px circle at ${cursor.x}px ${cursor.y}px, rgba(16,185,129,0.05), transparent 45%)`,
+          transition: 'background 0.05s ease',
+        }}
+      />
 
       {/* ── Main Content ──────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
