@@ -110,6 +110,24 @@ class UserModuleAssignment(models.Model):
         return f"{self.user.username} -> {self.module.key}"
 
 
+class SubmodulePermission(models.Model):
+    """Granular submodule-level permissions per role."""
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='submodule_permissions')
+    module_key = models.CharField(max_length=50)
+    submodule_key = models.CharField(max_length=100)
+    can_view = models.BooleanField(default=True)
+    can_create = models.BooleanField(default=False)
+    can_edit = models.BooleanField(default=False)
+    can_delete = models.BooleanField(default=False)
+    can_approve = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('role', 'module_key', 'submodule_key')
+
+    def __str__(self):
+        return f"{self.role.name} | {self.module_key}.{self.submodule_key}"
+
+
 class TenantModule(models.Model):
     """
     Tenant-scoped module enablement record.

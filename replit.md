@@ -142,8 +142,49 @@ cd sms_backend && python manage.py migrate --noinput && gunicorn --bind=0.0.0.0:
 
 **Branding:** Rynaty School Management System by Rynatyspace Technologies
 
+## Production-Grade UI Upgrade (March 2026)
+
+### Completed Features
+
+**T001 — AppShell (Persistent Left Sidebar)**
+- `AppShell.tsx` wraps `/dashboard` route with collapsible left sidebar
+- School logo + name at top, user profile + logout at bottom
+- Active module highlighting; collapses to icon-only rail
+
+**T002 — Tenant Branding System**
+- `SchoolProfile` model extended with `primary_color`, `motto`, `email_address`, `website`, `county`, `country`, `invoice_prefix`
+- `PrintButton.tsx` fetches school profile (`/school/profile/`) and injects branded header (logo, name, motto, primary color) into every print dialog; fallback to monogram avatar when no logo set
+
+**T003 — Global Theme Settings (`/settings/global`)**
+- `SettingsGlobalPage.tsx` — hex color picker with live preview, font selector, theme presets
+
+**T004 — Communication Settings (`/settings/communication`)**
+- `SettingsCommunicationPage.tsx` — SMTP, Africa's Talking SMS, WhatsApp API credentials
+
+**T005 — Complete Settings Pages**
+- `/settings/academics` — terms, grade structure, subjects
+- `/settings/examinations` — exam types, grading scale, pass marks
+- `/settings/timetable` — periods per day, lesson duration, breaks
+- `/settings/library` — loan rules, fines, categories
+- `/settings/transport` — routes policy, fees
+- `/settings/hostel` — allocation rules, boarding fees
+- `/settings/security` — session timeout, password policy, 2FA toggle
+
+**T006 — Enhanced Roles Page with Submodule Permission Matrix**
+- `SettingsRolesPage.tsx` dual-tab: Module Access checklist + Submodule Permissions matrix (View/Create/Edit/Delete/Approve per submodule)
+- `SubmodulePermission` model in `school/models.py`; API at `/users/submodule-permissions/` (GET + POST bulk-upsert); migration `0038_add_submodule_permission` applied
+
+**T007 — Role-Based Quick Actions on Dashboard**
+- Dashboard detects `userRole` from auth store
+- `ROLE_QUICK_ACTIONS` map provides role-specific shortcut buttons (6 per role) for: `TENANT_SUPER_ADMIN`, `ADMIN`, `TEACHER`, `ACCOUNTANT`
+- Each action card shows emoji icon + label; disabled (greyed) if module not assigned to tenant
+- Role badge displayed in Quick Actions header
+
 ## Key Notes
 
 - Run `python manage.py seed_demo` to (re)create the demo school tenant
 - Run `python manage.py create_school --schema_name X --name Y --domain Z` to provision a new school
 - `migrate_schemas --shared --fake` marks shared migrations applied without executing SQL (tables already exist from original dev setup)
+- **API client rule**: Frontend `apiClient` paths must NOT include `/api/` prefix; Vite proxy handles it
+- **Filter rule**: No `django_filters` — filter in `get_queryset()` using `self.request.query_params.get()`
+- **Currency**: `Ksh ` prefix + `toLocaleString('en-KE', { minimumFractionDigits: 2 })`

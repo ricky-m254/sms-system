@@ -172,14 +172,48 @@ const SYSTEM_GROUPS: SystemGroup[] = [
   },
 ]
 
-const QUICK_ACTIONS = [
-  { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS' },
-  { label: 'Record Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS' },
-  { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE' },
-  { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION' },
-  { label: 'Add Examination', route: '/modules/examinations/dashboard', module: 'EXAMINATIONS' },
-  { label: 'Register Visitor', route: '/modules/visitors/dashboard', module: 'VISITOR_MGMT' },
-]
+const ROLE_QUICK_ACTIONS: Record<string, { label: string; route: string; module: string; icon?: string }[]> = {
+  TENANT_SUPER_ADMIN: [
+    { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
+    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
+    { label: 'Manage Users', route: '/settings/users', module: 'CORE', icon: '👥' },
+    { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
+    { label: 'View Reports', route: '/modules/analytics/dashboard', module: 'ANALYTICS', icon: '📊' },
+    { label: 'System Settings', route: '/settings/school-profile', module: 'CORE', icon: '⚙️' },
+  ],
+  ADMIN: [
+    { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
+    { label: 'Record Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS', icon: '✅' },
+    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
+    { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
+    { label: 'Add Exam', route: '/modules/examinations/dashboard', module: 'EXAMINATIONS', icon: '📝' },
+    { label: 'Register Visitor', route: '/modules/visitors/dashboard', module: 'VISITOR_MGMT', icon: '🪪' },
+  ],
+  ACCOUNTANT: [
+    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
+    { label: 'Record Payment', route: '/modules/finance/payments', module: 'FINANCE', icon: '💰' },
+    { label: 'View Outstanding', route: '/modules/finance/arrears', module: 'FINANCE', icon: '⚠️' },
+    { label: 'Fee Structure', route: '/modules/finance/fees', module: 'FINANCE', icon: '📋' },
+    { label: 'Financial Reports', route: '/modules/finance/audit-reports', module: 'FINANCE', icon: '📊' },
+    { label: 'Daily Collections', route: '/modules/finance/payments', module: 'FINANCE', icon: '💳' },
+  ],
+  TEACHER: [
+    { label: 'Mark Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS', icon: '✅' },
+    { label: 'Enter Marks', route: '/modules/examinations/marks', module: 'EXAMINATIONS', icon: '📝' },
+    { label: 'View Timetable', route: '/modules/timetable/grid', module: 'TIMETABLE', icon: '📅' },
+    { label: 'My Classes', route: '/modules/academics/dashboard', module: 'ACADEMICS', icon: '🏫' },
+    { label: 'Student Records', route: '/modules/students', module: 'STUDENTS', icon: '👤' },
+    { label: 'Send Message', route: '/modules/communication/messaging', module: 'COMMUNICATION', icon: '💬' },
+  ],
+  DEFAULT: [
+    { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
+    { label: 'Record Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS', icon: '✅' },
+    { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
+    { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
+    { label: 'Add Examination', route: '/modules/examinations/dashboard', module: 'EXAMINATIONS', icon: '📝' },
+    { label: 'Register Visitor', route: '/modules/visitors/dashboard', module: 'VISITOR_MGMT', icon: '🪪' },
+  ],
+}
 
 const ACTIVITY_TYPE_CONFIG = {
   store_order: { icon: ShoppingCart, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Store Order' },
@@ -280,6 +314,7 @@ export default function DashboardPage() {
   const logout = useAuthStore((state) => state.logout)
   const username = useAuthStore((state) => state.username)
   const tenantId = useAuthStore((state) => state.tenantId)
+  const userRole = useAuthStore((state) => state.role)
 
   const [data, setData] = useState<DashboardSummary | null>(null)
   const [schoolName, setSchoolName] = useState<string | null>(null)
@@ -447,32 +482,50 @@ export default function DashboardPage() {
               ))}
             </section>
 
-            {/* Quick Actions */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Zap className="w-4 h-4 text-amber-400" />
-                <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-widest">Quick Actions</h2>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-                {QUICK_ACTIONS.map(action => {
-                  const enabled = assignedSet.has(action.module)
-                  return (
-                    <button
-                      key={action.label}
-                      onClick={() => enabled && navigate(action.route)}
-                      disabled={!enabled}
-                      className={`rounded-xl border px-3 py-3 text-xs font-semibold text-center transition ${
-                        enabled
-                          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400'
-                          : 'border-slate-800 bg-slate-900/30 text-slate-600 cursor-not-allowed'
-                      }`}
-                    >
-                      {action.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
+            {/* Quick Actions — role-based */}
+            {(() => {
+              const roleKey = (userRole ?? 'DEFAULT').toUpperCase()
+              const quickActions = ROLE_QUICK_ACTIONS[roleKey] ?? ROLE_QUICK_ACTIONS['DEFAULT']
+              const roleLabel: Record<string, string> = {
+                TENANT_SUPER_ADMIN: 'Super Admin', ADMIN: 'Admin', TEACHER: 'Teacher',
+                ACCOUNTANT: 'Accountant / Bursar', DEFAULT: '',
+              }
+              return (
+                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-400" />
+                      <h2 className="text-sm font-semibold text-slate-200 uppercase tracking-widest">Quick Actions</h2>
+                    </div>
+                    {roleLabel[roleKey] && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 border border-slate-700">
+                        {roleLabel[roleKey]}
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                    {quickActions.map(action => {
+                      const enabled = action.module === 'CORE' || assignedSet.has(action.module)
+                      return (
+                        <button
+                          key={action.label}
+                          onClick={() => enabled && navigate(action.route)}
+                          disabled={!enabled}
+                          className={`flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3.5 text-xs font-semibold text-center transition ${
+                            enabled
+                              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400 hover:scale-[1.02]'
+                              : 'border-slate-800 bg-slate-900/30 text-slate-600 cursor-not-allowed'
+                          }`}
+                        >
+                          {action.icon && <span className="text-base leading-none">{action.icon}</span>}
+                          <span>{action.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+              )
+            })()}
 
             {/* System Groups */}
             <section>

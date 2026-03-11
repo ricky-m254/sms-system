@@ -67,6 +67,7 @@ from .views import (
     FinanceStudentLedgerView,
     RoleListView,
     RoleModuleAccessView,
+    SubmodulePermissionView,
     UserManagementListCreateView,
     UserManagementDetailView,
 )
@@ -209,6 +210,7 @@ urlpatterns = [
     # User management
     path('users/roles/', RoleListView.as_view(), name='user_roles'),
     path('users/role-modules/', RoleModuleAccessView.as_view(), name='role_module_access'),
+    path('users/submodule-permissions/', SubmodulePermissionView.as_view(), name='submodule_permissions'),
     path('users/', UserManagementListCreateView.as_view(), name='user_list_create'),
     path('users/<int:user_id>/', UserManagementDetailView.as_view(), name='user_detail'),
 

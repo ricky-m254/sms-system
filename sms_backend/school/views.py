@@ -5505,6 +5505,64 @@ class RoleModuleAccessView(APIView):
         })
 
 
+class SubmodulePermissionView(APIView):
+    """
+    GET  – Returns all submodule permissions for all roles.
+    POST – Body: { permissions: [{ role, module_key, submodule_key, can_view, can_create, can_edit, can_delete, can_approve }] }
+            Bulk upsert submodule permissions.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from .models import SubmodulePermission as SP
+        perms = SP.objects.select_related('role').all()
+        data = [
+            {
+                'role': p.role.name,
+                'module_key': p.module_key,
+                'submodule_key': p.submodule_key,
+                'can_view': p.can_view,
+                'can_create': p.can_create,
+                'can_edit': p.can_edit,
+                'can_delete': p.can_delete,
+                'can_approve': p.can_approve,
+            }
+            for p in perms
+        ]
+        return Response({'permissions': data})
+
+    def post(self, request):
+        from .models import SubmodulePermission as SP
+        perm_list = request.data.get('permissions', [])
+        if not isinstance(perm_list, list):
+            return Response({'error': 'permissions must be a list.'}, status=400)
+        updated = 0
+        for item in perm_list:
+            role_name = (item.get('role') or '').strip().upper()
+            module_key = (item.get('module_key') or '').strip().upper()
+            submodule_key = (item.get('submodule_key') or '').strip()
+            if not role_name or not module_key or not submodule_key:
+                continue
+            try:
+                role = Role.objects.get(name=role_name)
+            except Role.DoesNotExist:
+                continue
+            SP.objects.update_or_create(
+                role=role,
+                module_key=module_key,
+                submodule_key=submodule_key,
+                defaults={
+                    'can_view': bool(item.get('can_view', True)),
+                    'can_create': bool(item.get('can_create', False)),
+                    'can_edit': bool(item.get('can_edit', False)),
+                    'can_delete': bool(item.get('can_delete', False)),
+                    'can_approve': bool(item.get('can_approve', False)),
+                }
+            )
+            updated += 1
+        return Response({'updated': updated})
+
+
 class UserManagementListCreateView(APIView):
     """List all tenant users with roles / create a new tenant user."""
     permission_classes = [permissions.IsAuthenticated]

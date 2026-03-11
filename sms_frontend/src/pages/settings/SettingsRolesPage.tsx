@@ -1,58 +1,98 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { Shield, ChevronDown, ChevronRight, Check, AlertCircle, Users, Lock, Info } from 'lucide-react'
 
 type ModuleInfo = { key: string; name: string }
+type RoleData = { id: number; name: string; description: string; user_count: number; assigned_module_keys: string[]; editable: boolean }
+type ApiPayload = { roles: RoleData[]; all_modules: ModuleInfo[] }
 
-type RoleData = {
-  id: number
-  name: string
-  description: string
-  user_count: number
-  assigned_module_keys: string[]
-  editable: boolean
+interface SubmodulePerm { can_view: boolean; can_create: boolean; can_edit: boolean; can_delete: boolean; can_approve: boolean }
+type PermMatrix = Record<string, Record<string, Record<string, SubmodulePerm>>>
+
+const ROLE_META: Record<string, { color: string; badge: string; desc: string }> = {
+  TENANT_SUPER_ADMIN: { color: 'bg-purple-500/20 text-purple-300 border-purple-500/30', badge: 'Super Admin', desc: 'Full unrestricted access to everything.' },
+  ADMIN: { color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', badge: 'Administrator', desc: 'School-wide admin. Can manage all modules.' },
+  ACCOUNTANT: { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', badge: 'Finance Manager', desc: 'Manages fees, invoices, and financial reports.' },
+  TEACHER: { color: 'bg-amber-500/20 text-amber-300 border-amber-500/30', badge: 'Teaching Staff', desc: 'Teaching-related modules: academics, attendance, exams.' },
 }
 
-type ApiPayload = {
-  roles: RoleData[]
-  all_modules: ModuleInfo[]
+const SUBMODULE_DEFS: Record<string, { label: string; submodules: { key: string; label: string }[] }> = {
+  STUDENTS: { label: 'Student Management', submodules: [
+    { key: 'student_records', label: 'Student Records' }, { key: 'admissions', label: 'Admissions' },
+    { key: 'attendance', label: 'Attendance' }, { key: 'documents', label: 'Documents' }, { key: 'reports', label: 'Reports' },
+  ]},
+  ACADEMICS: { label: 'Academics', submodules: [
+    { key: 'subjects', label: 'Subjects & Classes' }, { key: 'assignments', label: 'Assignments' },
+    { key: 'grades', label: 'Grades' }, { key: 'curriculum', label: 'Curriculum' },
+  ]},
+  EXAMINATIONS: { label: 'Examinations', submodules: [
+    { key: 'exam_setup', label: 'Exam Setup' }, { key: 'marks_entry', label: 'Marks Entry' },
+    { key: 'results', label: 'Results' }, { key: 'report_cards', label: 'Report Cards' },
+  ]},
+  FINANCE: { label: 'Finance', submodules: [
+    { key: 'fee_setup', label: 'Fee Setup' }, { key: 'invoices', label: 'Invoices' },
+    { key: 'payments', label: 'Payments' }, { key: 'refunds', label: 'Refunds' }, { key: 'reports', label: 'Financial Reports' },
+  ]},
+  HR: { label: 'Human Resources', submodules: [
+    { key: 'staff_records', label: 'Staff Records' }, { key: 'payroll', label: 'Payroll' },
+    { key: 'leave', label: 'Leave Management' }, { key: 'recruitment', label: 'Recruitment' },
+  ]},
+  LIBRARY: { label: 'Library', submodules: [
+    { key: 'books', label: 'Books Catalog' }, { key: 'borrowing', label: 'Borrowing' },
+    { key: 'returns', label: 'Returns' }, { key: 'fines', label: 'Fines' },
+  ]},
+  COMMUNICATION: { label: 'Communication', submodules: [
+    { key: 'email', label: 'Email Campaigns' }, { key: 'sms', label: 'SMS' },
+    { key: 'whatsapp', label: 'WhatsApp' }, { key: 'templates', label: 'Templates' }, { key: 'announcements', label: 'Announcements' },
+  ]},
+  TRANSPORT: { label: 'Transport', submodules: [
+    { key: 'routes', label: 'Routes & Stops' }, { key: 'vehicles', label: 'Vehicles' },
+    { key: 'allocation', label: 'Student Allocation' }, { key: 'fees', label: 'Transport Fees' },
+  ]},
+  HOSTEL: { label: 'Hostel', submodules: [
+    { key: 'rooms', label: 'Rooms' }, { key: 'allocation', label: 'Allocation' }, { key: 'fees', label: 'Hostel Fees' },
+  ]},
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  TENANT_SUPER_ADMIN: 'Super Admin',
-  ADMIN: 'Administrator',
-  ACCOUNTANT: 'Finance Manager',
-  TEACHER: 'Teaching Staff',
-}
+const PERM_COLS: { key: keyof SubmodulePerm; label: string; color: string }[] = [
+  { key: 'can_view', label: 'View', color: 'text-sky-400' },
+  { key: 'can_create', label: 'Create', color: 'text-emerald-400' },
+  { key: 'can_edit', label: 'Edit', color: 'text-amber-400' },
+  { key: 'can_delete', label: 'Delete', color: 'text-rose-400' },
+  { key: 'can_approve', label: 'Approve', color: 'text-violet-400' },
+]
 
-const ROLE_COLORS: Record<string, string> = {
-  TENANT_SUPER_ADMIN: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  ADMIN: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  ACCOUNTANT: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  TEACHER: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-}
+const defaultPerm = (): SubmodulePerm => ({ can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false })
 
-const MODULE_LABELS: Record<string, string> = {
-  CORE: 'Core Admin',
-  STUDENTS: 'Students',
-  ADMISSIONS: 'Admissions',
-  FINANCE: 'Finance',
-  ACADEMICS: 'Academics',
-  HR: 'Human Resources',
-  STAFF: 'Staff Mgmt',
-  PARENTS: 'Parent Portal',
-  LIBRARY: 'Library',
-  ASSETS: 'Assets',
-  COMMUNICATION: 'Communication',
-  REPORTING: 'Reporting',
-  STORE: 'Store & Inventory',
-  DISPENSARY: 'Dispensary',
+function buildDefaultMatrix(): PermMatrix {
+  const matrix: PermMatrix = {}
+  for (const roleKey of Object.keys(ROLE_META)) {
+    matrix[roleKey] = {}
+    for (const [modKey, modDef] of Object.entries(SUBMODULE_DEFS)) {
+      matrix[roleKey][modKey] = {}
+      const isAdmin = roleKey === 'TENANT_SUPER_ADMIN' || roleKey === 'ADMIN'
+      for (const sub of modDef.submodules) {
+        matrix[roleKey][modKey][sub.key] = {
+          can_view: true,
+          can_create: isAdmin,
+          can_edit: isAdmin,
+          can_delete: isAdmin,
+          can_approve: isAdmin,
+        }
+      }
+    }
+  }
+  return matrix
 }
 
 export default function SettingsRolesPage() {
   const [payload, setPayload] = useState<ApiPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
+  const [activeTab, setActiveTab] = useState<'modules' | 'submodules'>('modules')
+  const [selectedRole, setSelectedRole] = useState<string>('TEACHER')
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(['FINANCE', 'STUDENTS', 'EXAMINATIONS']))
+  const [permMatrix, setPermMatrix] = useState<PermMatrix>(buildDefaultMatrix)
   const [editing, setEditing] = useState<string | null>(null)
   const [draftKeys, setDraftKeys] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
@@ -61,212 +101,258 @@ export default function SettingsRolesPage() {
 
   const load = () => {
     setLoading(true)
-    setError(null)
-    apiClient
-      .get<ApiPayload>('/users/role-modules/')
-      .then((r) => setPayload(r.data))
-      .catch(() => setError('Failed to load role module data.'))
-      .finally(() => setLoading(false))
+    Promise.all([
+      apiClient.get<ApiPayload>('/users/role-modules/'),
+      apiClient.get<{ permissions: Array<{ role: string; module_key: string; submodule_key: string } & SubmodulePerm> }>('/users/submodule-permissions/'),
+    ]).then(([roleRes, permRes]) => {
+      setPayload(roleRes.data)
+      const matrix = buildDefaultMatrix()
+      for (const p of permRes.data.permissions) {
+        if (!matrix[p.role]) matrix[p.role] = {}
+        if (!matrix[p.role][p.module_key]) matrix[p.role][p.module_key] = {}
+        matrix[p.role][p.module_key][p.submodule_key] = { can_view: p.can_view, can_create: p.can_create, can_edit: p.can_edit, can_delete: p.can_delete, can_approve: p.can_approve }
+      }
+      setPermMatrix(matrix)
+    }).catch(() => setError('Failed to load role data.')).finally(() => setLoading(false))
   }
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
+
+  const toggleModule = (modKey: string) => setExpandedModules(s => {
+    const n = new Set(s); n.has(modKey) ? n.delete(modKey) : n.add(modKey); return n
+  })
+
+  const togglePerm = (roleKey: string, modKey: string, subKey: string, permKey: keyof SubmodulePerm) => {
+    setPermMatrix(m => ({
+      ...m,
+      [roleKey]: {
+        ...m[roleKey],
+        [modKey]: {
+          ...m[roleKey]?.[modKey],
+          [subKey]: { ...(m[roleKey]?.[modKey]?.[subKey] ?? defaultPerm()), [permKey]: !(m[roleKey]?.[modKey]?.[subKey]?.[permKey] ?? false) }
+        }
+      }
+    }))
+  }
 
   const startEdit = (role: RoleData) => {
-    setEditing(role.name)
-    setDraftKeys(new Set(role.assigned_module_keys))
-    setSaveError(null)
-    setSaveSuccess(null)
+    setEditing(role.name); setDraftKeys(new Set(role.assigned_module_keys)); setSaveError(null); setSaveSuccess(null)
   }
 
-  const cancelEdit = () => {
-    setEditing(null)
-    setDraftKeys(new Set())
-    setSaveError(null)
-  }
-
-  const toggleKey = (key: string) => {
-    setDraftKeys((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
-
-  const save = async () => {
-    if (!editing) return
-    setSaving(true)
-    setSaveError(null)
-    setSaveSuccess(null)
+  const saveModules = async (roleName: string) => {
+    setSaving(true); setSaveError(null); setSaveSuccess(null)
     try {
-      const res = await apiClient.post<{ updated_users: number; role: string }>(
-        '/users/role-modules/',
-        { role_name: editing, module_keys: Array.from(draftKeys) }
-      )
-      setSaveSuccess(
-        `Saved — ${res.data.updated_users} user${res.data.updated_users !== 1 ? 's' : ''} updated.`
-      )
+      await apiClient.post('/users/role-modules/', { role_name: roleName, module_keys: Array.from(draftKeys) })
+      setSaveSuccess(`Module access updated for ${ROLE_META[roleName]?.badge ?? roleName}.`)
       setEditing(null)
       load()
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
-        'Failed to save changes.'
-      setSaveError(msg)
-    } finally {
-      setSaving(false)
-    }
+    } catch { setSaveError('Failed to save module access.') }
+    finally { setSaving(false) }
   }
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="h-8 w-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-      </div>
-    )
+  const saveSubmodulePerms = async () => {
+    setSaving(true); setSaveError(null); setSaveSuccess(null)
+    const perms: Array<{ role: string; module_key: string; submodule_key: string } & SubmodulePerm> = []
+    for (const [roleKey, mods] of Object.entries(permMatrix)) {
+      for (const [modKey, subs] of Object.entries(mods)) {
+        for (const [subKey, perm] of Object.entries(subs)) {
+          perms.push({ role: roleKey, module_key: modKey, submodule_key: subKey, ...perm })
+        }
+      }
+    }
+    try {
+      await apiClient.post('/users/submodule-permissions/', { permissions: perms })
+      setSaveSuccess('Submodule permissions saved across all roles.')
+    } catch { setSaveError('Failed to save permissions.') }
+    finally { setSaving(false) }
+  }
 
-  if (error)
-    return (
-      <div className="rounded-2xl border border-red-800 bg-red-900/20 p-6 text-red-300">
-        {error}
-        <button onClick={load} className="ml-4 text-sm underline">
-          Retry
-        </button>
-      </div>
-    )
+  if (loading) return <div className="py-20 text-center text-slate-500 animate-pulse">Loading roles…</div>
+  if (error) return <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"><AlertCircle className="h-4 w-4" />{error}</div>
 
-  const { roles, all_modules } = payload!
+  const isAdminRole = (name: string) => name === 'TENANT_SUPER_ADMIN' || name === 'ADMIN'
+  const rolePerms = permMatrix[selectedRole] ?? {}
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl">
       <div>
-        <h2 className="text-xl font-semibold text-slate-100">Roles &amp; Module Access</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Control which modules each role can access. Admin-level roles always have full access and
-          cannot be restricted.
-        </p>
+        <h1 className="text-2xl font-display font-bold text-white">Roles & Permissions</h1>
+        <p className="mt-1 text-sm text-slate-400">Control what each role can access and perform across all modules and submodules. Changes apply immediately to all users with that role.</p>
       </div>
 
-      {saveSuccess && (
-        <div className="rounded-xl border border-emerald-700 bg-emerald-900/20 px-4 py-3 text-sm text-emerald-300">
-          {saveSuccess}
-        </div>
-      )}
+      {saveError && <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"><AlertCircle className="h-4 w-4" />{saveError}</div>}
+      {saveSuccess && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{saveSuccess}</div>}
 
-      {saveError && (
-        <div className="rounded-xl border border-red-700 bg-red-900/20 px-4 py-3 text-sm text-red-300">
-          {saveError}
-        </div>
-      )}
+      {/* Tab switcher */}
+      <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/60 p-1 w-fit">
+        {([['modules', 'Module Access'], ['submodules', 'Submodule Permissions']] as const).map(([tab, label]) => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${activeTab === tab ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <div className="space-y-4">
-        {roles.map((role) => {
-          const isEditing = editing === role.name
-          const colorClass =
-            ROLE_COLORS[role.name] ?? 'bg-slate-700/40 text-slate-300 border-slate-600/40'
-
-          return (
-            <div
-              key={role.id}
-              className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${colorClass}`}
-                  >
-                    {ROLE_LABELS[role.name] ?? role.name}
-                  </span>
-                  <span className="text-sm text-slate-400">
-                    {role.user_count} user{role.user_count !== 1 ? 's' : ''}
-                  </span>
-                  {!role.editable && (
-                    <span className="rounded-full bg-slate-700/40 px-2 py-0.5 text-[10px] text-slate-400">
-                      Full access — not editable
-                    </span>
-                  )}
+      {/* MODULE ACCESS TAB */}
+      {activeTab === 'modules' && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {(payload?.roles ?? []).map(role => {
+            const meta = ROLE_META[role.name]
+            const isLocked = !role.editable
+            const isEditingThis = editing === role.name
+            return (
+              <div key={role.name} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${meta?.color ?? 'bg-slate-800 text-slate-300 border-slate-700'}`}>{meta?.badge ?? role.name}</span>
+                      {isLocked && <Lock className="h-3.5 w-3.5 text-slate-600" />}
+                    </div>
+                    <p className="text-xs text-slate-500">{meta?.desc ?? role.description}</p>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0 text-slate-500">
+                    <Users className="h-3.5 w-3.5" /><span className="text-xs">{role.user_count} users</span>
+                  </div>
                 </div>
 
-                {role.editable && !isEditing && (
-                  <button
-                    onClick={() => startEdit(role)}
-                    className="rounded-xl border border-slate-700 px-4 py-1.5 text-sm text-slate-200 transition hover:bg-slate-800/60"
-                  >
-                    Edit access
-                  </button>
-                )}
-
-                {isEditing && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={cancelEdit}
-                      disabled={saving}
-                      className="rounded-xl border border-slate-700 px-4 py-1.5 text-sm text-slate-200 hover:bg-slate-800/60 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={save}
-                      disabled={saving}
-                      className="rounded-xl bg-emerald-500 px-4 py-1.5 text-sm font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-50"
-                    >
-                      {saving ? 'Saving…' : 'Save changes'}
+                {isLocked ? (
+                  <div className="flex items-start gap-2 rounded-xl bg-slate-800/40 px-3 py-2.5">
+                    <Info className="h-3.5 w-3.5 text-slate-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-slate-500">Admin roles have unrestricted access to all modules and cannot be restricted.</p>
+                  </div>
+                ) : isEditingThis ? (
+                  <div className="space-y-3">
+                    <div className="max-h-52 overflow-y-auto space-y-0.5 rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+                      {(payload?.all_modules ?? []).filter(m => m.key !== 'CORE').map(m => (
+                        <label key={m.key} className="flex items-center gap-2 cursor-pointer py-1">
+                          <input type="checkbox" checked={draftKeys.has(m.key)}
+                            onChange={() => setDraftKeys(p => { const n = new Set(p); n.has(m.key) ? n.delete(m.key) : n.add(m.key); return n })}
+                            className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-900 checked:bg-emerald-500 checked:border-emerald-500 transition" />
+                          <span className="text-xs text-slate-300">{m.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => void saveModules(role.name)} disabled={saving}
+                        className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 py-2 text-xs font-bold text-slate-950 transition">
+                        {saving ? 'Saving…' : 'Save Module Access'}
+                      </button>
+                      <button onClick={() => setEditing(null)} className="rounded-xl border border-slate-700 px-4 py-2 text-xs text-slate-400 hover:text-white transition">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1.5 max-h-16 overflow-hidden">
+                      {role.assigned_module_keys.slice(0, 8).map(k => (
+                        <span key={k} className="rounded-lg bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">{k}</span>
+                      ))}
+                      {role.assigned_module_keys.length > 8 && <span className="text-[10px] text-slate-500">+{role.assigned_module_keys.length - 8} more</span>}
+                    </div>
+                    <button onClick={() => startEdit(role)} className="text-xs text-emerald-400 hover:text-emerald-300 transition font-medium">
+                      Edit module access →
                     </button>
                   </div>
                 )}
               </div>
+            )
+          })}
+        </div>
+      )}
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {all_modules.map((mod) => {
-                  const isActive = isEditing
-                    ? draftKeys.has(mod.key)
-                    : role.assigned_module_keys.includes(mod.key)
+      {/* SUBMODULE PERMISSIONS TAB */}
+      {activeTab === 'submodules' && (
+        <div className="space-y-4">
+          {/* Role selector */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Configure Permissions For Role</p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(ROLE_META).map(([key, meta]) => (
+                <button key={key} onClick={() => setSelectedRole(key)}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold border transition ${selectedRole === key ? `${meta.color} ring-1 ring-white/10` : 'border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'}`}>
+                  {meta.badge}
+                </button>
+              ))}
+            </div>
+          </div>
 
-                  if (isEditing) {
-                    return (
-                      <button
-                        key={mod.key}
-                        onClick={() => toggleKey(mod.key)}
-                        className={`rounded-xl border px-3 py-1 text-xs font-medium transition ${
-                          isActive
-                            ? 'border-emerald-600 bg-emerald-500/20 text-emerald-300'
-                            : 'border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600'
-                        }`}
-                      >
-                        {MODULE_LABELS[mod.key] ?? mod.key}
-                        {isActive ? ' ✓' : ''}
-                      </button>
-                    )
-                  }
-
-                  return (
-                    <span
-                      key={mod.key}
-                      className={`rounded-xl border px-3 py-1 text-xs font-medium ${
-                        isActive
-                          ? 'border-emerald-600/50 bg-emerald-500/10 text-emerald-300'
-                          : 'border-slate-700/50 bg-slate-800/20 text-slate-500'
-                      }`}
-                    >
-                      {MODULE_LABELS[mod.key] ?? mod.key}
-                    </span>
-                  )
-                })}
+          {isAdminRole(selectedRole) ? (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-5 py-12 text-center space-y-2">
+              <Shield className="h-10 w-10 text-slate-700 mx-auto" />
+              <p className="text-sm text-slate-300 font-semibold">Full Access — No Restrictions</p>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">{ROLE_META[selectedRole]?.badge} has unrestricted access to all submodules. Permissions cannot be restricted for admin-level roles.</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-800/30">
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-widest">Module / Submodule</th>
+                      {PERM_COLS.map(c => (
+                        <th key={c.key} className="text-center px-3 py-3 w-20">
+                          <span className={`text-[10px] font-bold uppercase tracking-widest ${c.color}`}>{c.label}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(SUBMODULE_DEFS).map(([modKey, modDef]) => {
+                      const isExpanded = expandedModules.has(modKey)
+                      return [
+                        <tr key={`${modKey}-header`} className="border-b border-slate-800/50 bg-slate-800/20 cursor-pointer hover:bg-slate-800/40 transition" onClick={() => toggleModule(modKey)}>
+                          <td className="px-4 py-2.5" colSpan={6}>
+                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+                              {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-slate-500" /> : <ChevronRight className="h-3.5 w-3.5 text-slate-500" />}
+                              {modDef.label}
+                              <span className="text-[10px] text-slate-600 font-normal">({modDef.submodules.length} submodules)</span>
+                            </div>
+                          </td>
+                        </tr>,
+                        ...(!isExpanded ? [] : modDef.submodules.map(sub => {
+                          const perm = rolePerms[modKey]?.[sub.key] ?? defaultPerm()
+                          return (
+                            <tr key={`${modKey}.${sub.key}`} className="border-b border-slate-800/30 hover:bg-slate-800/20 transition">
+                              <td className="pl-12 pr-4 py-2.5 text-xs text-slate-400">{sub.label}</td>
+                              {PERM_COLS.map(col => {
+                                const active = perm[col.key]
+                                return (
+                                  <td key={col.key} className="text-center px-3 py-2.5">
+                                    <button onClick={() => togglePerm(selectedRole, modKey, sub.key, col.key)}
+                                      className={`w-6 h-6 rounded-md border-2 flex items-center justify-center mx-auto transition ${active ? `${col.color.replace('text-', 'border-')} bg-slate-800` : 'border-slate-700 hover:border-slate-500'}`}
+                                      title={`${active ? 'Revoke' : 'Grant'} ${col.label} permission`}>
+                                      {active && <Check className={`h-3 w-3 ${col.color}`} />}
+                                    </button>
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          )
+                        }))
+                      ]
+                    })}
+                  </tbody>
+                </table>
               </div>
 
-              {isEditing && (
-                <p className="mt-3 text-xs text-slate-500">
-                  Tap a module to toggle access. Changes apply to all active users with the{' '}
-                  <strong className="text-slate-300">{ROLE_LABELS[role.name] ?? role.name}</strong>{' '}
-                  role.
-                </p>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              {/* Legend + Save */}
+              <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <div className="flex items-center gap-4">
+                  {PERM_COLS.map(c => (
+                    <div key={c.key} className="flex items-center gap-1.5">
+                      <div className={`w-2.5 h-2.5 rounded-sm border-2 ${c.color.replace('text-', 'border-')}`} />
+                      <span className="text-[10px] text-slate-500">{c.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => void saveSubmodulePerms()} disabled={saving}
+                  className="rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 px-6 py-2.5 text-sm font-bold text-slate-950 transition">
+                  {saving ? 'Saving…' : 'Save All Permissions'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
