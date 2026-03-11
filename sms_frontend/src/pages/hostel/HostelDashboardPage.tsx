@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import {
   Bed,
@@ -23,6 +24,7 @@ interface DashboardStats {
 }
 
 export default function HostelDashboardPage() {
+  const navigate = useNavigate()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -94,10 +96,10 @@ export default function HostelDashboardPage() {
            <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
            <p className="text-sm text-slate-400 mt-2 mb-6">Manage student check-ins and night roll calls efficiently.</p>
            <div className="grid grid-cols-2 gap-4 w-full">
-             <button className="rounded-xl bg-emerald-500 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 transition">
+             <button onClick={() => navigate('/modules/hostel/attendance')} className="rounded-xl bg-emerald-500 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 transition">
                Take Attendance
              </button>
-             <button className="rounded-xl bg-slate-800 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition border border-slate-700">
+             <button onClick={() => navigate('/modules/hostel/allocations')} className="rounded-xl bg-slate-800 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition border border-slate-700">
                New Allocation
              </button>
            </div>

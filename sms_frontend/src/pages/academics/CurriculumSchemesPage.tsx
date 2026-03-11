@@ -42,9 +42,9 @@ export default function CurriculumSchemesPage() {
     try {
       const [sRes, subRes, clRes, tRes] = await Promise.all([
         apiClient.get<Scheme[] | { results: Scheme[] }>('/curriculum/schemes/'),
-        apiClient.get<Subject[] | { results: Subject[] }>('/subjects/'),
-        apiClient.get<SchoolClass[] | { results: SchoolClass[] }>('/classes/'),
-        apiClient.get<Term[] | { results: Term[] }>('/terms/'),
+        apiClient.get<Subject[] | { results: Subject[] }>('/academics/subjects/'),
+        apiClient.get<SchoolClass[] | { results: SchoolClass[] }>('/academics/classes/'),
+        apiClient.get<Term[] | { results: Term[] }>('/academics/terms/'),
       ])
       setSchemes(asArray(sRes.data)); setSubjects(asArray(subRes.data))
       setClasses(asArray(clRes.data)); setTerms(asArray(tRes.data))

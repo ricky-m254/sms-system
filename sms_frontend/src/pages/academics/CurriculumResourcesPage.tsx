@@ -34,7 +34,7 @@ export default function CurriculumResourcesPage() {
     try {
       const [rRes, sRes] = await Promise.all([
         apiClient.get<Resource[] | { results: Resource[] }>('/curriculum/resources/'),
-        apiClient.get<Subject[] | { results: Subject[] }>('/subjects/'),
+        apiClient.get<Subject[] | { results: Subject[] }>('/academics/subjects/'),
       ])
       setResources(asArray(rRes.data)); setSubjects(asArray(sRes.data))
     } catch { setError('Unable to load resources.') }

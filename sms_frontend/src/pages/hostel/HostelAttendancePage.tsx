@@ -8,7 +8,7 @@ interface Attendance {
   student_name: string
   date: string
   roll_call_time: 'Morning' | 'Evening' | 'Night'
-  status: 'Present' | 'Absent' | 'On Leave'
+  status: 'Present' | 'Absent' | 'Leave'
   recorded_by: number | null
   recorded_by_name: string
   notes: string
@@ -22,7 +22,11 @@ function asArray<T>(v: T[] | { results?: T[] }): T[] {
 }
 
 const ROLL_CALL_TIMES = ['Morning', 'Evening', 'Night']
-const STATUSES = ['Present', 'Absent', 'On Leave']
+const STATUSES = [
+  { value: 'Present', label: 'Present' },
+  { value: 'Absent', label: 'Absent' },
+  { value: 'Leave', label: 'On Leave' },
+]
 
 const emptyForm = (date: string) => ({
   student: '', date, roll_call_time: 'Night', status: 'Present', notes: ''
@@ -104,7 +108,7 @@ export default function HostelAttendancePage() {
   const stats = {
     present: attendance.filter(a => a.status === 'Present').length,
     absent: attendance.filter(a => a.status === 'Absent').length,
-    leave: attendance.filter(a => a.status === 'On Leave').length,
+    leave: attendance.filter(a => a.status === 'Leave').length,
   }
 
   return (
@@ -192,7 +196,7 @@ export default function HostelAttendancePage() {
                       record.status === 'Present' ? 'bg-emerald-500/10 text-emerald-400' :
                       record.status === 'Absent' ? 'bg-rose-500/10 text-rose-400' : 'bg-orange-500/10 text-orange-400'
                     }`}>
-                      {record.status}
+                      {record.status === 'Leave' ? 'On Leave' : record.status}
                     </span>
                   </div>
                 </td>
@@ -241,7 +245,7 @@ export default function HostelAttendancePage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Status</label>
                 <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
-                  {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                  {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
               </div>
             </div>

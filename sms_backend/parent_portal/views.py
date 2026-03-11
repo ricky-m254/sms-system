@@ -47,6 +47,12 @@ def _children_for_parent(user):
     if linked_ids:
         return Student.objects.filter(is_active=True, id__in=linked_ids).distinct().order_by("first_name", "last_name")
 
+    # Primary fallback: username == student admission number
+    if user.username:
+        by_admission = Student.objects.filter(is_active=True, admission_number__iexact=user.username)
+        if by_admission.exists():
+            return by_admission.order_by("first_name", "last_name")
+
     if not settings.PARENT_PORTAL_ALLOW_GUARDIAN_FALLBACK:
         return Student.objects.none()
 

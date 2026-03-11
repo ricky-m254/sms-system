@@ -3,6 +3,8 @@ from .models import Course, CourseMaterial, OnlineQuiz, QuizQuestion, QuizAttemp
 
 
 class CourseMaterialSerializer(serializers.ModelSerializer):
+    course_name = serializers.CharField(source='course.title', read_only=True)
+
     class Meta:
         model = CourseMaterial
         fields = '__all__'
@@ -15,6 +17,8 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
 
 
 class VirtualSessionSerializer(serializers.ModelSerializer):
+    course_name = serializers.CharField(source='course.title', read_only=True)
+
     class Meta:
         model = VirtualSession
         fields = '__all__'
@@ -38,7 +42,7 @@ class OnlineQuizSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     teacher_name = serializers.SerializerMethodField()
     subject_name = serializers.SerializerMethodField()
-    class_name = serializers.SerializerMethodField()
+    school_class_name = serializers.SerializerMethodField()
     material_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -53,7 +57,7 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_subject_name(self, obj):
         return obj.subject.name if obj.subject else ''
 
-    def get_class_name(self, obj):
+    def get_school_class_name(self, obj):
         return str(obj.school_class) if obj.school_class else ''
 
     def get_material_count(self, obj):

@@ -9,7 +9,7 @@ class SchemeTopicSerializer(serializers.ModelSerializer):
 class SchemeOfWorkSerializer(serializers.ModelSerializer):
     topics = SchemeTopicSerializer(many=True, read_only=True)
     subject_name = serializers.CharField(source='subject.name', read_only=True)
-    class_name = serializers.CharField(source='school_class.display_name', read_only=True)
+    school_class_name = serializers.CharField(source='school_class.display_name', read_only=True)
     term_name = serializers.CharField(source='term.name', read_only=True)
 
     class Meta:

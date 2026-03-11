@@ -34,8 +34,8 @@ export default function ELearningCoursesPage() {
     try {
       const [cRes, sRes, clRes] = await Promise.all([
         apiClient.get<Course[] | { results: Course[] }>('/elearning/courses/'),
-        apiClient.get<Subject[] | { results: Subject[] }>('/subjects/'),
-        apiClient.get<SchoolClass[] | { results: SchoolClass[] }>('/classes/'),
+        apiClient.get<Subject[] | { results: Subject[] }>('/academics/subjects/'),
+        apiClient.get<SchoolClass[] | { results: SchoolClass[] }>('/academics/classes/'),
       ])
       setCourses(asArray(cRes.data)); setSubjects(asArray(sRes.data)); setClasses(asArray(clRes.data))
     } catch { setError('Unable to load courses.') }
