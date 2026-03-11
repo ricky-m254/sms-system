@@ -9,12 +9,11 @@ function asArray<T>(v: T[] | { results?: T[] }): T[] {
   return Array.isArray(v.results) ? v.results : []
 }
 
-const STATUSES = ['Scheduled', 'Ongoing', 'Completed', 'Cancelled']
+const STATUSES = ['Upcoming', 'Ongoing', 'Completed']
 const statusBadge: Record<string, string> = {
-  Scheduled: 'bg-slate-700 text-slate-300',
+  Upcoming: 'bg-slate-700 text-slate-300',
   Ongoing: 'bg-blue-500/20 text-blue-300',
   Completed: 'bg-emerald-500/20 text-emerald-300',
-  Cancelled: 'bg-rose-500/20 text-rose-300',
 }
 
 export default function ExaminationsSessionsPage() {
@@ -47,7 +46,7 @@ export default function ExaminationsSessionsPage() {
   useEffect(() => { void load() }, [])
 
   const openCreate = () => {
-    setEditing(null); setName(''); setStatus('Scheduled'); setStartDate(''); setEndDate(''); setTermId(''); setNotes('')
+    setEditing(null); setName(''); setStatus('Upcoming'); setStartDate(''); setEndDate(''); setTermId(''); setNotes('')
     setModal(true)
   }
 

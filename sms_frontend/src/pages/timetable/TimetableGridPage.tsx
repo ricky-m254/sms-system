@@ -20,12 +20,10 @@ type TimetableSlot = {
   coverage_status?: 'Uncovered' | 'Covered' | 'Cancelled'
 }
 
-type GridData = {
-  slots: Record<number, TimetableSlot[]>
-}
+type GridData = Record<number, TimetableSlot[]>
 
 export default function TimetableGridPage() {
-  const [gridData, setGridData] = useState<GridData>({ slots: {} })
+  const [gridData, setGridData] = useState<GridData>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [viewBy, setViewBy] = useState<'class' | 'teacher'>('class')
@@ -142,7 +140,7 @@ export default function TimetableGridPage() {
   const periods = [1, 2, 3, 4, 5, 6, 7, 8]
 
   const getSlot = (day: number, period: number) => {
-    return gridData.slots[day]?.find(s => s.period_number === period)
+    return (gridData[day] ?? []).find(s => s.period_number === period)
   }
 
   const getSubjectColor = (id: number | null) => {
