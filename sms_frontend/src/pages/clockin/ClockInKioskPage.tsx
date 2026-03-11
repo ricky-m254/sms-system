@@ -1,6 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import axios from 'axios'
 import { resolveApiBaseUrl } from '../../api/baseUrl'
+import { Fingerprint, Keyboard, QrCode, Clock, CheckCircle2, XCircle, AlertTriangle, Wifi } from 'lucide-react'
+
+type ScanMode = 'fingerprint' | 'pin' | 'qr'
 
 type ScanResponse = {
   event_type: 'IN' | 'OUT'
@@ -14,157 +17,415 @@ type ScanResponse = {
   message: string
 }
 
+const SCHOOL_NAME = 'St. Mary Nairobi High School'
+const PIN_DIGITS = ['1','2','3','4','5','6','7','8','9','','0','⌫']
+
+const GRACE_PERIOD_MINUTES = 7 // minutes after 7:00 AM before considered late
+
 export default function ClockInKioskPage() {
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [now, setNow] = useState(new Date())
+  const [mode, setMode] = useState<ScanMode>('fingerprint')
+  const [pin, setPin] = useState('')
+  const [fpId, setFpId] = useState('')
+  const [qrId, setQrId] = useState('')
   const [scanResult, setScanResult] = useState<ScanResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [fingerprintId, setFingerprintId] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [schoolName] = useState(localStorage.getItem('sms_school_name') || 'Rynaty School')
+  const [scanError, setScanError] = useState<string | null>(null)
+  const [phase, setPhase] = useState<'idle' | 'scanning' | 'success' | 'error'>('idle')
+  const [recentScans, setRecentScans] = useState<Array<{name: string; type: string; event: string; time: string; late: boolean}>>([])
+  const fpInputRef = useRef<HTMLInputElement>(null)
+  const qrInputRef = useRef<HTMLInputElement>(null)
+  const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Clock
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
+    const t = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(t)
   }, [])
 
+  // Auto-focus hidden inputs
   useEffect(() => {
-    const focusInput = () => {
-      inputRef.current?.focus()
-    }
-    focusInput()
-    const interval = setInterval(focusInput, 2000)
-    return () => clearInterval(interval)
+    if (mode === 'fingerprint' && fpInputRef.current) fpInputRef.current.focus()
+    if (mode === 'qr' && qrInputRef.current) qrInputRef.current.focus()
+    const refocus = setInterval(() => {
+      if (phase === 'idle') {
+        if (mode === 'fingerprint') fpInputRef.current?.focus()
+        if (mode === 'qr') qrInputRef.current?.focus()
+      }
+    }, 3000)
+    return () => clearInterval(refocus)
+  }, [mode, phase])
+
+  const clearAfterDelay = useCallback((ms = 4500) => {
+    if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current)
+    scanTimeoutRef.current = setTimeout(() => {
+      setScanResult(null); setScanError(null)
+      setPhase('idle'); setPin(''); setFpId(''); setQrId('')
+    }, ms)
   }, [])
 
-  const handleScan = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fingerprintId) return
-
+  const doScan = useCallback(async (identifier: string) => {
+    if (!identifier.trim()) return
+    setPhase('scanning')
     try {
-      setError(null)
-      const baseUrl = resolveApiBaseUrl().replace(/\/$/, '')
-      const response = await axios.post<ScanResponse>(`${baseUrl}/api/clockin/kiosk/scan/`, {
-        fingerprint_id: fingerprintId,
-      })
-      setScanResult(response.data)
-      setFingerprintId('')
-      setTimeout(() => setScanResult(null), 4000)
+      const base = resolveApiBaseUrl().replace(/\/$/, '')
+      const res = await axios.post<ScanResponse>(`${base}/api/clockin/kiosk/scan/`, { fingerprint_id: identifier })
+      const r = res.data
+      setScanResult(r)
+      setPhase('success')
+      setRecentScans(prev => [{
+        name: r.person.display_name,
+        type: r.person.person_type,
+        event: r.event_type,
+        time: now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        late: r.is_late,
+      }, ...prev.slice(0, 8)])
+      clearAfterDelay(5000)
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Unknown person or scan error.')
-      setFingerprintId('')
-      setTimeout(() => setError(null), 4000)
+      const msg = err.response?.data?.message || err.response?.data?.error || 'ID not found in system.'
+      setScanError(msg)
+      setPhase('error')
+      clearAfterDelay(3500)
+    }
+    setPin(''); setFpId(''); setQrId('')
+  }, [clearAfterDelay, now])
+
+  const handlePinDigit = (d: string) => {
+    if (d === '⌫') { setPin(p => p.slice(0, -1)); return }
+    if (!d) return
+    const next = pin + d
+    setPin(next)
+    if (next.length >= 6) {
+      setTimeout(() => doScan(next), 150)
     }
   }
 
-  const getStatusColor = () => {
-    if (error) return 'border-rose-500 bg-rose-500/10 shadow-[0_0_50px_rgba(244,63,94,0.3)]'
-    if (!scanResult) return 'border-slate-800 bg-slate-900/60 shadow-xl'
-    if (scanResult.event_type === 'IN') return 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_50px_rgba(16,185,129,0.3)]'
-    return 'border-sky-500 bg-sky-500/10 shadow-[0_0_50px_rgba(14,165,233,0.3)]'
-  }
+  const timeStr = now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+  const dateStr = now.toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const h = now.getHours()
+  const arrivalTime = new Date(now)
+  arrivalTime.setHours(7, GRACE_PERIOD_MINUTES, 0, 0)
+  const isSchoolHours = h >= 5 && h < 20
+
+  const statusGlow = phase === 'success'
+    ? (scanResult?.event_type === 'IN' ? '0 0 120px rgba(16,185,129,0.5)' : '0 0 120px rgba(14,165,233,0.5)')
+    : phase === 'error' ? '0 0 120px rgba(239,68,68,0.4)'
+    : '0 0 60px rgba(16,185,129,0.08)'
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 font-sans text-white select-none">
-      {/* Background Glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-sky-500/10 blur-[120px] rounded-full"></div>
+    <div
+      className="fixed inset-0 z-[200] flex flex-col overflow-hidden select-none"
+      style={{ background: 'linear-gradient(160deg, #030811 0%, #060e1a 40%, #04100d 100%)' }}
+      onClick={() => {
+        if (mode === 'fingerprint') fpInputRef.current?.focus()
+        if (mode === 'qr') qrInputRef.current?.focus()
+      }}
+    >
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[180px]" style={{ background: 'rgba(16,185,129,0.07)' }} />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[180px]" style={{ background: 'rgba(14,165,233,0.05)' }} />
+        {phase === 'success' && (
+          <div className="absolute inset-0 animate-pulse rounded-full blur-[200px]" style={{ background: scanResult?.event_type === 'IN' ? 'rgba(16,185,129,0.15)' : 'rgba(14,165,233,0.15)' }} />
+        )}
+        {phase === 'error' && (
+          <div className="absolute inset-0 animate-pulse rounded-full blur-[200px]" style={{ background: 'rgba(239,68,68,0.1)' }} />
+        )}
       </div>
 
-      <header className="absolute top-12 text-center">
-        <h1 className="text-3xl font-display font-bold tracking-tight text-emerald-400">{schoolName}</h1>
-        <p className="mt-2 text-lg text-slate-400 font-medium">Biometric Attendance Kiosk</p>
+      {/* Grid pattern */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
+        style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+
+      {/* ── Header ── */}
+      <header className="flex-shrink-0 flex items-center justify-between px-8 py-5 z-10">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-950 font-black text-lg shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>R</div>
+          <div>
+            <p className="text-sm font-bold text-white font-display">{SCHOOL_NAME}</p>
+            <p className="text-[10px] text-emerald-400/80 font-medium">RSM Biometric Attendance System</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-[11px] text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-emerald-400/70">ONLINE</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Wifi size={11} className="text-slate-600" />
+            <span>Connected</span>
+          </div>
+        </div>
       </header>
 
-      <div className="text-center space-y-2 mb-12">
-        <p className="text-8xl font-mono font-bold tracking-tighter text-slate-100 tabular-nums">
-          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
-        </p>
-        <p className="text-xl text-slate-400 font-medium uppercase tracking-[0.2em]">
-          {currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-      </div>
+      {/* ── Main central display ── */}
+      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-8 px-6 py-4 z-10">
 
-      <form onSubmit={handleScan} className="opacity-0 absolute pointer-events-none">
-        <input
-          ref={inputRef}
-          type="text"
-          value={fingerprintId}
-          onChange={(e) => setFingerprintId(e.target.value)}
-          autoFocus
-        />
-      </form>
+        {/* Clock + Scan Card */}
+        <div className="flex flex-col items-center gap-6 w-full lg:w-auto">
+          {/* Big clock */}
+          <div className="text-center">
+            <p className="text-[5rem] sm:text-[7rem] font-mono font-bold text-white leading-none tabular-nums tracking-tight"
+              style={{ textShadow: '0 0 40px rgba(16,185,129,0.4)' }}>
+              {timeStr}
+            </p>
+            <p className="text-slate-400 text-base font-medium mt-2 uppercase tracking-[0.2em]">{dateStr}</p>
+          </div>
 
-      <div className={`w-full max-w-2xl rounded-[2.5rem] border-4 p-12 transition-all duration-500 ${getStatusColor()}`}>
-        {!scanResult && !error ? (
-          <div className="text-center py-10 space-y-6">
-            <div className="mx-auto w-24 h-24 rounded-full border-2 border-slate-700 flex items-center justify-center animate-pulse">
-               <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0115.443 3m5.41 5.191A10.003 10.003 0 0120.808 13m-1.354 3.038a10.003 10.003 0 01-4.017 4.017m-3.231 1.45A10.003 10.003 0 0112 21c-4.474 0-8.068-3.955-8.068-8.832 0-2.147.785-4.12 2.057-5.655M7 13.158c.005-.121.011-.242.011-.363 0-1.22.302-2.371.843-3.374m9.233 4.797c.017.219.027.439.027.66 0 1.22-.302 2.371-.843 3.374m-5.132-10.703A5.001 5.001 0 0115.013 9M17 12a5 5 0 11-10 0 5 5 0 0110 0z" />
-               </svg>
-            </div>
-            <p className="text-3xl font-display font-semibold text-slate-300">Please Place Finger on Scanner</p>
-            <p className="text-slate-500 font-medium">System ready for scanning...</p>
+          {/* Mode selector */}
+          <div className="flex gap-2 rounded-2xl p-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            {([
+              { key: 'fingerprint', icon: Fingerprint, label: 'Biometric' },
+              { key: 'pin', icon: Keyboard, label: 'PIN Entry' },
+              { key: 'qr', icon: QrCode, label: 'QR / Card' },
+            ] as const).map(m => (
+              <button
+                key={m.key}
+                onClick={() => { setMode(m.key); setPhase('idle'); setPin(''); setScanResult(null); setScanError(null) }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all"
+                style={mode === m.key
+                  ? { background: 'rgba(16,185,129,0.15)', color: '#10b981', boxShadow: '0 0 0 1px rgba(16,185,129,0.3)' }
+                  : { color: 'rgba(255,255,255,0.35)' }}
+              >
+                <m.icon size={13} />
+                <span className="hidden sm:inline">{m.label}</span>
+              </button>
+            ))}
           </div>
-        ) : error ? (
-          <div className="text-center py-10 space-y-6">
-             <div className="mx-auto w-24 h-24 rounded-full bg-rose-500 flex items-center justify-center">
-               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-               </svg>
-            </div>
-            <p className="text-4xl font-display font-bold text-rose-400">Scan Failed</p>
-            <p className="text-2xl text-slate-300 font-medium">{error}</p>
-          </div>
-        ) : scanResult ? (
-          <div className="text-center space-y-8 animate-in fade-in zoom-in duration-300">
-            <div className="flex justify-center items-center gap-6">
-               <div className={`w-32 h-32 rounded-3xl flex items-center justify-center text-5xl font-bold ${
-                 scanResult.event_type === 'IN' ? 'bg-emerald-500 text-slate-900' : 'bg-sky-500 text-slate-900'
-               }`}>
-                 {scanResult.event_type}
-               </div>
-               <div className="text-left">
-                  <p className="text-5xl font-display font-bold text-slate-100">{scanResult.person.display_name}</p>
-                  <div className="mt-3 flex items-center gap-3">
-                    <span className="rounded-full bg-slate-800 px-4 py-1.5 text-lg font-bold text-slate-300 uppercase tracking-wider border border-slate-700">
+
+          {/* Scan Card */}
+          <div
+            className="relative w-full max-w-md rounded-[2.5rem] transition-all duration-700 overflow-hidden"
+            style={{
+              background: phase === 'success'
+                ? scanResult?.event_type === 'IN' ? 'rgba(16,185,129,0.08)' : 'rgba(14,165,233,0.08)'
+                : phase === 'error' ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.025)',
+              border: `2px solid ${
+                phase === 'success'
+                  ? scanResult?.event_type === 'IN' ? 'rgba(16,185,129,0.5)' : 'rgba(14,165,233,0.5)'
+                  : phase === 'error' ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.07)'
+              }`,
+              boxShadow: statusGlow,
+              minHeight: 300,
+            }}
+          >
+            {/* Hidden fingerprint input */}
+            <input ref={fpInputRef} type="text" value={fpId}
+              onChange={e => setFpId(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && fpId) doScan(fpId) }}
+              className="opacity-0 absolute top-0 left-0 w-px h-px"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+            {/* Hidden QR input */}
+            <input ref={qrInputRef} type="text" value={qrId}
+              onChange={e => setQrId(e.target.value)}
+              onKeyDown={e => { if ((e.key === 'Enter' || qrId.length >= 10) && qrId) doScan(qrId) }}
+              className="opacity-0 absolute top-0 left-0 w-px h-px"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+
+            {/* Idle state */}
+            {phase === 'idle' && (
+              <div className="flex flex-col items-center justify-center p-10 gap-6 min-h-[300px]">
+                {mode === 'fingerprint' && (
+                  <>
+                    <div className="w-24 h-24 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(16,185,129,0.1)', border: '2px solid rgba(16,185,129,0.2)' }}>
+                      <Fingerprint size={40} className="text-emerald-400 animate-pulse" />
+                    </div>
+                    <p className="text-2xl font-display font-semibold text-slate-200 text-center">Place Finger on Scanner</p>
+                    <p className="text-sm text-slate-500 text-center">Position finger firmly on the biometric pad</p>
+                    <div className="flex gap-1.5 mt-2">
+                      {[0,1,2].map(i => (
+                        <div key={i} className="w-2 h-2 rounded-full bg-emerald-400/40 animate-bounce" style={{ animationDelay: `${i * 200}ms` }} />
+                      ))}
+                    </div>
+                  </>
+                )}
+                {mode === 'qr' && (
+                  <>
+                    <div className="w-24 h-24 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(14,165,233,0.1)', border: '2px solid rgba(14,165,233,0.2)' }}>
+                      <QrCode size={40} className="text-sky-400 animate-pulse" />
+                    </div>
+                    <p className="text-2xl font-display font-semibold text-slate-200 text-center">Scan QR Code or ID Card</p>
+                    <p className="text-sm text-slate-500 text-center">Hold card near the scanner or scan QR code</p>
+                    <div className="w-16 h-0.5 rounded-full bg-sky-400/30 animate-ping" />
+                  </>
+                )}
+                {mode === 'pin' && (
+                  <div className="w-full flex flex-col items-center gap-4">
+                    <p className="text-lg font-display font-semibold text-slate-200">Enter Staff / Student ID</p>
+                    {/* PIN display */}
+                    <div className="flex gap-3 my-2">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="w-9 h-10 rounded-xl border flex items-center justify-center text-xl font-bold text-white transition-all"
+                          style={{
+                            background: i < pin.length ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.03)',
+                            borderColor: i < pin.length ? 'rgba(16,185,129,0.4)' : 'rgba(255,255,255,0.1)',
+                          }}>
+                          {i < pin.length ? '●' : ''}
+                        </div>
+                      ))}
+                    </div>
+                    {/* PIN pad */}
+                    <div className="grid grid-cols-3 gap-2.5 w-full max-w-xs">
+                      {PIN_DIGITS.map((d, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handlePinDigit(d)}
+                          disabled={!d && d !== '0'}
+                          className="rounded-2xl h-14 text-xl font-bold transition-all active:scale-95 disabled:opacity-0"
+                          style={{
+                            background: d === '⌫' ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: d === '⌫' ? '#f87171' : 'rgba(255,255,255,0.9)',
+                          }}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Scanning state */}
+            {phase === 'scanning' && (
+              <div className="flex flex-col items-center justify-center p-10 gap-6 min-h-[300px]">
+                <div className="w-20 h-20 rounded-full border-4 border-emerald-400/30 border-t-emerald-400 animate-spin" />
+                <p className="text-xl font-display font-semibold text-slate-300 animate-pulse">Verifying Identity…</p>
+              </div>
+            )}
+
+            {/* Success state */}
+            {phase === 'success' && scanResult && (
+              <div className="flex flex-col items-center p-8 gap-6 min-h-[300px] animate-in fade-in zoom-in duration-300">
+                {/* Event badge */}
+                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl`}
+                  style={{ background: scanResult.event_type === 'IN' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #0ea5e9, #0284c7)' }}>
+                  <CheckCircle2 size={36} className="text-white" />
+                </div>
+                {/* Name */}
+                <div className="text-center">
+                  <p className="text-4xl font-display font-bold text-white mb-1">{scanResult.person.display_name}</p>
+                  <div className="flex items-center justify-center gap-3 mt-2">
+                    <span className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
+                      style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}>
                       {scanResult.person.person_type}
                     </span>
-                    <span className="text-xl text-slate-400 font-medium font-mono">
-                      ID: {scanResult.person.admission_number_or_employee_id}
+                    <span className="text-sm text-slate-400 font-mono">
+                      #{scanResult.person.admission_number_or_employee_id}
                     </span>
                   </div>
-               </div>
+                </div>
+                {/* Status row */}
+                <div className="flex gap-8 pt-2 border-t border-white/10 w-full justify-center">
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Status</p>
+                    <p className={`text-lg font-bold ${scanResult.event_type === 'IN' ? 'text-emerald-400' : 'text-sky-400'}`}>
+                      CLOCKED {scanResult.event_type}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Arrival</p>
+                    <p className={`text-lg font-bold ${scanResult.is_late ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {scanResult.is_late ? '⚠ LATE' : '✓ ON TIME'}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Time</p>
+                    <p className="text-lg font-bold text-white tabular-nums">
+                      {now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                    </p>
+                  </div>
+                </div>
+                {/* Welcome message */}
+                <div className="w-full rounded-2xl py-3 px-4 text-center font-bold text-base"
+                  style={{ background: scanResult.event_type === 'IN' ? 'rgba(16,185,129,0.15)' : 'rgba(14,165,233,0.15)', color: scanResult.event_type === 'IN' ? '#10b981' : '#0ea5e9' }}>
+                  {scanResult.event_type === 'IN' ? `Welcome back! Have a great ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}.` : 'Safe journey home!'}
+                </div>
+              </div>
+            )}
+
+            {/* Error state */}
+            {phase === 'error' && (
+              <div className="flex flex-col items-center justify-center p-10 gap-6 min-h-[300px] animate-in fade-in duration-300">
+                <div className="w-20 h-20 rounded-3xl flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
+                  <XCircle size={36} className="text-rose-400" />
+                </div>
+                <p className="text-2xl font-display font-bold text-rose-300">Scan Failed</p>
+                <p className="text-slate-400 text-center text-sm max-w-xs">{scanError}</p>
+                <p className="text-xs text-slate-600">Please try again or contact the administrator</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Live Attendance Wall — right side on large screens */}
+        <div className="hidden lg:flex flex-col gap-4 w-72 flex-shrink-0">
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock size={14} className="text-emerald-400" />
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent Scans</p>
             </div>
+            {recentScans.length === 0 ? (
+              <div className="text-center py-8">
+                <Fingerprint size={28} className="text-slate-700 mx-auto mb-3" />
+                <p className="text-xs text-slate-600">Scans will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {recentScans.map((s, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-xl p-2.5 transition-all"
+                    style={{
+                      background: i === 0 ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${i === 0 ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                    }}>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-white"
+                      style={{ background: s.event === 'IN' ? 'rgba(16,185,129,0.3)' : 'rgba(14,165,233,0.3)' }}>
+                      {s.name[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold text-slate-200 truncate">{s.name}</p>
+                      <p className="text-[9px] text-slate-600 truncate">{s.type} · {s.time}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: s.event === 'IN' ? 'rgba(16,185,129,0.15)' : 'rgba(14,165,233,0.15)', color: s.event === 'IN' ? '#34d399' : '#38bdf8' }}>
+                        {s.event}
+                      </span>
+                      {s.late && <span className="text-[9px] font-bold text-amber-400">LATE</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-            <div className="h-px bg-slate-800/50"></div>
-
-            <div className="flex justify-center gap-12">
-               <div>
-                 <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Status</p>
-                 <p className={`mt-2 text-3xl font-bold ${scanResult.is_late ? 'text-amber-400' : 'text-emerald-400'}`}>
-                   {scanResult.is_late ? 'LATE ARRIVAL' : 'ON TIME'}
-                 </p>
-               </div>
-               <div>
-                 <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Scan Time</p>
-                 <p className="mt-2 text-3xl font-bold text-slate-100 tabular-nums">
-                   {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                 </p>
-               </div>
+          {/* Stats mini card */}
+          <div className="rounded-2xl p-4 grid grid-cols-2 gap-3" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(16,185,129,0.07)' }}>
+              <p className="text-2xl font-bold text-emerald-400 tabular-nums">{recentScans.filter(s => s.event === 'IN').length}</p>
+              <p className="text-[9px] text-slate-500 mt-1 font-medium uppercase tracking-wide">IN Today</p>
             </div>
-
-            <div className={`mt-8 py-4 rounded-2xl font-bold text-2xl ${
-               scanResult.event_type === 'IN' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-sky-500/20 text-sky-400'
-            }`}>
-              WELCOME TO {schoolName.toUpperCase()}
+            <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(245,158,11,0.07)' }}>
+              <p className="text-2xl font-bold text-amber-400 tabular-nums">{recentScans.filter(s => s.late).length}</p>
+              <p className="text-[9px] text-slate-500 mt-1 font-medium uppercase tracking-wide">Late</p>
             </div>
           </div>
-        ) : null}
+        </div>
       </div>
 
-      <footer className="absolute bottom-12 text-slate-600 font-medium tracking-widest uppercase text-sm">
-        Rynaty SMS Biometric Security System v2.1
+      {/* ── Footer ── */}
+      <footer className="flex-shrink-0 flex items-center justify-between px-8 py-4 z-10 text-[10px] font-medium"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)' }}>
+        <span>RSM – Rynatyschool Management System v3.0</span>
+        <span>{isSchoolHours ? '🟢 School Hours Active' : '🔴 After School Hours'}</span>
+        <span>Gate Security Biometric Portal</span>
       </footer>
     </div>
   )

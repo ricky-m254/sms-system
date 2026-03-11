@@ -1,4 +1,4 @@
-# Rynaty School Management System
+# RSM – Rynatyschool Management System
 
 A multi-tenant school management system built by Rynatyspace Technologies. Django 4.2 backend, React/Vite frontend, PostgreSQL schema-per-tenant, IPSAS-compliant finance. 28 modules.
 
@@ -15,22 +15,25 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
 sms_backend/      Django backend
   config/         Settings, URLs (public_urls.py + urls.py), WSGI
   clients/        Tenant & domain management, middleware
-  school/         Core school module (students, finance, etc.)
-  academics/      Academics module
+  school/         Core school module (students, finance, staff, etc.)
+  academics/      Academics, report cards, gradebook
   admissions/     Admissions module
   hr/             HR & Payroll module
   library/        Library module
   communication/  Messaging module
   parent_portal/  Parent portal module
-  reporting/      Reporting module
-  staff_mgmt/     Staff management module
-  assets/         Asset management module
+  clockin/        Biometric Clock-In / Out module
+  transport/      School transport & fleet management
+  curriculum/     Curriculum management
+  examinations/   Examinations module
+  analytics/      Analytics & reporting
+  reporting/      Finance reporting
   frontend_build/ React build output (populated during deployment build phase)
 
 sms_frontend/     React frontend
   src/api/        Axios API client — uses same-origin base URL; Vite proxies /api → localhost:8000 in dev
-  src/components/ Reusable UI components
-  src/pages/      Page-level views
+  src/components/ Reusable UI components (AppShell, DemoBanner)
+  src/pages/      Page-level views (28 module dashboards)
   src/store/      Zustand state management
 ```
 
@@ -61,12 +64,13 @@ Vite proxies all `/api/*` requests from port 5000 to `localhost:8000`. No CORS s
 
 The shared PostgreSQL database contains:
 - `public` schema — platform-level tables (Tenant, Domain, subscriptions)
-- `demo_school` schema — seeded demo tenant with sample data
+- `demo_school` schema — seeded demo tenant with full sample data
 
 ### Demo Tenant Login
 - **Tenant ID**: `demo_school`
 - **Username**: `admin`
 - **Password**: `admin123`
+- **Teacher login**: `samuel.otieno` / `teacher123`
 
 ### Key Middleware (order matters)
 1. `SecurityMiddleware`
@@ -75,116 +79,82 @@ The shared PostgreSQL database contains:
 4. `TenantMainMiddleware` — resolves tenant from domain
 5. `TenantContextGuardMiddleware` — resolves tenant from `X-Tenant-ID` header; skips host-match check for header-resolved tenants
 
+## CRITICAL API Rule
+
+Frontend `apiClient` paths must NOT include the `/api/` prefix. Correct: `apiClient.get('/students/')`.
+Named export: `import { apiClient } from '../../api/client'`
+
+## School Profile API
+
+Response shape: `{ tenant: { name, schema }, profile: { school_name, primary_color, … } }`
+Profile is NESTED — always access as `resp.profile?.school_name` (not `resp.school_name`).
+
+## Demo Reset System
+
+- Endpoint: `POST /school/demo/reset/` — wipes and reseeds all demo_school data (only works for demo_school tenant)
+- `GET /school/demo/reset/` — returns current demo status
+- Frontend: `DemoBanner` component shows 30-min countdown, reset button; auto-mounted in AppShell
+- Management command: `python manage.py reset_demo` — clears then re-runs `seed_kenya_school`
+
 ## Modules
 
 All 28 tenant modules are fully implemented (frontend + backend):
 
-**Core Modules:**
-- **Students** — directory, attendance, behavior, medical, documents, reports; student ID card generator (printable)
-- **Finance** — invoices, payments (receipt PDF download), expenses, fee structures, adjustments, accounts, reconciliation, scholarships, write-offs, vote heads, cashbook & bankbook, arrears management, balance carry-forward
-- **Academics** — structure, subjects, classes, gradebook, report cards, assignments, calendar, analytics
-- **Admissions** — inquiries, applications, reviews, assessments, interviews, decisions, enrollment, analytics
-- **HR** — employees (full CRUD incl. inline edit + deactivate), org chart, attendance, leave (leave types + policies CRUD), payroll (salary structures + components CRUD, printable payslip modal with school branding), recruitment, onboarding, performance, training, analytics
-- **Staff** — directory, profiles, departments/roles, attendance, performance, documents, analytics
-- **Communication** — messaging, notifications, email, SMS gateway, templates, announcements, analytics
-- **Library** — catalog, circulation, reservations, members, fines, inventory, acquisition, reports
-- **Parent Portal** — child academics, attendance, finance, communication, schedule, assignments
-- **Assets** — registry, categories, assignments, maintenance records, depreciation schedule (IPSAS 17), dashboard
-- **Store & Inventory** — food + office item CRUD, stock receipt/issuance/adjustment movements, reorder-level alerts, low-stock view, order requests with approve/reject workflow
-- **Dispensary** — student clinic visit records with diagnosis, treatment, severity triage, referrals, follow-ups, prescription/medication dispensing, medication stock tracker
+### Student Management
+- Students, Enrollments, Admissions, Guardian management, Alumni, Parent Portal
 
-**Operational Modules (added March 2026):**
-- **Clock-In / Biometric Attendance** — fingerprint scanner integration, school shift configuration, auto-late detection, auto-updates school & HR attendance records, gate kiosk UI at `/kiosk/clockin` (no-auth), person registry, device management, reports; late arrivals auto-notify all HR/Admin users
-- **Timetable** — weekly slot schedule (teacher/subject/class/room per period), staff duty schedule, lesson coverage tracking (auto-flagged when teacher clocks in late), change request workflow (submit → HR/Admin approve/reject → notify)
-- **Transport Management** — vehicle fleet, bus routes with stop sequences, student bus pass assignments, driver management, incident tracking; dashboard
-- **Visitor Management & Gate Security** — visitor sign-in/out log (with badge number), authorized student pickup registry, pickup log with authorization tracking, dashboard stats
-- **Examinations** — exam sessions, paper scheduling (room, invigilator, marks), seat allocation, mark entry, grade boundaries, position/rank calculation, result analytics; **exam setter assignments** (assign teacher per subject/class/session); **exam paper upload workflow** (teacher uploads file → secretary reviews/approves/marks printed); **print buttons** on Papers, Results, Setter List, Upload Queue pages
-- **Alumni Management** — alumni directory (graduation year, institution, occupation, country), alumni events with attendee registration, dashboard
-- **Hostel / Boarding** — dormitories, bed space management, student allocations, hostel roll-call attendance (Morning/Evening/Night), leave management with approval workflow
-- **Parent-Teacher Meetings (PTM)** — session scheduling, teacher slot generation, parent booking system, meeting notes recording
-- **Sports & Extracurricular** — clubs (Sports/Academic/Arts/Community), member enrollment with roles, tournament tracking, student awards & achievements
-- **Cafeteria / Food Service** — meal plans, weekly menu planner, student enrollment by meal plan, meal service log, cafeteria wallet transactions
-- **Curriculum & Lesson Planning** — scheme of work per subject/class/term (full CRUD), weekly topic coverage tracking, lesson plan submission/approval workflow (full CRUD), teaching resource library (full CRUD)
-- **Maintenance Requests** — facility issue reporting (Electrical/Plumbing/IT/Building etc.), priority management (Low/Medium/High/Urgent), assignment to maintenance staff, cost tracking, update timeline
-- **E-Learning / LMS** — course builder (subject/class/teacher, full CRUD), course materials (PDF/Video/Link/Note, full CRUD), online quizzes with MCQ/TF/Short Answer + auto-marking (full CRUD), virtual session scheduling Zoom/Meet/Teams (full CRUD)
-- **Dispensary** — patient visits, medication stock, delivery notes (create/items/mark-received/link-finance), outside treatments (external referral tracking with patient/facility/cost/diagnosis), dashboard
-- **Assets** — assignments with return dialog capturing returnedBy name + role/department; depreciation schedule with "Send to Finance" button that posts to /finance/expenses/
-- **Executive Analytics Dashboard** — school-wide KPIs (students, staff, finance), attendance trend chart, enrollment trend, at-risk students (absenteeism detection), auto-refresh every 60s
+### Academic Management
+- Academic structure (years/terms/classes), Subjects (Kenyan CBC + 8-4-4), Timetable, Gradebook, Report Cards, Examinations, E-Learning, Curriculum, PTM
 
-### Navigation
-- `ModuleToolbar` component in every module sidebar: back-to-dashboard button + module switcher
-- All delete operations use `ConfirmDialog` for admin confirmation before any data is removed
+### Finance & Commerce
+- Fee structures, Invoices, Payments (IPSAS), Store & Inventory, Assets, Cafeteria
 
-## Deployment (Production)
+### Staff & HR
+- Staff Directory (Teaching + Non-Teaching categories), HR records, Clock-In/Out (biometric kiosk + PIN + QR), Shifts, Leave management
 
-**Target:** Autoscale (Replit)
+### School Operations
+- Library (books, lending), Transport (fleet, routes, OpenStreetMap, parent portal), Hostel, Dispensary, Maintenance, Visitor Management
 
-**Build step:**
-```
-cd sms_frontend && npm run build
-mkdir -p ../sms_backend/frontend_build
-cp -r dist/* ../sms_backend/frontend_build/
-cd ../sms_backend && python manage.py collectstatic --noinput
-```
+### Communication & Analytics
+- Announcements, Messaging, Analytics dashboards
 
-**Run step:**
-```
-cd sms_backend && python manage.py migrate --noinput && gunicorn --bind=0.0.0.0:3000 --workers=2 --timeout=120 config.wsgi:application
-```
+## Kenyan CBC Curriculum Data
 
-**How it works:**
-- React is built to `sms_frontend/dist`, copied to `sms_backend/frontend_build/`
-- Django/whitenoise serves the React SPA from `frontend_build/`
-- A catch-all URL pattern in `config/urls.py` serves `index.html` for all non-API routes
-- Replit's `REPLIT_DOMAINS` env var is automatically added to Django `ALLOWED_HOSTS`
-- `DATABASE_URL` env var is picked up automatically for PostgreSQL
-- Port 3000 used for gunicorn in production
+Seeded subjects organized by department:
+- **Sciences**: Biology, Chemistry, Physics, Agriculture, Integrated Science
+- **Mathematics**: Mathematics
+- **Languages**: English, Kiswahili
+- **Humanities**: History & Government, Geography, CRE, Social Studies, Life Skills
+- **Technical**: Computer Studies, Home Science, Art & Design, Pre-Technical Studies
+- **Business**: Business Studies
+- **Creative Arts**: Music, Art, Creative Arts & Sports
+- **Physical Education**: Physical Education
 
-**Branding:** Rynaty School Management System by Rynatyspace Technologies
+## Staff Categories
 
-## Production-Grade UI Upgrade (March 2026)
+- **Teaching**: TSC/BOM deployed teachers (seeded: 12 with subjects)
+- **Non-Teaching** (seeded: 18): Principal, Deputy, Bursar, Clerks, Lab Technicians, Librarian, Drivers, Security Guards, Cooks, Groundskeeper, Nurse, ICT Technician, Matron
+- Filter tabs in StaffDirectoryPage: All / Teaching / Non-Teaching / Administration / Support
 
-### Completed Features
+## Design System
 
-**T001 — AppShell (Persistent Left Sidebar)**
-- `AppShell.tsx` wraps `/dashboard` route with collapsible left sidebar
-- School logo + name at top, user profile + logout at bottom
-- Active module highlighting; collapses to icon-only rail
-
-**T002 — Tenant Branding System**
-- `SchoolProfile` model extended with `primary_color`, `motto`, `email_address`, `website`, `county`, `country`, `invoice_prefix`
-- `PrintButton.tsx` fetches school profile (`/school/profile/`) and injects branded header (logo, name, motto, primary color) into every print dialog; fallback to monogram avatar when no logo set
-
-**T003 — Global Theme Settings (`/settings/global`)**
-- `SettingsGlobalPage.tsx` — hex color picker with live preview, font selector, theme presets
-
-**T004 — Communication Settings (`/settings/communication`)**
-- `SettingsCommunicationPage.tsx` — SMTP, Africa's Talking SMS, WhatsApp API credentials
-
-**T005 — Complete Settings Pages**
-- `/settings/academics` — terms, grade structure, subjects
-- `/settings/examinations` — exam types, grading scale, pass marks
-- `/settings/timetable` — periods per day, lesson duration, breaks
-- `/settings/library` — loan rules, fines, categories
-- `/settings/transport` — routes policy, fees
-- `/settings/hostel` — allocation rules, boarding fees
-- `/settings/security` — session timeout, password policy, 2FA toggle
-
-**T006 — Enhanced Roles Page with Submodule Permission Matrix**
-- `SettingsRolesPage.tsx` dual-tab: Module Access checklist + Submodule Permissions matrix (View/Create/Edit/Delete/Approve per submodule)
-- `SubmodulePermission` model in `school/models.py`; API at `/users/submodule-permissions/` (GET + POST bulk-upsert); migration `0038_add_submodule_permission` applied
-
-**T007 — Role-Based Quick Actions on Dashboard**
-- Dashboard detects `userRole` from auth store
-- `ROLE_QUICK_ACTIONS` map provides role-specific shortcut buttons (6 per role) for: `TENANT_SUPER_ADMIN`, `ADMIN`, `TEACHER`, `ACCOUNTANT`
-- Each action card shows emoji icon + label; disabled (greyed) if module not assigned to tenant
-- Role badge displayed in Quick Actions header
-
-## Key Notes
-
-- Run `python manage.py seed_demo` to (re)create the demo school tenant
-- Run `python manage.py create_school --schema_name X --name Y --domain Z` to provision a new school
-- `migrate_schemas --shared --fake` marks shared migrations applied without executing SQL (tables already exist from original dev setup)
-- **API client rule**: Frontend `apiClient` paths must NOT include `/api/` prefix; Vite proxy handles it
-- **Filter rule**: No `django_filters` — filter in `get_queryset()` using `self.request.query_params.get()`
+- **Background**: `#070b12`, sidebar gradient `#0d1421 → #0a0f1a`
+- **Primary accent**: Emerald `#10b981`, secondary: Sky `#38bdf8`
+- **Approval accent**: Amber `#f59e0b`
+- **Typography**: Space Grotesk (headings, `font-display`), Manrope (body)
+- **Glass panels**: `background: rgba(255,255,255,0.025)`, `border: rgba(255,255,255,0.07)`
 - **Currency**: `Ksh ` prefix + `toLocaleString('en-KE', { minimumFractionDigits: 2 })`
+
+## Clock-In Kiosk
+
+Route: `/modules/clockin/kiosk` (renders full-screen, fixed position, z-[200])
+Modes: Fingerprint (hidden input, auto-focus), PIN entry (6-digit keypad), QR / ID Card (hidden input)
+Live attendance wall shown on right side (large screens)
+API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
+
+## Transport Dashboard
+
+- OpenStreetMap iframe embed (Nairobi, no API key required), filter: `hue-rotate(185deg)` for dark mode
+- Mock live fleet data (4 buses, 4 routes, Nairobi area)
+- Fleet status chips overlay map with ETA and status
+- Parent portal CTA linking to parent-portal module

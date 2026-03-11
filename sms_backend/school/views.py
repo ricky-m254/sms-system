@@ -6156,3 +6156,41 @@ class DispensaryOutsideTreatmentViewSet(viewsets.ModelViewSet):
         if facility:
             qs = qs.filter(facility_name__icontains=facility)
         return qs
+
+
+class DemoResetView(APIView):
+    """
+    POST /school/demo/reset/
+    Resets demo_school tenant to original seed data.
+    Only available when the current tenant schema is 'demo_school'.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        tenant = getattr(request, 'tenant', None)
+        schema = getattr(tenant, 'schema_name', None)
+        if schema != 'demo_school':
+            return Response(
+                {'error': 'Demo reset is only available in the demo_school environment.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            from django.core.management import call_command
+            import io
+            out = io.StringIO()
+            call_command('reset_demo', '--schema', 'demo_school', stdout=out)
+            return Response({
+                'success': True,
+                'message': 'Demo data has been reset to the original Kenya school seed.',
+            })
+        except Exception as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get(self, request):
+        tenant = getattr(request, 'tenant', None)
+        schema = getattr(tenant, 'schema_name', None)
+        return Response({
+            'demo_mode': schema == 'demo_school',
+            'schema': schema,
+            'message': 'POST to this endpoint to reset demo data.',
+        })

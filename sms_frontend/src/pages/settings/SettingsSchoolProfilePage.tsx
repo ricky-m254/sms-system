@@ -57,8 +57,8 @@ export default function SettingsSchoolProfilePage() {
     setLoading(true)
     try {
       const res = await apiClient.get<any>('/school/profile/')
-      const p = res.data.profile ?? res.data
-      if (p) {
+      const p = res.data?.profile ?? null
+      if (p && p.id) {
         setForm({
           id: p.id,
           school_name: p.school_name ?? '',

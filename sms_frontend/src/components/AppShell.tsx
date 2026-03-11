@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { apiClient } from '../api/client'
+import DemoBanner from './DemoBanner'
 import {
   BookOpen, Building2, ChevronDown, ChevronRight,
   GraduationCap, LayoutDashboard, LogOut, MessageSquare,
@@ -241,17 +242,18 @@ export default function AppShell() {
 
   useEffect(() => {
     apiClient.get<Record<string, unknown>>('/school/profile/').then(r => {
-      const d = r.data
-      const primary = (d.primary_color as string) || '#10b981'
+      const resp = r.data as Record<string, unknown>
+      const p = (resp.profile as Record<string, unknown> | null) ?? resp
+      const primary = (p?.primary_color as string) || '#10b981'
       setBranding({
-        school_name: (d.school_name as string) || 'Rynaty SMS',
-        logo_url: (d.logo_url as string) || null,
+        school_name: (p?.school_name as string) || 'RSM – Rynatyschool',
+        logo_url: (p?.logo_url as string) || null,
         primary_color: primary,
-        secondary_color: (d.secondary_color as string) || '#0ea5e9',
+        secondary_color: (p?.secondary_color as string) || '#0ea5e9',
       })
       const root = document.documentElement
       root.style.setProperty('--brand-primary', primary)
-      root.style.setProperty('--brand-secondary', (d.secondary_color as string) || '#0ea5e9')
+      root.style.setProperty('--brand-secondary', (p?.secondary_color as string) || '#0ea5e9')
     }).catch(() => {})
   }, [])
 
@@ -266,7 +268,7 @@ export default function AppShell() {
   const handleLogout = () => { logout(); navigate('/login') }
 
   const primaryColor = branding?.primary_color ?? '#10b981'
-  const schoolInitial = (branding?.school_name ?? 'R')[0].toUpperCase()
+  const schoolInitial = (branding?.school_name ?? 'RSM')[0].toUpperCase()
 
   const roleLabels: Record<string, string> = {
     TENANT_SUPER_ADMIN: 'Super Admin',
@@ -290,7 +292,7 @@ export default function AppShell() {
       {showText && (
         <div className="min-w-0">
           <p className="text-[13px] font-bold text-white leading-tight truncate font-display">
-            {branding?.school_name ?? 'Rynaty SMS'}
+            {branding?.school_name ?? 'RSM – Rynatyschool'}
           </p>
           <p className="text-[10px] font-medium leading-tight mt-0.5" style={{ color: `${primaryColor}bb` }}>
             School Management
@@ -522,6 +524,9 @@ export default function AppShell() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Spacer for mobile top header */}
         <div className="md:hidden flex-shrink-0 h-14" />
+
+        {/* Demo mode banner */}
+        <DemoBanner />
 
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
           <Outlet />

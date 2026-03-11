@@ -21,6 +21,7 @@ from school.models import (
     Role, UserProfile, Student, Guardian, Enrollment, SchoolClass,
     FeeStructure, Invoice, InvoiceLineItem, Payment, PaymentAllocation,
     Expense, AdmissionApplication, AcademicYear, Term,
+    Department, Subject,
 )
 from hr.models import Staff
 from communication.models import Message
@@ -60,6 +61,28 @@ TEACHER_DATA = [
     ("Esther", "Kimani", "CRE", "0722100010"),
     ("George", "Ndegwa", "Agriculture", "0722100011"),
     ("Alice", "Chebet", "Computer Studies", "0722100012"),
+]
+
+NON_TEACHING_STAFF_DATA = [
+    # (first, last, role, phone)
+    ("Joseph", "Karanja",   "Principal",              "0711200001"),
+    ("Agnes",  "Wanjiku",   "Deputy Principal",       "0711200002"),
+    ("David",  "Murithi",   "Senior Clerk",           "0711200003"),
+    ("Rose",   "Atieno",    "Bursar",                 "0711200004"),
+    ("Charles","Mutuku",    "Accounts Assistant",     "0711200005"),
+    ("Pauline","Njoroge",   "School Secretary",       "0711200006"),
+    ("Moses",  "Ochieng",   "Lab Technician",         "0711200007"),
+    ("Jane",   "Wafula",    "Librarian",              "0711200008"),
+    ("Simon",  "Kipkoech",  "Driver",                 "0711200009"),
+    ("Peter",  "Njiru",     "Driver",                 "0711200010"),
+    ("Francis","Onyango",   "Security Guard",         "0711200011"),
+    ("Mary",   "Auma",      "Security Guard",         "0711200012"),
+    ("John",   "Chepkwony","Head Cook",               "0711200013"),
+    ("Grace",  "Adhiambo",  "Kitchen Staff",          "0711200014"),
+    ("Samuel", "Ndirangu",  "Groundskeeper",          "0711200015"),
+    ("Elizabeth","Mwenda",  "Nurse",                  "0711200016"),
+    ("James",  "Kiptoo",    "ICT Technician",         "0711200017"),
+    ("Naomi",  "Chebet",    "Matron",                 "0711200018"),
 ]
 
 SUBJECTS_844 = [
@@ -152,6 +175,69 @@ class Command(BaseCommand):
 
         self.stdout.write("  Seeding communication messages…")
         self._seed_communication(students, admin)
+
+        self.stdout.write("  Seeding Kenyan CBC curriculum…")
+        self._seed_curriculum()
+
+    # ── Kenyan CBC Curriculum ─────────────────────────────────────────────────
+    def _seed_curriculum(self):
+        # Departments
+        DEPT_DATA = [
+            ("Sciences", "Biology, Chemistry, Physics, Agriculture"),
+            ("Mathematics", "Mathematics, Additional Mathematics"),
+            ("Languages", "English, Kiswahili, French, German"),
+            ("Humanities", "History & Government, Geography, CRE, IRE, HRE"),
+            ("Technical", "Computer Studies, Home Science, Art & Design"),
+            ("Business", "Business Studies, Economics, Accounting"),
+            ("Creative Arts", "Music, Drama, Art"),
+            ("Physical Education", "Physical Education & Sports"),
+        ]
+        depts = {}
+        for name, desc in DEPT_DATA:
+            d, _ = Department.objects.get_or_create(
+                name=name, defaults={"description": desc, "is_active": True}
+            )
+            depts[name] = d
+
+        # Kenyan 8-4-4 and CBC Senior Secondary subjects
+        SUBJECT_DATA = [
+            # (name, code, dept_key, subject_type, periods_week)
+            ("Mathematics",              "MTH", "Mathematics",  "Compulsory", 8),
+            ("English",                  "ENG", "Languages",    "Compulsory", 8),
+            ("Kiswahili",                "KSW", "Languages",    "Compulsory", 5),
+            ("Biology",                  "BIO", "Sciences",     "Compulsory", 4),
+            ("Chemistry",                "CHE", "Sciences",     "Compulsory", 4),
+            ("Physics",                  "PHY", "Sciences",     "Compulsory", 4),
+            ("History & Government",     "HIS", "Humanities",   "Elective",   4),
+            ("Geography",                "GEO", "Humanities",   "Elective",   4),
+            ("Christian Religious Ed.",  "CRE", "Humanities",   "Elective",   4),
+            ("Business Studies",         "BST", "Business",     "Elective",   4),
+            ("Agriculture",              "AGR", "Sciences",     "Elective",   4),
+            ("Computer Studies",         "CMP", "Technical",    "Elective",   4),
+            ("Home Science",             "HMS", "Technical",    "Elective",   4),
+            ("Art & Design",             "ART", "Creative Arts","Elective",   3),
+            ("Music",                    "MUS", "Creative Arts","Elective",   3),
+            ("Physical Education",       "PE",  "Physical Education", "Compulsory", 3),
+            # CBC strands
+            ("Integrated Science",       "ISC", "Sciences",     "Compulsory", 5),
+            ("Social Studies",           "SST", "Humanities",   "Compulsory", 5),
+            ("Creative Arts & Sports",   "CAS", "Creative Arts","Compulsory", 4),
+            ("Pre-Technical Studies",    "PTS", "Technical",    "Compulsory", 4),
+            ("Life Skills Education",    "LSE", "Humanities",   "Compulsory", 2),
+            ("Religious Education",      "RE",  "Humanities",   "Elective",   2),
+        ]
+        for name, code, dept_key, s_type, periods in SUBJECT_DATA:
+            dept = depts.get(dept_key)
+            Subject.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "department": dept,
+                    "subject_type": s_type,
+                    "periods_week": periods,
+                    "is_active": True,
+                },
+            )
 
     # ── Roles & Modules ─────────────────────────────────────────────────────
     def _seed_roles_modules(self):
@@ -273,6 +359,19 @@ class Command(BaseCommand):
                 user.save()
             if teacher_role:
                 UserProfile.objects.get_or_create(user=user, defaults={"role": teacher_role})
+
+        # Non-teaching staff
+        for i, (first, last, role, phone) in enumerate(NON_TEACHING_STAFF_DATA):
+            emp_id = f"NTS{str(i + 1).zfill(3)}"
+            Staff.objects.get_or_create(
+                employee_id=emp_id,
+                defaults={
+                    "first_name": first,
+                    "last_name": last,
+                    "role": role,
+                    "phone": phone,
+                },
+            )
 
         # Seed HR leave requests for approval
         try:

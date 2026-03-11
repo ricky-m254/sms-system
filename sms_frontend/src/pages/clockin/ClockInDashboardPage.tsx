@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import { Users, Clock, AlertTriangle, TrendingUp, Fingerprint, Activity } from 'lucide-react'
 
 type DashboardData = {
   students_in: number
@@ -34,6 +35,12 @@ export default function ClockInDashboardPage() {
   const [realtime, setRealtime] = useState<RealtimeData[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [now, setNow] = useState(new Date())
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(t)
+  }, [])
 
   const fetchData = async () => {
     try {
@@ -45,7 +52,7 @@ export default function ClockInDashboardPage() {
       setRealtime(realRes.data)
       setError(null)
     } catch {
-      setError('Clock-In dashboard data unavailable.')
+      setError('Live attendance data unavailable.')
     } finally {
       setIsLoading(false)
     }
@@ -57,98 +64,171 @@ export default function ClockInDashboardPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const stats = [
-    { label: 'Students In Today', value: data.students_in, tone: 'text-emerald-400' },
-    { label: 'Students Late', value: data.students_late, tone: 'text-amber-400' },
-    { label: 'Staff In Today', value: data.staff_in, tone: 'text-emerald-400' },
-    { label: 'Staff Late', value: data.staff_late, tone: 'text-amber-400' },
+  const kpis = [
+    {
+      label: 'Students Present',
+      value: data.students_in,
+      icon: Users,
+      color: '#10b981',
+      bg: 'rgba(16,185,129,0.1)',
+      sub: 'Clocked in today',
+    },
+    {
+      label: 'Students Late',
+      value: data.students_late,
+      icon: AlertTriangle,
+      color: '#f59e0b',
+      bg: 'rgba(245,158,11,0.1)',
+      sub: 'After 7:07 AM',
+    },
+    {
+      label: 'Staff Present',
+      value: data.staff_in,
+      icon: Activity,
+      color: '#38bdf8',
+      bg: 'rgba(56,189,248,0.1)',
+      sub: 'Teaching + support',
+    },
+    {
+      label: 'Staff Late',
+      value: data.staff_late,
+      icon: TrendingUp,
+      color: '#f87171',
+      bg: 'rgba(248,113,113,0.1)',
+      sub: 'Requires follow-up',
+    },
   ]
 
   return (
-    <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h1 className="text-xl font-display font-semibold">Attendance Dashboard</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Real-time biometric attendance monitoring for students and staff.
-        </p>
-        {error ? <p className="mt-3 text-xs text-rose-300">{error}</p> : null}
-      </header>
+    <div className="p-6 space-y-6">
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <article key={stat.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-            <p className="text-xs uppercase tracking-wide text-slate-400">{stat.label}</p>
-            <p className={`mt-2 text-3xl font-semibold ${stat.tone}`}>{stat.value}</p>
-          </article>
-        ))}
-      </section>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-white">Attendance Dashboard</h1>
+          <p className="text-slate-400 text-sm mt-0.5">Real-time biometric attendance monitoring</p>
+          {error && <p className="mt-2 text-xs text-rose-300 flex items-center gap-1"><AlertTriangle size={11} />{error}</p>}
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="text-2xl font-mono font-bold text-white tabular-nums">
+            {now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            {now.toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
+        </div>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Currently in School */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-lg font-display font-semibold">Currently in School</h2>
-          <div className="mt-4 max-h-[400px] overflow-y-auto space-y-3 pr-2">
-            {isLoading ? (
-              <p className="text-sm text-slate-400">Loading...</p>
-            ) : realtime.length === 0 ? (
-              <p className="text-sm text-slate-500 italic text-center py-4">No one currently in school.</p>
-            ) : (
-              realtime.map((person, idx) => (
-                <div key={idx} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-                  <div>
-                    <p className="font-medium text-slate-100">{person.name}</p>
-                    <p className="text-xs text-slate-400">{person.role}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
-                      {person.person_type}
-                    </span>
-                    <p className="mt-1 text-xs text-slate-400">{new Date(person.time_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                  </div>
-                </div>
-              ))
-            )}
+      {/* KPI Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpis.map(k => (
+          <div key={k.label} className="rounded-2xl p-5 relative overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: k.bg }}>
+              <k.icon size={15} style={{ color: k.color }} />
+            </div>
+            <p className="text-3xl font-bold text-white tabular-nums">
+              {isLoading ? <span className="text-slate-700 animate-pulse">—</span> : k.value}
+            </p>
+            <p className="text-xs text-slate-400 mt-1 font-medium">{k.label}</p>
+            <p className="text-[10px] mt-0.5 font-medium" style={{ color: k.color }}>{k.sub}</p>
           </div>
-        </section>
+        ))}
+      </div>
+
+      {/* Two columns */}
+      <div className="grid gap-6 lg:grid-cols-2">
+
+        {/* Currently in School */}
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="px-5 py-4 border-b flex items-center gap-2" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            <Users size={14} className="text-emerald-400" />
+            <h2 className="text-sm font-bold text-white">Currently in School</h2>
+            <span className="ml-auto text-[10px] font-bold text-emerald-400 tabular-nums">{realtime.length}</span>
+          </div>
+          <div className="max-h-80 overflow-y-auto divide-y" style={{ divideColor: 'rgba(255,255,255,0.04)' }}>
+            {isLoading ? (
+              <div className="p-6 text-center">
+                <div className="w-8 h-8 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin mx-auto" />
+              </div>
+            ) : realtime.length === 0 ? (
+              <div className="py-10 text-center">
+                <Fingerprint size={28} className="text-slate-700 mx-auto mb-3" />
+                <p className="text-sm text-slate-600">No one currently signed in</p>
+              </div>
+            ) : realtime.map((person, idx) => (
+              <div key={idx} className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
+                  style={{ background: person.person_type === 'STUDENT' ? 'rgba(16,185,129,0.25)' : 'rgba(56,189,248,0.25)' }}>
+                  {person.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-100 truncate">{person.name}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{person.role}</p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
+                    style={{ background: person.person_type === 'STUDENT' ? 'rgba(16,185,129,0.12)' : 'rgba(56,189,248,0.12)', color: person.person_type === 'STUDENT' ? '#34d399' : '#38bdf8' }}>
+                    {person.person_type}
+                  </span>
+                  <p className="mt-1 text-[10px] text-slate-500 tabular-nums">
+                    {new Date(person.time_in).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Recent Scan Feed */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-lg font-display font-semibold">Recent Scan Feed</h2>
-          <div className="mt-4 max-h-[400px] overflow-y-auto space-y-3 pr-2">
-            {isLoading ? (
-              <p className="text-sm text-slate-400">Loading...</p>
-            ) : data.recent_events.length === 0 ? (
-              <p className="text-sm text-slate-500 italic text-center py-4">No recent scans.</p>
-            ) : (
-              data.recent_events.map((event) => (
-                <div key={event.id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-3">
-                  <div className="flex gap-3 items-center">
-                    <div className={`h-2 w-2 rounded-full ${event.event_type === 'IN' ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
-                    <div>
-                      <p className="font-medium text-slate-100">{event.person_name}</p>
-                      <p className="text-xs text-slate-400">
-                        {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <div className="flex gap-2">
-                       {event.is_late && (
-                        <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400">LATE</span>
-                      )}
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                        event.event_type === 'IN' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                      }`}>
-                        {event.event_type}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-slate-500 uppercase">{event.person_type}</span>
-                  </div>
-                </div>
-              ))
-            )}
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="px-5 py-4 border-b flex items-center gap-2" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            <Clock size={14} className="text-sky-400" />
+            <h2 className="text-sm font-bold text-white">Recent Scan Feed</h2>
+            <div className="ml-auto flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] text-emerald-400/70">Live</span>
+            </div>
           </div>
-        </section>
+          <div className="max-h-80 overflow-y-auto divide-y" style={{ divideColor: 'rgba(255,255,255,0.04)' }}>
+            {isLoading ? (
+              <div className="p-6 text-center">
+                <div className="w-8 h-8 border-2 border-sky-400/30 border-t-sky-400 rounded-full animate-spin mx-auto" />
+              </div>
+            ) : data.recent_events.length === 0 ? (
+              <div className="py-10 text-center">
+                <Activity size={28} className="text-slate-700 mx-auto mb-3" />
+                <p className="text-sm text-slate-600">No recent scans</p>
+              </div>
+            ) : data.recent_events.map((event) => (
+              <div key={event.id} className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: event.event_type === 'IN' ? '#10b981' : '#f87171' }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-100 truncate">{event.person_name}</p>
+                  <p className="text-[10px] text-slate-500 tabular-nums">
+                    {new Date(event.timestamp).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                    <span className="mx-1 text-slate-700">·</span>
+                    {event.person_type}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 flex flex-col items-end gap-1">
+                  {event.is_late && (
+                    <span className="rounded-full px-2 py-0.5 text-[9px] font-bold text-amber-400" style={{ background: 'rgba(245,158,11,0.1)' }}>LATE</span>
+                  )}
+                  <span className="rounded-full px-2 py-0.5 text-[9px] font-bold"
+                    style={{
+                      background: event.event_type === 'IN' ? 'rgba(16,185,129,0.12)' : 'rgba(248,113,113,0.12)',
+                      color: event.event_type === 'IN' ? '#34d399' : '#f87171',
+                    }}>
+                    {event.event_type}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )

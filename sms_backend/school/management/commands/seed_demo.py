@@ -10,7 +10,7 @@ from clients.models import Tenant, Domain
 from school.models import (
     Role, UserProfile, Student, Guardian, Enrollment,
     FeeStructure, Invoice, InvoiceLineItem, Payment, PaymentAllocation,
-    Expense
+    Expense, SchoolProfile
 )
 from academics.models import AcademicYear, Term, SchoolClass
 from hr.models import Staff
@@ -96,6 +96,30 @@ class Command(BaseCommand):
             from school.models import Module
             for key, name in modules:
                 Module.objects.get_or_create(key=key, defaults={"name": name})
+
+            # School Profile
+            SchoolProfile.objects.get_or_create(
+                is_active=True,
+                defaults={
+                    "school_name": "RSM Demo School",
+                    "motto": "Excellence Through Knowledge",
+                    "address": "123 Education Lane, Nairobi, Kenya",
+                    "phone": "+254 700 000 000",
+                    "email_address": "info@rsm-demo.ac.ke",
+                    "website": "https://rsm-demo.ac.ke",
+                    "county": "Nairobi",
+                    "country": "Kenya",
+                    "currency": "KES",
+                    "tax_percentage": "0.00",
+                    "receipt_prefix": "RCT-",
+                    "invoice_prefix": "INV-",
+                    "admission_number_mode": "AUTO",
+                    "admission_number_prefix": "ADM-",
+                    "admission_number_padding": 4,
+                    "primary_color": "#10b981",
+                    "secondary_color": "#0ea5e9",
+                },
+            )
 
             # Admin user
             user, _ = User.objects.get_or_create(

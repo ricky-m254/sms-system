@@ -70,6 +70,7 @@ from .views import (
     SubmodulePermissionView,
     UserManagementListCreateView,
     UserManagementDetailView,
+    DemoResetView,
 )
 
 # ==========================================
@@ -153,6 +154,7 @@ urlpatterns = [
     path('students/summary/', StudentsSummaryView.as_view(), name='students_summary'),
     path('students/dashboard/', StudentsDashboardView.as_view(), name='students_dashboard'),
     path('school/profile/', SchoolProfileView.as_view(), name='school_profile'),
+    path('school/demo/reset/', DemoResetView.as_view(), name='demo_reset'),
     path('students/reports/summary/', StudentsModuleReportView.as_view(), name='students_reports_summary'),
     path('students/export/csv/', StudentsDirectoryCsvExportView.as_view(), name='students_directory_csv'),
     path('students/export/pdf/', StudentsDirectoryPdfExportView.as_view(), name='students_directory_pdf'),

@@ -116,8 +116,8 @@ export default function LoginPage() {
               R
             </div>
             <div>
-              <p className="text-white font-bold text-base font-display leading-none">Rynaty</p>
-              <p className="text-emerald-400/70 text-[11px] font-medium mt-0.5">School Management System</p>
+              <p className="text-white font-bold text-base font-display leading-none">RSM</p>
+              <p className="text-emerald-400/70 text-[11px] font-medium mt-0.5">Rynatyschool Management</p>
             </div>
           </div>
 
@@ -157,7 +157,7 @@ export default function LoginPage() {
         {/* Bottom attribution */}
         <div className="relative z-10 p-10">
           <p className="text-[11px] text-slate-700">
-            © {new Date().getFullYear()} Rynatyspace Technologies. All rights reserved.
+            © {new Date().getFullYear()} Rynatyspace Technologies. RSM – Rynatyschool Management System.
           </p>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function LoginPage() {
               className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm"
               style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
             >R</div>
-            <p className="text-white font-bold font-display">Rynaty SMS</p>
+            <p className="text-white font-bold font-display">RSM – Rynatyschool</p>
           </div>
 
           {/* Heading */}
