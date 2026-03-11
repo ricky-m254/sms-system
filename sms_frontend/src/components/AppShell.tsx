@@ -7,7 +7,7 @@ import {
   GraduationCap, LayoutDashboard, LogOut, MessageSquare, Package,
   Settings, Shield, Users, Wrench, Activity, Trophy,
   HeartPulse, Bus, UserCheck, DollarSign, BookMarked, Home,
-  FlaskConical, CalendarDays, Microscope, Monitor, BarChart3,
+  FlaskConical, CalendarDays, Microscope, Monitor, BarChart3, Zap,
 } from 'lucide-react'
 
 interface NavGroup {
@@ -186,6 +186,23 @@ export default function AppShell() {
           >
             <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
             {!collapsed && <span>Dashboard</span>}
+          </NavLink>
+
+          {/* Approvals Hub */}
+          <NavLink
+            to="/dashboard/approvals"
+            end
+            className={({ isActive }) =>
+              `flex items-center gap-2 rounded-lg px-2 py-2 text-xs transition ${
+                isActive
+                  ? 'bg-amber-500/15 text-amber-300 font-semibold border border-amber-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent'
+              } ${collapsed ? 'justify-center' : ''}`
+            }
+            title="Approvals"
+          >
+            <Zap className="h-4 w-4 flex-shrink-0" />
+            {!collapsed && <span>Approvals</span>}
           </NavLink>
 
           {/* Module Groups */}

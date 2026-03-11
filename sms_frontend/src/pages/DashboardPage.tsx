@@ -174,16 +174,16 @@ const SYSTEM_GROUPS: SystemGroup[] = [
 
 const ROLE_QUICK_ACTIONS: Record<string, { label: string; route: string; module: string; icon?: string }[]> = {
   TENANT_SUPER_ADMIN: [
+    { label: 'Approvals', route: '/dashboard/approvals', module: 'CORE', icon: '⚡' },
     { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
     { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
-    { label: 'Manage Users', route: '/settings/users', module: 'CORE', icon: '👥' },
     { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
     { label: 'View Reports', route: '/modules/analytics/dashboard', module: 'ANALYTICS', icon: '📊' },
     { label: 'System Settings', route: '/settings/school-profile', module: 'CORE', icon: '⚙️' },
   ],
   ADMIN: [
+    { label: 'Approvals', route: '/dashboard/approvals', module: 'CORE', icon: '⚡' },
     { label: 'Admit Student', route: '/modules/admissions/dashboard', module: 'ADMISSIONS', icon: '🎓' },
-    { label: 'Record Attendance', route: '/modules/academics/attendance', module: 'ACADEMICS', icon: '✅' },
     { label: 'Create Invoice', route: '/modules/finance/invoices', module: 'FINANCE', icon: '📄' },
     { label: 'Send Announcement', route: '/modules/communication/dashboard', module: 'COMMUNICATION', icon: '📢' },
     { label: 'Add Exam', route: '/modules/examinations/dashboard', module: 'EXAMINATIONS', icon: '📝' },

@@ -265,6 +265,7 @@ const AnalyticsAttendancePage = lazy(() => import('./pages/analytics/AnalyticsAt
 const AnalyticsAtRiskPage = lazy(() => import('./pages/analytics/AnalyticsAtRiskPage'))
 
 const StudentIdCardsPage = lazy(() => import('./pages/students/StudentIdCardsPage'))
+const ApprovalsHubPage = lazy(() => import('./pages/ApprovalsHubPage'))
 
 function RouteLoader() {
   return (
@@ -333,6 +334,7 @@ function App() {
           element={isTenantAuth ? <AppShell /> : <Navigate to={isPlatformAuth ? '/platform' : '/login'} replace />}
         >
           <Route index element={<DashboardPage />} />
+          <Route path="approvals" element={<ApprovalsHubPage />} />
         </Route>
         <Route
           path="/platform/*"
