@@ -22,6 +22,8 @@ from school.models import (
     FeeStructure, Invoice, InvoiceLineItem, Payment, PaymentAllocation,
     Expense, AdmissionApplication, AcademicYear, Term,
     Department, Subject,
+    GradingScheme, GradeBand,
+    Assessment, AssessmentGrade, TermResult, ReportCard,
 )
 from hr.models import Staff
 from communication.models import Message
@@ -178,6 +180,207 @@ class Command(BaseCommand):
 
         self.stdout.write("  Seeding Kenyan CBC curriculum…")
         self._seed_curriculum()
+
+        self.stdout.write("  Seeding gradebook (assessments + marks + term results + report cards)…")
+        self._seed_gradebook_and_reports(year, terms, classes)
+
+    # ── Gradebook + Report Cards ──────────────────────────────────────────────
+    def _seed_gradebook_and_reports(self, year, terms, classes):
+        import random
+        random.seed(42)
+
+        # 1. KNEC Grading Scheme
+        scheme, _ = GradingScheme.objects.get_or_create(
+            name="KNEC Standard",
+            defaults={"is_default": True, "is_active": True},
+        )
+        KNEC_BANDS = [
+            ("A",  75, 100, 12.0, "Excellent"),
+            ("A-", 70,  74, 11.0, "Very Good"),
+            ("B+", 65,  69, 10.0, "Good"),
+            ("B",  60,  64,  9.0, "Good"),
+            ("B-", 55,  59,  8.0, "Above Average"),
+            ("C+", 50,  54,  7.0, "Average"),
+            ("C",  45,  49,  6.0, "Average"),
+            ("C-", 40,  44,  5.0, "Below Average"),
+            ("D+", 35,  39,  4.0, "Below Average"),
+            ("D",  30,  34,  3.0, "Poor"),
+            ("D-", 25,  29,  2.0, "Very Poor"),
+            ("E",   0,  24,  1.0, "Fail"),
+        ]
+        bands = {}
+        for label, mn, mx, pts, rem in KNEC_BANDS:
+            b, _ = GradeBand.objects.get_or_create(
+                scheme=scheme, label=label,
+                defaults={"min_score": mn, "max_score": mx, "grade_point": pts, "remark": rem, "is_active": True},
+            )
+            bands[label] = b
+
+        def score_to_band(score):
+            for label, mn, mx, _, _ in KNEC_BANDS:
+                if mn <= score <= mx:
+                    return bands.get(label)
+            return None
+
+        # 2. Core subjects to assess
+        CORE_CODES = ["MTH", "ENG", "KSW", "BIO", "CHE", "PHY", "HIS", "GEO"]
+        core_subjects = list(Subject.objects.filter(code__in=CORE_CODES, is_active=True))
+        if not core_subjects:
+            core_subjects = list(Subject.objects.filter(is_active=True)[:6])
+
+        term1 = terms[0]
+        admin_user = User.objects.filter(is_superuser=True).first()
+
+        # Assessment definitions per term
+        ASSESSMENTS = [
+            ("CAT 1",    "Test", "2025-02-07",  30, 30.0),
+            ("Mid-Term", "Exam", "2025-02-28", 100, 40.0),
+            ("CAT 2",    "Test", "2025-03-14",  30, 30.0),
+        ]
+
+        total_cards = 0
+        total_grades = 0
+
+        # Seed all active classes that have enrolled students
+        target_classes = list(SchoolClass.objects.filter(is_active=True))
+
+        for cls in target_classes:
+            # Get enrolled students for this class
+            enrolled = list(
+                Enrollment.objects.filter(
+                    school_class=cls, is_active=True
+                ).select_related("student")
+            )
+            students_in_class = [e.student for e in enrolled]
+            if not students_in_class:
+                continue
+
+            for subject in core_subjects[:6]:
+                subject_term_scores = {}  # student_id -> weighted total
+
+                for aname, acat, adate, amax, aweight in ASSESSMENTS:
+                    # Generate plausible marks (normal-ish distribution, centre ~58/100)
+                    # Scale marks to amax
+                    asmnt, _ = Assessment.objects.get_or_create(
+                        name=f"{aname} – {subject.code} – {cls.display_name}",
+                        defaults={
+                            "category": acat,
+                            "subject": subject,
+                            "class_section": cls,
+                            "term": term1,
+                            "max_score": amax,
+                            "weight_percent": aweight,
+                            "date": adate,
+                            "is_published": True,
+                            "is_active": True,
+                        },
+                    )
+
+                    for student in students_in_class:
+                        # Realistic Kenyan distribution: peak around 55-65%
+                        base = random.gauss(58, 15)  # mean 58%, sd 15
+                        base = max(5, min(98, base))  # clamp
+                        raw = round(base / 100 * amax, 1)
+                        pct = round(raw / amax * 100, 2)
+                        band = score_to_band(pct)
+
+                        AssessmentGrade.objects.get_or_create(
+                            assessment=asmnt,
+                            student=student,
+                            defaults={
+                                "raw_score": raw,
+                                "percentage": pct,
+                                "grade_band": band,
+                                "entered_by": admin_user,
+                                "is_active": True,
+                            },
+                        )
+                        total_grades += 1
+
+                        # Accumulate weighted score toward term result
+                        contrib = (raw / amax) * 100 * (aweight / 100)
+                        subject_term_scores[student.id] = subject_term_scores.get(student.id, 0) + contrib
+
+                # Build TermResults for this subject
+                scores = [(sid, sc) for sid, sc in subject_term_scores.items()]
+                scores.sort(key=lambda x: -x[1])
+                for rank, (sid, total) in enumerate(scores, 1):
+                    total_rounded = round(total, 2)
+                    band = score_to_band(total_rounded)
+                    TermResult.objects.update_or_create(
+                        student_id=sid,
+                        class_section=cls,
+                        term=term1,
+                        subject=subject,
+                        defaults={
+                            "total_score": total_rounded,
+                            "grade_band": band,
+                            "class_rank": rank,
+                            "is_pass": total_rounded >= 40.0,
+                            "is_active": True,
+                        },
+                    )
+
+            # Generate Report Cards (one per student per class per term)
+            for student in students_in_class:
+                # calculate mean score across subjects for overall grade
+                results = TermResult.objects.filter(
+                    student=student, class_section=cls, term=term1, is_active=True
+                )
+                if results.exists():
+                    avg = sum(float(r.total_score) for r in results) / results.count()
+                    band = score_to_band(round(avg, 2))
+                    grade_label = band.label if band else "C"
+                else:
+                    avg = 55.0
+                    grade_label = "C+"
+
+                # rank among class
+                class_rank = None
+                ranked = list(
+                    TermResult.objects.filter(
+                        class_section=cls, term=term1, subject=core_subjects[0], is_active=True
+                    ).order_by("class_rank")
+                )
+                for i, tr in enumerate(ranked, 1):
+                    if tr.student_id == student.id:
+                        class_rank = i
+                        break
+
+                REMARKS = [
+                    "Excellent performance! Keep it up.",
+                    "Very good effort. Aim higher next term.",
+                    "Satisfactory performance. More effort needed.",
+                    "Needs to improve concentration in class.",
+                    "Good improvement shown this term.",
+                ]
+                PRINCIPAL = [
+                    "A diligent student. Continue with the same spirit.",
+                    "Good performance. We expect even better results.",
+                    "Consistent effort. Keep working hard.",
+                ]
+                rc, _ = ReportCard.objects.get_or_create(
+                    student=student,
+                    class_section=cls,
+                    term=term1,
+                    academic_year=year,
+                    defaults={
+                        "status": "Approved",
+                        "overall_grade": grade_label,
+                        "class_rank": class_rank,
+                        "attendance_days": random.randint(58, 65),
+                        "teacher_remarks": random.choice(REMARKS),
+                        "principal_remarks": random.choice(PRINCIPAL),
+                        "approved_by": admin_user,
+                        "approved_at": timezone.now(),
+                        "is_active": True,
+                    },
+                )
+                total_cards += 1
+
+        self.stdout.write(
+            f"    → Grades entered: {total_grades}, Report cards: {total_cards}"
+        )
 
     # ── Kenyan CBC Curriculum ─────────────────────────────────────────────────
     def _seed_curriculum(self):
