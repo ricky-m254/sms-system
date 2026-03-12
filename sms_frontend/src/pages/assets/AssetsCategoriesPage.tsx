@@ -104,10 +104,13 @@ export default function AssetsCategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Asset Categories</h1>
-        <p className="mt-2 text-sm text-slate-400">Classify assets and define depreciation rules.</p>
-      </header>
+      <PageHero
+        badge="ASSETS & MAINTENANCE"
+        badgeColor="orange"
+        title="Asset Categories"
+        subtitle="Classify assets and define depreciation rules."
+        icon="🏗️"
+      />
 
       <form onSubmit={handleSubmit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">{editingId ? 'Edit Category' : 'Add New Category'}</h2>

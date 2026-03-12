@@ -293,12 +293,13 @@ export default function PlatformTenantsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Tenant Management</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          Follow this flow: 1) Create or select a tenant, 2) update profile and status, 3) assign plan and generate invoice, 4) reset school admin credentials if needed.
-        </p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Tenant Management"
+        subtitle="Follow this flow: 1) Create or select a tenant, 2) update profile and status, 3) assign plan and generate invoice, 4) reset school admin credentials if needed."
+        icon="📋"
+      />
 
       <section className="col-span-12 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-2xl glass-panel p-4">

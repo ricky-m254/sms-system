@@ -41,10 +41,13 @@ export default function AdmissionsAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Analytics</h1>
-      </header>
+      <PageHero
+        badge="ADMISSIONS"
+        badgeColor="violet"
+        title="Analytics"
+        subtitle="Analytics management and overview."
+        icon="📋"
+      />
 
       {error ? (
         <section className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">

@@ -126,9 +126,13 @@ export default function PlatformMonitoringPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Monitoring</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Monitoring"
+        subtitle="Monitoring management and overview."
+        icon="📋"
+      />
       {overview ? (
         <section className="col-span-12 grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl glass-panel p-4 text-sm">Open alerts: {overview.open_alerts}</div>

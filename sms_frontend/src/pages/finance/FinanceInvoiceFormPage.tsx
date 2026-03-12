@@ -401,15 +401,13 @@ export default function FinanceInvoiceFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/invoices" label="Back to Invoices" />
       </div>
-      <header className="col-span-12 rounded-2xl glass-panel p-6 sticky top-0 z-20">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">
-          {isEdit ? 'Invoice (View Only)' : 'Create Invoice'}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">
-          {isEdit ? 'Editing is disabled by backend rules.' : 'Compose a new invoice with line items.'}
-        </p>
-      </header>
+      <PageHero
+        badge="FINANCE MODULE"
+        badgeColor="emerald"
+        title={isEdit ? 'Invoice (View Only)' : 'Create Invoice'}
+        subtitle={isEdit ? 'Editing is disabled by backend rules.' : 'Compose a new invoice with line items.'}
+        icon="💰"
+      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

@@ -41,10 +41,13 @@ export default function ParentPortalAssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Assignments & Events</h1>
-        <p className="mt-1 text-sm text-slate-400">Track your child's pending assignments and upcoming school events.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Assignments & Events"
+        subtitle="Track your child's pending assignments and upcoming school events."
+        icon="📋"
+      />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
       <div className="grid gap-6 lg:grid-cols-2">

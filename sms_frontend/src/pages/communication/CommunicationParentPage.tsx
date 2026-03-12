@@ -5,6 +5,7 @@ import {
   GraduationCap, Loader2, MessageSquare,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type ChannelType = 'both' | 'email' | 'sms'
 
@@ -117,11 +118,13 @@ export default function CommunicationParentPage() {
   return (
     <div className="space-y-5 pb-8">
       {/* Header */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Communication</p>
-        <h1 className="text-xl font-display font-bold text-white mt-0.5">Parent Communication</h1>
-        <p className="text-sm text-slate-400 mt-0.5">Send targeted communications to parents and guardians</p>
-      </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="Parent Communication"
+        subtitle="Send targeted communications to parents and guardians"
+        icon="👨‍👩‍👧"
+      />
 
       {error && (
         <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">

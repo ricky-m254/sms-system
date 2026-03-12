@@ -18,10 +18,13 @@ export default function AnalyticsAttendancePage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold text-white font-sans">Attendance Analytics</h1>
-        <p className="text-sm text-slate-400 mt-1 font-sans">School-wide attendance percentage trends.</p>
-      </header>
+      <PageHero
+        badge="ANALYTICS"
+        badgeColor="emerald"
+        title="Attendance Analytics"
+        subtitle="School-wide attendance percentage trends."
+        icon="📊"
+      />
 
       {isLoading ? (
         <div className="rounded-2xl glass-panel p-6 text-slate-300 font-sans">Loading...</div>

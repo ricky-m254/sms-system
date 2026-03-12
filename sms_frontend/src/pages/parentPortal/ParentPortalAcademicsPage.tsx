@@ -16,9 +16,13 @@ export default function ParentPortalAcademicsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Academic Performance</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Academic Performance"
+        subtitle="Academic Performance management and overview."
+        icon="📋"
+      />
       <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold">Current Grades</h2>
         <div className="mt-3 text-sm text-slate-300">{grades.length ? grades.map((g) => `${g.subject}: ${g.total_score}`).join(' | ') : 'No grades yet.'}</div>

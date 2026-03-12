@@ -5,6 +5,7 @@ import {
   GraduationCap, Calendar, Loader2, RefreshCw, Clock,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type NotificationRow = {
   id: number
@@ -129,30 +130,13 @@ export default function CommunicationNotificationsPage() {
   return (
     <div className="space-y-5 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Communication</p>
-          <h1 className="text-xl font-display font-bold text-white mt-0.5">Notification Center</h1>
-          <p className="text-sm text-slate-400 mt-0.5">
-            {unreadCount > 0 ? <><span className="text-amber-400 font-semibold">{unreadCount} unread</span> notifications</> : 'All caught up!'}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
-            <RefreshCw size={13} className="text-slate-400" />
-          </button>
-          {unreadCount > 0 && (
-            <button onClick={markAllRead} className="flex items-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition">
-              <CheckCheck size={14} /> Mark All Read
-            </button>
-          )}
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition"
-          >
-            <Plus size={15} /> New
-          </button>
-        </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="Notification Center"
+        subtitle="Manage push notifications and alerts"
+        icon="🔔"
+      />
       </div>
 
       {/* Alerts */}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type MealPlan = { id: number; name: string; is_active: boolean }
 type WeeklyMenu = { id: number; week_start: string; meal_plan: number; meal_plan_name: string; monday_breakfast: string; monday_lunch: string; monday_supper: string; tuesday_breakfast: string; tuesday_lunch: string; tuesday_supper: string; wednesday_breakfast: string; wednesday_lunch: string; wednesday_supper: string; thursday_breakfast: string; thursday_lunch: string; thursday_supper: string; friday_breakfast: string; friday_lunch: string; friday_supper: string }
@@ -69,15 +70,18 @@ export default function CafeteriaMenuPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-white">Weekly Menus</h1>
-          <p className="mt-1 text-sm text-slate-400">Plan and publish the weekly cafeteria schedule.</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
-          {showForm ? 'Cancel' : '+ New Menu'}
-        </button>
-      </div>
+      <PageHero
+        badge="CAFETERIA"
+        badgeColor="teal"
+        title="Weekly Menus"
+        subtitle="Plan and publish the weekly cafeteria schedule."
+        icon="🍽️"
+        actions={
+          <button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
+            {showForm ? 'Cancel' : '+ New Menu'}
+          </button>
+        }
+      />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 

@@ -62,9 +62,13 @@ export default function PlatformActionLogsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Action Logs</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Action Logs"
+        subtitle="Action Logs management and overview."
+        icon="📋"
+      />
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="grid gap-3 md:grid-cols-6">

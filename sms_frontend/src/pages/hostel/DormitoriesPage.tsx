@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Plus, Building, Users, Pencil, Trash2, X } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Dormitory {
   id: number
@@ -102,16 +103,19 @@ export default function DormitoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-white tracking-tight">Dormitories</h1>
-          <p className="mt-1 text-sm text-slate-400">Manage school housing facilities and capacity.</p>
-        </div>
-        <button onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition duration-200">
-          <Plus className="h-4 w-4" />
-          Add Dormitory
-        </button>
-      </div>
+      <PageHero
+        badge="HOSTEL"
+        badgeColor="sky"
+        title="Dormitories"
+        subtitle="Manage school housing facilities, capacity, and bed allocations."
+        icon="🏠"
+        actions={
+          <button onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition duration-200">
+            <Plus className="h-4 w-4" />
+            Add Dormitory
+          </button>
+        }
+      />
 
       {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}

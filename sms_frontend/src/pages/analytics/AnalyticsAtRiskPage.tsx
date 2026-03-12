@@ -21,10 +21,13 @@ export default function AnalyticsAtRiskPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold text-white font-sans">At-Risk Students</h1>
-        <p className="text-sm text-slate-400 mt-1 font-sans">Students identified by the system as needing intervention.</p>
-      </header>
+      <PageHero
+        badge="ANALYTICS"
+        badgeColor="emerald"
+        title="At-Risk Students"
+        subtitle="Students identified by the system as needing intervention."
+        icon="📊"
+      />
 
       {isLoading ? (
         <div className="rounded-2xl glass-panel p-6 text-slate-300 font-sans">Loading...</div>

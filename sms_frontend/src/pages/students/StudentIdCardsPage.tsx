@@ -33,10 +33,13 @@ export default function StudentIdCardsPage() {
 
   return (
     <div className="space-y-6 font-sans p-6 text-white">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Student ID Cards</h1>
-        <p className="text-sm text-slate-400 mt-1">Preview and print student identification cards.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Student ID Cards"
+        subtitle="Preview and print student identification cards."
+        icon="📋"
+      />
 
       {isLoading ? (
         <div className="text-slate-300">Loading students...</div>

@@ -5,6 +5,7 @@ import {
   Mail, Phone, Bell, Globe,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Template = { id: number; name: string; category: string; channel: string; subject: string; body: string; language?: string; created_at?: string }
 
@@ -165,23 +166,13 @@ export default function CommunicationTemplatesPage() {
   return (
     <div className="space-y-5 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Communication</p>
-          <h1 className="text-xl font-display font-bold text-white mt-0.5">Template Library</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Reusable message templates with merge field support</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
-            <RefreshCw size={13} className="text-slate-400" />
-          </button>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition"
-          >
-            <Plus size={15} /> New Template
-          </button>
-        </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="Template Library"
+        subtitle="Reusable message templates with merge field support"
+        icon="📄"
+      />
       </div>
 
       {/* Alerts */}

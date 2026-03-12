@@ -22,9 +22,13 @@ export default function ParentPortalCommunicationPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Communication</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Communication"
+        subtitle="Communication management and overview."
+        icon="📋"
+      />
       <section className="rounded-xl glass-panel p-4 text-sm text-slate-300">
         Messages: {messages.length} | Announcements: {announcements.length} | Notifications: {notifications.length}
       </section>

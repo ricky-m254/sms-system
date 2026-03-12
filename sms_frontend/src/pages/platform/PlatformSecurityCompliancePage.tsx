@@ -118,9 +118,13 @@ export default function PlatformSecurityCompliancePage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Security & Compliance</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Security & Compliance"
+        subtitle="Security & Compliance management and overview."
+        icon="📋"
+      />
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
       <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">

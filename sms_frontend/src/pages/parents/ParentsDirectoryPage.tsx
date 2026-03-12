@@ -103,13 +103,13 @@ export default function ParentsDirectoryPage() {
 
   return (
     <div className="space-y-8">
-      <header className="rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Parents Directory</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Guardians</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Parent and guardian contacts linked to student records.
-        </p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Guardians"
+        subtitle="Parent and guardian contacts linked to student records."
+        icon="📋"
+      />
 
       {isLoading ? (
         <div className="rounded-2xl glass-panel p-6">

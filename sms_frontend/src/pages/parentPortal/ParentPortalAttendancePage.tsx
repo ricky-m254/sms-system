@@ -16,9 +16,13 @@ export default function ParentPortalAttendancePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Attendance & Behavior</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Attendance & Behavior"
+        subtitle="Attendance & Behavior management and overview."
+        icon="📋"
+      />
       <section className="rounded-xl glass-panel p-4 text-sm text-slate-300">
         Attendance Rate: {summary.attendance_rate ?? 0}% | Present: {summary.present ?? 0} | Absent: {summary.absent ?? 0} | Late: {summary.late ?? 0}
       </section>

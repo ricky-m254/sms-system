@@ -228,13 +228,13 @@ export default function AcademicsClassManagementPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Academics</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Class Management</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Manage class enrollments, teacher-subject assignments, and bulk promotion.
-        </p>
-      </header>
+      <PageHero
+        badge="ACADEMICS"
+        badgeColor="blue"
+        title="Class Management"
+        subtitle="Manage class enrollments, teacher-subject assignments, and bulk promotion."
+        icon="📖"
+      />
 
       {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading class management...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">{error}</div> : null}

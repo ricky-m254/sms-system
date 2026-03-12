@@ -143,10 +143,13 @@ export default function AssetsMaintenancePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Asset Maintenance</h1>
-        <p className="mt-2 text-sm text-slate-400">Schedule and record preventive or corrective maintenance tasks.</p>
-      </header>
+      <PageHero
+        badge="ASSETS & MAINTENANCE"
+        badgeColor="orange"
+        title="Asset Maintenance"
+        subtitle="Schedule and record preventive or corrective maintenance tasks."
+        icon="🏗️"
+      />
 
       <form onSubmit={handleSubmit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">{editingId ? 'Edit Record' : 'Log Maintenance'}</h2>

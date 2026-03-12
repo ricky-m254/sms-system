@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { CheckSquare, Square, Trash2, X, Plus } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface MaintenanceRequest { id: number; title: string; status: string }
 interface ChecklistItem {
@@ -74,6 +75,14 @@ export default function MaintenanceChecklistPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="ASSETS & MAINTENANCE"
+        badgeColor="orange"
+        title="Maintenance Checklists"
+        subtitle="Track recurring inspection and maintenance schedules."
+        icon="✅"
+      />
+
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Maintenance</p>

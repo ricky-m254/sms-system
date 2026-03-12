@@ -181,11 +181,13 @@ export default function StudentsAttendancePage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Attendance</h1>
-        <p className="mt-2 text-sm text-slate-400">Daily attendance records from the backend.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Attendance"
+        subtitle="Daily attendance records from the backend."
+        icon="📋"
+      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

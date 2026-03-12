@@ -354,19 +354,37 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 
 /* ─── Hero Banner Gradients (time-of-day) ────────────── */
 .hero-morning {
-  background: linear-gradient(135deg,
-    #1c0906 0%, #3f0f08 18%, #7a2008 36%,
-    #c45010 55%, #e07820 72%, #f0a034 86%, #f8c050 100%);
+  background:
+    linear-gradient(135deg,
+      rgba(28,9,6,0.82) 0%,
+      rgba(63,15,8,0.72) 20%,
+      rgba(122,32,8,0.55) 40%,
+      rgba(196,80,16,0.38) 60%,
+      rgba(240,160,52,0.18) 85%,
+      transparent 100%),
+    url('/hero-morning.jpg') center/cover no-repeat;
 }
 .hero-afternoon {
-  background: linear-gradient(135deg,
-    #021d3c 0%, #064484 22%, #0a6bbb 44%,
-    #1488d0 62%, #3aabdf 80%, #7fcaea 100%);
+  background:
+    linear-gradient(135deg,
+      rgba(2,29,60,0.80) 0%,
+      rgba(6,68,132,0.68) 22%,
+      rgba(10,107,187,0.50) 44%,
+      rgba(20,136,208,0.32) 65%,
+      rgba(58,171,223,0.14) 85%,
+      transparent 100%),
+    url('/hero-afternoon.jpg') center/cover no-repeat;
 }
 .hero-evening {
-  background: linear-gradient(135deg,
-    #07041a 0%, #130838 20%, #22106a 42%,
-    #341880 60%, #4a20a0 78%, #6030c0 100%);
+  background:
+    linear-gradient(135deg,
+      rgba(7,4,26,0.88) 0%,
+      rgba(19,8,56,0.78) 20%,
+      rgba(34,16,106,0.62) 42%,
+      rgba(52,24,128,0.42) 62%,
+      rgba(74,32,160,0.22) 80%,
+      transparent 100%),
+    url('/hero-evening.jpg') center/cover no-repeat;
 }
 
 /* ─── KPI Card Glow Variants ─────────────────────────── */

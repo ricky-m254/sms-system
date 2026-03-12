@@ -146,9 +146,13 @@ export default function PlatformSupportPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Support Tickets</h1>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Support Tickets"
+        subtitle="Support Tickets management and overview."
+        icon="📋"
+      />
       {slaOverview ? (
         <section className="col-span-12 grid gap-4 md:grid-cols-4">
           <div className="rounded-2xl glass-panel p-4 text-sm">Open tickets: {slaOverview.open_tickets}</div>

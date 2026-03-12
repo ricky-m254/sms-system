@@ -74,13 +74,13 @@ export default function ParentsSummaryPage() {
 
   return (
     <div className="space-y-8">
-      <header className="rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Parents Dashboard</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Family Overview</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Summary view of guardian records linked to students.
-        </p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Family Overview"
+        subtitle="Summary view of guardian records linked to students."
+        icon="📋"
+      />
 
       {isLoading ? (
         <div className="rounded-2xl glass-panel p-6">

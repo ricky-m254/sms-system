@@ -577,11 +577,13 @@ export default function FinanceInvoicesPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Invoices</h1>
-        <p className="mt-2 text-sm text-slate-400">Manage invoice lifecycle and allocations.</p>
-      </header>
+      <PageHero
+        badge="FINANCE MODULE"
+        badgeColor="emerald"
+        title="Invoices"
+        subtitle="Manage invoice lifecycle and allocations."
+        icon="💰"
+      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

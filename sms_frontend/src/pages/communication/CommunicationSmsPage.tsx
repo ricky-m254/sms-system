@@ -5,6 +5,7 @@ import {
   Hash,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type SmsRow = { id: number; recipient_phone: string; channel: string; status: string; message: string; failure_reason?: string; created_at?: string }
 type Balance = { provider_configured: boolean; balance: string; note?: string }
@@ -91,16 +92,13 @@ export default function CommunicationSmsPage() {
   return (
     <div className="space-y-5 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Communication</p>
-          <h1 className="text-xl font-display font-bold text-white mt-0.5">SMS / WhatsApp</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Send bulk messages via SMS or WhatsApp</p>
-        </div>
-        <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
-          <RefreshCw size={13} className="text-slate-400" />
-        </button>
-      </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="SMS / WhatsApp"
+        subtitle="Send bulk messages via SMS or WhatsApp"
+        icon="📱"
+      />
 
       {/* Gateway Status */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

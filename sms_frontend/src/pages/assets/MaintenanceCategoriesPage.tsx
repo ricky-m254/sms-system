@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Pencil, Trash2, X, Tag } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Category {
   id: number
@@ -66,10 +67,13 @@ export default function MaintenanceCategoriesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Maintenance</p>
-          <h1 className="mt-1 text-2xl font-display font-bold text-white">Categories</h1>
-        </div>
+        <PageHero
+        badge="ASSETS & MAINTENANCE"
+        badgeColor="orange"
+        title="Maintenance Categories"
+        subtitle="Manage maintenance types and response priorities."
+        icon="🔧"
+      />
         <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
           + Add Category
         </button>

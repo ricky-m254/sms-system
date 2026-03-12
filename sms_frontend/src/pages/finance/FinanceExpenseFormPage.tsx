@@ -145,15 +145,13 @@ export default function FinanceExpenseFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/expenses" label="Back to Expenses" />
       </div>
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">
-          {isEdit ? 'Edit Expense' : 'Create Expense'}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">
-          {isEdit ? 'Update an existing expense.' : 'Record a new expense.'}
-        </p>
-      </header>
+      <PageHero
+        badge="FINANCE MODULE"
+        badgeColor="emerald"
+        title={isEdit ? 'Edit Expense' : 'Create Expense'}
+        subtitle={isEdit ? 'Update an existing expense.' : 'Record a new expense.'}
+        icon="💰"
+      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

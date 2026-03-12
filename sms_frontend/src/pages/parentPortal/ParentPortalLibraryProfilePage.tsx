@@ -43,10 +43,13 @@ export default function ParentPortalLibraryProfilePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Library & Profile</h1>
-        <p className="mt-1 text-sm text-slate-400">Manage your child's library borrowings and your account profile.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Library & Profile"
+        subtitle="Manage your child's library borrowings and your account profile."
+        icon="📋"
+      />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
       <div className="grid gap-6 lg:grid-cols-3">

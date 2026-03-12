@@ -101,10 +101,13 @@ export default function PlatformBillingPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold">Subscription & Billing</h1>
-        <p className="mt-2 text-sm text-slate-300">Plans, billing cycles, invoice tracking, and manual payment capture.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Subscription & Billing"
+        subtitle="Plans, billing cycles, invoice tracking, and manual payment capture."
+        icon="📋"
+      />
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 

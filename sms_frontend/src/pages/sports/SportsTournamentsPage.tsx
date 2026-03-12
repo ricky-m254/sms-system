@@ -74,10 +74,13 @@ export default function SportsTournamentsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Tournaments</h1>
-        <p className="mt-1 text-sm text-slate-400">Schedule and track tournament results.</p>
-      </header>
+      <PageHero
+        badge="SPORTS & CO-CURRICULAR"
+        badgeColor="amber"
+        title="Tournaments"
+        subtitle="Schedule and track tournament results."
+        icon="🏆"
+      />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 

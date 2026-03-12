@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
 
 type Vehicle = { id: number; registration: string; make: string; model: string; capacity: number; status: string; notes: string }
@@ -65,10 +66,16 @@ export default function TransportVehiclesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl glass-panel p-5 flex items-center justify-between">
-        <div><p className="text-xs uppercase tracking-[0.3em] text-slate-400">Transport</p><h1 className="mt-1 text-2xl font-display font-semibold">Vehicle Fleet</h1></div>
-        <button onClick={openCreate} className="rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/30 transition">+ Add Vehicle</button>
-      </section>
+      <PageHero
+        badge="TRANSPORT"
+        badgeColor="sky"
+        title="Vehicle Fleet"
+        subtitle="Manage school vehicles, maintenance schedules, and fleet assignments."
+        icon="🚌"
+        actions={
+          <button onClick={openCreate} className="rounded-xl bg-sky-500/20 border border-sky-500/40 px-4 py-2 text-sm font-semibold text-sky-200 hover:bg-sky-500/30 transition">+ Add Vehicle</button>
+        }
+      />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 

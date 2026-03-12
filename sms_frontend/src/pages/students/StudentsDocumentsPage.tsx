@@ -176,11 +176,13 @@ export default function StudentsDocumentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Documents</h1>
-        <p className="mt-2 text-sm text-slate-400">Student document storage and downloads.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Documents"
+        subtitle="Student document storage and downloads."
+        icon="📋"
+      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

@@ -69,12 +69,13 @@ export default function AssetsDepreciationPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Depreciation Schedule</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          IPSAS 17 — Fixed Assets. Run annual depreciation for all active assets with a depreciation method configured on their category (Straight Line or Declining Balance).
-        </p>
-      </header>
+      <PageHero
+        badge="ASSETS & MAINTENANCE"
+        badgeColor="orange"
+        title="Depreciation Schedule"
+        subtitle="IPSAS 17 — Fixed Assets. Run annual depreciation for all active assets with a depreciation method configured on their category (Straight Line or Declining Balance)."
+        icon="🏗️"
+      />
 
       {financeNotice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{financeNotice}</div> : null}
       {financeError ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{financeError}</div> : null}

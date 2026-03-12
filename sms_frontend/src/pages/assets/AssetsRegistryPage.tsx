@@ -156,10 +156,13 @@ export default function AssetsRegistryPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Asset Registry</h1>
-        <p className="mt-2 text-sm text-slate-400">Manage school assets, tracking codes and lifecycle status.</p>
-      </header>
+      <PageHero
+        badge="ASSETS & MAINTENANCE"
+        badgeColor="orange"
+        title="Asset Registry"
+        subtitle="Manage school assets, tracking codes and lifecycle status."
+        icon="🏗️"
+      />
 
       <form onSubmit={handleSubmit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">{editingId ? 'Edit Asset' : 'Add New Asset'}</h2>

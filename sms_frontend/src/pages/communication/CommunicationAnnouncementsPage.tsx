@@ -5,6 +5,7 @@ import {
   Briefcase, ChevronDown, ChevronUp, Loader2, RefreshCw,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Announcement = {
   id: number
@@ -119,25 +120,26 @@ export default function CommunicationAnnouncementsPage() {
 
   return (
     <div className="space-y-5 pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Communication</p>
-          <h1 className="text-xl font-display font-bold text-white mt-0.5">Announcements</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Broadcast messages to students, staff, and parents</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
-            <RefreshCw size={13} className="text-slate-400" />
-          </button>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition"
-          >
-            <Plus size={15} /> New Announcement
-          </button>
-        </div>
-      </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="Announcements"
+        subtitle="Broadcast messages to students, staff, and parents across the school."
+        icon="📢"
+        actions={
+          <div className="flex gap-2">
+            <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
+              <RefreshCw size={13} className="text-slate-400" />
+            </button>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition"
+            >
+              <Plus size={15} /> New Announcement
+            </button>
+          </div>
+        }
+      />
 
       {/* Alerts */}
       {error && (

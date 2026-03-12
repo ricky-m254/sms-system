@@ -61,10 +61,13 @@ export default function LibraryInventoryPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Inventory Audits</h1>
-        <p className="mt-2 text-sm text-slate-400">Run stock audits and track found vs missing copies.</p>
-      </header>
+      <PageHero
+        badge="LIBRARY"
+        badgeColor="violet"
+        title="Inventory Audits"
+        subtitle="Run stock audits and track found vs missing copies."
+        icon="📚"
+      />
 
       <form onSubmit={createAudit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Start Audit</h2>

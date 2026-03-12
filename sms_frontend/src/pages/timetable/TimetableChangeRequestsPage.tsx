@@ -86,10 +86,13 @@ export default function TimetableChangeRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-xl font-display font-semibold">Change Requests</h1>
-        <p className="mt-1 text-sm text-slate-400">Approval queue for timetable and duty changes.</p>
-      </header>
+      <PageHero
+        badge="MODULE"
+        badgeColor="emerald"
+        title="Change Requests"
+        subtitle="Approval queue for timetable and duty changes."
+        icon="📋"
+      />
 
       <div className="flex border-b border-white/[0.07] gap-8 px-4">
         {['Pending', 'Approved', 'Rejected'].map((tab) => (

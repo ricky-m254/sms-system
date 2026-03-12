@@ -18,10 +18,13 @@ export default function AnalyticsEnrollmentPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <header className="rounded-2xl glass-panel p-6">
-        <h1 className="text-2xl font-display font-semibold text-white">Enrollment Trends</h1>
-        <p className="text-sm text-slate-400 mt-1">Historical view of student population growth.</p>
-      </header>
+      <PageHero
+        badge="ANALYTICS"
+        badgeColor="emerald"
+        title="Enrollment Trends"
+        subtitle="Historical view of student population growth."
+        icon="📊"
+      />
 
       {isLoading ? (
         <div className="rounded-2xl glass-panel p-6 text-slate-300">Loading...</div>

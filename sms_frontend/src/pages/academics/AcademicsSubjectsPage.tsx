@@ -262,13 +262,13 @@ export default function AcademicsSubjectsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Academics</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Subjects & Curriculum</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Manage departments, subjects, grade mappings, and syllabus completion.
-        </p>
-      </header>
+      <PageHero
+        badge="ACADEMICS"
+        badgeColor="blue"
+        title="Subjects & Curriculum"
+        subtitle="Manage departments, subjects, grade mappings, and syllabus completion."
+        icon="📖"
+      />
 
       {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading subjects and curriculum...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">{error}</div> : null}

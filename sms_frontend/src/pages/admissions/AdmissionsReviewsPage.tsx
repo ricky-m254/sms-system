@@ -116,10 +116,13 @@ export default function AdmissionsReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Application Reviews</h1>
-      </header>
+      <PageHero
+        badge="ADMISSIONS"
+        badgeColor="violet"
+        title="Application Reviews"
+        subtitle="Application Reviews management and overview."
+        icon="📋"
+      />
 
       <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}

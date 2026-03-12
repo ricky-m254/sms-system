@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 export default function AlumniProfilesPage() {
   const [profiles, setProfiles] = useState<any[]>([])
@@ -14,12 +15,18 @@ export default function AlumniProfilesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-display font-bold text-white">Alumni Profiles</h1>
-        <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
-          Add Profile
-        </button>
-      </div>
+      <PageHero
+        badge="ALUMNI"
+        badgeColor="amber"
+        title="Alumni Profiles"
+        subtitle="Track, engage, and maintain connections with graduates of the institution."
+        icon="🎓"
+        actions={
+          <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
+            Add Profile
+          </button>
+        }
+      />
 
       <div className="rounded-2xl glass-panel overflow-hidden">
         <div className="overflow-x-auto">

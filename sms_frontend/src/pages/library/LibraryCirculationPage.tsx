@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Search, RotateCcw, BookOpen, AlertTriangle, CheckCircle, Clock } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const TRANSACTIONS = [
   { id: 1, student: 'Mary Wanjiku', class: 'Form 3 East', book: 'KLB Mathematics Form 3', isbn: '9789966102', borrowed: '2025-03-10', due: '2025-03-24', returned: null, status: 'Active', renewals: 0 },
@@ -57,15 +58,19 @@ export default function LibraryCirculationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-white">Circulation</h1>
-          <p className="text-slate-400 text-sm mt-1">Track all borrowing and return transactions</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold self-start" style={{ background: '#6366f1', color: '#fff' }}>
-          <BookOpen size={15} /> Issue Book
-        </button>
-      </div>
+      <PageHero
+        badge="LIBRARY"
+        badgeColor="violet"
+        title="Circulation"
+        subtitle="Track all borrowing and return transactions across the school library."
+        icon="🔄"
+        actions={
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: '#6366f1', color: '#fff' }}>
+            <BookOpen size={15} /> Issue Book
+          </button>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">

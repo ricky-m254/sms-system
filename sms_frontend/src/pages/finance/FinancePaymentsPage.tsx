@@ -426,11 +426,13 @@ export default function FinancePaymentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Payments</h1>
-        <p className="mt-2 text-sm text-slate-400">Track collections and payment history.</p>
-      </header>
+      <PageHero
+        badge="FINANCE MODULE"
+        badgeColor="emerald"
+        title="Payments"
+        subtitle="Track collections and payment history."
+        icon="💰"
+      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

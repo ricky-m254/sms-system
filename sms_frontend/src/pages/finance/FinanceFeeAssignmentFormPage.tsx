@@ -177,15 +177,13 @@ export default function FinanceFeeAssignmentFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/fee-assignments" label="Back to Fee Assignments" />
       </div>
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">
-          {isEdit ? 'Edit Fee Assignment' : 'Assign Fee'}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">
-          {isEdit ? 'Update an existing assignment.' : 'Assign a fee structure to a student or an entire class.'}
-        </p>
-      </header>
+      <PageHero
+        badge="FINANCE MODULE"
+        badgeColor="emerald"
+        title={isEdit ? 'Edit Fee Assignment' : 'Assign Fee'}
+        subtitle={isEdit ? 'Update an existing assignment.' : 'Assign a fee structure to a student or an entire class.'}
+        icon="💰"
+      />
 
       {!isEdit && (
         <div className="col-span-12 flex gap-2">

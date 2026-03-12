@@ -5,6 +5,7 @@ import {
   CheckCircle2, XCircle, Clock, Loader2,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Summary = { total_messages: number; total_notifications: number; total_emails: number; total_sms: number }
 type ByChannel = { in_app_messages: number; email_messages: number; sms_messages: number; whatsapp_messages: number; push_notifications: number }
@@ -84,16 +85,13 @@ export default function CommunicationAnalyticsPage() {
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Communication</p>
-          <h1 className="text-xl font-display font-bold text-white mt-0.5">Delivery Analytics</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Channel performance, delivery rates, and volume breakdown</p>
-        </div>
-        <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
-          <RefreshCw size={13} className="text-slate-400" />
-        </button>
-      </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="Delivery Analytics"
+        subtitle="Channel performance, delivery rates, and volume breakdown"
+        icon="📊"
+      />
 
       {error && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">

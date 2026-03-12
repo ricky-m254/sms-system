@@ -173,11 +173,13 @@ export default function FinanceScholarshipsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl glass-panel p-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
-        <h1 className="mt-2 text-2xl font-display font-semibold">Scholarships</h1>
-        <p className="mt-2 text-sm text-slate-400">Manage scholarship and discount awards with live finance data.</p>
-      </header>
+      <PageHero
+        badge="FINANCE MODULE"
+        badgeColor="emerald"
+        title="Scholarships"
+        subtitle="Manage scholarship and discount awards with live finance data."
+        icon="💰"
+      />
 
       {error ? (
         <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">

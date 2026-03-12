@@ -4,6 +4,7 @@ import {
   MoreHorizontal, Circle, RefreshCw, Loader2,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Conversation = { id: number; conversation_type: string; title: string; created_at?: string }
 type Message = { id: number; conversation: number; sender_name: string; content: string; sent_at: string; is_own?: boolean }
@@ -102,10 +103,13 @@ export default function CommunicationMessagingPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-7rem)]">
       {/* Header */}
-      <div className="flex-shrink-0 mb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Messaging</p>
-        <h1 className="text-xl font-display font-bold text-white mt-0.5">In-App Conversations</h1>
-      </div>
+      <PageHero
+        badge="COMMUNICATION"
+        badgeColor="rose"
+        title="In-App Conversations"
+        subtitle="Manage in-app messaging and conversations"
+        icon="💬"
+      />
 
       {error && (
         <div className="flex-shrink-0 mb-3 flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-200">
