@@ -101,7 +101,7 @@ export default function CafeteriaLogsPage() {
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
-      <div className="flex gap-2 border-b border-slate-800 pb-2">
+      <div className="flex gap-2 border-b border-white/[0.07] pb-2">
         {(['meals', 'wallet'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition ${activeTab === tab ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400 hover:text-slate-200'}`}>{tab === 'meals' ? 'Meal Records' : 'Wallet Transactions'}</button>
         ))}
@@ -109,25 +109,25 @@ export default function CafeteriaLogsPage() {
 
       {activeTab === 'meals' ? (
         <>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div className="rounded-2xl glass-panel p-5">
             <h2 className="mb-3 text-sm font-semibold text-slate-200">Record Meal Serving</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              <select value={mStudentId} onChange={e => setMStudentId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+              <select value={mStudentId} onChange={e => setMStudentId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
                 <option value="">Select student *</option>
                 {students.map(s => <option key={s.id} value={s.id}>{s.admission_number} - {s.full_name}</option>)}
               </select>
-              <input type="date" value={mDate} onChange={e => setMDate(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-              <select value={mMealType} onChange={e => setMMealType(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <input type="date" value={mDate} onChange={e => setMDate(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+              <select value={mMealType} onChange={e => setMMealType(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
                 <option>Breakfast</option><option>Lunch</option><option>Supper</option>
               </select>
               <button onClick={recordMeal} disabled={savingMeal || !mStudentId} className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{savingMeal ? 'Recording…' : 'Record'}</button>
             </div>
-            <input value={mNotes} onChange={e => setMNotes(e.target.value)} placeholder="Notes (optional)" className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={mNotes} onChange={e => setMNotes(e.target.value)} placeholder="Notes (optional)" className="mt-3 w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+          <div className="rounded-2xl glass-panel overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-xs text-slate-400">
+              <thead className="border-b border-white/[0.07] text-xs text-slate-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Student</th>
                   <th className="px-4 py-3 font-medium">Date</th>
@@ -139,7 +139,7 @@ export default function CafeteriaLogsPage() {
               </thead>
               <tbody className="divide-y divide-slate-800/50">
                 {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">Loading…</td></tr> : mealLogs.slice(0, 100).map(m => (
-                  <tr key={m.id} className="hover:bg-slate-800/30">
+                  <tr key={m.id} className="hover:bg-white/[0.02]">
                     <td className="px-4 py-3 font-semibold text-slate-200">{m.student_name}</td>
                     <td className="px-4 py-3 text-slate-300 text-xs">{m.date}</td>
                     <td className="px-4 py-3 text-slate-300">{m.meal_type}</td>
@@ -155,25 +155,25 @@ export default function CafeteriaLogsPage() {
         </>
       ) : (
         <>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div className="rounded-2xl glass-panel p-5">
             <h2 className="mb-3 text-sm font-semibold text-slate-200">Record Wallet Transaction</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              <select value={wStudentId} onChange={e => setWStudentId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+              <select value={wStudentId} onChange={e => setWStudentId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
                 <option value="">Select student *</option>
                 {students.map(s => <option key={s.id} value={s.id}>{s.admission_number} - {s.full_name}</option>)}
               </select>
-              <select value={wType} onChange={e => setWType(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={wType} onChange={e => setWType(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
                 <option>Credit</option><option>Debit</option>
               </select>
-              <input type="number" value={wAmount} onChange={e => setWAmount(e.target.value)} placeholder="Amount (Ksh) *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="number" value={wAmount} onChange={e => setWAmount(e.target.value)} placeholder="Amount (Ksh) *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
               <button onClick={recordWallet} disabled={savingWallet || !wStudentId || !wAmount} className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{savingWallet ? 'Recording…' : 'Record'}</button>
             </div>
-            <input value={wDesc} onChange={e => setWDesc(e.target.value)} placeholder="Description (optional)" className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={wDesc} onChange={e => setWDesc(e.target.value)} placeholder="Description (optional)" className="mt-3 w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+          <div className="rounded-2xl glass-panel overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-xs text-slate-400">
+              <thead className="border-b border-white/[0.07] text-xs text-slate-400">
                 <tr>
                   <th className="px-4 py-3 font-medium">Student</th>
                   <th className="px-4 py-3 font-medium">Type</th>
@@ -186,7 +186,7 @@ export default function CafeteriaLogsPage() {
               </thead>
               <tbody className="divide-y divide-slate-800/50">
                 {loading ? <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">Loading…</td></tr> : walletLogs.slice(0, 100).map(w => (
-                  <tr key={w.id} className="hover:bg-slate-800/30">
+                  <tr key={w.id} className="hover:bg-white/[0.02]">
                     <td className="px-4 py-3 font-semibold text-slate-200">{w.student_name}</td>
                     <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${w.transaction_type === 'Credit' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>{w.transaction_type}</span></td>
                     <td className={`px-4 py-3 font-semibold ${w.transaction_type === 'Credit' ? 'text-emerald-400' : 'text-rose-400'}`}>{w.transaction_type === 'Credit' ? '+' : '-'}{fmt(w.amount)}</td>

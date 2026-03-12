@@ -112,7 +112,7 @@ export default function StaffDepartmentsRolesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Departments & Roles</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Organization and Role Assignments</h1>
       </section>
@@ -120,47 +120,47 @@ export default function StaffDepartmentsRolesPage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Create Department</h2>
           <div className="mt-3 space-y-2">
-            <input value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} placeholder="Department name" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input value={departmentCode} onChange={(e) => setDepartmentCode(e.target.value)} placeholder="Code (SCI)" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} placeholder="Department name" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input value={departmentCode} onChange={(e) => setDepartmentCode(e.target.value)} placeholder="Code (SCI)" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createDepartment} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Create Department</button>
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Create Role</h2>
           <div className="mt-3 space-y-2">
-            <input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="Role name" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input value={roleCode} onChange={(e) => setRoleCode(e.target.value)} placeholder="Code (TEACHER)" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="Role name" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input value={roleCode} onChange={(e) => setRoleCode(e.target.value)} placeholder="Code (TEACHER)" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createRole} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Create Role</button>
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Assign Staff</h2>
           <div className="mt-3 space-y-2">
-            <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Select staff</option>
               {staff.map((row) => <option key={row.id} value={row.id}>{row.staff_id} - {row.full_name}</option>)}
             </select>
-            <select value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Select department</option>
               {departments.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
             </select>
-            <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value ? Number(e.target.value) : '')} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Select role</option>
               {roles.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
             </select>
-            <input type="date" value={effectiveFrom} onChange={(e) => setEffectiveFrom(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input type="date" value={effectiveFrom} onChange={(e) => setEffectiveFrom(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createAssignment} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Assign</button>
           </div>
         </article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
+        <article className="rounded-xl glass-panel p-4 lg:col-span-2">
           <h2 className="text-sm font-semibold">Current Assignments</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-left text-xs">
@@ -169,7 +169,7 @@ export default function StaffDepartmentsRolesPage() {
               </thead>
               <tbody>
                 {assignments.map((row) => (
-                  <tr key={row.id} className="border-t border-slate-800">
+                  <tr key={row.id} className="border-t border-white/[0.07]">
                     <td className="px-2 py-2">{row.staff_name}</td>
                     <td className="px-2 py-2">{row.department_name}</td>
                     <td className="px-2 py-2">{row.role_name}</td>
@@ -181,7 +181,7 @@ export default function StaffDepartmentsRolesPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">All Departments</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {departments.map((row) => (

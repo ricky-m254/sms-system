@@ -170,14 +170,14 @@ export default function FinanceFeeAssignmentFormPage() {
     } finally { setIsSubmitting(false) }
   }
 
-  const inputClass = 'mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400'
+  const inputClass = 'mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400'
 
   return (
     <div className="grid grid-cols-12 gap-6">
       <div className="col-span-12">
         <BackButton to="/modules/finance/fee-assignments" label="Back to Fee Assignments" />
       </div>
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">
           {isEdit ? 'Edit Fee Assignment' : 'Assign Fee'}
@@ -191,13 +191,13 @@ export default function FinanceFeeAssignmentFormPage() {
         <div className="col-span-12 flex gap-2">
           <button
             onClick={() => { setMode('student'); setFormError(null); setBulkResult(null) }}
-            className={`rounded-xl px-5 py-2 text-sm font-medium transition ${mode === 'student' ? 'bg-emerald-500 text-slate-950' : 'border border-slate-700 text-slate-300 hover:bg-slate-800/60'}`}
+            className={`rounded-xl px-5 py-2 text-sm font-medium transition ${mode === 'student' ? 'bg-emerald-500 text-slate-950' : 'border border-white/[0.09] text-slate-300 hover:bg-white/[0.035]'}`}
           >
             By Student
           </button>
           <button
             onClick={() => { setMode('class'); setFormError(null); setBulkResult(null) }}
-            className={`rounded-xl px-5 py-2 text-sm font-medium transition ${mode === 'class' ? 'bg-emerald-500 text-slate-950' : 'border border-slate-700 text-slate-300 hover:bg-slate-800/60'}`}
+            className={`rounded-xl px-5 py-2 text-sm font-medium transition ${mode === 'class' ? 'bg-emerald-500 text-slate-950' : 'border border-white/[0.09] text-slate-300 hover:bg-white/[0.035]'}`}
           >
             By Class
           </button>
@@ -205,14 +205,14 @@ export default function FinanceFeeAssignmentFormPage() {
       )}
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading...</p>
         </div>
       ) : null}
 
       {mode === 'student' && !isLoading && (
         <>
-          <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+          <section className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-7">
             <form className="space-y-4" onSubmit={handleStudentSubmit}>
               <Field label="Student" error={fieldErrors.student}>
                 <select className={inputClass} value={formState.student} disabled={isFormDisabled}
@@ -252,12 +252,12 @@ export default function FinanceFeeAssignmentFormPage() {
                 <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70" type="submit" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving…' : isEdit ? 'Update assignment' : 'Assign fee'}
                 </button>
-                <button className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200" type="button" onClick={() => navigate('/modules/finance/fee-assignments')}>Cancel</button>
+                <button className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200" type="button" onClick={() => navigate('/modules/finance/fee-assignments')}>Cancel</button>
               </div>
             </form>
           </section>
 
-          <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-5">
+          <aside className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-5">
             <h3 className="text-sm font-semibold text-slate-200">Student context</h3>
             <div className="mt-3 grid gap-3 text-xs text-slate-300 md:grid-cols-2">
               <div><p className="text-[11px] uppercase text-slate-400">Name</p><p>{studentDetail ? `${studentDetail.first_name} ${studentDetail.last_name}` : 'Select a student'}</p></div>
@@ -270,7 +270,7 @@ export default function FinanceFeeAssignmentFormPage() {
               <p className="text-[11px] uppercase text-slate-400">Parents / Guardians</p>
               <div className="mt-2 space-y-2">
                 {(studentDetail?.guardians ?? []).length > 0 ? studentDetail?.guardians?.map(g => (
-                  <div key={g.id} className="rounded-xl border border-slate-800 p-3 text-xs">
+                  <div key={g.id} className="rounded-xl border border-white/[0.07] p-3 text-xs">
                     <p className="text-sm text-white">{g.name}</p>
                     <p className="text-[11px] text-slate-400">{g.relationship ?? 'Guardian'}</p>
                     <p className="text-[11px] text-slate-400">{g.phone ?? '--'} | {g.email ?? '--'}</p>
@@ -283,7 +283,7 @@ export default function FinanceFeeAssignmentFormPage() {
       )}
 
       {mode === 'class' && !isLoading && (
-        <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+        <section className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-7">
           {bulkResult ? (
             <div className="rounded-2xl border border-emerald-600 bg-emerald-900/20 p-5">
               <p className="font-semibold text-emerald-300">{bulkResult.message}</p>
@@ -296,12 +296,12 @@ export default function FinanceFeeAssignmentFormPage() {
                 <button onClick={() => { setBulkResult(null); setClassForm({ class_id: '', fee_structure_id: '', term_id: '', discount_amount: '' }) }}
                   className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Assign another class</button>
                 <button onClick={() => navigate('/modules/finance/fee-assignments')}
-                  className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200">View all assignments</button>
+                  className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200">View all assignments</button>
               </div>
             </div>
           ) : (
             <form className="space-y-5" onSubmit={handleClassSubmit}>
-              <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4 text-sm text-slate-400">
+              <div className="rounded-xl border border-slate-700/50 bg-white/[0.02] p-4 text-sm text-slate-400">
                 Assigns the selected fee structure to <strong className="text-slate-200">all enrolled students</strong> in the chosen class. Existing assignments for the same fee are updated; new ones are created.
               </div>
 
@@ -337,7 +337,7 @@ export default function FinanceFeeAssignmentFormPage() {
               </Field>
 
               {selectedClass && (
-                <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-4 text-sm text-slate-300">
+                <div className="rounded-xl border border-white/[0.09] bg-white/[0.025] p-4 text-sm text-slate-300">
                   <strong className="text-slate-100">{selectedClass.name}</strong> — {selectedClass.student_count} enrolled student{selectedClass.student_count !== 1 ? 's' : ''}
                   {classForm.fee_structure_id && fees.find(f => String(f.id) === classForm.fee_structure_id) && (
                     <> will be assigned <strong className="text-emerald-300">{fees.find(f => String(f.id) === classForm.fee_structure_id)!.name}</strong></>
@@ -350,7 +350,7 @@ export default function FinanceFeeAssignmentFormPage() {
                 <button className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70" type="submit" disabled={isSubmitting}>
                   {isSubmitting ? 'Assigning…' : 'Assign fee to class'}
                 </button>
-                <button className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200" type="button" onClick={() => navigate('/modules/finance/fee-assignments')}>Cancel</button>
+                <button className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200" type="button" onClick={() => navigate('/modules/finance/fee-assignments')}>Cancel</button>
               </div>
             </form>
           )}

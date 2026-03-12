@@ -382,7 +382,7 @@ export default function HrLeavePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Leave Management</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Policies, Requests, and Balances</h1>
       </section>
@@ -394,8 +394,8 @@ export default function HrLeavePage() {
         <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div>
       ) : null}
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-        <div className="flex border-b border-slate-800 overflow-x-auto">
+      <section className="rounded-xl glass-panel overflow-hidden">
+        <div className="flex border-b border-white/[0.07] overflow-x-auto">
           {(['requests', 'types', 'policies', 'balances'] as const).map((tab) => (
             <button
               key={tab}
@@ -416,26 +416,26 @@ export default function HrLeavePage() {
               </div>
               {showTypeForm && (
                 <div className="mb-4 grid gap-2 sm:grid-cols-2">
-                  <input value={leaveTypeForm.name} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-                  <input value={leaveTypeForm.code} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, code: e.target.value }))} placeholder="Code (e.g. ANNUAL)" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-                  <input value={leaveTypeForm.max_days_year} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year (blank = unlimited)" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-                  <input value={leaveTypeForm.notice_days} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Required notice days" type="number" min="0" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.name} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.code} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, code: e.target.value }))} placeholder="Code (e.g. ANNUAL)" className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.max_days_year} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year (blank = unlimited)" className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leaveTypeForm.notice_days} onChange={(e) => setLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Required notice days" type="number" min="0" className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
                   <button onClick={createLeaveType} disabled={working} className="sm:col-span-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Save Leave Type</button>
                 </div>
               )}
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {(loading ? [] : leaveTypes).map((row) => editingLeaveTypeId === row.id ? (
                   <div key={row.id} className="rounded-lg border border-emerald-600/40 bg-slate-950/80 p-3 space-y-2 col-span-1">
-                    <input value={editLeaveTypeForm.name} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-                    <input value={editLeaveTypeForm.max_days_year} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year" type="number" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-                    <input value={editLeaveTypeForm.notice_days} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Notice days" type="number" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                    <input value={editLeaveTypeForm.name} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
+                    <input value={editLeaveTypeForm.max_days_year} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, max_days_year: e.target.value }))} placeholder="Max days/year" type="number" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
+                    <input value={editLeaveTypeForm.notice_days} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, notice_days: e.target.value }))} placeholder="Notice days" type="number" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
                     <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
                       <input type="checkbox" checked={editLeaveTypeForm.is_paid} onChange={(e) => setEditLeaveTypeForm((p) => ({ ...p, is_paid: e.target.checked }))} />
                       Paid leave
                     </label>
                     <div className="flex gap-2">
                       <button onClick={saveLeaveTypeEdit} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
-                      <button onClick={() => setEditingLeaveTypeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                      <button onClick={() => setEditingLeaveTypeId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                     </div>
                   </div>
                 ) : deletingLeaveTypeId === row.id ? (
@@ -443,11 +443,11 @@ export default function HrLeavePage() {
                     <p className="text-xs text-rose-200 mb-2">Delete "{row.name}"?</p>
                     <div className="flex gap-2">
                       <button onClick={() => void deleteLeaveType(row.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Delete</button>
-                      <button onClick={() => setDeletingLeaveTypeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                      <button onClick={() => setDeletingLeaveTypeId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                     </div>
                   </div>
                 ) : (
-                  <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                  <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-semibold text-slate-100">{row.name}</p>
@@ -456,7 +456,7 @@ export default function HrLeavePage() {
                         <p className="text-xs text-slate-500 mt-0.5">{row.is_paid ? 'Paid' : 'Unpaid'}</p>
                       </div>
                       <div className="flex shrink-0 flex-col gap-1 ml-1">
-                        <button onClick={() => startEditLeaveType(row)} className="rounded px-2 py-0.5 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                        <button onClick={() => startEditLeaveType(row)} className="rounded px-2 py-0.5 text-[10px] border border-white/[0.09] text-slate-300">Edit</button>
                         <button onClick={() => setDeletingLeaveTypeId(row.id)} className="rounded px-2 py-0.5 text-[10px] border border-rose-700/50 text-rose-300">Delete</button>
                       </div>
                     </div>
@@ -475,18 +475,18 @@ export default function HrLeavePage() {
               </div>
               {showPolicyForm && (
                 <div className="mb-4 grid gap-2 sm:grid-cols-2">
-                  <select value={leavePolicyForm.leave_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                  <select value={leavePolicyForm.leave_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm">
                     <option value="">Leave type</option>
                     {leaveTypes.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
                   </select>
-                  <select value={leavePolicyForm.employment_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, employment_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                  <select value={leavePolicyForm.employment_type} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, employment_type: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm">
                     <option value="Full-time">Full-time</option>
                     <option value="Part-time">Part-time</option>
                     <option value="Contract">Contract</option>
                     <option value="">All employment types</option>
                   </select>
-                  <input value={leavePolicyForm.entitlement_days} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, entitlement_days: e.target.value }))} placeholder="Entitlement days" type="number" min="0" className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
-                  <input type="date" value={leavePolicyForm.effective_from} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input value={leavePolicyForm.entitlement_days} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, entitlement_days: e.target.value }))} placeholder="Entitlement days" type="number" min="0" className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
+                  <input type="date" value={leavePolicyForm.effective_from} onChange={(e) => setLeavePolicyForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
                   <button onClick={createLeavePolicy} disabled={working} className="sm:col-span-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Save Policy</button>
                 </div>
               )}
@@ -496,11 +496,11 @@ export default function HrLeavePage() {
                     <p className="text-xs text-rose-200 mb-2">Delete "{row.leave_type_name}" policy?</p>
                     <div className="flex gap-2">
                       <button onClick={() => void deleteLeavePolicy(row.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Delete</button>
-                      <button onClick={() => setDeletingLeavePolicyId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                      <button onClick={() => setDeletingLeavePolicyId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                     </div>
                   </div>
                 ) : (
-                  <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                  <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-semibold text-slate-100">{row.leave_type_name}</p>
@@ -525,17 +525,17 @@ export default function HrLeavePage() {
               </div>
               {showRequestForm && (
                 <div className="mb-4 grid gap-2 sm:grid-cols-2">
-                  <select value={leaveRequestForm.employee} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                  <select value={leaveRequestForm.employee} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm">
                     <option value="">Select employee</option>
                     {employees.map((row) => <option key={row.id} value={row.id}>{row.employee_id} - {row.full_name}</option>)}
                   </select>
-                  <select value={leaveRequestForm.leave_type} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+                  <select value={leaveRequestForm.leave_type} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, leave_type: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm">
                     <option value="">Leave type</option>
                     {leaveTypes.map((row) => <option key={row.id} value={row.id}>{row.name}{row.notice_days > 0 ? ` (${row.notice_days}d notice)` : ''}</option>)}
                   </select>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Start Date</label>
-                    <input type="date" value={leaveRequestForm.start_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, start_date: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                    <input type="date" value={leaveRequestForm.start_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, start_date: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
                     {noticeDaysGiven !== null && (
                       <p className={`mt-1 text-xs font-medium ${noticeDaysGiven < 0 ? 'text-rose-400' : selectedLeaveType && noticeDaysGiven < selectedLeaveType.notice_days ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {noticeDaysGiven < 0
@@ -546,9 +546,9 @@ export default function HrLeavePage() {
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">End Date</label>
-                    <input type="date" value={leaveRequestForm.end_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, end_date: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" />
+                    <input type="date" value={leaveRequestForm.end_date} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, end_date: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" />
                   </div>
-                  <textarea value={leaveRequestForm.reason} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Reason for leave" className="sm:col-span-2 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm" rows={2} />
+                  <textarea value={leaveRequestForm.reason} onChange={(e) => setLeaveRequestForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Reason for leave" className="sm:col-span-2 rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm" rows={2} />
                   <button onClick={createLeaveRequest} disabled={working} className="sm:col-span-2 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60">Submit Request</button>
                 </div>
               )}
@@ -558,13 +558,13 @@ export default function HrLeavePage() {
           {activeTab === 'balances' && (
             <div>
               <h2 className="text-sm font-semibold text-slate-100 mb-4">Leave Balances by Employee</h2>
-              <select value={selectedEmployeeForBalance} onChange={(e) => setSelectedEmployeeForBalance(e.target.value)} className="w-full max-w-sm rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm">
+              <select value={selectedEmployeeForBalance} onChange={(e) => setSelectedEmployeeForBalance(e.target.value)} className="w-full max-w-sm rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm">
                 <option value="">Select employee</option>
                 {employees.map((row) => <option key={row.id} value={row.id}>{row.employee_id} - {row.full_name}</option>)}
               </select>
               <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {balances.map((row) => (
-                  <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                  <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
                     <p className="font-semibold text-slate-100">{row.leave_type_name}</p>
                     <p className="text-xs text-slate-500">{row.year}</p>
                     <div className="mt-2 flex gap-3 text-xs">
@@ -582,8 +582,8 @@ export default function HrLeavePage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Leave Requests</h2>
         </header>
         <div className="overflow-x-auto">
@@ -600,7 +600,7 @@ export default function HrLeavePage() {
             </thead>
             <tbody>
               {(loading ? [] : leaveRequests).map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-100">{row.employee_name}</td>
                   <td className="px-4 py-3 text-slate-300">{row.leave_type_name}</td>
                   <td className="px-4 py-3 text-slate-300">{row.start_date} to {row.end_date}</td>
@@ -625,23 +625,23 @@ export default function HrLeavePage() {
       </section>
 
       {rejectingRequestId ? (
-        <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Reject Leave Request #{rejectingRequestId}</h2>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <input
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Rejection reason"
-              className="flex-1 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="flex-1 rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <button onClick={() => void rejectLeaveRequest(rejectingRequestId)} disabled={working} className="rounded-lg bg-amber-500/20 px-3 py-2 text-sm font-semibold text-amber-200 disabled:opacity-60">Confirm Reject</button>
-            <button onClick={() => { setRejectingRequestId(null); setRejectReason('') }} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300">Dismiss</button>
+            <button onClick={() => { setRejectingRequestId(null); setRejectReason('') }} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-300">Dismiss</button>
           </div>
         </section>
       ) : null}
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Team Leave Calendar</h2>
         </header>
         <div className="overflow-x-auto">
@@ -658,7 +658,7 @@ export default function HrLeavePage() {
             </thead>
             <tbody>
               {(loading ? [] : leaveCalendar).map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-100">{row.employee_name}</td>
                   <td className="px-4 py-3 text-slate-300">{row.department || '-'}</td>
                   <td className="px-4 py-3 text-slate-300">{row.leave_type}</td>

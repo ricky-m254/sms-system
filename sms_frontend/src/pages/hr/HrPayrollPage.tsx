@@ -451,7 +451,7 @@ export default function HrPayrollPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Payroll</p>
@@ -477,7 +477,7 @@ export default function HrPayrollPage() {
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Create Salary Structure</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="text-xs text-slate-300">
@@ -485,7 +485,7 @@ export default function HrPayrollPage() {
               <select
                 value={structureForm.employee}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, employee: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               >
                 <option value="">Select employee</option>
                 {employees.map((employee) => (
@@ -500,7 +500,7 @@ export default function HrPayrollPage() {
               <input
                 value={structureForm.basic_salary}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, basic_salary: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
                 type="number"
                 min="0"
                 step="0.01"
@@ -511,7 +511,7 @@ export default function HrPayrollPage() {
               <select
                 value={structureForm.currency}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, currency: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               >
                 {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -521,7 +521,7 @@ export default function HrPayrollPage() {
               <select
                 value={structureForm.pay_frequency}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, pay_frequency: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               >
                 <option>Monthly</option>
                 <option>Bi-weekly</option>
@@ -533,7 +533,7 @@ export default function HrPayrollPage() {
               <input
                 value={structureForm.effective_from}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, effective_from: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
                 type="date"
               />
             </label>
@@ -542,7 +542,7 @@ export default function HrPayrollPage() {
               <input
                 value={structureForm.effective_to}
                 onChange={(event) => setStructureForm((prev) => ({ ...prev, effective_to: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
                 type="date"
               />
             </label>
@@ -556,7 +556,7 @@ export default function HrPayrollPage() {
           </button>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Create Salary Component</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="text-xs text-slate-300 sm:col-span-2">
@@ -564,7 +564,7 @@ export default function HrPayrollPage() {
               <select
                 value={componentForm.structure}
                 onChange={(event) => setComponentForm((prev) => ({ ...prev, structure: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               >
                 <option value="">Select structure</option>
                 {structures.map((structure) => (
@@ -581,7 +581,7 @@ export default function HrPayrollPage() {
                 onChange={(event) =>
                   setComponentForm((prev) => ({ ...prev, component_type: event.target.value as 'Allowance' | 'Deduction' }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               >
                 <option value="Allowance">Allowance</option>
                 <option value="Deduction">Deduction</option>
@@ -594,7 +594,7 @@ export default function HrPayrollPage() {
                 onChange={(event) =>
                   setComponentForm((prev) => ({ ...prev, amount_type: event.target.value as 'Fixed' | 'Percentage' }))
                 }
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               >
                 <option value="Fixed">Fixed</option>
                 <option value="Percentage">Percentage</option>
@@ -605,7 +605,7 @@ export default function HrPayrollPage() {
               <input
                 value={componentForm.name}
                 onChange={(event) => setComponentForm((prev) => ({ ...prev, name: event.target.value }))}
-                className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               />
             </label>
             <label className="text-xs text-slate-300">
@@ -614,7 +614,7 @@ export default function HrPayrollPage() {
                 <input
                   value={componentForm.amount}
                   onChange={(event) => setComponentForm((prev) => ({ ...prev, amount: event.target.value }))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 pr-8 text-sm"
+                  className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 pr-8 text-sm"
                   type="number"
                   min="0"
                   max={componentForm.amount_type === 'Percentage' ? '100' : undefined}
@@ -658,7 +658,7 @@ export default function HrPayrollPage() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Process Payroll</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-4">
           <label className="text-xs text-slate-300">
@@ -666,7 +666,7 @@ export default function HrPayrollPage() {
             <input
               value={runMonth}
               onChange={(event) => setRunMonth(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               type="number"
               min="1"
               max="12"
@@ -677,7 +677,7 @@ export default function HrPayrollPage() {
             <input
               value={runYear}
               onChange={(event) => setRunYear(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               type="number"
               min="2000"
               max="2099"
@@ -688,7 +688,7 @@ export default function HrPayrollPage() {
             <input
               value={paymentDate}
               onChange={(event) => setPaymentDate(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
               type="date"
             />
           </label>
@@ -703,7 +703,7 @@ export default function HrPayrollPage() {
           </button>
           <button
             onClick={downloadTaxReport}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200"
+            className="rounded-lg border border-white/[0.09] px-4 py-2 text-sm font-semibold text-slate-200"
           >
             Export Tax Report
           </button>
@@ -711,7 +711,7 @@ export default function HrPayrollPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
+        <article className="rounded-xl glass-panel p-4 lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-100">Payroll Batches</h2>
             {loading ? <span className="text-xs text-slate-400">Loading...</span> : null}
@@ -732,7 +732,7 @@ export default function HrPayrollPage() {
                 {payrolls.map((batch) => (
                   <tr
                     key={batch.id}
-                    className={`border-t border-slate-800 ${selectedPayrollId === String(batch.id) ? 'bg-slate-800/40' : ''}`}
+                    className={`border-t border-white/[0.07] ${selectedPayrollId === String(batch.id) ? 'bg-white/[0.025]' : ''}`}
                   >
                     <td className="px-2 py-2">{batch.month}/{batch.year}</td>
                     <td className="px-2 py-2">{batch.status}</td>
@@ -743,7 +743,7 @@ export default function HrPayrollPage() {
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => setSelectedPayrollId(String(batch.id))}
-                          className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200"
+                          className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200"
                         >
                           View
                         </button>
@@ -755,7 +755,7 @@ export default function HrPayrollPage() {
                         </button>
                         <button
                           onClick={() => void downloadBankFile(batch.id)}
-                          className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200"
+                          className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200"
                         >
                           Bank File
                         </button>
@@ -775,7 +775,7 @@ export default function HrPayrollPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Selected Payroll</h2>
           {selectedPayroll ? (
             <div className="mt-3 space-y-2 text-xs text-slate-300">
@@ -799,7 +799,7 @@ export default function HrPayrollPage() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Payslips</h2>
         <div className="mt-3 overflow-x-auto">
           <table className="min-w-full text-left text-xs">
@@ -816,7 +816,7 @@ export default function HrPayrollPage() {
             </thead>
             <tbody>
               {payslips.map((item) => (
-                <tr key={item.id} className="border-t border-slate-800">
+                <tr key={item.id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{item.employee_name}</td>
                   <td className="px-2 py-2">{item.basic_salary}</td>
                   <td className="px-2 py-2">{item.total_allowances}</td>
@@ -846,24 +846,24 @@ export default function HrPayrollPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="mb-3 text-sm font-semibold text-slate-100">Active Salary Structures</h2>
           <div className="space-y-2 text-xs">
             {structures.map((s) => editingStructureId === s.id ? (
               <div key={s.id} className="rounded-lg border border-emerald-600/40 bg-slate-950/80 p-3 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <input type="number" value={editStructureForm.basic_salary} onChange={(e) => setEditStructureForm((p) => ({ ...p, basic_salary: e.target.value }))} placeholder="Basic salary" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-                  <select value={editStructureForm.currency} onChange={(e) => setEditStructureForm((p) => ({ ...p, currency: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                  <input type="number" value={editStructureForm.basic_salary} onChange={(e) => setEditStructureForm((p) => ({ ...p, basic_salary: e.target.value }))} placeholder="Basic salary" className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
+                  <select value={editStructureForm.currency} onChange={(e) => setEditStructureForm((p) => ({ ...p, currency: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                     {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
                   </select>
-                  <select value={editStructureForm.pay_frequency} onChange={(e) => setEditStructureForm((p) => ({ ...p, pay_frequency: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                  <select value={editStructureForm.pay_frequency} onChange={(e) => setEditStructureForm((p) => ({ ...p, pay_frequency: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                     <option>Monthly</option><option>Bi-weekly</option><option>Weekly</option>
                   </select>
-                  <input type="date" value={editStructureForm.effective_from} onChange={(e) => setEditStructureForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                  <input type="date" value={editStructureForm.effective_from} onChange={(e) => setEditStructureForm((p) => ({ ...p, effective_from: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={saveStructureEdit} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
-                  <button onClick={() => setEditingStructureId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                  <button onClick={() => setEditingStructureId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                 </div>
               </div>
             ) : confirmDeleteId?.type === 'structure' && confirmDeleteId.id === s.id ? (
@@ -871,18 +871,18 @@ export default function HrPayrollPage() {
                 <p className="text-xs text-rose-200 mb-2">Remove "{s.employee_name}" structure?</p>
                 <div className="flex gap-2">
                   <button onClick={() => void deleteStructure(s.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Confirm Remove</button>
-                  <button onClick={() => setConfirmDeleteId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                 </div>
               </div>
             ) : (
-              <div key={s.id} className="flex items-start justify-between rounded-lg border border-slate-800 px-3 py-2 text-slate-300">
+              <div key={s.id} className="flex items-start justify-between rounded-lg border border-white/[0.07] px-3 py-2 text-slate-300">
                 <div>
                   <p className="font-semibold text-slate-100">{s.employee_name}</p>
                   <p>{s.currency} {s.basic_salary} · {s.pay_frequency}</p>
                   <p className="text-slate-400">From {s.effective_from}{s.effective_to ? ` to ${s.effective_to}` : ''}</p>
                 </div>
                 <div className="flex shrink-0 gap-1 ml-2">
-                  <button onClick={() => startEditStructure(s)} className="rounded px-2 py-1 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                  <button onClick={() => startEditStructure(s)} className="rounded px-2 py-1 text-[10px] border border-white/[0.09] text-slate-300">Edit</button>
                   <button onClick={() => setConfirmDeleteId({ type: 'structure', id: s.id })} className="rounded px-2 py-1 text-[10px] border border-rose-700/50 text-rose-300">Remove</button>
                 </div>
               </div>
@@ -891,27 +891,27 @@ export default function HrPayrollPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="mb-3 text-sm font-semibold text-slate-100">Salary Components</h2>
           <div className="space-y-2 text-xs">
             {components.map((c) => editingComponentId === c.id ? (
               <div key={c.id} className="rounded-lg border border-emerald-600/40 bg-slate-950/80 p-3 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <input value={editComponentForm.name} onChange={(e) => setEditComponentForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-                  <select value={editComponentForm.component_type} onChange={(e) => setEditComponentForm((p) => ({ ...p, component_type: e.target.value as 'Allowance' | 'Deduction' }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                  <input value={editComponentForm.name} onChange={(e) => setEditComponentForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
+                  <select value={editComponentForm.component_type} onChange={(e) => setEditComponentForm((p) => ({ ...p, component_type: e.target.value as 'Allowance' | 'Deduction' }))} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                     <option value="Allowance">Allowance</option><option value="Deduction">Deduction</option>
                   </select>
-                  <select value={editComponentForm.amount_type} onChange={(e) => setEditComponentForm((p) => ({ ...p, amount_type: e.target.value as 'Fixed' | 'Percentage' }))} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                  <select value={editComponentForm.amount_type} onChange={(e) => setEditComponentForm((p) => ({ ...p, amount_type: e.target.value as 'Fixed' | 'Percentage' }))} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                     <option value="Fixed">Fixed</option><option value="Percentage">Percentage</option>
                   </select>
                   <div className="relative">
-                    <input type="number" value={editComponentForm.amount} onChange={(e) => setEditComponentForm((p) => ({ ...p, amount: e.target.value }))} placeholder="Amount" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 pr-7 text-sm" />
+                    <input type="number" value={editComponentForm.amount} onChange={(e) => setEditComponentForm((p) => ({ ...p, amount: e.target.value }))} placeholder="Amount" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 pr-7 text-sm" />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">{editComponentForm.amount_type === 'Percentage' ? '%' : 'Ksh'}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={saveComponentEdit} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
-                  <button onClick={() => setEditingComponentId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                  <button onClick={() => setEditingComponentId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                 </div>
               </div>
             ) : confirmDeleteId?.type === 'component' && confirmDeleteId.id === c.id ? (
@@ -919,18 +919,18 @@ export default function HrPayrollPage() {
                 <p className="text-xs text-rose-200 mb-2">Remove "{c.name}" component?</p>
                 <div className="flex gap-2">
                   <button onClick={() => void deleteComponent(c.id)} disabled={working} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Confirm Remove</button>
-                  <button onClick={() => setConfirmDeleteId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                 </div>
               </div>
             ) : (
-              <div key={c.id} className="flex items-start justify-between rounded-lg border border-slate-800 px-3 py-2 text-slate-300">
+              <div key={c.id} className="flex items-start justify-between rounded-lg border border-white/[0.07] px-3 py-2 text-slate-300">
                 <div>
                   <p className="font-semibold text-slate-100">{c.name}</p>
                   <p className={c.component_type === 'Allowance' ? 'text-emerald-400' : 'text-rose-400'}>{c.component_type}</p>
                   <p>{c.amount_type === 'Percentage' ? `${c.amount}% of basic` : `Ksh ${c.amount}`} · {c.is_taxable ? 'Taxable' : 'Non-taxable'}</p>
                 </div>
                 <div className="flex shrink-0 gap-1 ml-2">
-                  <button onClick={() => startEditComponent(c)} className="rounded px-2 py-1 text-[10px] border border-slate-700 text-slate-300">Edit</button>
+                  <button onClick={() => startEditComponent(c)} className="rounded px-2 py-1 text-[10px] border border-white/[0.09] text-slate-300">Edit</button>
                   <button onClick={() => setConfirmDeleteId({ type: 'component', id: c.id })} className="rounded px-2 py-1 text-[10px] border border-rose-700/50 text-rose-300">Remove</button>
                 </div>
               </div>

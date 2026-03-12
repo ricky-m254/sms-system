@@ -41,7 +41,7 @@ export default function ParentPortalAssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Assignments & Events</h1>
         <p className="mt-1 text-sm text-slate-400">Track your child's pending assignments and upcoming school events.</p>
       </header>
@@ -57,7 +57,7 @@ export default function ParentPortalAssignmentsPage() {
                 const isOverdue = days !== null && days < 0
                 const isDueSoon = days !== null && days >= 0 && days <= 2
                 return (
-                  <div key={a.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                  <div key={a.id} className="rounded-xl glass-panel p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-semibold text-slate-100">{a.title}</p>
@@ -77,7 +77,7 @@ export default function ParentPortalAssignmentsPage() {
                   </div>
                 )
               })}
-              {assignments.length === 0 ? <p className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-500 text-center">No assignments found.</p> : null}
+              {assignments.length === 0 ? <p className="rounded-xl glass-panel p-6 text-sm text-slate-500 text-center">No assignments found.</p> : null}
             </div>
           )}
         </section>
@@ -87,7 +87,7 @@ export default function ParentPortalAssignmentsPage() {
           {loading ? <p className="text-sm text-slate-400">Loading…</p> : (
             <div className="space-y-3">
               {events.map(e => (
-                <div key={e.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <div key={e.id} className="rounded-xl glass-panel p-4">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-semibold text-slate-100">{e.title}</p>
                     <span className="shrink-0 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold text-sky-400">{e.event_type || 'Event'}</span>
@@ -96,7 +96,7 @@ export default function ParentPortalAssignmentsPage() {
                   <p className="mt-2 text-xs text-slate-500">{new Date(e.start_date).toLocaleDateString()}{e.end_date ? ` – ${new Date(e.end_date).toLocaleDateString()}` : ''}</p>
                 </div>
               ))}
-              {events.length === 0 ? <p className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-500 text-center">No upcoming events.</p> : null}
+              {events.length === 0 ? <p className="rounded-xl glass-panel p-6 text-sm text-slate-500 text-center">No upcoming events.</p> : null}
             </div>
           )}
         </section>

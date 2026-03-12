@@ -181,14 +181,14 @@ export default function StudentsAttendancePage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Attendance</h1>
         <p className="mt-2 text-sm text-slate-400">Daily attendance records from the backend.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading attendance...</p>
         </div>
       ) : null}
@@ -213,14 +213,14 @@ export default function StudentsAttendancePage() {
 
       <section className="col-span-12 grid gap-4 md:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div key={stat.label} className="rounded-2xl glass-panel p-5">
             <p className="text-xs uppercase text-slate-400">{stat.label}</p>
             <p className="mt-2 text-2xl font-semibold">{stat.value}</p>
           </div>
         ))}
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Daily register</h2>
@@ -228,21 +228,21 @@ export default function StudentsAttendancePage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('csv')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download CSV'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('pdf')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download PDF'}
             </button>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -257,7 +257,7 @@ export default function StudentsAttendancePage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value)
@@ -273,7 +273,7 @@ export default function StudentsAttendancePage() {
             </select>
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -282,7 +282,7 @@ export default function StudentsAttendancePage() {
             />
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -290,7 +290,7 @@ export default function StudentsAttendancePage() {
               }}
             />
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200"
               onClick={() => {
                 setStudentFilter('')
                 setStatusFilter('all')
@@ -312,9 +312,9 @@ export default function StudentsAttendancePage() {
             </button>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[720px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Status</th>
@@ -347,14 +347,14 @@ export default function StudentsAttendancePage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >
@@ -366,14 +366,14 @@ export default function StudentsAttendancePage() {
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Attendance</p>
                 <h3 className="text-lg font-display font-semibold">Record attendance</h3>
               </div>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => setIsFormOpen(false)}
               >
                 Close
@@ -384,7 +384,7 @@ export default function StudentsAttendancePage() {
               <label className="block text-sm">
                 Student
                 <select
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.student}
                   onChange={(event) => setFormState((prev) => ({ ...prev, student: event.target.value }))}
                 >
@@ -401,7 +401,7 @@ export default function StudentsAttendancePage() {
                   Date
                   <input
                     type="date"
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={formState.date}
                     onChange={(event) => setFormState((prev) => ({ ...prev, date: event.target.value }))}
                   />
@@ -409,7 +409,7 @@ export default function StudentsAttendancePage() {
                 <label className="block text-sm">
                   Status
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={formState.status}
                     onChange={(event) => setFormState((prev) => ({ ...prev, status: event.target.value }))}
                   >
@@ -426,7 +426,7 @@ export default function StudentsAttendancePage() {
                 Notes
                 <textarea
                   rows={3}
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.notes}
                   onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
                 />

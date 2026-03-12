@@ -74,7 +74,7 @@ export default function ParentsSummaryPage() {
 
   return (
     <div className="space-y-8">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Parents Dashboard</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Family Overview</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -83,7 +83,7 @@ export default function ParentsSummaryPage() {
       </header>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading parents data...</p>
         </div>
       ) : null}
@@ -95,19 +95,19 @@ export default function ParentsSummaryPage() {
       ) : null}
 
       <section className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl glass-panel p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Guardians</p>
           <p className="mt-3 text-2xl font-display font-semibold">{guardians.length}</p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl glass-panel p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Primary contacts</p>
           <p className="mt-3 text-2xl font-display font-semibold">{primaryContacts.length}</p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl glass-panel p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
           <p className="mt-3 text-2xl font-display font-semibold">{students.length}</p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl border border-emerald-500/40 glass-panel p-6 md:col-span-6 lg:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Reachable</p>
           <p className="mt-3 text-2xl font-display font-semibold">
             {guardians.filter((guardian) => guardian.phone || guardian.email).length}

@@ -120,12 +120,12 @@ export default function DormitoriesPage() {
         {loading ? (
           <div className="col-span-full py-12 text-center text-slate-400">Loading dormitories...</div>
         ) : dorms.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-slate-400 rounded-2xl border border-dashed border-slate-800 bg-slate-900/40">
+          <div className="col-span-full py-12 text-center text-slate-400 rounded-2xl border border-dashed border-white/[0.07] bg-white/[0.02]">
             <Building className="mx-auto h-12 w-12 text-slate-700 mb-3" />
             <p>No dormitories found. Add your first dormitory to get started.</p>
           </div>
         ) : dorms.map((dorm) => (
-          <div key={dorm.id} className="group relative rounded-2xl border border-slate-800 bg-slate-900/60 p-6 hover:border-emerald-500/30 transition-all duration-300">
+          <div key={dorm.id} className="group relative rounded-2xl glass-panel p-6 hover:border-emerald-500/30 transition-all duration-300">
             <div className="flex items-start justify-between">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
                 <Building className="h-6 w-6" />
@@ -155,7 +155,7 @@ export default function DormitoriesPage() {
               {dorm.notes && <p className="mt-2 text-xs text-slate-500 line-clamp-2">{dorm.notes}</p>}
             </div>
 
-            <div className="mt-6 flex items-center gap-3 border-t border-slate-800 pt-4 text-sm text-slate-400">
+            <div className="mt-6 flex items-center gap-3 border-t border-white/[0.07] pt-4 text-sm text-slate-400">
               <Users className="h-4 w-4 text-slate-500" />
               <span>Warden: <span className="text-slate-200">{dorm.warden_name || 'Not assigned'}</span></span>
             </div>
@@ -165,7 +165,7 @@ export default function DormitoriesPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Dormitory' : 'Add Dormitory'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -174,25 +174,25 @@ export default function DormitoriesPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Name *</label>
-              <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Maple House" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+              <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Maple House" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Gender</label>
-                <select value={form.gender} onChange={e => set('gender', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+                <select value={form.gender} onChange={e => set('gender', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                   {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Capacity</label>
-                <input type="number" min="1" value={form.capacity} onChange={e => set('capacity', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+                <input type="number" min="1" value={form.capacity} onChange={e => set('capacity', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
               </div>
             </div>
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Warden</label>
-              <select value={form.warden} onChange={e => set('warden', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.warden} onChange={e => set('warden', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">Not assigned</option>
                 {employees.map(e => (
                   <option key={e.id} value={e.id}>{`${e.first_name} ${e.last_name}`.trim() || e.employee_id}</option>
@@ -202,14 +202,14 @@ export default function DormitoriesPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-              <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} placeholder="Optional notes..." className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} placeholder="Optional notes..." className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
 
             <div className="flex gap-3 pt-1">
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-50">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

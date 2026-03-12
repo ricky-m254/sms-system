@@ -74,7 +74,7 @@ export default function FinanceBudgetLedgerPage() {
 
   return (
     <section className="col-span-12 grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <BackButton to="/modules/finance" label="Back to Finance" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -85,11 +85,11 @@ export default function FinanceBudgetLedgerPage() {
         </div>
       </header>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <section className="col-span-12 rounded-2xl glass-panel overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-slate-200">
             <thead>
-              <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
                 <th className="px-5 py-4 text-left">Vote Head</th>
                 <th className="px-5 py-4 text-right">Budgeted (KES)</th>
                 <th className="px-5 py-4 text-right">Spent (KES)</th>
@@ -104,7 +104,7 @@ export default function FinanceBudgetLedgerPage() {
                 <tr><td colSpan={5} className="py-10 text-center text-slate-500">No budget data available.</td></tr>
               ) : (
                 reportData.map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-800/30 transition">
+                  <tr key={i} className="hover:bg-white/[0.02] transition">
                     <td className="px-5 py-4 font-semibold text-slate-200">{row.voteHead}</td>
                     <td className="px-5 py-4 text-right font-mono text-blue-300">{fmt(row.budgetedAmount)}</td>
                     <td className="px-5 py-4 text-right font-mono text-red-300">{fmt(row.spent)}</td>

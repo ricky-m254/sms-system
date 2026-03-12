@@ -65,7 +65,7 @@ export default function DispensaryStockPage() {
         <div className="relative flex-1 min-w-[200px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search medications…"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+            className="w-full bg-slate-950 border border-white/[0.07] rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
           <input type="checkbox" checked={lowOnly} onChange={e => setLowOnly(e.target.checked)} className="accent-emerald-500" />
@@ -73,14 +73,14 @@ export default function DispensaryStockPage() {
         </label>
       </div>
 
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="glass-panel rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-400">Loading…</div>
         ) : !meds.length ? (
           <div className="p-8 text-center text-slate-500">No medications found.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-800">
+            <thead className="border-b border-white/[0.07]">
               <tr className="text-xs text-slate-500">
                 <th className="text-left px-4 py-3">Medication</th>
                 <th className="text-left px-4 py-3">Generic Name</th>
@@ -93,7 +93,7 @@ export default function DispensaryStockPage() {
             </thead>
             <tbody>
               {meds.map(m => (
-                <tr key={m.id} className={`border-b border-slate-800/50 hover:bg-slate-800/30 ${m.is_low_stock ? 'bg-rose-950/10' : ''}`}>
+                <tr key={m.id} className={`border-b border-white/[0.05] hover:bg-white/[0.02] ${m.is_low_stock ? 'bg-rose-950/10' : ''}`}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {m.is_low_stock && <AlertTriangle size={13} className="text-rose-400 shrink-0" />}
@@ -120,48 +120,48 @@ export default function DispensaryStockPage() {
 
       {modal.open && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 space-y-4">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl w-full max-w-lg p-6 space-y-4">
             <h2 className="text-lg font-semibold text-slate-100">{modal.item.id ? 'Edit Medication' : 'Add Medication'}</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Medication Name *</label>
                 <input value={modal.item.medication_name || ''} onChange={e => f('medication_name', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Generic Name</label>
                 <input value={modal.item.generic_name || ''} onChange={e => f('generic_name', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Unit</label>
                 <input value={modal.item.unit || ''} onChange={e => f('unit', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Current Quantity</label>
                 <input type="number" value={modal.item.current_quantity ?? 0} onChange={e => f('current_quantity', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Reorder Level</label>
                 <input type="number" value={modal.item.reorder_level ?? 0} onChange={e => f('reorder_level', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Expiry Date</label>
                 <input type="date" value={modal.item.expiry_date || ''} onChange={e => f('expiry_date', e.target.value || null)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Supplier</label>
                 <input value={modal.item.supplier || ''} onChange={e => f('supplier', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Notes</label>
                 <textarea rows={2} value={modal.item.notes || ''} onChange={e => f('notes', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-2">
@@ -176,7 +176,7 @@ export default function DispensaryStockPage() {
 
       {deleteId !== null && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-semibold text-slate-100 mb-2">Remove Medication?</h3>
             <p className="text-sm text-slate-400 mb-5">This action cannot be undone.</p>
             <div className="flex justify-end gap-3">

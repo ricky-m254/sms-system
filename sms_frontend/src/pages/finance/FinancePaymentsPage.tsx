@@ -76,7 +76,7 @@ const paymentStatusBadgeClass = (status: 'Reversed' | 'Allocated' | 'Partial' | 
   if (status === 'Reversed') return 'border-rose-500/40 bg-rose-500/10 text-rose-200'
   if (status === 'Allocated') return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
   if (status === 'Partial') return 'border-amber-500/40 bg-amber-500/10 text-amber-200'
-  return 'border-slate-600 bg-slate-900/60 text-slate-300'
+  return 'border-slate-600 glass-panel text-slate-300'
 }
 
 const reversalStatusBadgeClass = (status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
@@ -426,14 +426,14 @@ export default function FinancePaymentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Payments</h1>
         <p className="mt-2 text-sm text-slate-400">Track collections and payment history.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading payments...</p>
         </div>
       ) : null}
@@ -450,7 +450,7 @@ export default function FinancePaymentsPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Payment list</h2>
@@ -459,7 +459,7 @@ export default function FinancePaymentsPage() {
           <div className="flex flex-wrap items-center gap-3">
             <PrintButton />
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Admission no., invoice ref, receipt…"
               value={paymentQuery}
               onChange={(event) => {
@@ -468,7 +468,7 @@ export default function FinancePaymentsPage() {
               }}
             />
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -483,7 +483,7 @@ export default function FinancePaymentsPage() {
               ))}
             </select>
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={methodFilter}
               onChange={(event) => {
                 setMethodFilter(event.target.value)
@@ -498,7 +498,7 @@ export default function FinancePaymentsPage() {
               ))}
             </select>
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={allocationFilter}
               onChange={(event) => {
                 setAllocationFilter(event.target.value)
@@ -512,7 +512,7 @@ export default function FinancePaymentsPage() {
             </select>
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -521,7 +521,7 @@ export default function FinancePaymentsPage() {
             />
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -537,9 +537,9 @@ export default function FinancePaymentsPage() {
           </div>
         </div>
         <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[980px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Reference</th>
                 <th className="px-4 py-3">Student</th>
@@ -623,7 +623,7 @@ export default function FinancePaymentsPage() {
                         {detailLoadingId === payment.id ? (
                           <p className="text-xs text-slate-400">Loading student context...</p>
                         ) : (
-                          <div className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 md:grid-cols-3">
+                          <div className="grid gap-4 rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4 md:grid-cols-3">
                             <div>
                               <p className="text-[11px] uppercase text-slate-400">Class / Term</p>
                               <p className="text-sm text-slate-200">
@@ -640,7 +640,7 @@ export default function FinancePaymentsPage() {
                                   studentDetails[payment.student]?.guardians?.map((guardian) => (
                                     <div
                                       key={guardian.id}
-                                      className="rounded-xl border border-slate-800 p-3 text-xs text-slate-300"
+                                      className="rounded-xl border border-white/[0.07] p-3 text-xs text-slate-300"
                                     >
                                       <p className="text-sm text-white">{guardian.name}</p>
                                       <p className="text-[11px] text-slate-400">
@@ -684,14 +684,14 @@ export default function FinancePaymentsPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={paymentPage === 1}
               onClick={() => setPaymentPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={paymentPage === totalPaymentPages}
               onClick={() => setPaymentPage((prev) => Math.min(totalPaymentPages, prev + 1))}
             >
@@ -701,7 +701,7 @@ export default function FinancePaymentsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-display font-semibold">Payment reversal requests</h2>
@@ -709,13 +709,13 @@ export default function FinancePaymentsPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <input
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search reference, receipt, reason"
               value={reversalQuery}
               onChange={(event) => setReversalQuery(event.target.value)}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={reversalStatusFilter}
               onChange={(event) => setReversalStatusFilter(event.target.value)}
             >
@@ -735,9 +735,9 @@ export default function FinancePaymentsPage() {
         {reversalLoading ? (
           <p className="mt-4 text-sm text-slate-300">Loading reversal requests...</p>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[980px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Payment</th>
                   <th className="px-4 py-3">Receipt</th>
@@ -815,7 +815,7 @@ export default function FinancePaymentsPage() {
 
       {reversalTarget ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <h3 className="text-lg font-display font-semibold">Request payment reversal</h3>
             <p className="mt-2 text-sm text-slate-400">
               Submit reversal request for <strong>{reversalTarget.reference_number}</strong>.
@@ -823,7 +823,7 @@ export default function FinancePaymentsPage() {
             <label className="mt-4 block text-sm text-slate-200">
               Reason
               <textarea
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
                 rows={3}
                 value={reversalReason}
                 onChange={(event) => setReversalReason(event.target.value)}
@@ -839,7 +839,7 @@ export default function FinancePaymentsPage() {
                 {isSubmittingReversal ? 'Submitting...' : 'Submit request'}
               </button>
               <button
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+                className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
                 onClick={() => {
                   if (isSubmittingReversal || reviewingReversalId !== null) return
                   setReversalTarget(null)

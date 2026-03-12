@@ -401,7 +401,7 @@ export default function FinanceInvoiceFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/invoices" label="Back to Invoices" />
       </div>
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sticky top-0 z-20">
+      <header className="col-span-12 rounded-2xl glass-panel p-6 sticky top-0 z-20">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">
           {isEdit ? 'Invoice (View Only)' : 'Create Invoice'}
@@ -412,12 +412,12 @@ export default function FinanceInvoiceFormPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading invoice references...</p>
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         {isEdit ? (
           <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-100">
             This invoice is read-only. If adjustments are needed, create an invoice adjustment instead.
@@ -428,7 +428,7 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-4">
               Student
               <select
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                 value={formState.student}
                 aria-invalid={Boolean(fieldErrors.student)}
                 onChange={(event) => {
@@ -452,7 +452,7 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-4">
               Term
               <select
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                 value={formState.term}
                 aria-invalid={Boolean(fieldErrors.term)}
                 onChange={(event) => {
@@ -477,7 +477,7 @@ export default function FinanceInvoiceFormPage() {
               Due Date
               <input
                 type="date"
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
                 value={formState.due_date}
                 aria-invalid={Boolean(fieldErrors.due_date)}
                 onChange={(event) => {
@@ -494,7 +494,7 @@ export default function FinanceInvoiceFormPage() {
           </div>
 
           <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-950/40 p-4 md:col-span-7">
+            <div className="col-span-12 rounded-2xl border border-white/[0.07] bg-slate-950/40 p-4 md:col-span-7">
               <h3 className="text-sm font-semibold text-slate-200">Student information</h3>
               <div className="mt-3 grid gap-3 text-xs text-slate-300 md:grid-cols-2">
                 <div>
@@ -522,12 +522,12 @@ export default function FinanceInvoiceFormPage() {
                 <p className="mt-2 text-[11px] text-amber-200">{studentInfoNotice}</p>
               ) : null}
             </div>
-            <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-950/40 p-4 md:col-span-5">
+            <div className="col-span-12 rounded-2xl border border-white/[0.07] bg-slate-950/40 p-4 md:col-span-5">
               <h3 className="text-sm font-semibold text-slate-200">Parent / Guardian</h3>
               <div className="mt-3 space-y-2 text-xs text-slate-300">
                 {(studentDetail?.guardians ?? []).length > 0 ? (
                   studentDetail?.guardians?.map((guardian) => (
-                    <div key={guardian.id} className="rounded-xl border border-slate-800 p-3">
+                    <div key={guardian.id} className="rounded-xl border border-white/[0.07] p-3">
                       <p className="text-sm text-white">{guardian.name}</p>
                       <p className="text-[11px] text-slate-400">
                         {guardian.relationship ?? 'Guardian'}
@@ -548,7 +548,7 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-3">
               Total Amount
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white"
                 value={totalAmount.toLocaleString()}
                 readOnly
               />
@@ -556,7 +556,7 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-3">
               Status
               <select
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                 value={metaState.status}
                 onChange={(event) => {
                   setMetaState((prev) => ({ ...prev, status: event.target.value }))
@@ -584,7 +584,7 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-3">
               Invoice Date
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white"
                 value={metaState.invoice_date || '--'}
                 readOnly
               />
@@ -592,7 +592,7 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-3">
               Created At
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white"
                 value={metaState.created_at || '--'}
                 readOnly
               />
@@ -600,14 +600,14 @@ export default function FinanceInvoiceFormPage() {
             <label className="col-span-12 text-sm md:col-span-3">
               Balance Due
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white"
                 value={metaState.balance_due || '--'}
                 readOnly
               />
             </label>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+          <div className="rounded-2xl border border-white/[0.07] bg-slate-950/40 p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-200">Line items</h2>
               <button
@@ -623,7 +623,7 @@ export default function FinanceInvoiceFormPage() {
               {lineItems.map((item, index) => (
                 <div key={`line-${index}`} className="grid grid-cols-12 gap-3">
                   <select
-                    className="col-span-12 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white md:col-span-4"
+                    className="col-span-12 rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white md:col-span-4"
                     value={item.fee_structure}
                     onChange={(event) => handleFeeSelect(index, event.target.value)}
                     disabled={isEdit}
@@ -641,7 +641,7 @@ export default function FinanceInvoiceFormPage() {
                     </p>
                   ) : null}
                   <input
-                    className="col-span-12 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white md:col-span-3"
+                    className="col-span-12 rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white md:col-span-3"
                     value={item.amount}
                     onChange={(event) => updateLineItem(index, { amount: event.target.value })}
                     placeholder="Amount"
@@ -653,7 +653,7 @@ export default function FinanceInvoiceFormPage() {
                     </p>
                   ) : null}
                   <input
-                    className="col-span-12 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white md:col-span-4"
+                    className="col-span-12 rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white md:col-span-4"
                     value={item.description}
                     onChange={(event) => updateLineItem(index, { description: event.target.value })}
                     placeholder="Description"
@@ -665,7 +665,7 @@ export default function FinanceInvoiceFormPage() {
                     </p>
                   ) : null}
                   <button
-                    className="col-span-12 rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-200 md:col-span-1"
+                    className="col-span-12 rounded-lg border border-white/[0.09] px-3 py-2 text-xs text-slate-200 md:col-span-1"
                     type="button"
                     onClick={() => removeLineItem(index)}
                     disabled={lineItems.length === 1 || isEdit}
@@ -702,7 +702,7 @@ export default function FinanceInvoiceFormPage() {
               {isSubmitting ? 'Saving...' : 'Create & add another'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               type="button"
               onClick={() => {
                 if (!isEdit && hasUserTouched && !isSubmitting) {

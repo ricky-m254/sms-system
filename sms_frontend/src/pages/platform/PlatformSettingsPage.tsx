@@ -79,23 +79,23 @@ export default function PlatformSettingsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Platform Settings</h1>
       </header>
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Create / Update</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-2" onSubmit={saveSetting}>
           <input
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm"
             placeholder="setting.key"
             value={form.key}
             onChange={(e) => setForm((prev) => ({ ...prev, key: e.target.value }))}
             required
           />
-          <label className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <label className="flex items-center gap-2 rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <input
               type="checkbox"
               checked={form.is_secret}
@@ -104,13 +104,13 @@ export default function PlatformSettingsPage() {
             Secret setting
           </label>
           <input
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm md:col-span-2"
+            className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm md:col-span-2"
             placeholder="description"
             value={form.description}
             onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
           />
           <textarea
-            className="min-h-[120px] rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm md:col-span-2"
+            className="min-h-[120px] rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm md:col-span-2"
             value={form.value}
             onChange={(e) => setForm((prev) => ({ ...prev, value: e.target.value }))}
           />
@@ -120,14 +120,14 @@ export default function PlatformSettingsPage() {
         </form>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Current Settings</h2>
-          <button className="rounded-lg border border-slate-700 px-3 py-2 text-sm" onClick={() => void loadSettings()}>Refresh</button>
+          <button className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => void loadSettings()}>Refresh</button>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[920px] w-full text-left text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Key</th>
                 <th className="px-3 py-2">Value</th>

@@ -322,14 +322,14 @@ export default function StudentsMedicalPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Medical Records</h1>
         <p className="mt-2 text-sm text-slate-400">Profiles, immunizations, and clinic visits.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading medical records...</p>
         </div>
       ) : null}
@@ -346,7 +346,7 @@ export default function StudentsMedicalPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Medical records</h2>
@@ -354,7 +354,7 @@ export default function StudentsMedicalPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-white"
               value={studentFilter}
               onChange={(event) => setStudentFilter(event.target.value)}
             >
@@ -368,7 +368,7 @@ export default function StudentsMedicalPage() {
             {activeTab === 'Clinic Visits' ? (
               <>
                 <select
-                  className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white"
+                  className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-white"
                   value={severityFilter}
                   onChange={(event) => setSeverityFilter(event.target.value)}
                 >
@@ -379,32 +379,32 @@ export default function StudentsMedicalPage() {
                 </select>
                 <input
                   type="date"
-                  className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white"
+                  className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-white"
                   value={dateFrom}
                   onChange={(event) => setDateFrom(event.target.value)}
                 />
                 <input
                   type="date"
-                  className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white"
+                  className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-white"
                   value={dateTo}
                   onChange={(event) => setDateTo(event.target.value)}
                 />
               </>
             ) : null}
             <input
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-white"
               placeholder="Search student/notes"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200"
               onClick={() => setRefreshKey((prev) => prev + 1)}
             >
               Filter
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200"
               onClick={() => {
                 setStudentFilter('')
                 setSearch('')
@@ -417,14 +417,14 @@ export default function StudentsMedicalPage() {
               Reset
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
               disabled={isDownloading}
               onClick={() => handleDownload('csv')}
             >
               Download CSV
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
               disabled={isDownloading}
               onClick={() => handleDownload('pdf')}
             >
@@ -452,9 +452,9 @@ export default function StudentsMedicalPage() {
         </div>
 
         {activeTab === 'Profiles' ? (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[860px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Student</th>
                   <th className="px-4 py-3">Blood Type</th>
@@ -488,9 +488,9 @@ export default function StudentsMedicalPage() {
         ) : null}
 
         {activeTab === 'Immunizations' ? (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[860px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Student</th>
                   <th className="px-4 py-3">Vaccine</th>
@@ -537,9 +537,9 @@ export default function StudentsMedicalPage() {
         ) : null}
 
         {activeTab === 'Clinic Visits' ? (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[960px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Student</th>
                   <th className="px-4 py-3">Visit Date</th>
@@ -577,14 +577,14 @@ export default function StudentsMedicalPage() {
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{selectedTabLabel}</p>
                 <h3 className="text-lg font-display font-semibold">Add medical record</h3>
               </div>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => {
                   setIsFormOpen(false)
                   setFormError(null)
@@ -599,7 +599,7 @@ export default function StudentsMedicalPage() {
                 <label className="block text-sm">
                   Student
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={profileForm.student}
                     onChange={(event) => setProfileForm((prev) => ({ ...prev, student: event.target.value }))}
                   >
@@ -615,7 +615,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Blood type
                     <input
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={profileForm.blood_type}
                       onChange={(event) => setProfileForm((prev) => ({ ...prev, blood_type: event.target.value }))}
                     />
@@ -623,7 +623,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Allergies
                     <input
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={profileForm.allergies}
                       onChange={(event) => setProfileForm((prev) => ({ ...prev, allergies: event.target.value }))}
                     />
@@ -631,7 +631,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Chronic conditions
                     <input
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={profileForm.chronic_conditions}
                       onChange={(event) =>
                         setProfileForm((prev) => ({ ...prev, chronic_conditions: event.target.value }))
@@ -641,7 +641,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Current medications
                     <input
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={profileForm.current_medications}
                       onChange={(event) =>
                         setProfileForm((prev) => ({ ...prev, current_medications: event.target.value }))
@@ -651,7 +651,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Doctor name
                     <input
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={profileForm.doctor_name}
                       onChange={(event) => setProfileForm((prev) => ({ ...prev, doctor_name: event.target.value }))}
                     />
@@ -659,7 +659,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Doctor phone
                     <input
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={profileForm.doctor_phone}
                       onChange={(event) => setProfileForm((prev) => ({ ...prev, doctor_phone: event.target.value }))}
                     />
@@ -669,7 +669,7 @@ export default function StudentsMedicalPage() {
                   Notes
                   <textarea
                     rows={3}
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={profileForm.notes}
                     onChange={(event) => setProfileForm((prev) => ({ ...prev, notes: event.target.value }))}
                   />
@@ -682,7 +682,7 @@ export default function StudentsMedicalPage() {
                 <label className="block text-sm">
                   Student
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={immunizationForm.student}
                     onChange={(event) =>
                       setImmunizationForm((prev) => ({ ...prev, student: event.target.value }))
@@ -699,7 +699,7 @@ export default function StudentsMedicalPage() {
                 <label className="block text-sm">
                   Vaccine name
                   <input
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={immunizationForm.vaccine_name}
                     onChange={(event) =>
                       setImmunizationForm((prev) => ({ ...prev, vaccine_name: event.target.value }))
@@ -711,7 +711,7 @@ export default function StudentsMedicalPage() {
                     Date administered
                     <input
                       type="date"
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={immunizationForm.date_administered}
                       onChange={(event) =>
                         setImmunizationForm((prev) => ({ ...prev, date_administered: event.target.value }))
@@ -722,7 +722,7 @@ export default function StudentsMedicalPage() {
                     Booster due date (optional)
                     <input
                       type="date"
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={immunizationForm.booster_due_date}
                       onChange={(event) =>
                         setImmunizationForm((prev) => ({ ...prev, booster_due_date: event.target.value }))
@@ -734,7 +734,7 @@ export default function StudentsMedicalPage() {
                   Certificate (optional)
                   <input
                     type="file"
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-slate-200"
                     onChange={(event) =>
                       setImmunizationForm((prev) => ({
                         ...prev,
@@ -751,7 +751,7 @@ export default function StudentsMedicalPage() {
                 <label className="block text-sm">
                   Student
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={visitForm.student}
                     onChange={(event) => setVisitForm((prev) => ({ ...prev, student: event.target.value }))}
                   >
@@ -768,7 +768,7 @@ export default function StudentsMedicalPage() {
                     Visit date
                     <input
                       type="date"
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={visitForm.visit_date}
                       onChange={(event) => setVisitForm((prev) => ({ ...prev, visit_date: event.target.value }))}
                     />
@@ -777,7 +777,7 @@ export default function StudentsMedicalPage() {
                     Visit time (optional)
                     <input
                       type="time"
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={visitForm.visit_time}
                       onChange={(event) => setVisitForm((prev) => ({ ...prev, visit_time: event.target.value }))}
                     />
@@ -787,7 +787,7 @@ export default function StudentsMedicalPage() {
                   Complaint
                   <textarea
                     rows={2}
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={visitForm.complaint}
                     onChange={(event) => setVisitForm((prev) => ({ ...prev, complaint: event.target.value }))}
                   />
@@ -796,7 +796,7 @@ export default function StudentsMedicalPage() {
                   Treatment
                   <textarea
                     rows={2}
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={visitForm.treatment}
                     onChange={(event) => setVisitForm((prev) => ({ ...prev, treatment: event.target.value }))}
                   />
@@ -805,7 +805,7 @@ export default function StudentsMedicalPage() {
                   <label className="block text-sm">
                     Severity
                     <select
-                      className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={visitForm.severity}
                       onChange={(event) => setVisitForm((prev) => ({ ...prev, severity: event.target.value }))}
                     >

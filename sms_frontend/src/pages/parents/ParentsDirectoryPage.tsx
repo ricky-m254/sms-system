@@ -103,7 +103,7 @@ export default function ParentsDirectoryPage() {
 
   return (
     <div className="space-y-8">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Parents Directory</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Guardians</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -112,7 +112,7 @@ export default function ParentsDirectoryPage() {
       </header>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading directory...</p>
         </div>
       ) : null}
@@ -123,22 +123,22 @@ export default function ParentsDirectoryPage() {
         </div>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Guardian list</h2>
             <p className="mt-1 text-sm text-slate-400">Derived from `/api/students/`.</p>
           </div>
           <input
-            className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
             placeholder="Search name, contact, student"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[860px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Relationship</th>
@@ -159,7 +159,7 @@ export default function ParentsDirectoryPage() {
                       {guardian.student_names.map((studentName, index) => (
                         <span
                           key={`${guardian.id}-${index}`}
-                          className="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-200"
+                          className="rounded-full border border-white/[0.09] px-2 py-1 text-xs text-slate-200"
                         >
                           {studentName}
                         </span>

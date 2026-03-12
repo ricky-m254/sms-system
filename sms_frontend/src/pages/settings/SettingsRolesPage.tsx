@@ -184,7 +184,7 @@ export default function SettingsRolesPage() {
       {saveSuccess && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{saveSuccess}</div>}
 
       {/* Tab switcher */}
-      <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/60 p-1 w-fit">
+      <div className="flex gap-1 rounded-xl glass-panel p-1 w-fit">
         {([['modules', 'Module Access'], ['submodules', 'Submodule Permissions']] as const).map(([tab, label]) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${activeTab === tab ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04] border border-transparent'}`}>
@@ -201,11 +201,11 @@ export default function SettingsRolesPage() {
             const isLocked = !role.editable
             const isEditingThis = editing === role.name
             return (
-              <div key={role.name} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-3">
+              <div key={role.name} className="rounded-2xl glass-panel p-5 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${meta?.color ?? 'bg-slate-800 text-slate-300 border-slate-700'}`}>{meta?.badge ?? role.name}</span>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${meta?.color ?? 'bg-slate-800 text-slate-300 border-white/[0.09]'}`}>{meta?.badge ?? role.name}</span>
                       {isLocked && <Lock className="h-3.5 w-3.5 text-slate-600" />}
                     </div>
                     <p className="text-xs text-slate-500">{meta?.desc ?? role.description}</p>
@@ -216,18 +216,18 @@ export default function SettingsRolesPage() {
                 </div>
 
                 {isLocked ? (
-                  <div className="flex items-start gap-2 rounded-xl bg-slate-800/40 px-3 py-2.5">
+                  <div className="flex items-start gap-2 rounded-xl bg-white/[0.025] px-3 py-2.5">
                     <Info className="h-3.5 w-3.5 text-slate-500 mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-slate-500">Admin roles have unrestricted access to all modules and cannot be restricted.</p>
                   </div>
                 ) : isEditingThis ? (
                   <div className="space-y-3">
-                    <div className="max-h-52 overflow-y-auto space-y-0.5 rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+                    <div className="max-h-52 overflow-y-auto space-y-0.5 rounded-xl border border-white/[0.09] bg-slate-950/60 p-3">
                       {(payload?.all_modules ?? []).filter(m => m.key !== 'CORE').map(m => (
                         <label key={m.key} className="flex items-center gap-2 cursor-pointer py-1">
                           <input type="checkbox" checked={draftKeys.has(m.key)}
                             onChange={() => setDraftKeys(p => { const n = new Set(p); n.has(m.key) ? n.delete(m.key) : n.add(m.key); return n })}
-                            className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-900 checked:bg-emerald-500 checked:border-emerald-500 transition" />
+                            className="w-3.5 h-3.5 rounded border-slate-600 bg-[#0d1421] checked:bg-emerald-500 checked:border-emerald-500 transition" />
                           <span className="text-xs text-slate-300">{m.name}</span>
                         </label>
                       ))}
@@ -237,7 +237,7 @@ export default function SettingsRolesPage() {
                         className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 py-2 text-xs font-bold text-slate-950 transition">
                         {saving ? 'Saving…' : 'Save Module Access'}
                       </button>
-                      <button onClick={() => setEditing(null)} className="rounded-xl border border-slate-700 px-4 py-2 text-xs text-slate-400 hover:text-white transition">Cancel</button>
+                      <button onClick={() => setEditing(null)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-xs text-slate-400 hover:text-white transition">Cancel</button>
                     </div>
                   </div>
                 ) : (
@@ -263,12 +263,12 @@ export default function SettingsRolesPage() {
       {activeTab === 'submodules' && (
         <div className="space-y-4">
           {/* Role selector */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+          <div className="rounded-2xl glass-panel p-4">
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Configure Permissions For Role</p>
             <div className="flex flex-wrap gap-2">
               {Object.entries(ROLE_META).map(([key, meta]) => (
                 <button key={key} onClick={() => setSelectedRole(key)}
-                  className={`rounded-xl px-4 py-2 text-xs font-semibold border transition ${selectedRole === key ? `${meta.color} ring-1 ring-white/10` : 'border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'}`}>
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold border transition ${selectedRole === key ? `${meta.color} ring-1 ring-white/10` : 'border-white/[0.09] text-slate-500 hover:border-slate-500 hover:text-slate-300'}`}>
                   {meta.badge}
                 </button>
               ))}
@@ -276,17 +276,17 @@ export default function SettingsRolesPage() {
           </div>
 
           {isAdminRole(selectedRole) ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-5 py-12 text-center space-y-2">
+            <div className="rounded-2xl glass-panel px-5 py-12 text-center space-y-2">
               <Shield className="h-10 w-10 text-slate-700 mx-auto" />
               <p className="text-sm text-slate-300 font-semibold">Full Access — No Restrictions</p>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">{ROLE_META[selectedRole]?.badge} has unrestricted access to all submodules. Permissions cannot be restricted for admin-level roles.</p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
+              <div className="overflow-x-auto rounded-2xl glass-panel">
                 <table className="w-full min-w-[640px]">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-800/30">
+                    <tr className="border-b border-white/[0.07] bg-white/[0.02]">
                       <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-widest">Module / Submodule</th>
                       {PERM_COLS.map(c => (
                         <th key={c.key} className="text-center px-3 py-3 w-20">
@@ -299,7 +299,7 @@ export default function SettingsRolesPage() {
                     {Object.entries(SUBMODULE_DEFS).map(([modKey, modDef]) => {
                       const isExpanded = expandedModules.has(modKey)
                       return [
-                        <tr key={`${modKey}-header`} className="border-b border-slate-800/50 bg-slate-800/20 cursor-pointer hover:bg-slate-800/40 transition" onClick={() => toggleModule(modKey)}>
+                        <tr key={`${modKey}-header`} className="border-b border-white/[0.05] bg-slate-800/20 cursor-pointer hover:bg-white/[0.025] transition" onClick={() => toggleModule(modKey)}>
                           <td className="px-4 py-2.5" colSpan={6}>
                             <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
                               {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-slate-500" /> : <ChevronRight className="h-3.5 w-3.5 text-slate-500" />}
@@ -318,7 +318,7 @@ export default function SettingsRolesPage() {
                                 return (
                                   <td key={col.key} className="text-center px-3 py-2.5">
                                     <button onClick={() => togglePerm(selectedRole, modKey, sub.key, col.key)}
-                                      className={`w-6 h-6 rounded-md border-2 flex items-center justify-center mx-auto transition ${active ? `${col.color.replace('text-', 'border-')} bg-slate-800` : 'border-slate-700 hover:border-slate-500'}`}
+                                      className={`w-6 h-6 rounded-md border-2 flex items-center justify-center mx-auto transition ${active ? `${col.color.replace('text-', 'border-')} bg-slate-800` : 'border-white/[0.09] hover:border-slate-500'}`}
                                       title={`${active ? 'Revoke' : 'Grant'} ${col.label} permission`}>
                                       {active && <Check className={`h-3 w-3 ${col.color}`} />}
                                     </button>
@@ -335,7 +335,7 @@ export default function SettingsRolesPage() {
               </div>
 
               {/* Legend + Save */}
-              <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <div className="flex items-center justify-between rounded-xl glass-panel p-4">
                 <div className="flex items-center gap-4">
                   {PERM_COLS.map(c => (
                     <div key={c.key} className="flex items-center gap-1.5">

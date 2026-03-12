@@ -41,7 +41,7 @@ const DEFAULTS: ProfileData = {
   admission_number_padding: 4,
 }
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 placeholder:text-slate-600 transition'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 placeholder:text-slate-600 transition'
 
 export default function SettingsSchoolProfilePage() {
   const [form, setForm] = useState<ProfileData>(DEFAULTS)
@@ -133,7 +133,7 @@ export default function SettingsSchoolProfilePage() {
       )}
 
       {/* School Identity */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-5">
+      <section className="rounded-2xl glass-panel p-6 space-y-5">
         <div className="flex items-center gap-2 mb-1">
           <Building2 className="h-4 w-4 text-sky-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">School Identity</h2>
@@ -143,15 +143,15 @@ export default function SettingsSchoolProfilePage() {
         <div className="flex items-start gap-5">
           <div className="flex-shrink-0">
             {logoPreview
-              ? <img src={logoPreview} alt="logo" className="w-20 h-20 rounded-2xl object-contain border border-slate-700 bg-slate-950" />
-              : <div className="w-20 h-20 rounded-2xl border border-dashed border-slate-700 bg-slate-950 flex items-center justify-center text-slate-600 text-xs text-center">No Logo</div>
+              ? <img src={logoPreview} alt="logo" className="w-20 h-20 rounded-2xl object-contain border border-white/[0.09] bg-slate-950" />
+              : <div className="w-20 h-20 rounded-2xl border border-dashed border-white/[0.09] bg-slate-950 flex items-center justify-center text-slate-600 text-xs text-center">No Logo</div>
             }
           </div>
           <div className="flex-1">
             <p className="text-xs font-semibold text-slate-300 mb-2">School Logo</p>
             <p className="text-[11px] text-slate-500 mb-3">Used on all documents, invoices, receipts, and the system header. PNG or JPG, minimum 200×200px.</p>
             <button onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-emerald-400 hover:text-emerald-300 transition">
+              className="flex items-center gap-1.5 rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-300 hover:border-emerald-400 hover:text-emerald-300 transition">
               <Upload className="h-3.5 w-3.5" /> Upload Logo
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
@@ -171,7 +171,7 @@ export default function SettingsSchoolProfilePage() {
       </section>
 
       {/* Contact Information */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <MapPin className="h-4 w-4 text-emerald-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Contact Information</h2>
@@ -205,7 +205,7 @@ export default function SettingsSchoolProfilePage() {
       </section>
 
       {/* Finance Configuration */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Globe className="h-4 w-4 text-amber-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Finance Configuration</h2>
@@ -241,7 +241,7 @@ export default function SettingsSchoolProfilePage() {
       </section>
 
       {/* Admission Numbers */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Building2 className="h-4 w-4 text-violet-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Admission Number Configuration</h2>
@@ -263,7 +263,7 @@ export default function SettingsSchoolProfilePage() {
             <input type="number" min={1} max={8} value={form.admission_number_padding} onChange={e => setF('admission_number_padding', Number(e.target.value))} className={cls} />
           </div>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-[11px] text-slate-400">
+        <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3 text-[11px] text-slate-400">
           Preview: <span className="text-emerald-400 font-mono text-xs">
             {form.admission_number_prefix}{String(1).padStart(form.admission_number_padding, '0')}
           </span>

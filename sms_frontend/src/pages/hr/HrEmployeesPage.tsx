@@ -187,7 +187,7 @@ export default function HrEmployeesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Employee Directory</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Staff Profiles</h1>
       </section>
@@ -203,13 +203,13 @@ export default function HrEmployeesPage() {
         </div>
       ) : null}
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search employee, department, position..."
-            className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 sm:max-w-md"
+            className="w-full rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm text-slate-100 sm:max-w-md"
           />
           <button
             onClick={() => setShowCreate((prev) => !prev)}
@@ -220,49 +220,49 @@ export default function HrEmployeesPage() {
         </div>
 
         {showCreate ? (
-          <div className="mt-4 grid gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-4 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 sm:grid-cols-2">
             <input
               value={form.first_name}
               onChange={(event) => setForm((prev) => ({ ...prev, first_name: event.target.value }))}
               placeholder="First name"
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             />
             <input
               value={form.middle_name}
               onChange={(event) => setForm((prev) => ({ ...prev, middle_name: event.target.value }))}
               placeholder="Middle name"
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             />
             <input
               value={form.last_name}
               onChange={(event) => setForm((prev) => ({ ...prev, last_name: event.target.value }))}
               placeholder="Last name"
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             />
             <input
               type="date"
               value={form.date_of_birth}
               onChange={(event) => setForm((prev) => ({ ...prev, date_of_birth: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             />
             <input
               type="date"
               value={form.join_date}
               onChange={(event) => setForm((prev) => ({ ...prev, join_date: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             />
             <input
               value={form.notice_period_days}
               onChange={(event) => setForm((prev) => ({ ...prev, notice_period_days: event.target.value }))}
               placeholder="Notice period days"
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             />
             <select
               value={form.gender}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, gender: event.target.value as NewEmployee['gender'] }))
               }
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             >
               <option value="Female">Female</option>
               <option value="Male">Male</option>
@@ -273,7 +273,7 @@ export default function HrEmployeesPage() {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, marital_status: event.target.value as NewEmployee['marital_status'] }))
               }
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             >
               <option value="Single">Single</option>
               <option value="Married">Married</option>
@@ -287,7 +287,7 @@ export default function HrEmployeesPage() {
                   ({ ...prev, employment_type: event.target.value as NewEmployee['employment_type'] }),
                 )
               }
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             >
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
@@ -300,7 +300,7 @@ export default function HrEmployeesPage() {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, status: event.target.value as NewEmployee['status'] }))
               }
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             >
               <option value="Active">Active</option>
               <option value="On Leave">On Leave</option>
@@ -311,7 +311,7 @@ export default function HrEmployeesPage() {
             <select
               value={form.department}
               onChange={(event) => setForm((prev) => ({ ...prev, department: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             >
               <option value="">Department (optional)</option>
               {departments.map((department) => (
@@ -323,7 +323,7 @@ export default function HrEmployeesPage() {
             <select
               value={form.position}
               onChange={(event) => setForm((prev) => ({ ...prev, position: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] glass-panel px-3 py-2 text-sm"
             >
               <option value="">Position (optional)</option>
               {positions.map((position) => (
@@ -345,7 +345,7 @@ export default function HrEmployeesPage() {
         ) : null}
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
+      <section className="overflow-hidden rounded-xl glass-panel">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-950/70 text-xs uppercase tracking-wide text-slate-400">
@@ -362,22 +362,22 @@ export default function HrEmployeesPage() {
             </thead>
             <tbody>
               {(loading ? [] : filteredEmployees).map((employee) => editingEmployeeId === employee.id ? (
-                <tr key={employee.id} className="border-t border-emerald-600/30 bg-slate-900/80">
+                <tr key={employee.id} className="border-t border-emerald-600/30 bg-white/[0.03]">
                   <td className="px-2 py-2 text-slate-400 text-xs">{employee.employee_id}</td>
                   <td className="px-2 py-2" colSpan={4}>
                     <div className="grid gap-1.5 sm:grid-cols-3">
-                      <input value={editForm.first_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, first_name: e.target.value }))} placeholder="First name" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
-                      <input value={editForm.middle_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, middle_name: e.target.value }))} placeholder="Middle name" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
-                      <input value={editForm.last_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, last_name: e.target.value }))} placeholder="Last name" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
-                      <select value={editForm.department ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+                      <input value={editForm.first_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, first_name: e.target.value }))} placeholder="First name" className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs" />
+                      <input value={editForm.middle_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, middle_name: e.target.value }))} placeholder="Middle name" className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs" />
+                      <input value={editForm.last_name ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, last_name: e.target.value }))} placeholder="Last name" className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs" />
+                      <select value={editForm.department ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs">
                         <option value="">No department</option>
                         {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
                       </select>
-                      <select value={editForm.position ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, position: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+                      <select value={editForm.position ?? ''} onChange={(e) => setEditForm((p) => ({ ...p, position: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs">
                         <option value="">No position</option>
                         {positions.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
                       </select>
-                      <select value={editForm.status ?? 'Active'} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value as NewEmployee['status'] }))} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+                      <select value={editForm.status ?? 'Active'} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value as NewEmployee['status'] }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs">
                         <option>Active</option><option>On Leave</option><option>Suspended</option><option>Terminated</option><option>Retired</option>
                       </select>
                     </div>
@@ -385,7 +385,7 @@ export default function HrEmployeesPage() {
                   <td className="px-2 py-2" colSpan={3}>
                     <div className="flex gap-2">
                       <button onClick={saveEmployeeEdit} disabled={saving} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save</button>
-                      <button onClick={() => setEditingEmployeeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                      <button onClick={() => setEditingEmployeeId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                     </div>
                   </td>
                 </tr>
@@ -395,12 +395,12 @@ export default function HrEmployeesPage() {
                     <div className="flex items-center gap-4">
                       <p className="text-xs text-rose-200">Deactivate "{employee.full_name}" (set to Terminated)?</p>
                       <button onClick={() => void deleteEmployee(employee.id)} disabled={saving} className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-200 disabled:opacity-60">Confirm</button>
-                      <button onClick={() => setDeletingEmployeeId(null)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300">Cancel</button>
+                      <button onClick={() => setDeletingEmployeeId(null)} className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300">Cancel</button>
                     </div>
                   </td>
                 </tr>
               ) : (
-                <tr key={employee.id} className="border-t border-slate-800">
+                <tr key={employee.id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-200">{employee.employee_id}</td>
                   <td className="px-4 py-3 text-slate-100">{employee.full_name}</td>
                   <td className="px-4 py-3 text-slate-300">{employee.department_name || 'Unassigned'}</td>

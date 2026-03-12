@@ -22,12 +22,12 @@ const DEFAULTS: CommSettings = {
   whatsapp_api_key: '', whatsapp_phone_id: '',
 }
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
-const passClass = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition font-mono placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const passClass = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition font-mono placeholder:text-slate-600'
 
 function Section({ icon: Icon, color, title, children }: { icon: React.ElementType; color: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+    <section className="rounded-2xl glass-panel p-6 space-y-4">
       <div className="flex items-center gap-2 mb-1">
         <Icon className={`h-4 w-4 ${color}`} />
         <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">{title}</h2>

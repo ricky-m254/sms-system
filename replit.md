@@ -136,14 +136,25 @@ Seeded subjects organized by department:
 - **Non-Teaching** (seeded: 18): Principal, Deputy, Bursar, Clerks, Lab Technicians, Librarian, Drivers, Security Guards, Cooks, Groundskeeper, Nurse, ICT Technician, Matron
 - Filter tabs in StaffDirectoryPage: All / Teaching / Non-Teaching / Administration / Support
 
-## Design System
+## Design System — Glass Morphism (T006 Complete)
+
+All 249 frontend pages now use the unified glass morphism design system. **Zero** legacy `bg-slate-900/60` or `border-slate-800` patterns remain.
 
 - **Background**: `#070b12`, sidebar gradient `#0d1421 → #0a0f1a`
 - **Primary accent**: Emerald `#10b981`, secondary: Sky `#38bdf8`
 - **Approval accent**: Amber `#f59e0b`
 - **Typography**: Space Grotesk (headings, `font-display`), Manrope (body)
-- **Glass panels**: `background: rgba(255,255,255,0.025)`, `border: rgba(255,255,255,0.07)`
+- **Glass panel card** (CSS class `glass-panel`): `background: rgba(255,255,255,0.025)`, `border: 1px solid rgba(255,255,255,0.07)`
+- **Glass panel hover** (CSS class `glass-panel-hover`): same + hover brightening
+- **Hero pattern**: `linear-gradient(135deg,…)` + `radial-gradient` overlay at 0.25 opacity + pill badge + mini stat grid
+- **KPI card pattern**: `relative overflow-hidden rounded-2xl p-5` + absolute icon div top-right + large value + label + colored subtext
+- **Table `<thead>`**: `bg-white/[0.03]` for subtle row contrast
+- **Modal/overlay panels**: `bg-[#0d1421]`
 - **Currency**: `Ksh ` prefix + `toLocaleString('en-KE', { minimumFractionDigits: 2 })`
+
+### Dashboard Pages Rebuilt (glass morphism heroes)
+
+Cafeteria, Sports, Hostel, Assets, Maintenance, Visitor, Dispensary, Communication, HR, Finance Summary, Curriculum, Admissions, Parent Portal — all with hero banners, KPI cards, charts, and quick-action sidebar panels.
 
 ## Clock-In Kiosk
 

@@ -182,25 +182,25 @@ export default function FinancePaymentFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/payments" label="Back to Payments" />
       </div>
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Record Payment</h1>
         <p className="mt-2 text-sm text-slate-400">Add a new payment entry.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading students...</p>
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+      <section className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-7">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block text-sm">
             Student
             <select
               className={`mt-2 w-full rounded-xl border bg-slate-950 px-3 py-2 text-sm text-white outline-none ${
-                fieldErrors.student ? 'border-rose-500/70' : 'border-slate-800 focus:border-emerald-400'
+                fieldErrors.student ? 'border-rose-500/70' : 'border-white/[0.07] focus:border-emerald-400'
               }`}
               value={formState.student}
               aria-invalid={Boolean(fieldErrors.student)}
@@ -226,7 +226,7 @@ export default function FinancePaymentFormPage() {
               type="number"
               min="0.01"
               step="0.01"
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
               aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
@@ -243,7 +243,7 @@ export default function FinancePaymentFormPage() {
             Payment Date
             <input
               type="date"
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.payment_date}
               aria-invalid={Boolean(fieldErrors.payment_date)}
               onChange={(event) => {
@@ -261,7 +261,7 @@ export default function FinancePaymentFormPage() {
               className={`mt-2 w-full rounded-xl border bg-slate-950 px-3 py-2 text-sm text-white outline-none ${
                 fieldErrors.payment_method
                   ? 'border-rose-500/70'
-                  : 'border-slate-800 focus:border-emerald-400'
+                  : 'border-white/[0.07] focus:border-emerald-400'
               }`}
               value={formState.payment_method}
               aria-invalid={Boolean(fieldErrors.payment_method)}
@@ -284,7 +284,7 @@ export default function FinancePaymentFormPage() {
           <label className="block text-sm">
             Reference Number
             <input
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.reference_number}
               aria-invalid={Boolean(fieldErrors.reference_number)}
               onChange={(event) => {
@@ -300,7 +300,7 @@ export default function FinancePaymentFormPage() {
           <label className="block text-sm">
             Notes
             <textarea
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.notes}
               onChange={(event) => setFormState((prev) => ({ ...prev, notes: event.target.value }))}
               rows={3}
@@ -316,7 +316,7 @@ export default function FinancePaymentFormPage() {
               {isSubmitting ? 'Saving...' : 'Record payment'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               type="button"
               onClick={() => navigate('/modules/finance/payments')}
             >
@@ -326,7 +326,7 @@ export default function FinancePaymentFormPage() {
         </form>
       </section>
 
-      <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-5">
+      <aside className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-5">
         <h3 className="text-sm font-semibold text-slate-200">Student context</h3>
         <div className="mt-3 grid gap-3 text-xs text-slate-300 md:grid-cols-2">
           <div>
@@ -358,7 +358,7 @@ export default function FinancePaymentFormPage() {
           <div className="mt-2 space-y-2">
             {(studentDetail?.guardians ?? []).length > 0 ? (
               studentDetail?.guardians?.map((guardian) => (
-                <div key={guardian.id} className="rounded-xl border border-slate-800 p-3 text-xs">
+                <div key={guardian.id} className="rounded-xl border border-white/[0.07] p-3 text-xs">
                   <p className="text-sm text-white">{guardian.name}</p>
                   <p className="text-[11px] text-slate-400">
                     {guardian.relationship ?? 'Guardian'}

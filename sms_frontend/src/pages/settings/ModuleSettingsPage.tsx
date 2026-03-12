@@ -192,16 +192,16 @@ export default function ModuleSettingsPage() {
   }
 
   if (loadingModules) {
-    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">Loading modules...</div>
+    return <div className="rounded-2xl glass-panel p-6 text-sm text-slate-300">Loading modules...</div>
   }
 
   if (!selectedModule) {
-    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-slate-300">No assigned modules were found for this tenant.</div>
+    return <div className="rounded-2xl glass-panel p-6 text-sm text-slate-300">No assigned modules were found for this tenant.</div>
   }
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-4">
+      <aside className="col-span-12 rounded-2xl glass-panel p-4 lg:col-span-4">
         <h2 className="text-sm font-semibold text-slate-100">Module Settings</h2>
         <p className="mt-1 text-xs text-slate-400">Select a module to configure its theme and feature toggles.</p>
         <div className="mt-4 space-y-2">
@@ -216,7 +216,7 @@ export default function ModuleSettingsPage() {
                 className={`w-full rounded-xl border px-3 py-3 text-left transition ${
                   isActive
                     ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-100'
-                    : 'border-slate-700 bg-slate-950/30 text-slate-200 hover:border-slate-500'
+                    : 'border-white/[0.09] bg-slate-950/30 text-slate-200 hover:border-slate-500'
                 }`}
               >
                 <p className="text-sm font-semibold">{module.module_name}</p>
@@ -227,7 +227,7 @@ export default function ModuleSettingsPage() {
         </div>
       </aside>
 
-      <section className="col-span-12 space-y-5 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-8">
+      <section className="col-span-12 space-y-5 rounded-2xl glass-panel p-5 lg:col-span-8">
         <header>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Theme Configuration</p>
           <h1 className="mt-1 text-2xl font-display font-semibold text-slate-100">{selectedModule.module_name}</h1>
@@ -235,7 +235,7 @@ export default function ModuleSettingsPage() {
         </header>
 
         {loadingSettings || !draft ? (
-          <div className="rounded-xl border border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-300">Loading module settings...</div>
+          <div className="rounded-xl border border-white/[0.09] bg-slate-950/40 p-4 text-sm text-slate-300">Loading module settings...</div>
         ) : (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -244,7 +244,7 @@ export default function ModuleSettingsPage() {
                 <select
                   value={draft.theme_preset}
                   onChange={(event) => updateDraft({ theme_preset: event.target.value as ModuleThemeSettingsInput['theme_preset'] })}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                  className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-slate-100"
                 >
                   {PRESETS.map((preset) => (
                     <option key={preset} value={preset}>{preset}</option>
@@ -256,7 +256,7 @@ export default function ModuleSettingsPage() {
                 <select
                   value={draft.sidebar_style}
                   onChange={(event) => updateDraft({ sidebar_style: event.target.value as ModuleThemeSettingsInput['sidebar_style'] })}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                  className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-slate-100"
                 >
                   {SIDEBARS.map((style) => (
                     <option key={style} value={style}>{style}</option>
@@ -269,7 +269,7 @@ export default function ModuleSettingsPage() {
                   type="color"
                   value={draft.primary_color}
                   onChange={(event) => updateDraft({ primary_color: event.target.value })}
-                  className="h-10 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-950 px-1"
+                  className="h-10 w-full cursor-pointer rounded-lg border border-white/[0.09] bg-slate-950 px-1"
                 />
               </label>
               <label className="space-y-2">
@@ -278,16 +278,16 @@ export default function ModuleSettingsPage() {
                   type="color"
                   value={draft.secondary_color}
                   onChange={(event) => updateDraft({ secondary_color: event.target.value })}
-                  className="h-10 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-950 px-1"
+                  className="h-10 w-full cursor-pointer rounded-lg border border-white/[0.09] bg-slate-950 px-1"
                 />
               </label>
             </div>
 
-            <div className="rounded-xl border border-slate-700 bg-slate-950/40 p-4">
+            <div className="rounded-xl border border-white/[0.09] bg-slate-950/40 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Feature Toggles</p>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {Object.entries(draft.feature_toggles ?? EMPTY_TOGGLES).map(([key, value]) => (
-                  <label key={key} className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2">
+                  <label key={key} className="flex items-center justify-between rounded-lg border border-white/[0.09] glass-panel px-3 py-2">
                     <span className="text-sm text-slate-200">{key.replace('_', ' ')}</span>
                     <input
                       type="checkbox"
@@ -312,7 +312,7 @@ export default function ModuleSettingsPage() {
                 type="button"
                 onClick={resetDraft}
                 disabled={saving}
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+                className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
               >
                 Reset
               </button>

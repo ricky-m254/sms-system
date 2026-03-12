@@ -108,13 +108,13 @@ export default function FinanceStoreRequestsPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white/[0.02] border border-white/[0.07] p-4 rounded-2xl">
         <div className="flex items-center gap-2">
           <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Filter Status:</label>
           <select 
             value={statusFilter} 
             onChange={e => setStatusFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
+            className="bg-slate-950 border border-white/[0.07] rounded-xl px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
           >
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -130,9 +130,9 @@ export default function FinanceStoreRequestsPage() {
 
       <div className="grid gap-4">
         {loading ? (
-          <div className="p-12 text-center text-slate-500 bg-slate-900/60 border border-slate-800 rounded-2xl">Loading requests...</div>
+          <div className="p-12 text-center text-slate-500 glass-panel rounded-2xl">Loading requests...</div>
         ) : filteredOrders.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 bg-slate-900/60 border border-slate-800 rounded-2xl">No store requests found.</div>
+          <div className="p-12 text-center text-slate-500 glass-panel rounded-2xl">No store requests found.</div>
         ) : (
           filteredOrders.map(order => {
             const Config = STATUS_CONFIG[order.status] || STATUS_CONFIG.PENDING;
@@ -143,7 +143,7 @@ export default function FinanceStoreRequestsPage() {
             const alreadySent = !!order.generated_expense_id;
 
             return (
-              <div key={order.id} className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors">
+              <div key={order.id} className="glass-panel rounded-2xl overflow-hidden hover:border-white/[0.09] transition-colors">
                 <div className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-1">
@@ -194,9 +194,9 @@ export default function FinanceStoreRequestsPage() {
 
                   <div className="mt-6">
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Order Items</h4>
-                    <div className="overflow-hidden border border-slate-800 rounded-xl bg-slate-950/40">
+                    <div className="overflow-hidden border border-white/[0.07] rounded-xl bg-slate-950/40">
                       <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-800/50 text-slate-400 text-[10px] uppercase font-bold tracking-wider">
+                        <thead className="bg-white/[0.03] text-slate-400 text-[10px] uppercase font-bold tracking-wider">
                           <tr>
                             <th className="px-4 py-2.5">Item</th>
                             <th className="px-4 py-2.5 text-right">Qty Req</th>

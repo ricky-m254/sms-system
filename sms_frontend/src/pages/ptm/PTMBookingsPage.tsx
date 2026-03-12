@@ -40,19 +40,19 @@ export default function PTMBookingsPage() {
           <input
             type="text"
             placeholder="Search by student, parent, or teacher..."
-            className="w-full rounded-xl border border-slate-800 bg-slate-900/40 py-2.5 pl-10 pr-4 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/[0.07] bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none"
           />
         </div>
-        <button className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
+        <button className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 transition">
           <Filter className="h-4 w-4 text-slate-500" />
           Filters
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl glass-panel shadow-xl backdrop-blur-sm">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-800/40 uppercase tracking-widest text-[10px] font-bold text-slate-500">
+            <tr className="border-b border-white/[0.07] bg-white/[0.025] uppercase tracking-widest text-[10px] font-bold text-slate-500">
               <th className="px-6 py-4 font-semibold text-slate-300">Time & Session</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Student & Parent</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Teacher</th>

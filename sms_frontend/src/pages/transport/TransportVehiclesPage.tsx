@@ -65,23 +65,23 @@ export default function TransportVehiclesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 flex items-center justify-between">
+      <section className="rounded-2xl glass-panel p-5 flex items-center justify-between">
         <div><p className="text-xs uppercase tracking-[0.3em] text-slate-400">Transport</p><h1 className="mt-1 text-2xl font-display font-semibold">Vehicle Fleet</h1></div>
         <button onClick={openCreate} className="rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/30 transition">+ Add Vehicle</button>
       </section>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <section className="rounded-2xl glass-panel overflow-hidden">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase text-slate-400">
+          <thead className="border-b border-white/[0.07] bg-slate-950/60 text-xs uppercase text-slate-400">
             <tr><th className="px-4 py-3">Registration</th><th className="px-4 py-3">Make / Model</th><th className="px-4 py-3">Capacity</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Notes</th><th className="px-4 py-3">Actions</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {vehicles.length === 0 ? (
               <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-500">No vehicles registered.</td></tr>
             ) : vehicles.map(v => (
-              <tr key={v.id} className="hover:bg-slate-800/30 transition">
+              <tr key={v.id} className="hover:bg-white/[0.02] transition">
                 <td className="px-4 py-3 font-mono font-semibold text-white">{v.registration}</td>
                 <td className="px-4 py-3 text-slate-300">{[v.make, v.model].filter(Boolean).join(' ') || '—'}</td>
                 <td className="px-4 py-3 text-slate-300">{v.capacity} seats</td>
@@ -89,7 +89,7 @@ export default function TransportVehiclesPage() {
                 <td className="px-4 py-3 text-slate-500 max-w-xs truncate">{v.notes || '—'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
-                    <button onClick={() => openEdit(v)} className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800 transition">Edit</button>
+                    <button onClick={() => openEdit(v)} className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 hover:bg-slate-800 transition">Edit</button>
                     <button onClick={() => del(v.id)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-3 py-1 text-xs text-rose-300 hover:bg-rose-500/20 transition">Delete</button>
                   </div>
                 </td>
@@ -101,23 +101,23 @@ export default function TransportVehiclesPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-3">
             <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Vehicle' : 'Add Vehicle'}</h2>
-            <input value={registration} onChange={e => setRegistration(e.target.value)} placeholder="Registration (e.g. KAA 123B)" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+            <input value={registration} onChange={e => setRegistration(e.target.value)} placeholder="Registration (e.g. KAA 123B)" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
             <div className="grid grid-cols-2 gap-3">
-              <input value={make} onChange={e => setMake(e.target.value)} placeholder="Make (Toyota)" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-              <input value={model} onChange={e => setModel(e.target.value)} placeholder="Model (Coaster)" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+              <input value={make} onChange={e => setMake(e.target.value)} placeholder="Make (Toyota)" className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
+              <input value={model} onChange={e => setModel(e.target.value)} placeholder="Model (Coaster)" className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <input type="number" value={capacity} onChange={e => setCapacity(e.target.value)} placeholder="Capacity" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
-              <select value={status} onChange={e => setStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+              <input type="number" value={capacity} onChange={e => setCapacity(e.target.value)} placeholder="Capacity" className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
+              <select value={status} onChange={e => setStatus(e.target.value)} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                 {STATUS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm resize-none" />
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm resize-none" />
             <div className="flex gap-3 pt-1">
               <button onClick={save} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200">{editing ? 'Update' : 'Add'}</button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

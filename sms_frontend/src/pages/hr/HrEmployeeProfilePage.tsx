@@ -218,7 +218,7 @@ export default function HrEmployeeProfilePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Employee Profile</p>
@@ -226,7 +226,7 @@ export default function HrEmployeeProfilePage() {
           </div>
           <Link
             to="/modules/hr/employees"
-            className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-100"
+            className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-100"
           >
             Back to directory
           </Link>
@@ -270,38 +270,38 @@ export default function HrEmployeeProfilePage() {
       ) : null}
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <article className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="space-y-4 rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Emergency Contacts</h2>
           <div className="grid gap-2 sm:grid-cols-2">
             <input
               value={contactForm.name}
               onChange={(event) => setContactForm((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="Contact name"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <input
               value={contactForm.relationship}
               onChange={(event) => setContactForm((prev) => ({ ...prev, relationship: event.target.value }))}
               placeholder="Relationship"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <input
               value={contactForm.phone_primary}
               onChange={(event) => setContactForm((prev) => ({ ...prev, phone_primary: event.target.value }))}
               placeholder="Primary phone"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <input
               value={contactForm.phone_alt}
               onChange={(event) => setContactForm((prev) => ({ ...prev, phone_alt: event.target.value }))}
               placeholder="Alternate phone"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <input
               value={contactForm.address}
               onChange={(event) => setContactForm((prev) => ({ ...prev, address: event.target.value }))}
               placeholder="Address"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm sm:col-span-2"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm sm:col-span-2"
             />
             <label className="flex items-center gap-2 text-sm text-slate-300 sm:col-span-2">
               <input
@@ -321,7 +321,7 @@ export default function HrEmployeeProfilePage() {
           </div>
           <div className="space-y-2">
             {(loading ? [] : contacts).map((contact) => (
-              <div key={contact.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-sm">
+              <div key={contact.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-slate-100">
                     {contact.name} ({contact.relationship}) {contact.is_primary ? '• Primary' : ''}
@@ -339,13 +339,13 @@ export default function HrEmployeeProfilePage() {
           </div>
         </article>
 
-        <article className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="space-y-4 rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Employee Documents</h2>
           <div className="grid gap-2 sm:grid-cols-2">
             <select
               value={documentForm.document_type}
               onChange={(event) => setDocumentForm((prev) => ({ ...prev, document_type: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             >
               <option value="Resume">Resume</option>
               <option value="Certificate">Certificate</option>
@@ -360,25 +360,25 @@ export default function HrEmployeeProfilePage() {
               onChange={(event) =>
                 setDocumentForm((prev) => ({ ...prev, file: event.target.files?.[0] ?? null }))
               }
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <input
               value={documentForm.description}
               onChange={(event) => setDocumentForm((prev) => ({ ...prev, description: event.target.value }))}
               placeholder="Description"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm sm:col-span-2"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm sm:col-span-2"
             />
             <input
               type="date"
               value={documentForm.issue_date}
               onChange={(event) => setDocumentForm((prev) => ({ ...prev, issue_date: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <input
               type="date"
               value={documentForm.expiry_date}
               onChange={(event) => setDocumentForm((prev) => ({ ...prev, expiry_date: event.target.value }))}
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <button
               onClick={handleUploadDocument}
@@ -397,7 +397,7 @@ export default function HrEmployeeProfilePage() {
 
           <div className="space-y-2">
             {(loading ? [] : documents).map((document) => (
-              <div key={document.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-sm">
+              <div key={document.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-slate-100">{document.file_name}</p>
                   <div className="flex items-center gap-3">

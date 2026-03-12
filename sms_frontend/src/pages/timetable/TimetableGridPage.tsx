@@ -159,7 +159,7 @@ export default function TimetableGridPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold">Weekly Timetable</h1>
           <p className="mt-1 text-sm text-slate-400">Manage and view lesson schedules.</p>
@@ -171,7 +171,7 @@ export default function TimetableGridPage() {
 
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex rounded-xl bg-slate-950 p-1">
             <button
@@ -191,7 +191,7 @@ export default function TimetableGridPage() {
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 min-w-[200px]"
+            className="bg-slate-950 border border-white/[0.07] rounded-xl px-4 py-2 text-sm text-slate-200 min-w-[200px]"
           >
             <option value="">Select {viewBy === 'class' ? 'Class' : 'Teacher'}...</option>
             {viewBy === 'class' ? (
@@ -205,7 +205,7 @@ export default function TimetableGridPage() {
         {error && <p className="text-rose-400 text-sm mb-4">{error}</p>}
 
         {!selectedId ? (
-          <div className="py-20 text-center border-2 border-dashed border-slate-800 rounded-2xl">
+          <div className="py-20 text-center border-2 border-dashed border-white/[0.07] rounded-2xl">
             <p className="text-slate-500">Select a {viewBy} to view the timetable.</p>
           </div>
         ) : isLoading ? (
@@ -217,9 +217,9 @@ export default function TimetableGridPage() {
             <table className="min-w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="p-2 border border-slate-800 bg-slate-950/50 text-xs text-slate-500 font-medium uppercase tracking-wider w-20">Period</th>
+                  <th className="p-2 border border-white/[0.07] bg-slate-950/50 text-xs text-slate-500 font-medium uppercase tracking-wider w-20">Period</th>
                   {days.map(day => (
-                    <th key={day.id} className="p-3 border border-slate-800 bg-slate-950/50 text-sm font-semibold text-slate-200">
+                    <th key={day.id} className="p-3 border border-white/[0.07] bg-slate-950/50 text-sm font-semibold text-slate-200">
                       {day.label}
                     </th>
                   ))}
@@ -228,13 +228,13 @@ export default function TimetableGridPage() {
               <tbody>
                 {periods.map(period => (
                   <tr key={period}>
-                    <td className="p-2 border border-slate-800 text-center bg-slate-950/30">
+                    <td className="p-2 border border-white/[0.07] text-center bg-slate-950/30">
                       <span className="text-lg font-bold text-slate-700">{period}</span>
                     </td>
                     {days.map(day => {
                       const slot = getSlot(day.id, period)
                       return (
-                        <td key={`${day.id}-${period}`} className="p-1 border border-slate-800 h-28 w-40 vertical-top">
+                        <td key={`${day.id}-${period}`} className="p-1 border border-white/[0.07] h-28 w-40 vertical-top">
                           {slot ? (
                             <div className={`h-full w-full rounded-lg p-2 border ${getSubjectColor(slot.subject)} flex flex-col justify-between relative group cursor-pointer hover:brightness-110 transition`}>
                               <div>
@@ -258,7 +258,7 @@ export default function TimetableGridPage() {
                               )}
                             </div>
                           ) : (
-                            <div className="h-full w-full rounded-lg bg-slate-900/20 border border-transparent group hover:border-slate-800 transition flex items-center justify-center">
+                            <div className="h-full w-full rounded-lg bg-[#0d1421]/20 border border-transparent group hover:border-white/[0.07] transition flex items-center justify-center">
                                <button onClick={() => openAddModal(day.id, period)} className="opacity-0 group-hover:opacity-100 text-slate-400 text-lg leading-none transition hover:text-emerald-400">+</button>
                             </div>
                           )}
@@ -275,18 +275,18 @@ export default function TimetableGridPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-3">
             <h2 className="text-lg font-display font-semibold">Add Timetable Slot</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Day</label>
-                <select value={newDay} onChange={e => setNewDay(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                <select value={newDay} onChange={e => setNewDay(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                   {days.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Period</label>
-                <select value={newPeriod} onChange={e => setNewPeriod(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                <select value={newPeriod} onChange={e => setNewPeriod(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                   {periods.map(p => <option key={p} value={p}>Period {p}</option>)}
                 </select>
               </div>
@@ -294,30 +294,30 @@ export default function TimetableGridPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Start time</label>
-                <input type="time" value={newStartTime} onChange={e => setNewStartTime(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                <input type="time" value={newStartTime} onChange={e => setNewStartTime(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">End time</label>
-                <input type="time" value={newEndTime} onChange={e => setNewEndTime(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                <input type="time" value={newEndTime} onChange={e => setNewEndTime(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
               </div>
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Class *</label>
-              <select value={newClassId} onChange={e => setNewClassId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+              <select value={newClassId} onChange={e => setNewClassId(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                 <option value="">Select class</option>
                 {classes.map(c => <option key={c.id} value={c.id}>{c.display_name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Subject *</label>
-              <select value={newSubjectId} onChange={e => setNewSubjectId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+              <select value={newSubjectId} onChange={e => setNewSubjectId(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                 <option value="">Select subject</option>
                 {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Teacher</label>
-              <select value={newTeacherId} onChange={e => setNewTeacherId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+              <select value={newTeacherId} onChange={e => setNewTeacherId(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                 <option value="">No teacher assigned</option>
                 {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
               </select>
@@ -325,11 +325,11 @@ export default function TimetableGridPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Room</label>
-                <input value={newRoom} onChange={e => setNewRoom(e.target.value)} placeholder="Room / Lab" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" />
+                <input value={newRoom} onChange={e => setNewRoom(e.target.value)} placeholder="Room / Lab" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Term</label>
-                <select value={newTermId} onChange={e => setNewTermId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+                <select value={newTermId} onChange={e => setNewTermId(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm">
                   <option value="">Any term</option>
                   {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
@@ -337,7 +337,7 @@ export default function TimetableGridPage() {
             </div>
             <div className="flex gap-3 pt-1">
               <button onClick={saveSlot} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200">Add Slot</button>
-              <button onClick={() => setShowAddModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setShowAddModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

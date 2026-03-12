@@ -74,7 +74,7 @@ export default function FinanceExpenseLedgerPage() {
 
   return (
     <section className="col-span-12 grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <BackButton to="/modules/finance" label="Back to Finance" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -85,11 +85,11 @@ export default function FinanceExpenseLedgerPage() {
         </div>
       </header>
 
-      <div className="col-span-12 flex flex-wrap gap-4 items-center rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div className="col-span-12 flex flex-wrap gap-4 items-center rounded-2xl glass-panel p-4">
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400">Vote Head:</span>
           <select
-            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400"
             value={selectedVoteHead}
             onChange={(e) => setSelectedVoteHead(e.target.value)}
           >
@@ -103,7 +103,7 @@ export default function FinanceExpenseLedgerPage() {
           <span className="text-sm text-slate-400">From:</span>
           <input
             type="date"
-            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
           />
@@ -112,7 +112,7 @@ export default function FinanceExpenseLedgerPage() {
           <span className="text-sm text-slate-400">To:</span>
           <input
             type="date"
-            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
           />
@@ -132,15 +132,15 @@ export default function FinanceExpenseLedgerPage() {
           <p className="text-slate-500 text-center py-10">No expenses found matching criteria.</p>
         ) : (
           Object.entries(grouped).map(([vh, group]) => (
-            <section key={vh} className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700 bg-slate-800/40">
+            <section key={vh} className="rounded-2xl glass-panel overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.09] bg-white/[0.025]">
                 <h3 className="font-semibold text-emerald-400">{vh}</h3>
                 <span className="font-mono font-bold text-white">KES {fmt(group.total)}</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-slate-300">
                   <thead>
-                    <tr className="text-[10px] uppercase tracking-wider text-slate-500 border-b border-slate-800/60">
+                    <tr className="text-[10px] uppercase tracking-wider text-slate-500 border-b border-white/[0.06]">
                       <th className="px-5 py-3 text-left font-medium">Date</th>
                       <th className="px-5 py-3 text-left font-medium">Description</th>
                       <th className="px-5 py-3 text-left font-medium">Approved By</th>
@@ -149,7 +149,7 @@ export default function FinanceExpenseLedgerPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {group.expenses.map((e) => (
-                      <tr key={e.id} className="hover:bg-slate-800/30 transition">
+                      <tr key={e.id} className="hover:bg-white/[0.02] transition">
                         <td className="px-5 py-2.5 text-slate-400 whitespace-nowrap">{e.expense_date}</td>
                         <td className="px-5 py-2.5">{e.description}</td>
                         <td className="px-5 py-2.5 text-xs text-slate-500">{e.approved_by_name || '—'}</td>

@@ -18,18 +18,18 @@ export default function AnalyticsEnrollmentPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold text-white">Enrollment Trends</h1>
         <p className="text-sm text-slate-400 mt-1">Historical view of student population growth.</p>
       </header>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300">Loading...</div>
+        <div className="rounded-2xl glass-panel p-6 text-slate-300">Loading...</div>
       ) : (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 overflow-hidden">
+        <div className="rounded-2xl glass-panel p-6 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm font-sans">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-6 py-4">Academic Year / Period</th>
                   <th className="px-6 py-4 text-right">Total Students</th>
@@ -37,7 +37,7 @@ export default function AnalyticsEnrollmentPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {data.map((item, idx) => (
-                  <tr key={idx} className="bg-slate-950/40 hover:bg-slate-900/40 transition-colors font-sans">
+                  <tr key={idx} className="bg-slate-950/40 hover:bg-white/[0.02] transition-colors font-sans">
                     <td className="px-6 py-4 text-slate-200 font-sans">{item.date}</td>
                     <td className="px-6 py-4 text-right text-emerald-400 font-semibold font-sans">{item.count}</td>
                   </tr>

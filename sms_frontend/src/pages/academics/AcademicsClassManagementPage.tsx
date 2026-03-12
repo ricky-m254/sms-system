@@ -228,7 +228,7 @@ export default function AcademicsClassManagementPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Academics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Class Management</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -236,23 +236,23 @@ export default function AcademicsClassManagementPage() {
         </p>
       </header>
 
-      {isLoading ? <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">Loading class management...</div> : null}
+      {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading class management...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">{error}</div> : null}
       {flash ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-xs text-emerald-200">{flash}</div> : null}
 
       <section className="col-span-12 grid gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Enroll Student</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitEnrollment}>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={enrollmentForm.student} onChange={(e) => setEnrollmentForm((prev) => ({ ...prev, student: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={enrollmentForm.student} onChange={(e) => setEnrollmentForm((prev) => ({ ...prev, student: e.target.value }))} required>
               <option value="">Select student</option>
               {students.map((item) => <option key={item.id} value={item.id}>{item.admission_number} - {item.first_name} {item.last_name}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={enrollmentForm.school_class} onChange={(e) => setEnrollmentForm((prev) => ({ ...prev, school_class: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={enrollmentForm.school_class} onChange={(e) => setEnrollmentForm((prev) => ({ ...prev, school_class: e.target.value }))} required>
               <option value="">Select class</option>
               {classes.map((item) => <option key={item.id} value={item.id}>{item.display_name ?? item.name}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={enrollmentForm.term} onChange={(e) => setEnrollmentForm((prev) => ({ ...prev, term: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={enrollmentForm.term} onChange={(e) => setEnrollmentForm((prev) => ({ ...prev, term: e.target.value }))} required>
               <option value="">Select term</option>
               {terms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
@@ -260,25 +260,25 @@ export default function AcademicsClassManagementPage() {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Bulk Promote</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitBulkPromote}>
             <div className="grid gap-3 sm:grid-cols-2">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={promotionForm.from_academic_year} onChange={(e) => setPromotionForm((prev) => ({ ...prev, from_academic_year: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={promotionForm.from_academic_year} onChange={(e) => setPromotionForm((prev) => ({ ...prev, from_academic_year: e.target.value }))} required>
                 <option value="">From year</option>
                 {years.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={promotionForm.to_academic_year} onChange={(e) => setPromotionForm((prev) => ({ ...prev, to_academic_year: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={promotionForm.to_academic_year} onChange={(e) => setPromotionForm((prev) => ({ ...prev, to_academic_year: e.target.value }))} required>
                 <option value="">To year</option>
                 {years.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={promotionForm.from_term} onChange={(e) => setPromotionForm((prev) => ({ ...prev, from_term: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={promotionForm.from_term} onChange={(e) => setPromotionForm((prev) => ({ ...prev, from_term: e.target.value }))} required>
                 <option value="">From term</option>
                 {terms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={promotionForm.to_term} onChange={(e) => setPromotionForm((prev) => ({ ...prev, to_term: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={promotionForm.to_term} onChange={(e) => setPromotionForm((prev) => ({ ...prev, to_term: e.target.value }))} required>
                 <option value="">To term</option>
                 {terms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
@@ -288,11 +288,11 @@ export default function AcademicsClassManagementPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Enrollments</h2>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="w-full min-w-[920px] text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Student</th><th className="px-3 py-2 text-left">Class</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-left">Enrolled</th><th className="px-3 py-2 text-left">Left</th></tr></thead>
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Student</th><th className="px-3 py-2 text-left">Class</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-left">Enrolled</th><th className="px-3 py-2 text-left">Left</th></tr></thead>
             <tbody className="divide-y divide-slate-800">
               {sortedEnrollments.map((item) => (
                 <tr key={item.id} className="bg-slate-950/50"><td className="px-3 py-2">{item.student_name}</td><td className="px-3 py-2">{item.class_section_name}</td><td className="px-3 py-2">{item.term_name}</td><td className="px-3 py-2">{item.status}</td><td className="px-3 py-2">{item.enrollment_date}</td><td className="px-3 py-2">{item.left_date || '--'}</td></tr>
@@ -303,27 +303,27 @@ export default function AcademicsClassManagementPage() {
       </section>
 
       <section className="col-span-12 grid gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Teacher Assignment</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitAssignment}>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.teacher} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, teacher: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.teacher} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, teacher: e.target.value }))} required>
               <option value="">Select teacher</option>
               {staff.map((item) => <option key={item.id} value={item.id}>{item.first_name} {item.last_name}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.subject} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, subject: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.subject} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, subject: e.target.value }))} required>
               <option value="">Select subject</option>
               {subjects.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.class_section} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, class_section: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.class_section} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, class_section: e.target.value }))} required>
               <option value="">Select class</option>
               {classes.map((item) => <option key={item.id} value={item.id}>{item.display_name ?? item.name}</option>)}
             </select>
             <div className="grid gap-3 sm:grid-cols-2">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.academic_year} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, academic_year: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.academic_year} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, academic_year: e.target.value }))} required>
                 <option value="">Academic year</option>
                 {years.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.term} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, term: e.target.value }))}>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.term} onChange={(e) => setAssignmentForm((prev) => ({ ...prev, term: e.target.value }))}>
                 <option value="">Full year (no term)</option>
                 {terms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
@@ -333,11 +333,11 @@ export default function AcademicsClassManagementPage() {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Teacher Assignments</h2>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="w-full min-w-[720px] text-sm">
-              <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Teacher</th><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Class</th><th className="px-3 py-2 text-left">Year</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Action</th></tr></thead>
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Teacher</th><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Class</th><th className="px-3 py-2 text-left">Year</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Action</th></tr></thead>
               <tbody className="divide-y divide-slate-800">
                 {sortedAssignments.map((item) => (
                   <tr key={item.id} className="bg-slate-950/50">
@@ -346,7 +346,7 @@ export default function AcademicsClassManagementPage() {
                     <td className="px-3 py-2">{item.class_section_name}</td>
                     <td className="px-3 py-2">{item.academic_year_name}</td>
                     <td className="px-3 py-2">{item.term_name || 'Full year'}</td>
-                    <td className="px-3 py-2"><button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => setDeleteTarget(item.id)}>Remove</button></td>
+                    <td className="px-3 py-2"><button className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs" onClick={() => setDeleteTarget(item.id)}>Remove</button></td>
                   </tr>
                 ))}
               </tbody>

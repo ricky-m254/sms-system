@@ -93,34 +93,34 @@ export default function CafeteriaEnrollmentsPage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
       {showForm ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="mb-4 text-sm font-semibold text-slate-200">Enroll Student</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <select value={studentId} onChange={e => setStudentId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+            <select value={studentId} onChange={e => setStudentId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
               <option value="">Select student *</option>
               {students.map(s => <option key={s.id} value={s.id}>{s.admission_number} - {s.full_name}</option>)}
             </select>
-            <select value={planId} onChange={e => setPlanId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={planId} onChange={e => setPlanId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Meal plan *</option>
               {plans.filter(p => p.is_active).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
-            <select value={termId} onChange={e => setTermId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={termId} onChange={e => setTermId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Term (optional)</option>
               {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-            <input value={dietaryNotes} onChange={e => setDietaryNotes(e.target.value)} placeholder="Dietary notes" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-4" />
+            <input value={dietaryNotes} onChange={e => setDietaryNotes(e.target.value)} placeholder="Dietary notes" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-4" />
           </div>
           <button onClick={save} disabled={saving || !studentId || !planId} className="mt-4 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Enroll'}</button>
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60">
+      <div className="rounded-2xl glass-panel">
         <div className="p-4">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by student or plan…" className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by student or plan…" className="w-full max-w-sm rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-800 text-xs text-slate-400">
+            <thead className="border-b border-white/[0.07] text-xs text-slate-400">
               <tr>
                 <th className="px-4 py-3 font-medium">Student</th>
                 <th className="px-4 py-3 font-medium">Meal Plan</th>
@@ -132,7 +132,7 @@ export default function CafeteriaEnrollmentsPage() {
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">Loading…</td></tr> : filtered.map(en => (
-                <tr key={en.id} className="hover:bg-slate-800/30">
+                <tr key={en.id} className="hover:bg-white/[0.02]">
                   <td className="px-4 py-3 font-semibold text-slate-200">{en.student_name}</td>
                   <td className="px-4 py-3 text-slate-300">{en.meal_plan_name}</td>
                   <td className="px-4 py-3 text-slate-400 text-xs">{en.term ?? '-'}</td>

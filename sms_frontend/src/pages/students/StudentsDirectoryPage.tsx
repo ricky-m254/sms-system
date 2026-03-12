@@ -128,14 +128,14 @@ export default function StudentsDirectoryPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Student Directory</h1>
         <p className="mt-2 text-sm text-slate-400">Browse and search all students.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading students...</p>
         </div>
       ) : null}
@@ -146,7 +146,7 @@ export default function StudentsDirectoryPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Roster</h2>
@@ -154,21 +154,21 @@ export default function StudentsDirectoryPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
               disabled={isExporting}
               onClick={() => handleExport('csv')}
             >
               Download CSV
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 disabled:opacity-60"
               disabled={isExporting}
               onClick={() => handleExport('pdf')}
             >
               Download PDF
             </button>
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search name or admission #"
               value={query}
               onChange={(event) => {
@@ -177,7 +177,7 @@ export default function StudentsDirectoryPage() {
               }}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={genderFilter}
               onChange={(event) => {
                 setGenderFilter(event.target.value)
@@ -190,7 +190,7 @@ export default function StudentsDirectoryPage() {
               <option value="Other">Other</option>
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value)
@@ -208,9 +208,9 @@ export default function StudentsDirectoryPage() {
             {exportError}
           </div>
         ) : null}
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[900px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Admission #</th>
                 <th className="px-4 py-3">Name</th>
@@ -262,14 +262,14 @@ export default function StudentsDirectoryPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >

@@ -62,25 +62,25 @@ export default function PlatformActionLogsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Action Logs</h1>
       </header>
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="grid gap-3 md:grid-cols-6">
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={filters.tenant_id} onChange={(e) => setFilters((p) => ({ ...p, tenant_id: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.tenant_id} onChange={(e) => setFilters((p) => ({ ...p, tenant_id: e.target.value }))}>
             <option value="">All tenants</option>
             {tenants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Action" value={filters.action} onChange={(e) => setFilters((p) => ({ ...p, action: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Model name" value={filters.model_name} onChange={(e) => setFilters((p) => ({ ...p, model_name: e.target.value }))} />
-          <input type="date" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={filters.date_from} onChange={(e) => setFilters((p) => ({ ...p, date_from: e.target.value }))} />
-          <input type="date" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={filters.date_to} onChange={(e) => setFilters((p) => ({ ...p, date_to: e.target.value }))} />
-          <button className="rounded-lg border border-slate-700 px-3 py-2 text-sm" onClick={() => void loadData()}>Apply</button>
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Action" value={filters.action} onChange={(e) => setFilters((p) => ({ ...p, action: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Model name" value={filters.model_name} onChange={(e) => setFilters((p) => ({ ...p, model_name: e.target.value }))} />
+          <input type="date" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.date_from} onChange={(e) => setFilters((p) => ({ ...p, date_from: e.target.value }))} />
+          <input type="date" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.date_to} onChange={(e) => setFilters((p) => ({ ...p, date_to: e.target.value }))} />
+          <button className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => void loadData()}>Apply</button>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[1100px] w-full text-left text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">At</th><th className="px-3 py-2">Actor</th><th className="px-3 py-2">Tenant</th><th className="px-3 py-2">Action</th><th className="px-3 py-2">Model</th><th className="px-3 py-2">Object</th><th className="px-3 py-2">Details</th><th className="px-3 py-2">Path</th>
               </tr>

@@ -138,11 +138,11 @@ export default function CommunicationNotificationsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-700 transition">
+          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
             <RefreshCw size={13} className="text-slate-400" />
           </button>
           {unreadCount > 0 && (
-            <button onClick={markAllRead} className="flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition">
+            <button onClick={markAllRead} className="flex items-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition">
               <CheckCheck size={14} /> Mark All Read
             </button>
           )}
@@ -170,19 +170,19 @@ export default function CommunicationNotificationsPage() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-5 space-y-4">
+        <div className="rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 space-y-4">
           <h2 className="text-sm font-bold text-white flex items-center gap-2"><Bell size={14} /> Create Notification</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               value={form.title}
               onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
               placeholder="Notification title…"
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
             />
             <select
               value={form.notification_type}
               onChange={(e) => setForm(f => ({ ...f, notification_type: e.target.value }))}
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white"
             >
               {NOTIFICATION_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
@@ -192,10 +192,10 @@ export default function CommunicationNotificationsPage() {
             onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))}
             rows={3}
             placeholder="Notification message…"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
           />
           <div className="flex gap-2">
-            <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+            <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
             <button onClick={create} disabled={creating} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition disabled:opacity-50">
               {creating ? <Loader2 size={13} className="animate-spin" /> : <Bell size={13} />} Send
             </button>
@@ -205,7 +205,7 @@ export default function CommunicationNotificationsPage() {
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
-        <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/60 p-1">
+        <div className="flex gap-1 rounded-xl glass-panel p-1">
           {(['all', 'unread', 'read'] as const).map((f) => (
             <button
               key={f}
@@ -216,7 +216,7 @@ export default function CommunicationNotificationsPage() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/60 px-3">
+        <div className="flex items-center gap-1 rounded-xl glass-panel px-3">
           <Filter size={11} className="text-slate-500" />
           <select
             value={typeFilter}
@@ -246,7 +246,7 @@ export default function CommunicationNotificationsPage() {
             return (
               <div
                 key={n.id}
-                className={`group flex items-start gap-3 rounded-2xl border px-4 py-3.5 transition-all ${n.is_read ? 'border-slate-800 bg-slate-900/40 opacity-75' : `border-slate-700 bg-slate-900/80 ${cfg.border}`}`}
+                className={`group flex items-start gap-3 rounded-2xl border px-4 py-3.5 transition-all ${n.is_read ? 'border-white/[0.07] bg-white/[0.02] opacity-75' : `border-white/[0.09] bg-white/[0.03] ${cfg.border}`}`}
               >
                 <div className={`flex-shrink-0 mt-0.5 rounded-xl p-2 border ${cfg.bg} ${cfg.border}`}>
                   <Icon size={13} className={cfg.color} />

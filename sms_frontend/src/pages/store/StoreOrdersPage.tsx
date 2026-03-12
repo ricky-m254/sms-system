@@ -108,7 +108,7 @@ export default function StoreOrdersPage() {
 
       <div className="flex gap-3">
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+          className="bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
           <option value="">All Statuses</option>
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
@@ -121,9 +121,9 @@ export default function StoreOrdersPage() {
         {loading ? (
           <div className="p-8 text-center text-slate-400">Loading…</div>
         ) : !orders.length ? (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 text-center text-slate-500">No orders found.</div>
+          <div className="glass-panel rounded-2xl p-8 text-center text-slate-500">No orders found.</div>
         ) : orders.map(order => (
-          <div key={order.id} className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+          <div key={order.id} className="glass-panel rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => toggle(order.id)}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -157,13 +157,13 @@ export default function StoreOrdersPage() {
               </div>
             </div>
             {expanded.has(order.id) && (
-              <div className="px-5 pb-4 border-t border-slate-800/50 pt-3 space-y-3">
+              <div className="px-5 pb-4 border-t border-white/[0.05] pt-3 space-y-3">
                 {order.description && <p className="text-sm text-slate-400">{order.description}</p>}
                 {order.notes && <p className="text-sm text-slate-500 italic">{order.notes}</p>}
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-800">
+                      <tr className="text-slate-500 border-b border-white/[0.07]">
                         <th className="text-left py-2 pr-4">Item</th>
                         <th className="text-right py-2 pr-4">Requested</th>
                         <th className="text-right py-2">Approved</th>
@@ -188,18 +188,18 @@ export default function StoreOrdersPage() {
 
       {showCreate && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold text-slate-100">New Order Request</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Title *</label>
                 <input value={newOrder.title} onChange={e => setNewOrder(o => ({ ...o, title: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Send To</label>
                 <select value={newOrder.send_to} onChange={e => setNewOrder(o => ({ ...o, send_to: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
                   <option value="FINANCE">Finance Office</option>
                   <option value="ADMIN">Administration</option>
                   <option value="BOTH">Finance & Admin</option>
@@ -208,7 +208,7 @@ export default function StoreOrdersPage() {
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Description</label>
                 <textarea rows={2} value={newOrder.description} onChange={e => setNewOrder(o => ({ ...o, description: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
             </div>
 
@@ -225,22 +225,22 @@ export default function StoreOrdersPage() {
                         const item = items.find(i => i.id === Number(e.target.value));
                         setOrderItem(idx, 'item', e.target.value);
                         if (item) { setOrderItem(idx, 'item_name', item.name); setOrderItem(idx, 'unit', item.unit); }
-                      }} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400">
+                      }} className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400">
                         <option value="">Select item…</option>
                         {items.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                       </select>
                     </div>
                     <div className="col-span-3">
                       <input placeholder="Or type name" value={oi.item_name} onChange={e => setOrderItem(idx, 'item_name', e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                        className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                     </div>
                     <div className="col-span-2">
                       <input type="number" placeholder="Qty" value={oi.quantity_requested} onChange={e => setOrderItem(idx, 'quantity_requested', e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                        className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                     </div>
                     <div className="col-span-2">
                       <input placeholder="Unit" value={oi.unit} onChange={e => setOrderItem(idx, 'unit', e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                        className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                     </div>
                     <div className="col-span-1 flex justify-center pt-1.5">
                       <button onClick={() => removeOrderItem(idx)} className="text-rose-400 hover:text-rose-300 text-xs"><X size={14} /></button>
@@ -262,12 +262,12 @@ export default function StoreOrdersPage() {
 
       {reviewId !== null && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-4">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl p-6 max-w-sm w-full space-y-4">
             <h3 className="text-lg font-semibold text-slate-100">{reviewAction === 'APPROVE' ? 'Approve Order' : 'Reject Order'}</h3>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Notes</label>
               <textarea rows={3} value={reviewNotes} onChange={e => setReviewNotes(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
             </div>
             <div className="flex justify-end gap-3">
               <button onClick={() => { setReviewId(null); setReviewNotes(''); }} className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800">Cancel</button>

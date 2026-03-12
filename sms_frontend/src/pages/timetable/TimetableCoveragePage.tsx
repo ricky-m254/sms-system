@@ -77,7 +77,7 @@ export default function TimetableCoveragePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold">Lesson Coverage</h1>
           <p className="mt-1 text-sm text-slate-400">Manage teacher absences and class coverage.</p>
@@ -88,7 +88,7 @@ export default function TimetableCoveragePage() {
              type="date"
              value={date}
              onChange={(e) => setDate(e.target.value)}
-             className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200"
+             className="bg-slate-950 border border-white/[0.07] rounded-xl px-4 py-2 text-sm text-slate-200"
            />
         </div>
       </header>
@@ -110,7 +110,7 @@ export default function TimetableCoveragePage() {
         <h2 className="text-sm font-bold text-rose-400 uppercase tracking-widest pl-2">Uncovered Lessons</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {uncoveredLessons.length === 0 ? (
-            <div className="col-span-full py-12 rounded-2xl border-2 border-dashed border-slate-800 bg-slate-900/20 text-center">
+            <div className="col-span-full py-12 rounded-2xl border-2 border-dashed border-white/[0.07] bg-[#0d1421]/20 text-center">
               <p className="text-slate-500">No uncovered lessons reported for today. All good!</p>
             </div>
           ) : (
@@ -140,18 +140,18 @@ export default function TimetableCoveragePage() {
       </section>
 
       {/* Coverage History Table */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 overflow-hidden">
+      <section className="rounded-2xl glass-panel p-6 overflow-hidden">
         <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-6">Coverage History</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm border-separate border-spacing-0">
             <thead>
               <tr className="bg-slate-950/50">
-                <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Date</th>
-                <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Lesson</th>
-                <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Original Teacher</th>
-                <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Covering Teacher</th>
-                <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Status</th>
-                <th className="p-4 border-b border-slate-800 font-semibold text-slate-400">Notes</th>
+                <th className="p-4 border-b border-white/[0.07] font-semibold text-slate-400">Date</th>
+                <th className="p-4 border-b border-white/[0.07] font-semibold text-slate-400">Lesson</th>
+                <th className="p-4 border-b border-white/[0.07] font-semibold text-slate-400">Original Teacher</th>
+                <th className="p-4 border-b border-white/[0.07] font-semibold text-slate-400">Covering Teacher</th>
+                <th className="p-4 border-b border-white/[0.07] font-semibold text-slate-400">Status</th>
+                <th className="p-4 border-b border-white/[0.07] font-semibold text-slate-400">Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -161,17 +161,17 @@ export default function TimetableCoveragePage() {
                 </tr>
               ) : (
                 coverageRecords.map((record) => (
-                  <tr key={record.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="p-4 border-b border-slate-800 text-slate-300">{record.date}</td>
-                    <td className="p-4 border-b border-slate-800">
+                  <tr key={record.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="p-4 border-b border-white/[0.07] text-slate-300">{record.date}</td>
+                    <td className="p-4 border-b border-white/[0.07]">
                       <p className="font-semibold text-slate-200">{record.subject_name}</p>
                       <p className="text-xs text-slate-500">{record.class_name}</p>
                     </td>
-                    <td className="p-4 border-b border-slate-800 text-slate-300">{record.original_teacher_name}</td>
-                    <td className="p-4 border-b border-slate-800 text-slate-300">
+                    <td className="p-4 border-b border-white/[0.07] text-slate-300">{record.original_teacher_name}</td>
+                    <td className="p-4 border-b border-white/[0.07] text-slate-300">
                       {record.covering_teacher_name || <span className="text-slate-600">—</span>}
                     </td>
-                    <td className="p-4 border-b border-slate-800">
+                    <td className="p-4 border-b border-white/[0.07]">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                         record.status === 'Covered' ? 'bg-emerald-500/10 text-emerald-400' : 
                         record.status === 'Uncovered' ? 'bg-rose-500/10 text-rose-400' : 
@@ -180,7 +180,7 @@ export default function TimetableCoveragePage() {
                         {record.status}
                       </span>
                     </td>
-                    <td className="p-4 border-b border-slate-800 text-xs text-slate-500 max-w-[200px] truncate">
+                    <td className="p-4 border-b border-white/[0.07] text-xs text-slate-500 max-w-[200px] truncate">
                       {record.notes}
                     </td>
                   </tr>
@@ -196,7 +196,7 @@ export default function TimetableCoveragePage() {
       {/* Modal for Assigning Cover */}
       {showCoverModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.07] bg-slate-950 p-6 shadow-2xl">
             <h3 className="text-xl font-display font-semibold mb-2 text-slate-100">Assign Coverage</h3>
             <p className="text-sm text-slate-400 mb-6">
               Select a teacher to cover {showCoverModal.subject_name} ({showCoverModal.class_name}) 
@@ -209,7 +209,7 @@ export default function TimetableCoveragePage() {
                 <select
                   value={selectedTeacher}
                   onChange={(e) => setSelectedTeacher(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200"
+                  className="w-full bg-[#0d1421] border border-white/[0.07] rounded-xl px-4 py-2 text-sm text-slate-200"
                 >
                   <option value="">Select a teacher...</option>
                   {teachers.map(t => (
@@ -228,7 +228,7 @@ export default function TimetableCoveragePage() {
                 {isProcessing ? 'Saving...' : 'Confirm Assignment'}
               </button>
               <button
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-300 hover:bg-slate-900 transition"
+                className="flex-1 rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-300 hover:bg-[#0d1421] transition"
                 onClick={() => { setShowCoverModal(null); setSelectedTeacher(''); }}
                 disabled={isProcessing}
               >

@@ -101,18 +101,18 @@ export default function PlatformBillingPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Subscription & Billing</h1>
         <p className="mt-2 text-sm text-slate-300">Plans, billing cycles, invoice tracking, and manual payment capture.</p>
       </header>
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Active Plans</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {plans.map((plan) => (
-            <article key={plan.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-sm">
+            <article key={plan.id} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 text-sm">
               <p className="text-xs uppercase tracking-wide text-slate-400">{plan.code}</p>
               <p className="mt-1 font-semibold text-white">{plan.name}</p>
               <p className="mt-2 text-slate-300">${plan.monthly_price}/month</p>
@@ -124,26 +124,26 @@ export default function PlatformBillingPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center gap-2">
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={filters.tenant} onChange={(e) => setFilters((p) => ({ ...p, tenant: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.tenant} onChange={(e) => setFilters((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">All tenants</option>
             {tenants.map((tenant) => <option key={tenant.id} value={tenant.id}>{tenant.name}</option>)}
           </select>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}>
             <option value="">All statuses</option>
             {['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <button type="button" className="rounded-lg border border-slate-700 px-3 py-2 text-sm" onClick={() => void loadBilling()}>
+          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => void loadBilling()}>
             Refresh
           </button>
           <p className="ml-auto text-xs text-slate-400">
             Invoices: {totals.count} | Paid: {totals.paidCount} | Total: ${totals.total}
           </p>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[980px] w-full text-left text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Invoice</th>
                 <th className="px-3 py-2">Tenant</th>
@@ -167,7 +167,7 @@ export default function PlatformBillingPage() {
                   <td className="px-3 py-2">
                     <button
                       type="button"
-                      className="rounded border border-slate-700 px-2 py-1 text-xs disabled:opacity-60"
+                      className="rounded border border-white/[0.09] px-2 py-1 text-xs disabled:opacity-60"
                       disabled={row.status === 'PAID' || payingId === row.id}
                       onClick={() => void recordPayment(row)}
                     >

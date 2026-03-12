@@ -121,7 +121,7 @@ export default function StaffPerformancePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Performance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Observations and Appraisals</h1>
       </section>
@@ -129,19 +129,19 @@ export default function StaffPerformancePage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Create Observation</h2>
           <div className="mt-3 space-y-2">
             <div className="grid gap-2 sm:grid-cols-2">
-              <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
                 <option value="">Select staff</option>
                 {staff.map((row) => <option key={row.id} value={row.id}>{row.staff_id} - {row.full_name}</option>)}
               </select>
-              <input type="datetime-local" value={observationDate} onChange={(e) => setObservationDate(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="datetime-local" value={observationDate} onChange={(e) => setObservationDate(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             </div>
-            <textarea value={obsStrengths} onChange={(e) => setObsStrengths(e.target.value)} placeholder="Strengths observed…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm resize-none" />
-            <textarea value={obsAreasImprovement} onChange={(e) => setObsAreasImprovement(e.target.value)} placeholder="Areas for improvement…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm resize-none" />
-            <textarea value={obsRecommendations} onChange={(e) => setObsRecommendations(e.target.value)} placeholder="Recommendations…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm resize-none" />
+            <textarea value={obsStrengths} onChange={(e) => setObsStrengths(e.target.value)} placeholder="Strengths observed…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm resize-none" />
+            <textarea value={obsAreasImprovement} onChange={(e) => setObsAreasImprovement(e.target.value)} placeholder="Areas for improvement…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm resize-none" />
+            <textarea value={obsRecommendations} onChange={(e) => setObsRecommendations(e.target.value)} placeholder="Recommendations…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm resize-none" />
             <button onClick={createObservation} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Create Observation</button>
           </div>
           <div className="mt-4 space-y-2 text-xs text-slate-300">
@@ -154,7 +154,7 @@ export default function StaffPerformancePage() {
                   </div>
                   <div className="flex shrink-0 gap-2">
                     {row.status === 'Draft' ? (
-                      <button onClick={() => submitObservation(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Submit</button>
+                      <button onClick={() => submitObservation(row.id)} className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs text-slate-200">Submit</button>
                     ) : null}
                     <button onClick={() => setDeleteObsTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
                   </div>
@@ -168,19 +168,19 @@ export default function StaffPerformancePage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Create Appraisal</h2>
           <div className="mt-3 space-y-2">
             <div className="grid gap-2 sm:grid-cols-2">
-              <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
                 <option value="">Select staff</option>
                 {staff.map((row) => <option key={row.id} value={row.id}>{row.staff_id} - {row.full_name}</option>)}
               </select>
-              <input value={appraisalPeriod} onChange={(e) => setAppraisalPeriod(e.target.value)} placeholder="Period (2026/Q1)" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={appraisalPeriod} onChange={(e) => setAppraisalPeriod(e.target.value)} placeholder="Period (2026/Q1)" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             </div>
-            <textarea value={appStrengths} onChange={(e) => setAppStrengths(e.target.value)} placeholder="Strengths…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm resize-none" />
-            <textarea value={appAreasDevelopment} onChange={(e) => setAppAreasDevelopment(e.target.value)} placeholder="Areas for development…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm resize-none" />
-            <textarea value={appGoals} onChange={(e) => setAppGoals(e.target.value)} placeholder="Goals for next period…" rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm resize-none" />
+            <textarea value={appStrengths} onChange={(e) => setAppStrengths(e.target.value)} placeholder="Strengths…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm resize-none" />
+            <textarea value={appAreasDevelopment} onChange={(e) => setAppAreasDevelopment(e.target.value)} placeholder="Areas for development…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm resize-none" />
+            <textarea value={appGoals} onChange={(e) => setAppGoals(e.target.value)} placeholder="Goals for next period…" rows={2} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm resize-none" />
             <button onClick={createAppraisal} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Create Appraisal</button>
           </div>
           <div className="mt-4 space-y-2 text-xs text-slate-300">
@@ -193,7 +193,7 @@ export default function StaffPerformancePage() {
                   </div>
                   <div className="flex shrink-0 gap-2">
                     {row.status !== 'Approved' ? (
-                      <button onClick={() => approveAppraisal(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Approve</button>
+                      <button onClick={() => approveAppraisal(row.id)} className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs text-slate-200">Approve</button>
                     ) : null}
                     <button onClick={() => setDeleteAppTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
                   </div>

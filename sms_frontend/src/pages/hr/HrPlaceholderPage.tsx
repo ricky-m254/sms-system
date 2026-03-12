@@ -6,7 +6,7 @@ type HrPlaceholderPageProps = {
 export default function HrPlaceholderPage({ title, description }: HrPlaceholderPageProps) {
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">HR Submodule</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">{title}</h1>
         <p className="mt-2 text-sm text-slate-400">{description}</p>

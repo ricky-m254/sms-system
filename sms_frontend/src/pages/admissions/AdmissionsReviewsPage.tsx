@@ -116,17 +116,17 @@ export default function AdmissionsReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Application Reviews</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}
         <h2 className="text-lg font-display font-semibold">Create review</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={createReview}>
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.application}
             onChange={(e) => setForm((p) => ({ ...p, application: e.target.value }))}
             required
@@ -141,13 +141,13 @@ export default function AdmissionsReviewsPage() {
           <input
             type="number"
             step="0.01"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             placeholder="Overall score"
             value={form.overall_score}
             onChange={(e) => setForm((p) => ({ ...p, overall_score: e.target.value }))}
           />
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.recommendation}
             onChange={(e) => setForm((p) => ({ ...p, recommendation: e.target.value }))}
           >
@@ -157,11 +157,11 @@ export default function AdmissionsReviewsPage() {
               </option>
             ))}
           </select>
-          <button type="submit" className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400">
+          <button type="submit" className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400">
             Save review
           </button>
           <input
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm md:col-span-4"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm md:col-span-4"
             placeholder="Comments"
             value={form.comments}
             onChange={(e) => setForm((p) => ({ ...p, comments: e.target.value }))}
@@ -169,12 +169,12 @@ export default function AdmissionsReviewsPage() {
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
         {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading reviews...</p> : null}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[920px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Application</th>
                 <th className="px-4 py-3">Score</th>
@@ -195,7 +195,7 @@ export default function AdmissionsReviewsPage() {
                   <td className="px-4 py-3">
                     <button
                       type="button"
-                      className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => shortlist(row.application)}
                       disabled={shortlistedIds.has(row.application)}
                     >

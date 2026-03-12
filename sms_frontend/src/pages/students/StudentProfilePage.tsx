@@ -558,14 +558,14 @@ export default function StudentProfilePage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Student Profile</h1>
         <p className="mt-2 text-sm text-slate-400">Profile ID: {id ?? '--'}</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading student profile...</p>
         </div>
       ) : null}
@@ -581,7 +581,7 @@ export default function StudentProfilePage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="min-w-[240px]">
             <h2 className="text-lg font-display font-semibold">
@@ -592,37 +592,37 @@ export default function StudentProfilePage() {
               {student?.is_active ? 'Active' : 'Inactive'}
             </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
-              <span className="rounded-full border border-slate-700 px-3 py-1">
+              <span className="rounded-full border border-white/[0.09] px-3 py-1">
                 DOB: {student?.date_of_birth ?? '--'}
               </span>
-              <span className="rounded-full border border-slate-700 px-3 py-1">
+              <span className="rounded-full border border-white/[0.09] px-3 py-1">
                 Gender: {student?.gender ?? '--'}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200"
               onClick={handlePrintStudentReport}
               disabled={isPrinting || isDownloading}
             >
               {isPrinting ? 'Preparing...' : 'Print report'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 disabled:opacity-70"
               onClick={() => handleDownloadStudentReport('csv')}
               disabled={isDownloading || isPrinting}
             >
               {isDownloading ? 'Working...' : 'Download CSV'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 disabled:opacity-70"
               onClick={() => handleDownloadStudentReport('pdf')}
               disabled={isDownloading || isPrinting}
             >
               {isDownloading ? 'Working...' : 'Download PDF'}
             </button>
-            <div className="h-20 w-20 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950">
+            <div className="h-20 w-20 overflow-hidden rounded-2xl border border-white/[0.07] bg-slate-950">
               {student?.photo ? (
                 <img src={student.photo} alt="Student" className="h-full w-full object-cover" />
               ) : (
@@ -631,7 +631,7 @@ export default function StudentProfilePage() {
                 </div>
               )}
             </div>
-            <label className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200">
+            <label className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200">
               {uploadingPhoto ? 'Uploading...' : 'Replace photo'}
               <input
                 type="file"
@@ -664,7 +664,7 @@ export default function StudentProfilePage() {
               className={`rounded-xl px-3 py-1 text-xs ${
                 activeTab === tab
                   ? 'bg-emerald-500/20 text-emerald-200'
-                  : 'border border-slate-800 text-slate-300'
+                  : 'border border-white/[0.07] text-slate-300'
               }`}
               onClick={() => setActiveTab(tab)}
             >
@@ -673,7 +673,7 @@ export default function StudentProfilePage() {
           ))}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-sm text-slate-300">
+        <div className="mt-6 rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4 text-sm text-slate-300">
           <p className="text-xs uppercase text-slate-400">{activeTab}</p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             {activeTab === 'Personal' ? (
@@ -692,7 +692,7 @@ export default function StudentProfilePage() {
             {activeTab === 'Guardians' ? (
               <div className="col-span-2 space-y-2">
                 {(student?.guardians ?? []).map((guardian) => (
-                  <div key={guardian.id} className="rounded-xl border border-slate-800 p-3 text-xs">
+                  <div key={guardian.id} className="rounded-xl border border-white/[0.07] p-3 text-xs">
                     <p className="text-sm text-white">{guardian.name}</p>
                     <p className="text-[11px] text-slate-400">{guardian.relationship}</p>
                     <p className="text-[11px] text-slate-400">
@@ -724,14 +724,14 @@ export default function StudentProfilePage() {
               <div className="col-span-2 grid gap-3 md:grid-cols-2">
                 <div className="md:col-span-2 flex flex-wrap items-center justify-end gap-2">
                   <button
-                    className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                    className="rounded-xl border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                     onClick={() => handleDownloadOperationalReport('attendance', 'csv')}
                     disabled={isDownloading || isPrinting}
                   >
                     {isDownloading ? 'Working...' : 'Export Attendance CSV'}
                   </button>
                   <button
-                    className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                    className="rounded-xl border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                     onClick={() => handleDownloadOperationalReport('attendance', 'pdf')}
                     disabled={isDownloading || isPrinting}
                   >
@@ -763,7 +763,7 @@ export default function StudentProfilePage() {
                   <div className="mt-2 space-y-2 text-xs">
                     {attendanceRecords.length > 0 ? (
                       attendanceRecords.map((record) => (
-                        <div key={record.id} className="rounded-lg border border-slate-800 p-2">
+                        <div key={record.id} className="rounded-lg border border-white/[0.07] p-2">
                           {record.date} - {record.status}
                         </div>
                       ))
@@ -779,14 +779,14 @@ export default function StudentProfilePage() {
               <div className="col-span-2 space-y-2">
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   <button
-                    className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                    className="rounded-xl border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                     onClick={() => handleDownloadOperationalReport('behavior', 'csv')}
                     disabled={isDownloading || isPrinting}
                   >
                     {isDownloading ? 'Working...' : 'Export Behavior CSV'}
                   </button>
                   <button
-                    className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                    className="rounded-xl border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                     onClick={() => handleDownloadOperationalReport('behavior', 'pdf')}
                     disabled={isDownloading || isPrinting}
                   >
@@ -795,7 +795,7 @@ export default function StudentProfilePage() {
                 </div>
                 {behaviorIncidents.length > 0 ? (
                   behaviorIncidents.map((incident) => (
-                    <div key={incident.id} className="rounded-lg border border-slate-800 p-2 text-xs">
+                    <div key={incident.id} className="rounded-lg border border-white/[0.07] p-2 text-xs">
                       <p className="text-sm text-white">
                         {incident.incident_type}: {incident.category}
                       </p>
@@ -814,7 +814,7 @@ export default function StudentProfilePage() {
               <div className="col-span-2 space-y-2">
                 {academicRecords.length > 0 ? (
                   academicRecords.map((record) => (
-                    <div key={record.id} className="rounded-lg border border-slate-800 p-2 text-xs">
+                    <div key={record.id} className="rounded-lg border border-white/[0.07] p-2 text-xs">
                       <p className="text-sm text-white">{record.subject}</p>
                       <p className="text-[11px] text-slate-400">
                         Score: {record.score ?? '--'} | Grade: {record.grade ?? '--'} | Term:{' '}
@@ -830,7 +830,7 @@ export default function StudentProfilePage() {
 
             {activeTab === 'Medical' ? (
               <div className="col-span-2 space-y-3">
-                <div className="rounded-xl border border-slate-800 p-4 text-xs">
+                <div className="rounded-xl border border-white/[0.07] p-4 text-xs">
                   <p className="text-xs uppercase text-slate-400">Medical profile</p>
                   {medicalRecord ? (
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
@@ -872,12 +872,12 @@ export default function StudentProfilePage() {
                   )}
                 </div>
 
-                <div className="rounded-xl border border-slate-800 p-4 text-xs">
+                <div className="rounded-xl border border-white/[0.07] p-4 text-xs">
                   <p className="text-xs uppercase text-slate-400">Recent clinic visits</p>
                   <div className="mt-2 space-y-2">
                     {clinicVisits.length > 0 ? (
                       clinicVisits.map((visit) => (
-                        <div key={visit.id} className="rounded-lg border border-slate-800 p-2">
+                        <div key={visit.id} className="rounded-lg border border-white/[0.07] p-2">
                           <p className="text-sm text-white">{visit.visit_date}</p>
                           <p className="text-[11px] text-slate-400">
                             {visit.complaint || 'No complaint'} - {visit.severity || 'Unspecified'}
@@ -899,7 +899,7 @@ export default function StudentProfilePage() {
               <div className="col-span-2 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-slate-400">Upload student documents</p>
-                  <label className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200">
+                  <label className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200">
                     {uploadingDocs ? 'Uploading...' : 'Add documents'}
                     <input
                       type="file"
@@ -917,7 +917,7 @@ export default function StudentProfilePage() {
                 {(student?.uploaded_documents ?? []).length > 0 ? (
                   <div className="grid gap-2 md:grid-cols-2">
                     {(student?.uploaded_documents ?? []).map((doc) => (
-                      <div key={doc.id} className="rounded-xl border border-slate-800 p-3 text-xs">
+                      <div key={doc.id} className="rounded-xl border border-white/[0.07] p-3 text-xs">
                         <p className="text-sm text-white">{doc.name}</p>
                         <div className="mt-2 flex items-center gap-2">
                           <a

@@ -97,14 +97,14 @@ export default function CommunicationSmsPage() {
           <h1 className="text-xl font-display font-bold text-white mt-0.5">SMS / WhatsApp</h1>
           <p className="text-sm text-slate-400 mt-0.5">Send bulk messages via SMS or WhatsApp</p>
         </div>
-        <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-700 transition">
+        <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
           <RefreshCw size={13} className="text-slate-400" />
         </button>
       </div>
 
       {/* Gateway Status */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className={`rounded-2xl border p-4 flex items-center gap-3 ${balance?.provider_configured ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-700 bg-slate-900/60'}`}>
+        <div className={`rounded-2xl border p-4 flex items-center gap-3 ${balance?.provider_configured ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.09] glass-panel'}`}>
           {balance?.provider_configured
             ? <Wifi size={18} className="text-emerald-400 flex-shrink-0" />
             : <WifiOff size={18} className="text-slate-500 flex-shrink-0" />
@@ -116,14 +116,14 @@ export default function CommunicationSmsPage() {
             </p>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex items-center gap-3">
+        <div className="rounded-2xl glass-panel p-4 flex items-center gap-3">
           <Hash size={18} className="text-amber-400 flex-shrink-0" />
           <div>
             <p className="text-xs font-bold text-slate-300">SMS Balance</p>
             <p className="text-sm font-semibold text-amber-400">{balance?.balance ?? 'N/A'}</p>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex items-center gap-3">
+        <div className="rounded-2xl glass-panel p-4 flex items-center gap-3">
           <MessageSquare size={18} className="text-blue-400 flex-shrink-0" />
           <div>
             <p className="text-xs font-bold text-slate-300">Messages Sent</p>
@@ -151,14 +151,14 @@ export default function CommunicationSmsPage() {
       )}
 
       {/* Compose */}
-      <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-5 space-y-4">
+      <div className="rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Send size={15} className="text-emerald-400" />
           <h2 className="text-sm font-bold text-white">Compose Message</h2>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5">
+          <div className="flex items-center gap-2 rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5">
             <Users size={13} className="text-slate-500 flex-shrink-0" />
             <input
               value={phones}
@@ -170,7 +170,7 @@ export default function CommunicationSmsPage() {
           <select
             value={channel}
             onChange={(e) => setChannel(e.target.value)}
-            className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white"
+            className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white"
           >
             <option value="SMS">SMS</option>
             <option value="WhatsApp">WhatsApp</option>
@@ -185,7 +185,7 @@ export default function CommunicationSmsPage() {
               <button
                 key={p.label}
                 onClick={() => setMessage(p.text)}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300 hover:border-emerald-500/30 hover:text-emerald-300 transition"
+                className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-1.5 text-xs text-slate-300 hover:border-emerald-500/30 hover:text-emerald-300 transition"
               >
                 {p.label}
               </button>
@@ -199,7 +199,7 @@ export default function CommunicationSmsPage() {
             onChange={(e) => setMessage(e.target.value)}
             rows={4}
             placeholder="Type your message here… (max 160 characters for standard SMS)"
-            className={`w-full rounded-xl border bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none resize-none ${charCount > charLimit ? 'border-red-500/50' : 'border-slate-700 focus:border-emerald-500/50'}`}
+            className={`w-full rounded-xl border bg-slate-950 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none resize-none ${charCount > charLimit ? 'border-red-500/50' : 'border-white/[0.09] focus:border-emerald-500/50'}`}
           />
           <span className={`absolute bottom-3 right-3 text-[10px] font-mono ${charCount > charLimit ? 'text-red-400' : charCount > charLimit * 0.8 ? 'text-amber-400' : 'text-slate-600'}`}>
             {charCount}/{charLimit}
@@ -221,7 +221,7 @@ export default function CommunicationSmsPage() {
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Phone size={14} className="text-slate-400" /> Delivery Log
           </h2>
-          <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/60 p-1">
+          <div className="flex gap-1 rounded-xl glass-panel p-1">
             {['All', 'Delivered', 'Sent', 'Pending', 'Failed'].map(s => (
               <button
                 key={s}
@@ -237,7 +237,7 @@ export default function CommunicationSmsPage() {
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 size={20} className="animate-spin text-emerald-400" /></div>
         ) : displayed.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-14 text-center rounded-2xl border border-slate-800 bg-slate-900/40">
+          <div className="flex flex-col items-center justify-center py-14 text-center rounded-2xl border border-white/[0.07] bg-white/[0.02]">
             <Phone size={32} className="text-slate-700 mb-2" />
             <p className="text-sm text-slate-500">No messages in log</p>
           </div>
@@ -247,7 +247,7 @@ export default function CommunicationSmsPage() {
               const sStyle = STATUS_STYLES[row.status] ?? STATUS_STYLES.Pending
               const StatusIcon = sStyle.icon
               return (
-                <div key={row.id} className="flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+                <div key={row.id} className="flex items-start gap-3 rounded-2xl glass-panel px-4 py-3">
                   <div className={`flex-shrink-0 mt-0.5 rounded-xl p-1.5 border ${sStyle.cls}`}>
                     <StatusIcon size={12} />
                   </div>

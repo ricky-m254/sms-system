@@ -41,7 +41,7 @@ export default function StoreDashboardPage() {
           { label: 'Pending Orders', value: data?.pending_orders ?? 0, icon: ShoppingCart, color: 'text-amber-400' },
           { label: 'Categories', value: data?.total_categories ?? 0, icon: Tag, color: 'text-emerald-400' },
         ].map(card => (
-          <div key={card.label} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+          <div key={card.label} className="glass-panel rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-slate-400">{card.label}</span>
               <card.icon size={18} className={card.color} />
@@ -52,7 +52,7 @@ export default function StoreDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+        <div className="glass-panel rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-slate-100 flex items-center gap-2">
               <AlertTriangle size={16} className="text-rose-400" /> Low Stock Alerts
@@ -66,7 +66,7 @@ export default function StoreDashboardPage() {
           ) : (
             <div className="space-y-2">
               {data.low_stock_items.map(item => (
-                <div key={item.id} className="flex items-center justify-between py-2 border-b border-slate-800 last:border-0">
+                <div key={item.id} className="flex items-center justify-between py-2 border-b border-white/[0.07] last:border-0">
                   <div>
                     <p className="text-sm text-slate-200">{item.name}</p>
                     <p className="text-xs text-slate-500">{item.item_type}</p>
@@ -78,7 +78,7 @@ export default function StoreDashboardPage() {
           )}
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+        <div className="glass-panel rounded-2xl p-5">
           <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
             <Package size={16} className="text-emerald-400" /> Recent Movements
           </h2>
@@ -87,7 +87,7 @@ export default function StoreDashboardPage() {
           ) : (
             <div className="space-y-0">
               {data.recent_transactions.map(tx => (
-                <div key={tx.id} className="flex items-center justify-between py-2.5 border-b border-slate-800 last:border-0">
+                <div key={tx.id} className="flex items-center justify-between py-2.5 border-b border-white/[0.07] last:border-0">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-slate-200 truncate">{tx.item__name}</p>
                     <p className="text-xs text-slate-500">{tx.date} · {tx.purpose || '—'}</p>

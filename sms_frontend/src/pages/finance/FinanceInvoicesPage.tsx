@@ -577,14 +577,14 @@ export default function FinanceInvoicesPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Invoices</h1>
         <p className="mt-2 text-sm text-slate-400">Manage invoice lifecycle and allocations.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading invoices...</p>
         </div>
       ) : null}
@@ -601,7 +601,7 @@ export default function FinanceInvoicesPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Invoice list</h2>
@@ -610,7 +610,7 @@ export default function FinanceInvoicesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <PrintButton />
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search invoice or admission #"
               value={invoiceQuery}
               onChange={(event) => {
@@ -619,7 +619,7 @@ export default function FinanceInvoicesPage() {
               }}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={invoiceStatus}
               onChange={(event) => {
                 setInvoiceStatus(event.target.value)
@@ -637,7 +637,7 @@ export default function FinanceInvoicesPage() {
               <option value="VOID">Void</option>
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -653,7 +653,7 @@ export default function FinanceInvoicesPage() {
             </select>
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-[150px] rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -662,7 +662,7 @@ export default function FinanceInvoicesPage() {
             />
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-[150px] rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -677,9 +677,9 @@ export default function FinanceInvoicesPage() {
             </button>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[900px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">#</th>
                 <th className="px-4 py-3">Invoice</th>
@@ -757,7 +757,7 @@ export default function FinanceInvoicesPage() {
                         {detailLoadingId === invoice.id ? (
                           <p className="text-xs text-slate-400">Loading student context...</p>
                         ) : (
-                          <div className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 md:grid-cols-3">
+                          <div className="grid gap-4 rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4 md:grid-cols-3">
                             <div>
                               <p className="text-[11px] uppercase text-slate-400">Class / Term</p>
                               <p className="text-sm text-slate-200">
@@ -774,7 +774,7 @@ export default function FinanceInvoicesPage() {
                                   studentDetails[invoice.student]?.guardians?.map((guardian) => (
                                     <div
                                       key={guardian.id}
-                                      className="rounded-xl border border-slate-800 p-3 text-xs text-slate-300"
+                                      className="rounded-xl border border-white/[0.07] p-3 text-xs text-slate-300"
                                     >
                                       <p className="text-sm text-white">{guardian.name}</p>
                                       <p className="text-[11px] text-slate-400">
@@ -818,14 +818,14 @@ export default function FinanceInvoicesPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={invoicePage === 1}
               onClick={() => setInvoicePage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={invoicePage === totalInvoicePages}
               onClick={() => setInvoicePage((prev) => Math.min(totalInvoicePages, prev + 1))}
             >
@@ -837,8 +837,8 @@ export default function FinanceInvoicesPage() {
 
       {selectedInvoiceId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6">
-          <div className="flex w-full max-w-4xl max-h-[90vh] flex-col rounded-2xl border border-slate-800 bg-slate-950">
-            <div className="flex flex-shrink-0 items-center justify-between rounded-t-2xl border-b border-slate-800 bg-slate-950 px-6 py-4">
+          <div className="flex w-full max-w-4xl max-h-[90vh] flex-col rounded-2xl border border-white/[0.07] bg-slate-950">
+            <div className="flex flex-shrink-0 items-center justify-between rounded-t-2xl border-b border-white/[0.07] bg-slate-950 px-6 py-4">
               <div className="flex items-center gap-3">
                 <button
                   className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition"
@@ -849,7 +849,7 @@ export default function FinanceInvoicesPage() {
                 <h3 className="text-lg font-display font-semibold">Invoice detail</h3>
               </div>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-400 hover:text-white transition"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-400 hover:text-white transition"
                 onClick={() => setSelectedInvoiceId(null)}
               >
                 ✕ Close
@@ -857,7 +857,7 @@ export default function FinanceInvoicesPage() {
             </div>
             <div className="flex-1 overflow-y-auto p-6">
             <div className="grid gap-6 lg:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 lg:col-span-2">
+              <div className="rounded-2xl glass-panel p-4 lg:col-span-2">
                 <h4 className="text-base font-semibold">INV-{selectedInvoiceId}</h4>
                 {invoiceDetail ? (
                   <>
@@ -896,12 +896,12 @@ export default function FinanceInvoicesPage() {
                     {studentInfoNotice ? (
                       <p className="mt-2 text-[11px] text-amber-200">{studentInfoNotice}</p>
                     ) : null}
-                    <div className="mt-4 rounded-xl border border-slate-800 p-3">
+                    <div className="mt-4 rounded-xl border border-white/[0.07] p-3">
                       <p className="text-xs uppercase text-slate-400">Parents / Guardians</p>
                       <div className="mt-2 space-y-2 text-xs text-slate-300">
                         {(studentDetail?.guardians ?? []).length > 0 ? (
                           studentDetail?.guardians?.map((guardian) => (
-                            <div key={guardian.id} className="rounded-lg border border-slate-800 p-2">
+                            <div key={guardian.id} className="rounded-lg border border-white/[0.07] p-2">
                               <p className="text-sm text-white">{guardian.name}</p>
                               <p className="text-[11px] text-slate-400">
                                 {guardian.relationship ?? 'Guardian'}
@@ -918,9 +918,9 @@ export default function FinanceInvoicesPage() {
                         )}
                       </div>
                     </div>
-                    <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+                    <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
                       <table className="min-w-[420px] w-full text-left text-sm">
-                        <thead className="bg-slate-900/80 text-xs uppercase text-slate-400">
+                        <thead className="bg-white/[0.03] text-xs uppercase text-slate-400">
                           <tr>
                             <th className="px-3 py-2">Description</th>
                             <th className="px-3 py-2">Amount</th>
@@ -943,7 +943,7 @@ export default function FinanceInvoicesPage() {
                         </tbody>
                       </table>
                     </div>
-                    <div className="mt-4 rounded-xl border border-slate-800 p-3">
+                    <div className="mt-4 rounded-xl border border-white/[0.07] p-3">
                       <div className="flex items-center justify-between">
                         <p className="text-xs uppercase text-slate-400">Installment Plan</p>
                         <span className="text-xs text-slate-400">
@@ -953,7 +953,7 @@ export default function FinanceInvoicesPage() {
                       {(installmentPlan?.installments ?? []).length > 0 ? (
                         <div className="mt-2 space-y-2 text-xs text-slate-300">
                           {installmentPlan?.installments?.map((inst) => (
-                            <div key={inst.id} className="flex items-center justify-between rounded-lg border border-slate-800 p-2">
+                            <div key={inst.id} className="flex items-center justify-between rounded-lg border border-white/[0.07] p-2">
                               <span>#{inst.sequence} • Due {inst.due_date}</span>
                               <span>
                                 {Number(inst.collected_amount ?? 0).toLocaleString()} / {Number(inst.amount).toLocaleString()} • {inst.status}
@@ -970,10 +970,10 @@ export default function FinanceInvoicesPage() {
                   <p className="mt-4 text-sm text-slate-400">Loading invoice detail...</p>
                 )}
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+              <div className="rounded-2xl glass-panel p-4">
                 <h4 className="text-base font-semibold">Allocate payment</h4>
                 <div className="mt-3 space-y-3 text-sm">
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+                  <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3 text-xs text-slate-300">
                     <div className="flex items-center justify-between">
                       <span className="uppercase text-slate-400">Student</span>
                       <span>
@@ -1001,7 +1001,7 @@ export default function FinanceInvoicesPage() {
                   <label className="block">
                     Payment
                     <select
-                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={allocationPaymentId}
                       onChange={(event) => setAllocationPaymentId(event.target.value)}
                     >
@@ -1021,7 +1021,7 @@ export default function FinanceInvoicesPage() {
                   <label className="block">
                     Installment (optional)
                     <select
-                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={allocationInstallmentId}
                       onChange={(event) => setAllocationInstallmentId(event.target.value)}
                     >
@@ -1039,7 +1039,7 @@ export default function FinanceInvoicesPage() {
                     Payment date
                     <input
                       type="date"
-                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={allocationDate}
                       onChange={(event) => setAllocationDate(event.target.value)}
                     />
@@ -1047,7 +1047,7 @@ export default function FinanceInvoicesPage() {
                   <label className="block">
                     Amount
                     <input
-                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={allocationAmount}
                       onChange={(event) => setAllocationAmount(event.target.value)}
                       placeholder="0.00"
@@ -1056,7 +1056,7 @@ export default function FinanceInvoicesPage() {
                   <label className="block">
                     Notes
                     <textarea
-                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                      className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                       value={allocationNotes}
                       onChange={(event) => setAllocationNotes(event.target.value)}
                       rows={3}
@@ -1079,23 +1079,23 @@ export default function FinanceInvoicesPage() {
                   >
                     {isAllocating ? 'Working...' : 'Auto-allocate payment'}
                   </button>
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+                  <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3 text-xs text-slate-300">
                     <p className="text-[11px] uppercase text-slate-400">Installment setup</p>
                     <div className="mt-2 space-y-2">
                       <input
-                        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white"
+                        className="w-full rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs text-white"
                         value={installmentCountInput}
                         onChange={(event) => setInstallmentCountInput(event.target.value)}
                         placeholder="Installment count"
                       />
                       <input
-                        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white"
+                        className="w-full rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs text-white"
                         value={installmentDatesInput}
                         onChange={(event) => setInstallmentDatesInput(event.target.value)}
                         placeholder="YYYY-MM-DD, YYYY-MM-DD, ..."
                       />
                       <button
-                        className="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200 disabled:opacity-70"
+                        className="w-full rounded-lg border border-white/[0.09] px-2 py-1 text-xs text-slate-200 disabled:opacity-70"
                         onClick={handleCreateInstallmentPlan}
                         disabled={isSavingInstallmentPlan}
                       >
@@ -1104,7 +1104,7 @@ export default function FinanceInvoicesPage() {
                       {installmentMessage ? <p className="text-[11px] text-amber-200">{installmentMessage}</p> : null}
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+                  <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3 text-xs text-slate-300">
                     <p className="text-[11px] uppercase text-slate-400">Outstanding invoices</p>
                     {outstandingInvoices.length > 0 ? (
                       <div className="mt-2 space-y-2">

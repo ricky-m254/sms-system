@@ -64,32 +64,32 @@ export default function LibraryReportsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Reports & Analytics</h1>
         <p className="mt-2 text-sm text-slate-400">Circulation, overdue, fines, and member activity insights.</p>
         {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
       </header>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <article className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Active Borrowings</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-300">{circulation?.active_borrowings ?? 0}</p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <article className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Overdue Items</p>
           <p className="mt-2 text-2xl font-semibold text-amber-300">{circulation?.overdue_count ?? 0}</p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <article className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Total Fines</p>
           <p className="mt-2 text-2xl font-semibold text-rose-300">{fines?.total_fines ?? '0.00'}</p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <article className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Outstanding Fines</p>
           <p className="mt-2 text-2xl font-semibold text-rose-200">{fines?.outstanding ?? '0.00'}</p>
         </article>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Most Borrowed Resources</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -101,7 +101,7 @@ export default function LibraryReportsPage() {
             </thead>
             <tbody>
               {popular.map((row) => (
-                <tr key={row.resource_id} className="border-t border-slate-800">
+                <tr key={row.resource_id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.title}</td>
                   <td className="px-2 py-2">{row.borrow_count}</td>
                 </tr>
@@ -118,7 +118,7 @@ export default function LibraryReportsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Overdue Items</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -133,7 +133,7 @@ export default function LibraryReportsPage() {
             </thead>
             <tbody>
               {overdue.map((row) => (
-                <tr key={row.transaction_id} className="border-t border-slate-800">
+                <tr key={row.transaction_id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.member_code}</td>
                   <td className="px-2 py-2">{row.resource_title}</td>
                   <td className="px-2 py-2">{row.copy_accession_number}</td>
@@ -153,7 +153,7 @@ export default function LibraryReportsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Member Activity</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -166,7 +166,7 @@ export default function LibraryReportsPage() {
             </thead>
             <tbody>
               {memberActivity.map((row) => (
-                <tr key={row.member_id} className="border-t border-slate-800">
+                <tr key={row.member_id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.member_code}</td>
                   <td className="px-2 py-2">{row.issues}</td>
                   <td className="px-2 py-2">{row.last_issue ?? '-'}</td>

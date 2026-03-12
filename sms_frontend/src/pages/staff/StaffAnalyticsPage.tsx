@@ -59,21 +59,21 @@ export default function StaffAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Staff Analytics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Headcount, Attendance, Performance, Compliance</h1>
       </section>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Total Staff</p><p className="mt-2 text-2xl font-semibold">{summary?.total_staff ?? 0}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Attendance Rate</p><p className="mt-2 text-2xl font-semibold">{summary?.attendance_rate_percent?.toFixed(2) ?? '0.00'}%</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Appraisals</p><p className="mt-2 text-2xl font-semibold">{performance?.total_appraisals ?? 0}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Compliance</p><p className="mt-2 text-2xl font-semibold">{compliance?.compliance_rate_percent?.toFixed(2) ?? '0.00'}%</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Total Staff</p><p className="mt-2 text-2xl font-semibold">{summary?.total_staff ?? 0}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Attendance Rate</p><p className="mt-2 text-2xl font-semibold">{summary?.attendance_rate_percent?.toFixed(2) ?? '0.00'}%</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Appraisals</p><p className="mt-2 text-2xl font-semibold">{performance?.total_appraisals ?? 0}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Compliance</p><p className="mt-2 text-2xl font-semibold">{compliance?.compliance_rate_percent?.toFixed(2) ?? '0.00'}%</p></article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Department Headcount</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {department.map((row) => (
@@ -84,7 +84,7 @@ export default function StaffAnalyticsPage() {
             ))}
           </div>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Attendance Snapshot</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             <p>Period: {attendance ? `${attendance.month}/${attendance.year}` : 'N/A'}</p>
@@ -95,7 +95,7 @@ export default function StaffAnalyticsPage() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold">Performance Distribution</h2>
         <div className="mt-3 grid gap-2 text-xs text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
           {(performance?.distribution ?? []).map((row) => (
@@ -108,11 +108,11 @@ export default function StaffAnalyticsPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold">Reports</h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button onClick={() => downloadReport('/staff/reports/directory/', 'staff_directory_report.csv')} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Directory Report</button>
-          <button onClick={() => downloadReport('/staff/reports/attendance/', 'staff_attendance_report.csv')} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Attendance Report</button>
+          <button onClick={() => downloadReport('/staff/reports/directory/', 'staff_directory_report.csv')} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-200">Directory Report</button>
+          <button onClick={() => downloadReport('/staff/reports/attendance/', 'staff_attendance_report.csv')} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-200">Attendance Report</button>
         </div>
       </section>
     </div>

@@ -368,7 +368,7 @@ export default function FinanceReportsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
@@ -378,14 +378,14 @@ export default function FinanceReportsPage() {
           <div className="flex flex-wrap gap-2">
             <PrintButton />
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('csv')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download CSV'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('pdf')}
               disabled={isDownloading}
             >
@@ -396,7 +396,7 @@ export default function FinanceReportsPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading finance summary...</p>
         </div>
       ) : null}
@@ -414,42 +414,42 @@ export default function FinanceReportsPage() {
       ) : null}
 
       <section className="col-span-12 grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Revenue Billed</p>
           <p className="mt-2 text-xl font-semibold">{toCurrency(summary?.revenue_billed)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Cash Collected</p>
           <p className="mt-2 text-xl font-semibold">{toCurrency(summary?.cash_collected)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Total Expenses</p>
           <p className="mt-2 text-xl font-semibold">{toCurrency(summary?.total_expenses)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Net Profit</p>
           <p className="mt-2 text-xl font-semibold">{toCurrency(summary?.net_profit)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Outstanding</p>
           <p className="mt-2 text-xl font-semibold">{toCurrency(summary?.outstanding_receivables)}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Active Students</p>
           <p className="mt-2 text-xl font-semibold">{summary?.active_students_count ?? 0}</p>
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {reports.map((report) => (
-            <div key={report.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+            <div key={report.id} className="rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4">
               <h3 className="text-base font-semibold text-white">{report.title}</h3>
               <p className="mt-2 text-sm text-slate-400">{report.description}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {report.exportMode === 'aging' ? (
                   <button
-                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                    className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                     onClick={() => void exportCollectionsCsv('aging')}
                     disabled={collectionsBusy}
                   >
@@ -458,7 +458,7 @@ export default function FinanceReportsPage() {
                 ) : null}
                 {report.exportMode === 'overdue' ? (
                   <button
-                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                    className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                     onClick={() => void exportCollectionsCsv('overdue')}
                     disabled={collectionsBusy}
                   >
@@ -474,14 +474,14 @@ export default function FinanceReportsPage() {
                     {budgetVarianceBusy ? 'Loading…' : 'Load Report'}
                   </button>
                 ) : report.exportMode === 'none' ? (
-                  <span className="rounded-lg border border-slate-800 px-3 py-1 text-xs text-slate-500">
+                  <span className="rounded-lg border border-white/[0.07] px-3 py-1 text-xs text-slate-500">
                     Available from accounting pack
                   </span>
                 ) : null}
                 {report.exportMode === 'student-ledger' ? (
                   <a
                     href="/modules/finance/ledger"
-                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                    className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
                   >
                     Open Student Ledger →
                   </a>
@@ -489,7 +489,7 @@ export default function FinanceReportsPage() {
                 {report.exportMode === 'vote-head' ? (
                   <a
                     href="/modules/finance/vote-heads"
-                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                    className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
                   >
                     Manage Vote Heads →
                   </a>
@@ -497,7 +497,7 @@ export default function FinanceReportsPage() {
                 {report.exportMode === 'class-balances' ? (
                   <a
                     href="/modules/finance/arrears"
-                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                    className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
                   >
                     View Class Balances →
                   </a>
@@ -505,7 +505,7 @@ export default function FinanceReportsPage() {
                 {report.exportMode === 'arrears-term' ? (
                   <a
                     href="/modules/finance/arrears"
-                    className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+                    className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
                   >
                     View Arrears by Term →
                   </a>
@@ -516,7 +516,7 @@ export default function FinanceReportsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-display font-semibold">Receivables Aging</h2>
@@ -524,49 +524,49 @@ export default function FinanceReportsPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => void exportCollectionsCsv('aging')}
               disabled={collectionsBusy}
             >
               Export Aging CSV
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={sendBulkOverdueReminders}
               disabled={collectionsBusy}
             >
               {collectionsBusy ? 'Working...' : 'Send Bulk Reminders'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => void sendScheduledReminders('PRE_DUE')}
               disabled={collectionsBusy}
             >
               Pre-due reminders
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => void sendScheduledReminders('DUE')}
               disabled={collectionsBusy}
             >
               Due-today reminders
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => void sendInstallmentScheduledReminders('OVERDUE')}
               disabled={collectionsBusy}
             >
               Installment overdue reminders
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={previewLateFees}
               disabled={collectionsBusy}
             >
               Preview late fees
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={applyLateFees}
               disabled={collectionsBusy}
             >
@@ -583,7 +583,7 @@ export default function FinanceReportsPage() {
             { key: '61_90', label: '61-90 Days' },
             { key: '90_plus', label: '90+ Days' },
           ].map((bucket) => (
-            <div key={bucket.key} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+            <div key={bucket.key} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
               <p className="text-xs uppercase text-slate-400">{bucket.label}</p>
               <p className="mt-2 text-lg font-semibold text-white">{toCurrency(aging?.buckets?.[bucket.key]?.amount)}</p>
               <p className="text-xs text-slate-400">Invoices: {aging?.buckets?.[bucket.key]?.count ?? 0}</p>
@@ -592,7 +592,7 @@ export default function FinanceReportsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-display font-semibold">Installment Aging</h2>
@@ -606,7 +606,7 @@ export default function FinanceReportsPage() {
             { key: '61_90', label: '61-90 Days' },
             { key: '90_plus', label: '90+ Days' },
           ].map((bucket) => (
-            <div key={bucket.key} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+            <div key={bucket.key} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
               <p className="text-xs uppercase text-slate-400">{bucket.label}</p>
               <p className="mt-2 text-lg font-semibold text-white">{toCurrency(installmentAging?.buckets?.[bucket.key]?.amount)}</p>
               <p className="text-xs text-slate-400">Installments: {installmentAging?.buckets?.[bucket.key]?.count ?? 0}</p>
@@ -615,7 +615,7 @@ export default function FinanceReportsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-display font-semibold">Overdue Accounts</h2>
@@ -626,17 +626,17 @@ export default function FinanceReportsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search invoice/student/admission"
-              className="w-72 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-72 rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             />
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={() => void loadCollections(search)}
               disabled={collectionsBusy}
             >
               Filter
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={() => {
                 setSearch('')
                 void loadCollections('')
@@ -646,7 +646,7 @@ export default function FinanceReportsPage() {
               Reset
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={() => void exportCollectionsCsv('overdue')}
               disabled={collectionsBusy}
             >
@@ -654,9 +654,9 @@ export default function FinanceReportsPage() {
             </button>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[980px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Invoice</th>
                 <th className="px-4 py-3">Student</th>
@@ -679,7 +679,7 @@ export default function FinanceReportsPage() {
                   <td className="px-4 py-3">{toCurrency(row.balance_due)}</td>
                   <td className="px-4 py-3">
                     <button
-                      className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
+                      className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200 disabled:opacity-70"
                       onClick={() => void sendInvoiceReminder(row.invoice_id)}
                       disabled={collectionsBusy}
                     >
@@ -701,7 +701,7 @@ export default function FinanceReportsPage() {
       </section>
 
       {(budgetVariance || budgetVarianceBusy || budgetVarianceError) && (
-        <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <section className="col-span-12 rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-display font-semibold">Budget Variance Report (IPSAS 24)</h2>
@@ -710,7 +710,7 @@ export default function FinanceReportsPage() {
             <button
               onClick={() => void loadBudgetVariance()}
               disabled={budgetVarianceBusy}
-              className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50 transition"
+              className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50 transition"
             >
               {budgetVarianceBusy ? 'Loading…' : 'Refresh'}
             </button>
@@ -722,9 +722,9 @@ export default function FinanceReportsPage() {
               {budgetVariance.rows.length === 0 ? (
                 <p className="text-sm text-slate-400">No budget records found. Create a budget on the Expenses page first.</p>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-slate-800">
+                <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
                   <table className="w-full text-sm text-slate-300">
-                    <thead className="bg-slate-800/60 text-xs uppercase text-slate-400">
+                    <thead className="bg-white/[0.035] text-xs uppercase text-slate-400">
                       <tr>
                         <th className="px-4 py-3 text-left">Academic Year</th>
                         <th className="px-4 py-3 text-left">Term</th>
@@ -764,7 +764,7 @@ export default function FinanceReportsPage() {
                   <h3 className="mb-3 text-sm font-semibold text-slate-300">Spend by Category</h3>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                     {budgetVariance.by_category.map((cat) => (
-                      <div key={cat.category} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                      <div key={cat.category} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">
                         <p className="text-xs uppercase text-slate-400 truncate">{cat.category}</p>
                         <p className="mt-1 text-base font-semibold text-white">{cat.actual.toLocaleString()}</p>
                       </div>

@@ -69,7 +69,7 @@ function LedgerTable({ entries, showBalance }: { entries: LedgerEntry[]; showBal
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-slate-200">
         <thead>
-          <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+          <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
             <th className="px-5 py-3 text-left">Date</th>
             <th className="px-5 py-3 text-left">Type</th>
             <th className="px-5 py-3 text-left">Reference</th>
@@ -83,7 +83,7 @@ function LedgerTable({ entries, showBalance }: { entries: LedgerEntry[]; showBal
         </thead>
         <tbody className="divide-y divide-slate-800/60">
           {entries.map((entry, i) => (
-            <tr key={i} className="hover:bg-slate-800/30 transition">
+            <tr key={i} className="hover:bg-white/[0.02] transition">
               <td className="px-5 py-3 text-slate-400 whitespace-nowrap">{entry.date}</td>
               <td className="px-5 py-3">
                 <span className={`rounded px-2 py-0.5 text-xs font-medium ${TYPE_COLORS[entry.type] ?? 'bg-slate-700 text-slate-300'}`}>
@@ -110,7 +110,7 @@ function LedgerTable({ entries, showBalance }: { entries: LedgerEntry[]; showBal
         </tbody>
         {showBalance && entries.length > 0 && (
           <tfoot>
-            <tr className="border-t-2 border-slate-600 bg-slate-900/80">
+            <tr className="border-t-2 border-slate-600 bg-white/[0.03]">
               <td colSpan={5} className="px-5 py-3 text-right text-xs text-slate-400 font-semibold">Closing Balance</td>
               <td colSpan={3} className={`px-5 py-3 text-right font-mono font-bold text-base ${entries[entries.length - 1].balance > 0 ? 'text-red-300' : 'text-emerald-300'}`}>
                 KES {fmt(Math.abs(entries[entries.length - 1].balance))}
@@ -235,7 +235,7 @@ export default function FinanceStudentLedgerPage() {
 
   return (
     <section className="col-span-12 grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <button onClick={() => navigate('/modules/finance')} className="mb-4 flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200 transition">
           ← Back to Finance
         </button>
@@ -250,13 +250,13 @@ export default function FinanceStudentLedgerPage() {
         </div>
       </header>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap gap-4">
           <div className="relative flex-1 min-w-64">
             <label className="mb-1 block text-xs text-slate-400">Search student by name or admission number</label>
             <div className="flex items-center gap-2">
               <input
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
                 placeholder="Type name or admission no. (e.g. Alice or ST001)…"
                 value={searchQuery}
                 autoComplete="off"
@@ -269,11 +269,11 @@ export default function FinanceStudentLedgerPage() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               />
               {selectedStudent && (
-                <button onClick={clearStudent} className="shrink-0 rounded-lg border border-slate-700 px-2 py-2 text-xs text-slate-400 hover:text-white hover:border-slate-500 transition" title="Clear">✕</button>
+                <button onClick={clearStudent} className="shrink-0 rounded-lg border border-white/[0.09] px-2 py-2 text-xs text-slate-400 hover:text-white hover:border-slate-500 transition" title="Clear">✕</button>
               )}
             </div>
             {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute z-30 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden">
+              <ul className="absolute z-30 mt-1 w-full rounded-xl border border-white/[0.09] bg-[#0d1421] shadow-xl overflow-hidden">
                 {suggestions.map(s => (
                   <li key={s.id}>
                     <button
@@ -288,7 +288,7 @@ export default function FinanceStudentLedgerPage() {
               </ul>
             )}
             {showSuggestions && searchQuery.trim().length > 1 && suggestions.length === 0 && !selectedStudentName && (
-              <div className="absolute z-30 mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-500">
+              <div className="absolute z-30 mt-1 w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-4 py-3 text-sm text-slate-500">
                 No students match "{searchQuery}"
               </div>
             )}
@@ -298,7 +298,7 @@ export default function FinanceStudentLedgerPage() {
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">Term</label>
-            <select className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            <select className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={selectedTerm} onChange={e => setSelectedTerm(e.target.value)}>
               <option value="">All Terms</option>
               {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -306,12 +306,12 @@ export default function FinanceStudentLedgerPage() {
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">From Date</label>
-            <input type="date" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            <input type="date" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">To Date</label>
-            <input type="date" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            <input type="date" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={dateTo} onChange={e => setDateTo(e.target.value)} />
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function FinanceStudentLedgerPage() {
       </section>
 
       {!selectedStudent && (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 py-14 text-center text-slate-500">
+        <div className="col-span-12 rounded-2xl glass-panel py-14 text-center text-slate-500">
           Search and select a student above to view their account ledger.
         </div>
       )}
@@ -333,12 +333,12 @@ export default function FinanceStudentLedgerPage() {
       {ledger && !loading && (
         <>
           <section className="col-span-12 grid grid-cols-2 gap-4 md:grid-cols-6">
-            <div className="col-span-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="col-span-2 rounded-2xl glass-panel p-5">
               <p className="text-xs uppercase text-slate-500">Student</p>
               <p className="mt-1 font-semibold text-white">{ledger.student.name}</p>
               <p className="text-xs text-slate-400">{ledger.student.admission_number}</p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl glass-panel p-5">
               <p className="text-xs uppercase text-slate-500">Class</p>
               <p className="mt-1 font-semibold text-white text-sm">{ledger.student.class_name}</p>
               <p className="text-xs text-slate-400">{ledger.student.current_term}</p>
@@ -362,8 +362,8 @@ export default function FinanceStudentLedgerPage() {
             </div>
           </section>
 
-          <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-            <div className="border-b border-slate-700 flex overflow-x-auto">
+          <section className="col-span-12 rounded-2xl glass-panel overflow-hidden">
+            <div className="border-b border-white/[0.09] flex overflow-x-auto">
               {TABS.map(tab => (
                 <button
                   key={tab.key}
@@ -371,7 +371,7 @@ export default function FinanceStudentLedgerPage() {
                   className={`flex-shrink-0 px-5 py-4 text-sm font-medium transition whitespace-nowrap ${
                     activeTab === tab.key
                       ? 'border-b-2 border-emerald-500 text-emerald-300 bg-emerald-500/5'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.025]'
                   }`}
                 >
                   {tab.label}

@@ -21,7 +21,7 @@ const PRESET_PALETTES = [
 
 const FONT_OPTIONS = ['Inter', 'Poppins', 'Roboto', 'Nunito', 'Open Sans', 'Raleway', 'Lato', 'Source Sans 3']
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition'
 
 export default function SettingsGlobalPage() {
   const [form, setForm] = useState<GlobalSettings>({ primary_color: '#10b981', secondary_color: '#0ea5e9', font_family: 'Inter' })
@@ -71,7 +71,7 @@ export default function SettingsGlobalPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* Color Presets */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-5">
+      <section className="rounded-2xl glass-panel p-6 space-y-5">
         <div className="flex items-center gap-2 mb-1">
           <Palette className="h-4 w-4 text-violet-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Color Palette</h2>
@@ -83,7 +83,7 @@ export default function SettingsGlobalPage() {
           {PRESET_PALETTES.map(p => (
             <button key={p.label} onClick={() => apply(p.primary, p.secondary)}
               className={`rounded-xl border p-3 text-left transition ${
-                form.primary_color === p.primary ? 'border-white/50 bg-slate-800' : 'border-slate-700 bg-slate-950 hover:border-slate-500'
+                form.primary_color === p.primary ? 'border-white/50 bg-slate-800' : 'border-white/[0.09] bg-slate-950 hover:border-slate-500'
               }`}>
               <div className="flex gap-1.5 mb-2">
                 <div className="w-5 h-5 rounded-full" style={{ background: p.primary }} />
@@ -101,9 +101,9 @@ export default function SettingsGlobalPage() {
             <div className="flex items-center gap-3">
               <input type="color" value={form.primary_color}
                 onChange={e => { setForm(f => ({ ...f, primary_color: e.target.value })); document.documentElement.style.setProperty('--brand-primary', e.target.value) }}
-                className="w-12 h-10 rounded-lg cursor-pointer border border-slate-700 bg-slate-950" />
+                className="w-12 h-10 rounded-lg cursor-pointer border border-white/[0.09] bg-slate-950" />
               <input value={form.primary_color} onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
-                placeholder="#10b981" className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 font-mono" />
+                placeholder="#10b981" className="flex-1 rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-slate-100 font-mono" />
             </div>
             <div className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900" style={{ background: form.primary_color }}>
               Primary — buttons, links, highlights
@@ -114,9 +114,9 @@ export default function SettingsGlobalPage() {
             <div className="flex items-center gap-3">
               <input type="color" value={form.secondary_color}
                 onChange={e => { setForm(f => ({ ...f, secondary_color: e.target.value })); document.documentElement.style.setProperty('--brand-secondary', e.target.value) }}
-                className="w-12 h-10 rounded-lg cursor-pointer border border-slate-700 bg-slate-950" />
+                className="w-12 h-10 rounded-lg cursor-pointer border border-white/[0.09] bg-slate-950" />
               <input value={form.secondary_color} onChange={e => setForm(f => ({ ...f, secondary_color: e.target.value }))}
-                placeholder="#0ea5e9" className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 font-mono" />
+                placeholder="#0ea5e9" className="flex-1 rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-slate-100 font-mono" />
             </div>
             <div className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900" style={{ background: form.secondary_color }}>
               Secondary — badges, accents, charts
@@ -126,7 +126,7 @@ export default function SettingsGlobalPage() {
       </section>
 
       {/* Typography */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Type className="h-4 w-4 text-amber-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Typography</h2>
@@ -143,12 +143,12 @@ export default function SettingsGlobalPage() {
       </section>
 
       {/* Live preview */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Monitor className="h-4 w-4 text-sky-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Live Preview</h2>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-950 p-4 space-y-3">
+        <div className="rounded-xl border border-white/[0.09] bg-slate-950 p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-950 text-sm" style={{ background: form.primary_color }}>R</div>
             <div>

@@ -33,7 +33,7 @@ export default function FinanceDispensaryPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 flex items-center justify-between">
+      <section className="rounded-2xl glass-panel p-5 flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
           <h1 className="mt-1 text-2xl font-display font-semibold">Dispensary Records</h1>
@@ -54,23 +54,23 @@ export default function FinanceDispensaryPage() {
 
       <div className="flex gap-2">
         {(['visits', 'stock'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`rounded-lg px-4 py-2 text-xs font-medium border transition capitalize ${tab === t ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200' : 'border-slate-700 text-slate-400 hover:bg-slate-800'}`}>
+          <button key={t} onClick={() => setTab(t)} className={`rounded-lg px-4 py-2 text-xs font-medium border transition capitalize ${tab === t ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200' : 'border-white/[0.09] text-slate-400 hover:bg-slate-800'}`}>
             {t === 'visits' ? 'Recent Visits' : 'Stock Summary'}
           </button>
         ))}
       </div>
 
       {tab === 'visits' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <div className="rounded-2xl glass-panel overflow-hidden">
           <table className="w-full text-left text-sm text-slate-300">
-            <thead className="border-b border-slate-800 bg-slate-950/50 text-slate-400 uppercase text-xs">
+            <thead className="border-b border-white/[0.07] bg-slate-950/50 text-slate-400 uppercase text-xs">
               <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Student</th><th className="px-4 py-3">Complaint</th><th className="px-4 py-3">Diagnosis</th><th className="px-4 py-3">Attended By</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {visits.length === 0 ? (
                 <tr><td colSpan={5} className="px-4 py-10 text-center text-slate-500">No visits found.</td></tr>
               ) : visits.map(v => (
-                <tr key={v.id} className="hover:bg-slate-800/40 transition">
+                <tr key={v.id} className="hover:bg-white/[0.025] transition">
                   <td className="px-4 py-3 font-mono text-xs">{v.visit_date}</td>
                   <td className="px-4 py-3 font-medium text-white">{v.student_name}</td>
                   <td className="px-4 py-3 text-slate-400 max-w-xs truncate">{v.complaint}</td>
@@ -84,16 +84,16 @@ export default function FinanceDispensaryPage() {
       )}
 
       {tab === 'stock' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <div className="rounded-2xl glass-panel overflow-hidden">
           <table className="w-full text-left text-sm text-slate-300">
-            <thead className="border-b border-slate-800 bg-slate-950/50 text-slate-400 uppercase text-xs">
+            <thead className="border-b border-white/[0.07] bg-slate-950/50 text-slate-400 uppercase text-xs">
               <tr><th className="px-4 py-3">Item</th><th className="px-4 py-3">Qty</th><th className="px-4 py-3">Unit</th><th className="px-4 py-3">Reorder Level</th><th className="px-4 py-3">Expiry</th><th className="px-4 py-3">Status</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
               {stock.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-500">No stock items.</td></tr>
               ) : stock.map(s => (
-                <tr key={s.id} className="hover:bg-slate-800/40 transition">
+                <tr key={s.id} className="hover:bg-white/[0.025] transition">
                   <td className="px-4 py-3 font-medium text-white">{s.item_name}</td>
                   <td className="px-4 py-3 font-mono">{s.quantity}</td>
                   <td className="px-4 py-3 text-slate-400">{s.unit}</td>

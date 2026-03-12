@@ -14,7 +14,7 @@ interface AcademicConfig {
   promotion_policy: string
 }
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 interface AcademicYear { id?: number; name: string; start_date: string; end_date: string; is_current: boolean }
 interface Term { id?: number; name: string; start_date: string; end_date: string }
@@ -108,7 +108,7 @@ export default function SettingsAcademicsConfigPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* School Type */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <SectionHeader icon={GraduationCap} color="text-violet-400" title="School Classification" desc="Define what type of school this is — affects available academic modules." />
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -161,7 +161,7 @@ export default function SettingsAcademicsConfigPage() {
       </section>
 
       {/* Academic Years */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <SectionHeader icon={Calendar} color="text-sky-400" title="Academic Years" desc="Define your school's academic calendar years." />
         <div className="space-y-2">
           {academicYears.map((y, i) => (
@@ -187,7 +187,7 @@ export default function SettingsAcademicsConfigPage() {
       </section>
 
       {/* Terms */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <SectionHeader icon={Calendar} color="text-amber-400" title="Terms / Semesters" desc="Configure term dates for the current academic year." />
         <div className="space-y-2">
           {terms.map((t, i) => (
@@ -206,7 +206,7 @@ export default function SettingsAcademicsConfigPage() {
       </section>
 
       {/* Grade Levels */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <SectionHeader icon={GraduationCap} color="text-emerald-400" title="Grade / Form Levels" desc="Define the grade levels in your school. Classes/streams are created per grade." />
         <div className="space-y-2">
           {gradeLevels.map((g, i) => (
@@ -228,11 +228,11 @@ export default function SettingsAcademicsConfigPage() {
       </section>
 
       {/* Subjects */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <SectionHeader icon={BookOpen} color="text-rose-400" title="Subjects" desc="Define the subjects offered. Each can be assigned to specific grade levels." />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-slate-800 text-[10px] text-slate-500 uppercase tracking-widest">
+            <thead><tr className="border-b border-white/[0.07] text-[10px] text-slate-500 uppercase tracking-widest">
               <th className="text-left pb-2 font-semibold">Subject Name</th>
               <th className="text-left pb-2 font-semibold pl-2">Code</th>
               <th className="text-left pb-2 font-semibold pl-2">Assigned To</th>

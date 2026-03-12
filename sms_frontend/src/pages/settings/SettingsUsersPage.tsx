@@ -156,7 +156,7 @@ export default function SettingsUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-display font-bold text-white">User Management</h1>
@@ -179,22 +179,22 @@ export default function SettingsUsersPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-500">Total Users</p>
           <p className="mt-2 text-2xl font-bold text-white">{summary.total}</p>
         </div>
         {roles.map(r => (
-          <div key={r.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div key={r.id} className="rounded-2xl glass-panel p-5">
             <p className="text-xs uppercase text-slate-500">{ROLE_LABELS[r.name] ?? r.name}</p>
             <p className="mt-2 text-2xl font-bold text-white">{summary.byRole[r.name] ?? 0}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <div className="mb-4">
           <input
-            className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 placeholder:text-slate-600"
+            className="w-full max-w-sm rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 placeholder:text-slate-600"
             placeholder="Search by name, username, email, or role…"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -207,7 +207,7 @@ export default function SettingsUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-slate-200">
               <thead>
-                <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
                   <th className="pb-3 pr-5 text-left">Name</th>
                   <th className="pb-3 pr-5 text-left">Username</th>
                   <th className="pb-3 pr-5 text-left">Email</th>
@@ -226,7 +226,7 @@ export default function SettingsUsersPage() {
                   </tr>
                 )}
                 {filtered.map(u => (
-                  <tr key={u.id} className="hover:bg-slate-800/30 transition">
+                  <tr key={u.id} className="hover:bg-white/[0.02] transition">
                     <td className="py-3 pr-5">
                       <div className="font-medium text-white">
                         {u.first_name || u.last_name ? `${u.first_name} ${u.last_name}`.trim() : <span className="text-slate-500 italic">No name</span>}
@@ -260,7 +260,7 @@ export default function SettingsUsersPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <div className="rounded-2xl glass-panel p-5">
         <h3 className="text-sm font-semibold text-slate-300 mb-3">Role Permissions Reference</h3>
         <div className="grid gap-3 md:grid-cols-2">
           {[
@@ -269,7 +269,7 @@ export default function SettingsUsersPage() {
             { name: 'ACCOUNTANT', label: 'Finance Manager', desc: 'Access to Finance module only — invoices, payments, cashbook, vote heads, reports, and student accounts.' },
             { name: 'TEACHER', label: 'Teaching Staff', desc: 'Access to Academics, Students, and Attendance modules. Read-only access to class lists and grade entry.' },
           ].map(r => (
-            <div key={r.name} className="flex gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+            <div key={r.name} className="flex gap-3 rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
               <span className={`mt-0.5 h-fit rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.name]}`}>{r.label}</span>
               <p className="text-xs text-slate-400">{r.desc}</p>
             </div>
@@ -279,7 +279,7 @@ export default function SettingsUsersPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.09] bg-[#0d1421] p-6 shadow-2xl">
             <h2 className="mb-5 text-lg font-semibold text-white">
               {editing ? `Edit User: ${editing.username}` : 'Add New User'}
             </h2>
@@ -288,36 +288,36 @@ export default function SettingsUsersPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs text-slate-400">First Name</label>
-                  <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} />
+                  <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs text-slate-400">Last Name</label>
-                  <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} />
+                  <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} />
                 </div>
               </div>
               {!editing && (
                 <div>
                   <label className="mb-1 block text-xs text-slate-400">Username <span className="text-red-400">*</span></label>
-                  <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
+                  <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} />
                 </div>
               )}
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Email</label>
-                <input type="email" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                <input type="email" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Phone</label>
-                <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">
                   {editing ? 'New Password (leave blank to keep current)' : 'Password'} {!editing && <span className="text-red-400">*</span>}
                 </label>
-                <input type="password" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+                <input type="password" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Role <span className="text-red-400">*</span></label>
-                <select className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.role_id} onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}>
+                <select className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.role_id} onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}>
                   <option value="">— Select a role —</option>
                   {roles.map(r => (
                     <option key={r.id} value={r.id}>{ROLE_LABELS[r.name] ?? r.name}</option>
@@ -331,7 +331,7 @@ export default function SettingsUsersPage() {
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
+              <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
               <button onClick={handleSave} disabled={saving} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">
                 {saving ? 'Saving…' : editing ? 'Update User' : 'Create User'}
               </button>

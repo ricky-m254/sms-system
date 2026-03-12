@@ -313,7 +313,7 @@ export default function HrOrganizationPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Departments & Positions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Organization Structure</h1>
       </section>
@@ -330,8 +330,8 @@ export default function HrOrganizationPage() {
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-          <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+        <article className="overflow-hidden rounded-xl glass-panel">
+          <header className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
             <h2 className="text-sm font-semibold text-slate-100">Departments</h2>
             <button
               onClick={openCreateDepartment}
@@ -353,7 +353,7 @@ export default function HrOrganizationPage() {
               </thead>
               <tbody>
                 {(loading ? [] : departments).map((department) => (
-                  <tr key={department.id} className="border-t border-slate-800">
+                  <tr key={department.id} className="border-t border-white/[0.07]">
                     <td className="px-4 py-3 text-slate-100">{department.name}</td>
                     <td className="px-4 py-3 text-slate-300">{department.code}</td>
                     <td className="px-4 py-3 text-slate-300">{department.parent_name || '-'}</td>
@@ -383,8 +383,8 @@ export default function HrOrganizationPage() {
           </div>
         </article>
 
-        <article className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-          <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+        <article className="overflow-hidden rounded-xl glass-panel">
+          <header className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
             <h2 className="text-sm font-semibold text-slate-100">Positions</h2>
             <button
               onClick={openCreatePosition}
@@ -405,7 +405,7 @@ export default function HrOrganizationPage() {
               </thead>
               <tbody>
                 {(loading ? [] : positions).map((position) => (
-                  <tr key={position.id} className="border-t border-slate-800">
+                  <tr key={position.id} className="border-t border-white/[0.07]">
                     <td className="px-4 py-3 text-slate-100">{position.title}</td>
                     <td className="px-4 py-3 text-slate-300">{position.department_name}</td>
                     <td className="px-4 py-3 text-slate-300">{position.headcount}</td>
@@ -435,8 +435,8 @@ export default function HrOrganizationPage() {
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Org Chart Snapshot</h2>
         </header>
         <div className="overflow-x-auto">
@@ -451,7 +451,7 @@ export default function HrOrganizationPage() {
             </thead>
             <tbody>
               {(loading ? [] : orgChart).map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-100">{row.name}</td>
                   <td className="px-4 py-3 text-slate-300">{row.parent_id ?? '-'}</td>
                   <td className="px-4 py-3 text-slate-300">{row.head || '-'}</td>
@@ -463,22 +463,22 @@ export default function HrOrganizationPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Vacancy Dashboard</h2>
         </header>
-        <div className="space-y-3 border-b border-slate-800 px-4 py-3">
+        <div className="space-y-3 border-b border-white/[0.07] px-4 py-3">
           <div className="grid gap-3 md:grid-cols-4">
             <input
               value={vacancySearch}
               onChange={(event) => setVacancySearch(event.target.value)}
               placeholder="Search position/department..."
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <select
               value={selectedDepartmentFilter}
               onChange={(event) => setSelectedDepartmentFilter(event.target.value)}
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             >
               <option value="">All departments</option>
               {Array.from(new Set(positions.map((position) => position.department_name))).map((departmentName) => (
@@ -493,7 +493,7 @@ export default function HrOrganizationPage() {
               value={minimumVacancyFilter}
               onChange={(event) => setMinimumVacancyFilter(event.target.value)}
               placeholder="Minimum vacancies"
-              className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+              className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
             />
             <button
               onClick={() => exportVacanciesCsv(vacancyRows)}
@@ -516,7 +516,7 @@ export default function HrOrganizationPage() {
             </thead>
             <tbody>
               {(loading ? [] : vacancyRows).map((row) => (
-                <tr key={row.positionId} className="border-t border-slate-800">
+                <tr key={row.positionId} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-100">{row.position}</td>
                   <td className="px-4 py-3 text-slate-300">{row.department}</td>
                   <td className="px-4 py-3 text-slate-300">{row.headcount}</td>
@@ -531,7 +531,7 @@ export default function HrOrganizationPage() {
 
       {modalMode !== 'none' ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-          <div className="w-full max-w-xl rounded-xl border border-slate-800 bg-slate-900 p-5">
+          <div className="w-full max-w-xl rounded-xl border border-white/[0.07] bg-[#0d1421] p-5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-100">
                 {modalMode === 'createDepartment' && 'Create Department'}
@@ -550,18 +550,18 @@ export default function HrOrganizationPage() {
                   value={departmentForm.name}
                   onChange={(event) => setDepartmentForm((prev) => ({ ...prev, name: event.target.value }))}
                   placeholder="Department name"
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 />
                 <input
                   value={departmentForm.code}
                   onChange={(event) => setDepartmentForm((prev) => ({ ...prev, code: event.target.value }))}
                   placeholder="Code"
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 />
                 <select
                   value={departmentForm.parent}
                   onChange={(event) => setDepartmentForm((prev) => ({ ...prev, parent: event.target.value }))}
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 >
                   <option value="">No parent</option>
                   {departments
@@ -576,13 +576,13 @@ export default function HrOrganizationPage() {
                   value={departmentForm.budget}
                   onChange={(event) => setDepartmentForm((prev) => ({ ...prev, budget: event.target.value }))}
                   placeholder="Budget (optional)"
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 />
                 <textarea
                   value={departmentForm.description}
                   onChange={(event) => setDepartmentForm((prev) => ({ ...prev, description: event.target.value }))}
                   placeholder="Description"
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm sm:col-span-2"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm sm:col-span-2"
                 />
                 <button
                   onClick={() => void saveDepartment()}
@@ -600,12 +600,12 @@ export default function HrOrganizationPage() {
                   value={positionForm.title}
                   onChange={(event) => setPositionForm((prev) => ({ ...prev, title: event.target.value }))}
                   placeholder="Position title"
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 />
                 <select
                   value={positionForm.department}
                   onChange={(event) => setPositionForm((prev) => ({ ...prev, department: event.target.value }))}
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 >
                   <option value="">Select department</option>
                   {departments.map((department) => (
@@ -620,7 +620,7 @@ export default function HrOrganizationPage() {
                   value={positionForm.headcount}
                   onChange={(event) => setPositionForm((prev) => ({ ...prev, headcount: event.target.value }))}
                   placeholder="Headcount"
-                  className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                  className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
                 />
                 <button
                   onClick={() => void savePosition()}

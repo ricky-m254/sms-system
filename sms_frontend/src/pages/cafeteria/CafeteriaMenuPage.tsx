@@ -82,16 +82,16 @@ export default function CafeteriaMenuPage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
       {showForm ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="mb-4 text-sm font-semibold text-slate-200">New Weekly Menu</h2>
           <div className="grid gap-3 sm:grid-cols-2 mb-4">
             <div className="space-y-1">
               <label className="text-xs text-slate-400">Week start (Monday) *</label>
-              <input type="date" value={weekStart} onChange={e => setWeekStart(e.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="date" value={weekStart} onChange={e => setWeekStart(e.target.value)} className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div className="space-y-1">
               <label className="text-xs text-slate-400">Meal Plan *</label>
-              <select value={planId} onChange={e => setPlanId(e.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={planId} onChange={e => setPlanId(e.target.value)} className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
                 <option value="">Select plan</option>
                 {plans.filter(p => p.is_active).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
@@ -100,18 +100,18 @@ export default function CafeteriaMenuPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-xs text-slate-400">
+                <tr className="border-b border-white/[0.07] text-xs text-slate-400">
                   <th className="py-2 pr-3 text-left font-medium w-28">Day</th>
                   {MEALS.map(m => <th key={m} className="py-2 px-2 text-left font-medium capitalize">{m}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {DAYS.map(day => (
-                  <tr key={day} className="border-b border-slate-800/40">
+                  <tr key={day} className="border-b border-white/[0.04]">
                     <td className="py-2 pr-3 text-slate-300 capitalize font-medium">{day}</td>
                     {MEALS.map(meal => (
                       <td key={meal} className="py-1 px-2">
-                        <input value={fields[`${day}_${meal}`]} onChange={e => setField(`${day}_${meal}`, e.target.value)} placeholder={`${day} ${meal}`} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs" />
+                        <input value={fields[`${day}_${meal}`]} onChange={e => setField(`${day}_${meal}`, e.target.value)} placeholder={`${day} ${meal}`} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-xs" />
                       </td>
                     ))}
                   </tr>
@@ -125,7 +125,7 @@ export default function CafeteriaMenuPage() {
 
       <div className="space-y-3">
         {loading ? <p className="text-sm text-slate-400">Loading…</p> : menus.map(m => (
-          <div key={m.id} className="rounded-2xl border border-slate-800 bg-slate-900/60">
+          <div key={m.id} className="rounded-2xl glass-panel">
             <div className="flex items-center justify-between gap-4 p-4">
               <div>
                 <p className="font-semibold text-slate-100">Week of {m.week_start}</p>
@@ -137,9 +137,9 @@ export default function CafeteriaMenuPage() {
               </div>
             </div>
             {expandedId === m.id ? (
-              <div className="border-t border-slate-800 overflow-x-auto">
+              <div className="border-t border-white/[0.07] overflow-x-auto">
                 <table className="min-w-full text-xs">
-                  <thead className="border-b border-slate-800 text-slate-400">
+                  <thead className="border-b border-white/[0.07] text-slate-400">
                     <tr>
                       <th className="px-4 py-2 text-left font-medium">Day</th>
                       {MEALS.map(ml => <th key={ml} className="px-4 py-2 text-left font-medium capitalize">{ml}</th>)}
@@ -147,7 +147,7 @@ export default function CafeteriaMenuPage() {
                   </thead>
                   <tbody>
                     {DAYS.map(day => (
-                      <tr key={day} className="border-b border-slate-800/40 hover:bg-slate-800/20">
+                      <tr key={day} className="border-b border-white/[0.04] hover:bg-slate-800/20">
                         <td className="px-4 py-2 font-medium capitalize text-slate-300">{day}</td>
                         {MEALS.map(meal => (
                           <td key={meal} className="px-4 py-2 text-slate-400">

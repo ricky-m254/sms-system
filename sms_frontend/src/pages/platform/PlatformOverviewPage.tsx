@@ -123,26 +123,26 @@ export default function PlatformOverviewPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Platform</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Overview Dashboard</h1>
       </header>
-      {isLoading ? <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">Loading overview...</div> : null}
+      {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading overview...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {data ? (
         <>
           <section className="col-span-12 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl glass-panel p-5">
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Tenants</p>
               <p className="mt-2 text-3xl font-semibold">{data.tenants.total}</p>
               <p className="mt-2 text-xs text-slate-300">Active: {data.tenants.active} | Trial: {data.tenants.trial}</p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl glass-panel p-5">
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Revenue</p>
               <p className="mt-2 text-3xl font-semibold">${data.revenue.mrr}</p>
               <p className="mt-2 text-xs text-slate-300">ARR: ${data.revenue.arr}</p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl glass-panel p-5">
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Churn</p>
               <p className="mt-2 text-3xl font-semibold">{data.churn.monthly_churn_rate_percent}%</p>
               <p className="mt-2 text-xs text-slate-300">Churned this month: {data.churn.churned_this_month}</p>
@@ -150,24 +150,24 @@ export default function PlatformOverviewPage() {
           </section>
           {businessKpis ? (
             <section className="col-span-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">ARPT: ${businessKpis.kpis.arpt}</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">Annual churn: {businessKpis.kpis.annual_churn_rate_percent}%</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">LTV estimate: {businessKpis.kpis.ltv_estimate ? `$${businessKpis.kpis.ltv_estimate}` : '--'}</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">Invoiced (month): ${data.revenue.invoiced_this_month}</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">Paid (month): ${data.revenue.paid_this_month}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">ARPT: ${businessKpis.kpis.arpt}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">Annual churn: {businessKpis.kpis.annual_churn_rate_percent}%</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">LTV estimate: {businessKpis.kpis.ltv_estimate ? `$${businessKpis.kpis.ltv_estimate}` : '--'}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">Invoiced (month): ${data.revenue.invoiced_this_month}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">Paid (month): ${data.revenue.paid_this_month}</div>
             </section>
           ) : null}
-          <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <section className="col-span-12 rounded-2xl glass-panel p-6">
             <h2 className="text-lg font-display font-semibold">Operational Summary</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">Suspended tenants: {data.tenants.suspended}</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">Overdue invoices: {data.revenue.overdue_invoices}</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">New tenants (month): {data.growth.new_tenants_this_month}</div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">New tenants (year): {data.growth.new_tenants_this_year}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">Suspended tenants: {data.tenants.suspended}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">Overdue invoices: {data.revenue.overdue_invoices}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">New tenants (month): {data.growth.new_tenants_this_month}</div>
+              <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">New tenants (year): {data.growth.new_tenants_this_year}</div>
             </div>
           </section>
           <section className="col-span-12 grid gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+            <div className="rounded-2xl glass-panel p-6">
               <h2 className="text-lg font-display font-semibold">Storage Usage Trend (GB)</h2>
               <p className="mt-1 text-xs text-slate-400">Latest total: {storageUsage?.latest_total_storage_gb ?? '0.00'} GB</p>
               <div className="mt-4 h-64">
@@ -182,7 +182,7 @@ export default function PlatformOverviewPage() {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+            <div className="rounded-2xl glass-panel p-6">
               <h2 className="text-lg font-display font-semibold">Tenant Segments</h2>
               <div className="mt-4 h-64">
                 <ResponsiveContainer width="100%" height="100%">

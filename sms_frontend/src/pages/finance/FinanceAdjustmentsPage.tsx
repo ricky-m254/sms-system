@@ -226,7 +226,7 @@ export default function FinanceAdjustmentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Invoice Adjustments</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -235,7 +235,7 @@ export default function FinanceAdjustmentsPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading adjustments...</p>
         </div>
       ) : null}
@@ -257,29 +257,29 @@ export default function FinanceAdjustmentsPage() {
       ) : null}
 
       <section className="col-span-12 grid grid-cols-12 gap-4">
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-3">
+        <div className="col-span-12 rounded-2xl glass-panel p-4 md:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Total Adjustments</p>
           <p className="mt-2 text-xl font-display font-semibold">{summary.count}</p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-3">
+        <div className="col-span-12 rounded-2xl glass-panel p-4 md:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Total Amount</p>
           <p className="mt-2 text-xl font-display font-semibold">
             {formatMoney(summary.total)}
           </p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 md:col-span-3">
+        <div className="col-span-12 rounded-2xl glass-panel p-4 md:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Avg Adjustment</p>
           <p className="mt-2 text-xl font-display font-semibold">
             {formatMoney(summary.average)}
           </p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-slate-900/60 p-4 md:col-span-3">
+        <div className="col-span-12 rounded-2xl border border-emerald-500/40 glass-panel p-4 md:col-span-3">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Last 30 Days</p>
           <p className="mt-2 text-xl font-display font-semibold">{summary.last30}</p>
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Adjustment list</h2>
@@ -287,7 +287,7 @@ export default function FinanceAdjustmentsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search invoice, amount, reason"
               value={query}
               onChange={(event) => {
@@ -296,7 +296,7 @@ export default function FinanceAdjustmentsPage() {
               }}
             />
             <input
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-28"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-28"
               placeholder="Invoice #"
               value={invoiceFilter}
               onChange={(event) => {
@@ -308,7 +308,7 @@ export default function FinanceAdjustmentsPage() {
               type="number"
               min="0"
               step="0.01"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-24"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-24"
               placeholder="Min"
               value={minAmount}
               onChange={(event) => {
@@ -320,7 +320,7 @@ export default function FinanceAdjustmentsPage() {
               type="number"
               min="0"
               step="0.01"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-24"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-24"
               placeholder="Max"
               value={maxAmount}
               onChange={(event) => {
@@ -330,7 +330,7 @@ export default function FinanceAdjustmentsPage() {
             />
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -339,7 +339,7 @@ export default function FinanceAdjustmentsPage() {
             />
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -347,7 +347,7 @@ export default function FinanceAdjustmentsPage() {
               }}
             />
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:w-auto"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value)
@@ -360,7 +360,7 @@ export default function FinanceAdjustmentsPage() {
               <option value="REJECTED">REJECTED</option>
             </select>
             <button
-              className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={() => {
                 setQuery('')
                 setInvoiceFilter('')
@@ -388,9 +388,9 @@ export default function FinanceAdjustmentsPage() {
             Filters and summaries apply to the current page only while pagination is enabled.
           </p>
         ) : null}
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[720px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Invoice</th>
                 <th className="px-4 py-3">Type</th>
@@ -456,14 +456,14 @@ export default function FinanceAdjustmentsPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >

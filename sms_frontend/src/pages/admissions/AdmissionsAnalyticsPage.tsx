@@ -41,7 +41,7 @@ export default function AdmissionsAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Analytics</h1>
       </header>
@@ -52,16 +52,16 @@ export default function AdmissionsAnalyticsPage() {
         </section>
       ) : null}
       {isLoading ? (
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
+        <section className="rounded-2xl glass-panel p-4 text-sm text-slate-400">
           Loading analytics...
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Funnel</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {Object.entries(funnel?.counts ?? {}).map(([key, value]) => (
-            <div key={key} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+            <div key={key} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="text-xs uppercase text-slate-400">{key.replace(/_/g, ' ')}</p>
               <p className="mt-2 text-2xl font-semibold">{value}</p>
             </div>
@@ -69,7 +69,7 @@ export default function AdmissionsAnalyticsPage() {
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {Object.entries(funnel?.rates ?? {}).map(([key, value]) => (
-            <div key={key} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+            <div key={key} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="text-xs uppercase text-slate-400">{key.replace(/_/g, ' ')}</p>
               <p className="mt-2 text-xl font-semibold">{value}%</p>
             </div>
@@ -77,11 +77,11 @@ export default function AdmissionsAnalyticsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Inquiry Sources</h2>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[700px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Total</th>

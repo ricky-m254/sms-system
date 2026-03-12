@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Shield, Lock, Clock, AlertTriangle, Check, AlertCircle } from 'lucide-react'
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 export default function SettingsSecurityPage() {
   const [sessionTimeout, setSessionTimeout] = useState(60)
@@ -56,7 +56,7 @@ export default function SettingsSecurityPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* Session */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-sky-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Session Management</h2></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -73,7 +73,7 @@ export default function SettingsSecurityPage() {
       </section>
 
       {/* Login Protection */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-amber-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Login Protection</h2></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -92,7 +92,7 @@ export default function SettingsSecurityPage() {
       </section>
 
       {/* Password Policy */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2"><Lock className="h-4 w-4 text-violet-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Password Policy</h2></div>
           <span className={`text-xs font-bold ${strengthColor}`}>Strength: {strengthLabel}</span>
@@ -124,7 +124,7 @@ export default function SettingsSecurityPage() {
       </section>
 
       {/* Two-Factor Authentication */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-emerald-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Two-Factor Authentication</h2></div>
           <span className={`text-xs px-2.5 py-1 rounded-lg font-semibold ${twoFactorEnabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'}`}>
@@ -149,7 +149,7 @@ export default function SettingsSecurityPage() {
       </section>
 
       {/* IP Whitelist */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-rose-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">IP Access Control</h2></div>
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input type="checkbox" checked={ipWhitelistEnabled} onChange={e => setIpWhitelistEnabled(e.target.checked)}

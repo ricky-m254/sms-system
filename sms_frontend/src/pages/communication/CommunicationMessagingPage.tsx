@@ -118,8 +118,8 @@ export default function CommunicationMessagingPage() {
       <div className="flex-1 min-h-0 grid grid-cols-1 gap-3 md:grid-cols-[260px_1fr] lg:grid-cols-[280px_1fr]">
 
         {/* Sidebar — Conversations */}
-        <div className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-          <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-slate-800">
+        <div className="flex flex-col rounded-2xl glass-panel overflow-hidden">
+          <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-white/[0.07]">
             <div className="flex items-center gap-2 mb-3">
               <h2 className="flex-1 text-sm font-semibold text-white">Conversations</h2>
               <button
@@ -136,7 +136,7 @@ export default function CommunicationMessagingPage() {
                   onChange={(e) => setNewTitle(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && void createConversation()}
                   placeholder="Group name…"
-                  className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+                  className="flex-1 rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
                 />
                 <button onClick={createConversation} disabled={creating} className="rounded-lg bg-emerald-500/20 border border-emerald-500/30 px-2.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/30 transition disabled:opacity-50">
                   {creating ? <Loader2 size={11} className="animate-spin" /> : 'Go'}
@@ -149,7 +149,7 @@ export default function CommunicationMessagingPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                className="w-full rounded-lg border border-slate-800 bg-slate-950/60 pl-7 pr-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-slate-600"
+                className="w-full rounded-lg border border-white/[0.07] bg-slate-950/60 pl-7 pr-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-slate-600"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function CommunicationMessagingPage() {
                 <button
                   key={conv.id}
                   onClick={() => setSelected(conv.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 border-b border-slate-800/50 hover:bg-slate-800/40 transition text-left ${selected === conv.id ? 'bg-emerald-500/10 border-l-2 border-l-emerald-500' : ''}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 border-b border-white/[0.05] hover:bg-white/[0.025] transition text-left ${selected === conv.id ? 'bg-emerald-500/10 border-l-2 border-l-emerald-500' : ''}`}
                 >
                   <div className="flex-shrink-0 h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center">
                     {conv.conversation_type === 'Group' ? <Users size={12} className="text-slate-300" /> : <Hash size={12} className="text-slate-300" />}
@@ -181,9 +181,9 @@ export default function CommunicationMessagingPage() {
         </div>
 
         {/* Message Thread */}
-        <div className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <div className="flex flex-col rounded-2xl glass-panel overflow-hidden">
           {/* Thread Header */}
-          <div className="flex-shrink-0 flex items-center gap-3 px-5 py-3.5 border-b border-slate-800">
+          <div className="flex-shrink-0 flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.07]">
             {activeConv ? (
               <>
                 <div className="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
@@ -195,11 +195,11 @@ export default function CommunicationMessagingPage() {
                 </div>
                 <button
                   onClick={() => selected && void loadMessages(selected)}
-                  className="h-7 w-7 rounded-lg border border-slate-700 flex items-center justify-center hover:bg-slate-700 transition"
+                  className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition"
                 >
                   <RefreshCw size={11} className="text-slate-400" />
                 </button>
-                <button className="h-7 w-7 rounded-lg border border-slate-700 flex items-center justify-center hover:bg-slate-700 transition">
+                <button className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition">
                   <MoreHorizontal size={13} className="text-slate-400" />
                 </button>
               </>
@@ -227,7 +227,7 @@ export default function CommunicationMessagingPage() {
                     {(msg.sender_name?.[0] || '?').toUpperCase()}
                   </div>
                   <div className={`max-w-[75%] ${msg.is_own ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                    <div className={`rounded-2xl px-3.5 py-2.5 ${msg.is_own ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-slate-800 border border-slate-700'}`}>
+                    <div className={`rounded-2xl px-3.5 py-2.5 ${msg.is_own ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-slate-800 border border-white/[0.09]'}`}>
                       {!msg.is_own && (
                         <p className="text-[10px] font-bold text-emerald-400 mb-1">{msg.sender_name}</p>
                       )}
@@ -242,7 +242,7 @@ export default function CommunicationMessagingPage() {
           </div>
 
           {/* Compose */}
-          <div className="flex-shrink-0 border-t border-slate-800 p-3">
+          <div className="flex-shrink-0 border-t border-white/[0.07] p-3">
             <div className="flex gap-2 items-end">
               <textarea
                 value={content}
@@ -251,7 +251,7 @@ export default function CommunicationMessagingPage() {
                 placeholder={selected ? "Type a message… (Enter to send)" : "Select a conversation first"}
                 disabled={!selected}
                 rows={2}
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none disabled:opacity-40"
+                className="flex-1 rounded-xl border border-white/[0.09] bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none disabled:opacity-40"
               />
               <button
                 onClick={sendMessage}

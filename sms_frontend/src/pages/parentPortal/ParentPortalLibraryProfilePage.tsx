@@ -43,14 +43,14 @@ export default function ParentPortalLibraryProfilePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Library & Profile</h1>
         <p className="mt-1 text-sm text-slate-400">Manage your child's library borrowings and your account profile.</p>
       </header>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-200 mb-3">Parent Profile</h2>
           {loading ? <p className="text-xs text-slate-400">Loading…</p> : profile ? (
             <div className="space-y-2 text-xs text-slate-300">
@@ -61,7 +61,7 @@ export default function ParentPortalLibraryProfilePage() {
           ) : <p className="text-xs text-slate-500">No profile data.</p>}
         </section>
 
-        <section className="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <section className="lg:col-span-2 rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-200 mb-3">Active Borrowings ({borrowings.length})</h2>
           {loading ? <p className="text-xs text-slate-400">Loading…</p> : borrowings.length === 0 ? <p className="text-xs text-slate-500">No active borrowings.</p> : (
             <div className="space-y-2">
@@ -87,11 +87,11 @@ export default function ParentPortalLibraryProfilePage() {
         </section>
       </div>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-200 mb-3">Borrowing History ({history.length})</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-xs">
-            <thead className="border-b border-slate-800 text-slate-400">
+            <thead className="border-b border-white/[0.07] text-slate-400">
               <tr>
                 <th className="px-3 py-2 font-medium">Book</th>
                 <th className="px-3 py-2 font-medium">Borrowed</th>

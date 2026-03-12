@@ -178,7 +178,7 @@ export default function FinanceAccountsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Accounting Workspace</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -187,7 +187,7 @@ export default function FinanceAccountsPage() {
       </header>
 
       {busy ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+        <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">
           Loading accounting data...
         </div>
       ) : null}
@@ -202,11 +202,11 @@ export default function FinanceAccountsPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 lg:col-span-4 rounded-2xl glass-panel p-5">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Chart of Accounts</h2>
           <button
-            className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+            className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
             onClick={() => void loadCore()}
             disabled={busy || ledgerBusy || periodActionId !== null}
           >
@@ -217,16 +217,16 @@ export default function FinanceAccountsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search code/name/type"
-          className="mt-3 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+          className="mt-3 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
         />
         <button
           type="button"
-          className="mt-2 rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+          className="mt-2 rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
           onClick={() => setSearch('')}
         >
           Reset search
         </button>
-        <div className="mt-3 max-h-[26rem] overflow-y-auto rounded-xl border border-slate-800">
+        <div className="mt-3 max-h-[26rem] overflow-y-auto rounded-xl border border-white/[0.07]">
           {filteredAccounts.map((account) => {
             const active = selectedAccountId === account.id
             return (
@@ -234,7 +234,7 @@ export default function FinanceAccountsPage() {
                 key={account.id}
                 type="button"
                 onClick={() => setSelectedAccountId(account.id)}
-                className={`w-full border-b border-slate-800 px-3 py-2 text-left last:border-b-0 ${
+                className={`w-full border-b border-white/[0.07] px-3 py-2 text-left last:border-b-0 ${
                   active ? 'bg-emerald-500/10' : 'bg-slate-950/60'
                 }`}
               >
@@ -251,11 +251,11 @@ export default function FinanceAccountsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 lg:col-span-8 rounded-2xl glass-panel p-5">
         <h2 className="text-base font-semibold">Trial Balance</h2>
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[760px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Code</th>
                 <th className="px-3 py-2">Account</th>
@@ -286,11 +286,11 @@ export default function FinanceAccountsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 lg:col-span-4 rounded-2xl glass-panel p-5">
         <h2 className="text-base font-semibold">Accounting Periods</h2>
         <div className="mt-3 space-y-2">
           {periods.map((period) => (
-            <div key={period.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+            <div key={period.id} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="text-sm font-semibold text-white">{period.name}</p>
               <p className="text-xs text-slate-400">
                 {period.start_date} to {period.end_date}
@@ -306,7 +306,7 @@ export default function FinanceAccountsPage() {
                 {period.is_closed ? (
                   <button
                     type="button"
-                    className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                    className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                     onClick={() => void reopenPeriod(period.id)}
                     disabled={!canManagePeriods || periodActionId !== null || busy || ledgerBusy}
                   >
@@ -315,7 +315,7 @@ export default function FinanceAccountsPage() {
                 ) : (
                   <button
                     type="button"
-                    className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                    className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                     onClick={() => void closePeriod(period.id)}
                     disabled={!canManagePeriods || periodActionId !== null || busy || ledgerBusy}
                   >
@@ -329,15 +329,15 @@ export default function FinanceAccountsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 lg:col-span-8 rounded-2xl glass-panel p-5">
         <h2 className="text-base font-semibold">Ledger</h2>
         <p className="mt-1 text-xs text-slate-400">
           {selectedAccountId ? `Account ID: ${selectedAccountId}` : 'Select an account to view entries.'}
         </p>
         {ledgerBusy ? <p className="mt-2 text-xs text-slate-400">Loading ledger...</p> : null}
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[860px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Date</th>
                 <th className="px-3 py-2">Memo</th>

@@ -36,28 +36,28 @@ export default function PTMDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between">
             <Calendar className="h-8 w-8 text-emerald-400" />
             <span className="text-2xl font-bold text-white">{stats?.total_sessions ?? 0}</span>
           </div>
           <p className="mt-2 text-sm text-slate-400">Total Sessions</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between">
             <Users className="h-8 w-8 text-blue-400" />
             <span className="text-2xl font-bold text-white">{stats?.booked_slots ?? 0}</span>
           </div>
           <p className="mt-2 text-sm text-slate-400">Booked Slots</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between">
             <Clock className="h-8 w-8 text-orange-400" />
             <span className="text-2xl font-bold text-white">{stats?.available_slots ?? 0}</span>
           </div>
           <p className="mt-2 text-sm text-slate-400">Available Slots</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between">
             <CheckCircle className="h-8 w-8 text-emerald-400" />
             <span className="text-2xl font-bold text-white">{bookingRate.toFixed(1)}%</span>
@@ -66,14 +66,14 @@ export default function PTMDashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <h3 className="mb-4 text-lg font-semibold text-white">Upcoming Sessions</h3>
         {stats?.upcoming_sessions.length === 0 ? (
           <p className="text-slate-500 italic">No upcoming sessions scheduled.</p>
         ) : (
           <div className="space-y-4">
             {stats?.upcoming_sessions.map((session: any) => (
-              <div key={session.id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+              <div key={session.id} className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-slate-950/40 p-4">
                 <div className="flex items-center gap-4">
                   <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-400">
                     <Calendar className="h-5 w-5" />

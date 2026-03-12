@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { BookOpen, Plus, Trash2, AlertCircle, Check } from 'lucide-react'
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 interface BookCategory { name: string; max_borrow: number; loan_days: number }
 
@@ -49,7 +49,7 @@ export default function SettingsLibraryConfigPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* Borrowing Rules */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-sky-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Borrowing Rules</h2></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -83,13 +83,13 @@ export default function SettingsLibraryConfigPage() {
       </section>
 
       {/* Overdue Fines */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-amber-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Overdue Fine Policy</h2></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="text-xs text-slate-400 mb-1 block font-semibold uppercase tracking-widest">Fine Per Day Overdue</label>
             <div className="flex gap-2">
-              <input value={fineCurrency} onChange={e => setFineCurrency(e.target.value)} className="w-24 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 font-mono" />
+              <input value={fineCurrency} onChange={e => setFineCurrency(e.target.value)} className="w-24 rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 font-mono" />
               <input type="number" min={0} step={0.5} value={finePerDay} onChange={e => setFinePerDay(+e.target.value)} className={`${cls} flex-1`} />
             </div>
             <p className="text-[10px] text-slate-600 mt-1">Fine automatically added to student's account on the Finance module.</p>
@@ -98,12 +98,12 @@ export default function SettingsLibraryConfigPage() {
       </section>
 
       {/* Book Categories */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-emerald-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Book Categories</h2></div>
         <p className="text-xs text-slate-500">Each category can have its own borrowing rules that override the defaults. Set max_borrow = 0 for reference-only books.</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-slate-800 text-[10px] text-slate-500 uppercase tracking-widest">
+            <thead><tr className="border-b border-white/[0.07] text-[10px] text-slate-500 uppercase tracking-widest">
               <th className="text-left pb-2 font-semibold">Category Name</th>
               <th className="text-left pb-2 pl-2 font-semibold">Max Borrow</th>
               <th className="text-left pb-2 pl-2 font-semibold">Loan Days</th>

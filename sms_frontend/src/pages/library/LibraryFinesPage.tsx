@@ -76,13 +76,13 @@ export default function LibraryFinesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Fines & Fees</h1>
         <p className="mt-2 text-sm text-slate-400">Track overdue and penalty balances.</p>
         {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Fine List</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -98,7 +98,7 @@ export default function LibraryFinesPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.member_member_id || '-'}</td>
                   <td className="px-2 py-2">{row.fine_type}</td>
                   <td className="px-2 py-2">{row.amount}</td>
@@ -141,11 +141,11 @@ export default function LibraryFinesPage() {
       </section>
 
       {selectedFineId ? (
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <section className="rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-slate-200">Finance Postings for Fine #{selectedFineId}</h2>
             <button
-              className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300"
+              className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs text-slate-300"
               onClick={() => {
                 setSelectedFineId(null)
                 setPostings([])
@@ -166,7 +166,7 @@ export default function LibraryFinesPage() {
               </thead>
               <tbody>
                 {postings.map((entry) => (
-                  <tr key={entry.id} className="border-t border-slate-800 align-top">
+                  <tr key={entry.id} className="border-t border-white/[0.07] align-top">
                     <td className="px-2 py-2">{entry.entry_date}</td>
                     <td className="px-2 py-2">{entry.source_type}</td>
                     <td className="px-2 py-2">{entry.memo}</td>

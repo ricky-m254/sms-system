@@ -64,33 +64,33 @@ export default function CurriculumResourcesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Learning Resources</h1>
         <p className="mt-1 text-sm text-slate-400">Add links, documents, videos and other resources for each subject.</p>
       </header>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-200">Add Resource</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <select value={resourceType} onChange={e => setResourceType(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <select value={resourceType} onChange={e => setResourceType(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             {RESOURCE_TYPES.map(t => <option key={t}>{t}</option>)}
           </select>
-          <select value={subjectId} onChange={e => setSubjectId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select value={subjectId} onChange={e => setSubjectId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Subject *</option>
             {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <input value={externalUrl} onChange={e => setExternalUrl(e.target.value)} placeholder="URL (for links/videos)" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={2} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
+          <input value={externalUrl} onChange={e => setExternalUrl(e.target.value)} placeholder="URL (for links/videos)" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={2} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
         </div>
         <button onClick={save} disabled={saving || !title.trim() || !subjectId} className="mt-4 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Add Resource'}</button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? <p className="col-span-3 text-sm text-slate-400">Loading…</p> : resources.map(r => (
-          <div key={r.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+          <div key={r.id} className="rounded-xl glass-panel p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-semibold text-slate-100">{r.title}</p>

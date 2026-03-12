@@ -89,31 +89,31 @@ export default function StaffDocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Documents</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Upload, Verify, and Track Expiring Records</h1>
       </section>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold">Upload Document</h2>
         <div className="mt-3 grid gap-2 md:grid-cols-5">
-          <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Select staff</option>
             {staff.map((row) => <option key={row.id} value={row.id}>{row.staff_id} - {row.full_name}</option>)}
           </select>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Document title" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Document title" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option>Contract</option><option>Certificate</option><option>License</option><option>ID</option><option>Medical</option><option>Performance</option><option>Other</option>
           </select>
-          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
           <button onClick={upload} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Upload</button>
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Documents ({documents.length})</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {documents.map((row) => {
@@ -137,7 +137,7 @@ export default function StaffDocumentsPage() {
                   </div>
                   <div className="flex gap-2 mt-2">
                     {row.verification_status !== 'Verified' ? (
-                      <button onClick={() => verify(row.id)} className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200">Verify</button>
+                      <button onClick={() => verify(row.id)} className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs text-slate-200">Verify</button>
                     ) : null}
                     <button onClick={() => download(row.id)} className="rounded-lg border border-emerald-700/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300">⬇ Download</button>
                     <button onClick={() => setDeleteTarget(row)} className="rounded-lg border border-rose-700/40 bg-rose-500/10 px-2 py-1 text-xs text-rose-300">Delete</button>
@@ -149,7 +149,7 @@ export default function StaffDocumentsPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Expiring Soon</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {expiring.map((row) => (

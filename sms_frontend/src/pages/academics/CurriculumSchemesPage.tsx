@@ -85,37 +85,37 @@ export default function CurriculumSchemesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Schemes of Work</h1>
         <p className="mt-1 text-sm text-slate-400">Create and manage curriculum schemes with weekly topics.</p>
       </header>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-200">New Scheme of Work</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm lg:col-span-2" />
-          <select value={subjectId} onChange={e => setSubjectId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm lg:col-span-2" />
+          <select value={subjectId} onChange={e => setSubjectId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Subject *</option>
             {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <select value={classId} onChange={e => setClassId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select value={classId} onChange={e => setClassId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Class *</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select value={termId} onChange={e => setTermId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select value={termId} onChange={e => setTermId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Term *</option>
             {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
-          <textarea value={objectives} onChange={e => setObjectives(e.target.value)} placeholder="Objectives" rows={2} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
+          <textarea value={objectives} onChange={e => setObjectives(e.target.value)} placeholder="Objectives" rows={2} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
         </div>
         <button onClick={save} disabled={saving || !title.trim() || !subjectId || !classId || !termId} className="mt-4 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Create Scheme'}</button>
       </div>
 
       <div className="space-y-3">
         {loading ? <p className="text-sm text-slate-400 px-2">Loading…</p> : schemes.map(sc => (
-          <div key={sc.id} className="rounded-2xl border border-slate-800 bg-slate-900/60">
+          <div key={sc.id} className="rounded-2xl glass-panel">
             <div className="flex items-start justify-between gap-4 p-4">
               <div>
                 <p className="font-semibold text-slate-100">{sc.title}</p>
@@ -128,10 +128,10 @@ export default function CurriculumSchemesPage() {
               </div>
             </div>
             {expandedId === sc.id ? (
-              <div className="border-t border-slate-800 p-4">
+              <div className="border-t border-white/[0.07] p-4">
                 <div className="flex gap-2 mb-3">
-                  <input type="number" value={topicWeek} onChange={e => setTopicWeek(e.target.value)} placeholder="Wk" min={1} className="w-16 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm" />
-                  <input value={topicText} onChange={e => setTopicText(e.target.value)} placeholder="Topic name" className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
+                  <input type="number" value={topicWeek} onChange={e => setTopicWeek(e.target.value)} placeholder="Wk" min={1} className="w-16 rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-sm" />
+                  <input value={topicText} onChange={e => setTopicText(e.target.value)} placeholder="Topic name" className="flex-1 rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-sm" />
                   <button onClick={() => addTopic(sc.id)} disabled={savingTopic || !topicText.trim()} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-50">Add</button>
                 </div>
                 <div className="space-y-1">

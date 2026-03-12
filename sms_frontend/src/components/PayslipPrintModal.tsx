@@ -235,13 +235,13 @@ export default function PayslipPrintModal({ payslip, schoolName, onClose }: Prop
 
           <div className="mt-8 grid grid-cols-2 gap-10">
             <div>
-              <div className="border-t border-slate-800 pt-1">
+              <div className="border-t border-white/[0.07] pt-1">
                 <p className="text-[9px] text-slate-500">Prepared by</p>
                 <p className="mt-4 text-[9px] text-slate-400">Signature & Date</p>
               </div>
             </div>
             <div>
-              <div className="border-t border-slate-800 pt-1">
+              <div className="border-t border-white/[0.07] pt-1">
                 <p className="text-[9px] text-slate-500">Received by (Employee)</p>
                 <p className="mt-4 text-[9px] text-slate-400">Signature & Date</p>
               </div>

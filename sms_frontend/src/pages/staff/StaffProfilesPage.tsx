@@ -101,22 +101,22 @@ export default function StaffProfilesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Staff Profiles</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Qualifications, Assignments, Emergency Contacts</h1>
       </section>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <label className="text-xs text-slate-400">Select staff</label>
-        <select value={selectedStaffId ?? ''} onChange={(e) => setSelectedStaffId(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <select value={selectedStaffId ?? ''} onChange={(e) => setSelectedStaffId(Number(e.target.value))} className="mt-2 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
           {staff.map((row) => <option key={row.id} value={row.id}>{row.staff_id} - {row.full_name}</option>)}
         </select>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Profile</h2>
           {profile ? (
             <div className="mt-3 space-y-2 text-xs text-slate-300">
@@ -131,10 +131,10 @@ export default function StaffProfilesPage() {
           ) : <p className="mt-3 text-xs text-slate-400">Select a staff member to load profile.</p>}
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Qualifications</h2>
           <div className="mt-3 space-y-2">
-            <input value={qualificationTitle} onChange={(e) => setQualificationTitle(e.target.value)} placeholder="Qualification title" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={qualificationTitle} onChange={(e) => setQualificationTitle(e.target.value)} placeholder="Qualification title" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={addQualification} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Add Qualification</button>
           </div>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
@@ -150,11 +150,11 @@ export default function StaffProfilesPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Emergency Contacts</h2>
           <div className="mt-3 space-y-2">
-            <input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Contact name" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="Phone number" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Contact name" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="Phone number" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={addEmergencyContact} className="w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Add Contact</button>
           </div>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
@@ -171,7 +171,7 @@ export default function StaffProfilesPage() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold">Department & Role Assignments</h2>
         {!selected ? <p className="mt-3 text-xs text-slate-400">No staff selected.</p> : null}
         <div className="mt-3 grid gap-2 text-xs text-slate-300 sm:grid-cols-2 lg:grid-cols-3">

@@ -43,12 +43,12 @@ export default function PTMSessionsPage() {
         {loading ? (
           <div className="col-span-full py-12 text-center text-slate-500">Loading sessions...</div>
         ) : sessions.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-slate-500 italic rounded-2xl border border-dashed border-slate-800 bg-slate-900/40">
+          <div className="col-span-full py-12 text-center text-slate-500 italic rounded-2xl border border-dashed border-white/[0.07] bg-white/[0.02]">
             <Calendar className="mx-auto h-12 w-12 text-slate-700 mb-3" />
             <p>No PTM sessions found. Create a session to start scheduling meetings.</p>
           </div>
         ) : sessions.map((session) => (
-          <div key={session.id} className="group relative rounded-2xl border border-slate-800 bg-slate-900/60 p-6 hover:border-emerald-500/30 transition-all duration-300">
+          <div key={session.id} className="group relative rounded-2xl glass-panel p-6 hover:border-emerald-500/30 transition-all duration-300">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
@@ -83,7 +83,7 @@ export default function PTMSessionsPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-slate-800 pt-4">
+            <div className="mt-6 flex items-center justify-between border-t border-white/[0.07] pt-4">
                <button className="text-xs font-bold uppercase tracking-widest text-emerald-400 hover:text-emerald-300 transition">View Slots</button>
                <button className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition">Edit Session</button>
             </div>

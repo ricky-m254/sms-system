@@ -200,7 +200,7 @@ export default function FinanceRefundsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Write-offs</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -220,31 +220,31 @@ export default function FinanceRefundsPage() {
       ) : null}
 
       <section className="col-span-12 grid grid-cols-12 gap-4">
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Pending</p>
           <p className="mt-2 text-xl font-semibold">{summary.pending}</p>
         </div>
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Approved</p>
           <p className="mt-2 text-xl font-semibold">{summary.approved}</p>
         </div>
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Rejected</p>
           <p className="mt-2 text-xl font-semibold">{summary.rejected}</p>
         </div>
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Total Requested</p>
           <p className="mt-2 text-xl font-semibold">{formatMoney(summary.totalAmount)}</p>
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Create write-off request</h2>
         {invoiceOptionsError ? <p className="mt-2 text-xs text-amber-300">{invoiceOptionsError}</p> : null}
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           {invoiceOptions.length > 0 ? (
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={invoiceId}
               onChange={(e) => setInvoiceId(e.target.value)}
             >
@@ -260,7 +260,7 @@ export default function FinanceRefundsPage() {
             </select>
           ) : (
             <input
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Invoice ID"
               value={invoiceId}
               onChange={(e) => setInvoiceId(e.target.value)}
@@ -270,13 +270,13 @@ export default function FinanceRefundsPage() {
             type="number"
             min="0.01"
             step="0.01"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 md:col-span-2"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 md:col-span-2"
             placeholder="Reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -291,18 +291,18 @@ export default function FinanceRefundsPage() {
         </button>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-display font-semibold">Write-off requests</h2>
           <div className="flex flex-wrap gap-2">
             <input
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search invoice/student/reason"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -312,7 +312,7 @@ export default function FinanceRefundsPage() {
               <option value="REJECTED">REJECTED</option>
             </select>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200"
               onClick={() => {
                 setQuery('')
                 setStatusFilter('')
@@ -326,9 +326,9 @@ export default function FinanceRefundsPage() {
         {isLoading ? (
           <p className="mt-4 text-sm text-slate-300">Loading write-offs...</p>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[980px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Invoice</th>
                   <th className="px-4 py-3">Student</th>

@@ -64,34 +64,34 @@ export default function SportsAwardsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Student Awards</h1>
         <p className="mt-1 text-sm text-slate-400">Record and track excellence in sports, academics, arts and leadership.</p>
       </header>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-200">Record New Award</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <select value={studentId} onChange={e => setStudentId(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select value={studentId} onChange={e => setStudentId(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Select student *</option>
             {students.map(s => <option key={s.id} value={s.id}>{s.admission_number} - {s.full_name}</option>)}
           </select>
-          <input value={awardName} onChange={e => setAwardName(e.target.value)} placeholder="Award name *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <input value={awardName} onChange={e => setAwardName(e.target.value)} placeholder="Award name *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
-          <input value={awardedBy} onChange={e => setAwardedBy(e.target.value)} placeholder="Awarded by" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <input type="date" value={awardDate} onChange={e => setAwardDate(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={2} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm lg:col-span-3" />
+          <input value={awardedBy} onChange={e => setAwardedBy(e.target.value)} placeholder="Awarded by" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <input type="date" value={awardDate} onChange={e => setAwardDate(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={2} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm lg:col-span-3" />
         </div>
         <button onClick={save} disabled={saving || !studentId || !awardName.trim()} className="mt-4 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Record Award'}</button>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+      <div className="rounded-2xl glass-panel overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-slate-800 text-xs text-slate-400">
+          <thead className="border-b border-white/[0.07] text-xs text-slate-400">
             <tr>
               <th className="px-4 py-3 font-medium">Student</th>
               <th className="px-4 py-3 font-medium">Award</th>
@@ -103,7 +103,7 @@ export default function SportsAwardsPage() {
           </thead>
           <tbody className="divide-y divide-slate-800/50">
             {loading ? <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">Loading…</td></tr> : awards.map(a => (
-              <tr key={a.id} className="hover:bg-slate-800/30">
+              <tr key={a.id} className="hover:bg-white/[0.02]">
                 <td className="px-4 py-3 text-slate-200">{a.student_name || `Student #${a.student}`}</td>
                 <td className="px-4 py-3 font-semibold text-slate-100">{a.award_name}</td>
                 <td className="px-4 py-3"><span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-300">{a.category}</span></td>

@@ -172,7 +172,7 @@ export default function CommunicationTemplatesPage() {
           <p className="text-sm text-slate-400 mt-0.5">Reusable message templates with merge field support</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-700 transition">
+          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
             <RefreshCw size={13} className="text-slate-400" />
           </button>
           <button
@@ -206,7 +206,7 @@ export default function CommunicationTemplatesPage() {
               <button
                 key={p.name}
                 onClick={() => createPreset(p)}
-                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2.5 text-left hover:border-emerald-500/30 hover:bg-slate-800 transition"
+                className="flex items-center gap-2 rounded-xl border border-white/[0.09] glass-panel px-3 py-2.5 text-left hover:border-emerald-500/30 hover:bg-slate-800 transition"
               >
                 <Plus size={12} className="text-emerald-400 flex-shrink-0" />
                 <div>
@@ -221,26 +221,26 @@ export default function CommunicationTemplatesPage() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-5 space-y-4">
+        <div className="rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 space-y-4">
           <h2 className="text-sm font-bold text-white flex items-center gap-2"><FileText size={14} /> Create Template</h2>
           <div className="grid gap-3 sm:grid-cols-3">
             <input
               value={form.name}
               onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Template name"
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
             />
             <select
               value={form.category}
               onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white"
             >
               {['System', 'Finance', 'Admissions', 'Attendance', 'Academics', 'HR', 'General'].map(c => <option key={c}>{c}</option>)}
             </select>
             <select
               value={form.channel}
               onChange={(e) => setForm(f => ({ ...f, channel: e.target.value }))}
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white"
             >
               {['Email', 'SMS', 'WhatsApp', 'Push', 'All'].map(c => <option key={c}>{c}</option>)}
             </select>
@@ -249,7 +249,7 @@ export default function CommunicationTemplatesPage() {
             value={form.subject}
             onChange={(e) => setForm(f => ({ ...f, subject: e.target.value }))}
             placeholder="Subject line (for Email/Push)"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+            className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
           />
           <div>
             <textarea
@@ -257,12 +257,12 @@ export default function CommunicationTemplatesPage() {
               onChange={(e) => setForm(f => ({ ...f, body: e.target.value }))}
               rows={6}
               placeholder="Template body — use {{variable}} for merge fields"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
             />
             <p className="text-[10px] text-slate-500 mt-1">Available merge fields: {'{{parent_name}}'}, {'{{student_name}}'}, {'{{amount}}'}, {'{{balance}}'}, {'{{term_name}}'}, {'{{class_name}}'}, {'{{due_date}}'}</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+            <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
             <button onClick={create} disabled={creating} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition disabled:opacity-50">
               {creating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />} Save Template
             </button>
@@ -271,7 +271,7 @@ export default function CommunicationTemplatesPage() {
       )}
 
       {/* Channel Filter */}
-      <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/60 p-1 w-fit flex-wrap">
+      <div className="flex gap-1 rounded-xl glass-panel p-1 w-fit flex-wrap">
         {['All', 'Email', 'SMS', 'WhatsApp', 'Push'].map(ch => (
           <button
             key={ch}
@@ -299,7 +299,7 @@ export default function CommunicationTemplatesPage() {
             const ChIcon = CHANNEL_ICONS[tmpl.channel] ?? Globe
             const isPreview = previewId === tmpl.id
             return (
-              <div key={tmpl.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+              <div key={tmpl.id} className="rounded-2xl glass-panel overflow-hidden">
                 <div className="px-4 py-4">
                   <div className="flex items-start gap-3">
                     <div className={`flex-shrink-0 rounded-xl p-2 border ${chColor}`}>
@@ -317,14 +317,14 @@ export default function CommunicationTemplatesPage() {
                   <div className="flex items-center gap-2 mt-3">
                     <button
                       onClick={() => runPreview(tmpl.id)}
-                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition ${isPreview ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'}`}
+                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition ${isPreview ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/[0.09] text-slate-400 hover:text-slate-200 hover:border-slate-600'}`}
                     >
                       {isPreview ? <EyeOff size={11} /> : <Eye size={11} />}
                       {isPreview ? 'Hide' : 'Preview'}
                     </button>
                     <button
                       onClick={() => copyBody(tmpl)}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-600 transition"
+                      className="flex items-center gap-1.5 rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-600 transition"
                     >
                       {copiedId === tmpl.id ? <CheckCheck size={11} className="text-emerald-400" /> : <Copy size={11} />}
                       {copiedId === tmpl.id ? 'Copied!' : 'Copy'}
@@ -339,7 +339,7 @@ export default function CommunicationTemplatesPage() {
                 </div>
 
                 {isPreview && (
-                  <div className="border-t border-slate-800 px-4 pb-4 pt-3 bg-slate-950/40">
+                  <div className="border-t border-white/[0.07] px-4 pb-4 pt-3 bg-slate-950/40">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Live Preview (with sample data)</p>
                     {previewLoading ? (
                       <div className="flex items-center gap-2 py-3">
@@ -351,7 +351,7 @@ export default function CommunicationTemplatesPage() {
                         {previewContent.subject && (
                           <p className="text-xs text-slate-400"><strong className="text-slate-300">Subject:</strong> {previewContent.subject}</p>
                         )}
-                        <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap bg-slate-900 rounded-xl p-3 max-h-48 overflow-y-auto">{previewContent.body}</pre>
+                        <pre className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap bg-[#0d1421] rounded-xl p-3 max-h-48 overflow-y-auto">{previewContent.body}</pre>
                       </div>
                     ) : null}
                   </div>

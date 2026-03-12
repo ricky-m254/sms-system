@@ -264,7 +264,7 @@ export default function HrRecruitmentPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Recruitment & ATS</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Job Postings, Applications, Interviews</h1>
       </section>
@@ -272,46 +272,46 @@ export default function HrRecruitmentPage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Create Job Posting</h2>
           <div className="mt-3 space-y-2 text-xs">
-            <input value={postingForm.title} onChange={(e) => setPostingForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <select value={postingForm.department} onChange={(e) => setPostingForm((p) => ({ ...p, department: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <input value={postingForm.title} onChange={(e) => setPostingForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <select value={postingForm.department} onChange={(e) => setPostingForm((p) => ({ ...p, department: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Department</option>
               {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
-            <select value={postingForm.position} onChange={(e) => setPostingForm((p) => ({ ...p, position: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={postingForm.position} onChange={(e) => setPostingForm((p) => ({ ...p, position: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Position</option>
               {positions.map((pos) => <option key={pos.id} value={pos.id}>{pos.title}</option>)}
             </select>
-            <input type="date" value={postingForm.deadline} onChange={(e) => setPostingForm((p) => ({ ...p, deadline: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input type="date" value={postingForm.deadline} onChange={(e) => setPostingForm((p) => ({ ...p, deadline: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createPosting} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-200 disabled:opacity-60">Save Posting</button>
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Submit Application</h2>
           <div className="mt-3 space-y-2 text-xs">
-            <select value={applicationForm.job_posting} onChange={(e) => setApplicationForm((p) => ({ ...p, job_posting: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={applicationForm.job_posting} onChange={(e) => setApplicationForm((p) => ({ ...p, job_posting: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Job posting</option>
               {postings.map((post) => <option key={post.id} value={post.id}>{post.title}</option>)}
             </select>
-            <input value={applicationForm.first_name} onChange={(e) => setApplicationForm((p) => ({ ...p, first_name: e.target.value }))} placeholder="First name" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input value={applicationForm.last_name} onChange={(e) => setApplicationForm((p) => ({ ...p, last_name: e.target.value }))} placeholder="Last name" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input value={applicationForm.email} onChange={(e) => setApplicationForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={applicationForm.first_name} onChange={(e) => setApplicationForm((p) => ({ ...p, first_name: e.target.value }))} placeholder="First name" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input value={applicationForm.last_name} onChange={(e) => setApplicationForm((p) => ({ ...p, last_name: e.target.value }))} placeholder="Last name" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input value={applicationForm.email} onChange={(e) => setApplicationForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email" className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createApplication} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-200 disabled:opacity-60">Submit</button>
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Schedule Interview</h2>
           <div className="mt-3 space-y-2 text-xs">
-            <select value={interviewForm.application} onChange={(e) => setInterviewForm((p) => ({ ...p, application: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={interviewForm.application} onChange={(e) => setInterviewForm((p) => ({ ...p, application: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Application</option>
               {applications.map((app) => <option key={app.id} value={app.id}>{app.applicant_name} - {app.job_title}</option>)}
             </select>
-            <input type="datetime-local" value={interviewForm.interview_date} onChange={(e) => setInterviewForm((p) => ({ ...p, interview_date: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <select value={interviewForm.interview_type} onChange={(e) => setInterviewForm((p) => ({ ...p, interview_type: e.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <input type="datetime-local" value={interviewForm.interview_date} onChange={(e) => setInterviewForm((p) => ({ ...p, interview_date: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <select value={interviewForm.interview_type} onChange={(e) => setInterviewForm((p) => ({ ...p, interview_type: e.target.value }))} className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option>In-person</option>
               <option>Video</option>
               <option>Phone</option>
@@ -321,16 +321,16 @@ export default function HrRecruitmentPage() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Job Postings</h2>
         <div className="mt-3 overflow-x-auto">
           <table className="min-w-full text-left text-xs">
             <thead className="text-slate-400"><tr><th className="px-2 py-2">Title</th><th className="px-2 py-2">Department</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Deadline</th><th className="px-2 py-2">Action</th></tr></thead>
             <tbody>
               {postings.map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.title}</td><td className="px-2 py-2">{row.department_name}</td><td className="px-2 py-2">{row.status}</td><td className="px-2 py-2">{row.deadline ?? '-'}</td>
-                  <td className="px-2 py-2"><button onClick={() => void publishPosting(row.id)} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Publish</button></td>
+                  <td className="px-2 py-2"><button onClick={() => void publishPosting(row.id)} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Publish</button></td>
                 </tr>
               ))}
               {!loading && postings.length === 0 ? <tr><td colSpan={5} className="px-2 py-3 text-slate-400">No job postings.</td></tr> : null}
@@ -340,16 +340,16 @@ export default function HrRecruitmentPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Applications</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-left text-xs">
               <thead className="text-slate-400"><tr><th className="px-2 py-2">Candidate</th><th className="px-2 py-2">Job</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Actions</th></tr></thead>
               <tbody>
                 {applications.map((row) => (
-                  <tr key={row.id} className="border-t border-slate-800">
+                  <tr key={row.id} className="border-t border-white/[0.07]">
                     <td className="px-2 py-2">{row.applicant_name}</td><td className="px-2 py-2">{row.job_title}</td><td className="px-2 py-2">{row.status}</td>
-                    <td className="px-2 py-2"><div className="flex gap-2"><button onClick={() => void shortlistApplication(row.id)} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Shortlist</button><button onClick={() => void rejectApplication(row.id)} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Reject</button><button onClick={() => void hireApplication(row.id)} className="rounded-md bg-emerald-500/20 px-2 py-1 text-[11px] font-semibold text-emerald-200">Hire</button></div></td>
+                    <td className="px-2 py-2"><div className="flex gap-2"><button onClick={() => void shortlistApplication(row.id)} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Shortlist</button><button onClick={() => void rejectApplication(row.id)} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Reject</button><button onClick={() => void hireApplication(row.id)} className="rounded-md bg-emerald-500/20 px-2 py-1 text-[11px] font-semibold text-emerald-200">Hire</button></div></td>
                   </tr>
                 ))}
                 {!loading && applications.length === 0 ? <tr><td colSpan={4} className="px-2 py-3 text-slate-400">No applications.</td></tr> : null}
@@ -358,16 +358,16 @@ export default function HrRecruitmentPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Interviews</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-left text-xs">
               <thead className="text-slate-400"><tr><th className="px-2 py-2">Candidate</th><th className="px-2 py-2">Date</th><th className="px-2 py-2">Type</th><th className="px-2 py-2">Status</th><th className="px-2 py-2">Feedback</th></tr></thead>
               <tbody>
                 {interviews.map((row) => (
-                  <tr key={row.id} className="border-t border-slate-800">
+                  <tr key={row.id} className="border-t border-white/[0.07]">
                     <td className="px-2 py-2">{row.applicant_name}</td><td className="px-2 py-2">{new Date(row.interview_date).toLocaleString()}</td><td className="px-2 py-2">{row.interview_type}</td><td className="px-2 py-2">{row.status}</td>
-                    <td className="px-2 py-2"><button onClick={() => void saveFeedback(row.id)} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Record</button></td>
+                    <td className="px-2 py-2"><button onClick={() => void saveFeedback(row.id)} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Record</button></td>
                   </tr>
                 ))}
                 {!loading && interviews.length === 0 ? <tr><td colSpan={5} className="px-2 py-3 text-slate-400">No interviews.</td></tr> : null}

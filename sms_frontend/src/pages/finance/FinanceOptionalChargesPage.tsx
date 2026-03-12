@@ -233,7 +233,7 @@ export default function FinanceOptionalChargesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <BackButton to="/modules/finance" label="Back to Finance" />
         <div className="flex items-center justify-between">
           <div>
@@ -264,9 +264,9 @@ export default function FinanceOptionalChargesPage() {
         </div>
       </header>
 
-      <main className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden print:border-none print:bg-transparent">
+      <main className="rounded-2xl glass-panel overflow-hidden print:border-none print:bg-transparent">
         <table className="w-full text-sm text-slate-300 print:text-black">
-          <thead className="bg-slate-800/50 text-xs uppercase tracking-wider text-slate-500 print:bg-gray-100 print:text-gray-700">
+          <thead className="bg-white/[0.03] text-xs uppercase tracking-wider text-slate-500 print:bg-gray-100 print:text-gray-700">
             <tr>
               <th className="px-6 py-4 text-left font-medium">Name & Category</th>
               <th className="px-6 py-4 text-right font-medium">Amount</th>
@@ -283,7 +283,7 @@ export default function FinanceOptionalChargesPage() {
             ) : (
               charges.map((charge) => (
                 <React.Fragment key={charge.id}>
-                  <tr className="group hover:bg-slate-800/30 transition cursor-pointer" onClick={() => toggleRow(charge.id)}>
+                  <tr className="group hover:bg-white/[0.02] transition cursor-pointer" onClick={() => toggleRow(charge.id)}>
                     <td className="px-6 py-4">
                       <div className="font-medium text-white print:text-black">{charge.name}</div>
                       <div className="mt-1">
@@ -333,7 +333,7 @@ export default function FinanceOptionalChargesPage() {
                   {expandedRow === charge.id && (
                     <tr className="bg-slate-950/40 no-print">
                       <td colSpan={5} className="px-6 py-4">
-                        <div className="rounded-xl border border-slate-800 p-4">
+                        <div className="rounded-xl border border-white/[0.07] p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-semibold text-slate-200">Students Assigned to {charge.name}</h3>
                                 <button 
@@ -350,7 +350,7 @@ export default function FinanceOptionalChargesPage() {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                     {assignedStudents.map((assignment) => (
-                                        <div key={assignment.id} className="flex items-center justify-between rounded-lg bg-slate-900 p-2 text-xs border border-slate-800">
+                                        <div key={assignment.id} className="flex items-center justify-between rounded-lg bg-[#0d1421] p-2 text-xs border border-white/[0.07]">
                                             <div>
                                                 <p className="font-medium text-slate-200">{assignment.student_name}</p>
                                                 <p className="text-[10px] text-slate-500">{assignment.student_admission_number}</p>
@@ -378,7 +378,7 @@ export default function FinanceOptionalChargesPage() {
       {/* Charge Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.07] bg-[#0d1421] p-6 shadow-2xl">
             <h2 className="text-xl font-display font-bold text-white mb-6">
               {editingCharge ? 'Edit Optional Charge' : 'Create Optional Charge'}
             </h2>
@@ -390,7 +390,7 @@ export default function FinanceOptionalChargesPage() {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
                   placeholder="e.g. School Uniform Set"
                 />
               </div>
@@ -399,7 +399,7 @@ export default function FinanceOptionalChargesPage() {
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500 h-20"
+                  className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500 h-20"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -408,7 +408,7 @@ export default function FinanceOptionalChargesPage() {
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -423,7 +423,7 @@ export default function FinanceOptionalChargesPage() {
                     step="0.01"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -433,7 +433,7 @@ export default function FinanceOptionalChargesPage() {
                   <select
                     value={form.academic_year}
                     onChange={(e) => setForm({ ...form, academic_year: e.target.value })}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
                   >
                     <option value="">All Years</option>
                     {years.map((y) => (
@@ -446,7 +446,7 @@ export default function FinanceOptionalChargesPage() {
                   <select
                     value={form.term}
                     onChange={(e) => setForm({ ...form, term: e.target.value })}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                    className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
                   >
                     <option value="">All Terms</option>
                     {terms.map((t) => (
@@ -460,7 +460,7 @@ export default function FinanceOptionalChargesPage() {
                   type="checkbox"
                   checked={form.is_active}
                   onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                  className="rounded border-slate-700 bg-slate-950 text-emerald-500"
+                  className="rounded border-white/[0.09] bg-slate-950 text-emerald-500"
                 />
                 <span className="text-sm text-slate-300">Is Active</span>
               </label>
@@ -489,11 +489,11 @@ export default function FinanceOptionalChargesPage() {
       {/* Assign to Students Modal */}
       {showAssignForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-2xl rounded-2xl border border-white/[0.07] bg-[#0d1421] p-6 shadow-2xl">
             <h2 className="text-xl font-display font-bold text-white mb-2">Assign "{assignTarget?.name}"</h2>
             <p className="text-sm text-slate-400 mb-6">Choose assignment method.</p>
             
-            <div className="flex border-b border-slate-800 mb-6">
+            <div className="flex border-b border-white/[0.07] mb-6">
                 <button 
                     onClick={() => setAssignTab('student')}
                     className={`px-4 py-2 text-sm font-medium transition ${assignTab === 'student' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-slate-400 hover:text-white'}`}
@@ -509,10 +509,10 @@ export default function FinanceOptionalChargesPage() {
             </div>
 
             {assignTab === 'student' ? (
-                <div className="max-h-96 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-4 mb-6">
+                <div className="max-h-96 overflow-y-auto rounded-xl border border-white/[0.07] bg-slate-950 p-4 mb-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {students.map((student) => (
-                            <label key={student.id} className="flex items-center gap-3 p-2 hover:bg-slate-900 rounded-lg cursor-pointer transition">
+                            <label key={student.id} className="flex items-center gap-3 p-2 hover:bg-[#0d1421] rounded-lg cursor-pointer transition">
                                 <input
                                     type="checkbox"
                                     checked={selectedStudents.includes(student.id)}
@@ -523,7 +523,7 @@ export default function FinanceOptionalChargesPage() {
                                             setSelectedStudents(selectedStudents.filter(id => id !== student.id))
                                         }
                                     }}
-                                    className="rounded border-slate-700 bg-slate-950 text-emerald-500"
+                                    className="rounded border-white/[0.09] bg-slate-950 text-emerald-500"
                                 />
                                 <div className="text-xs">
                                     <p className="font-medium text-slate-200">{student.first_name} {student.last_name}</p>
@@ -540,7 +540,7 @@ export default function FinanceOptionalChargesPage() {
                         <select
                             value={selectedClass}
                             onChange={(e) => setSelectedClass(e.target.value)}
-                            className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+                            className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
                         >
                             <option value="">Select a class...</option>
                             {classes.map((cls) => (

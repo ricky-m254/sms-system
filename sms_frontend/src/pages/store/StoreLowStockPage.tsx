@@ -25,14 +25,14 @@ export default function StoreLowStockPage() {
         <h1 className="text-2xl font-bold text-slate-100">Low Stock Alerts</h1>
       </div>
 
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="glass-panel rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-400">Loading…</div>
         ) : !items.length ? (
           <div className="p-8 text-center text-slate-500">All stock levels are adequate.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-800">
+            <thead className="border-b border-white/[0.07]">
               <tr className="text-xs text-slate-500">
                 <th className="text-left px-4 py-3">Item</th>
                 <th className="text-left px-4 py-3">Category</th>
@@ -44,7 +44,7 @@ export default function StoreLowStockPage() {
             </thead>
             <tbody>
               {items.map(item => (
-                <tr key={item.id} className="border-b border-slate-800/50 bg-rose-950/10 hover:bg-rose-950/20">
+                <tr key={item.id} className="border-b border-white/[0.05] bg-rose-950/10 hover:bg-rose-950/20">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <AlertTriangle size={13} className="text-rose-400 shrink-0" />

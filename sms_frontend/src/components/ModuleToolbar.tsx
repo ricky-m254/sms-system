@@ -119,7 +119,7 @@ export default function ModuleToolbar({ currentModule }: Props) {
                     className={`rounded-lg px-2 py-1.5 text-left text-[11px] font-medium transition border ${
                       currentModule === mod.key
                         ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-200'
-                        : 'border-transparent text-slate-300 hover:border-slate-700 hover:bg-slate-900 hover:text-emerald-200'
+                        : 'border-transparent text-slate-300 hover:border-slate-700 hover:bg-[#0d1421] hover:text-emerald-200'
                     }`}
                   >
                     {mod.label}

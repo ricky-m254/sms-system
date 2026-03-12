@@ -176,14 +176,14 @@ export default function StudentsDocumentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Documents</h1>
         <p className="mt-2 text-sm text-slate-400">Student document storage and downloads.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading documents...</p>
         </div>
       ) : null}
@@ -200,7 +200,7 @@ export default function StudentsDocumentsPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-display font-semibold">Student documents</h2>
@@ -208,25 +208,25 @@ export default function StudentsDocumentsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <input
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search student or file"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={dateFrom}
               onChange={(event) => setDateFrom(event.target.value)}
             />
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={dateTo}
               onChange={(event) => setDateTo(event.target.value)}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={studentFilter}
               onChange={(event) => setStudentFilter(event.target.value)}
             >
@@ -238,7 +238,7 @@ export default function StudentsDocumentsPage() {
               ))}
             </select>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={() => {
                 setPage(1)
                 setRefreshKey((prev) => prev + 1)
@@ -247,7 +247,7 @@ export default function StudentsDocumentsPage() {
               Filter
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={() => {
                 setSearch('')
                 setStudentFilter('')
@@ -260,14 +260,14 @@ export default function StudentsDocumentsPage() {
               Reset
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-60"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-60"
               disabled={isDownloading}
               onClick={() => handleDownload('csv')}
             >
               Download CSV
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-60"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-60"
               disabled={isDownloading}
               onClick={() => handleDownload('pdf')}
             >
@@ -284,9 +284,9 @@ export default function StudentsDocumentsPage() {
             </button>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[900px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Admission #</th>
@@ -337,14 +337,14 @@ export default function StudentsDocumentsPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >
@@ -356,14 +356,14 @@ export default function StudentsDocumentsPage() {
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Documents</p>
                 <h3 className="text-lg font-display font-semibold">Upload documents</h3>
               </div>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => setIsFormOpen(false)}
               >
                 Close
@@ -374,7 +374,7 @@ export default function StudentsDocumentsPage() {
               <label className="block text-sm">
                 Student
                 <select
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.student}
                   onChange={(event) => setFormState((prev) => ({ ...prev, student: event.target.value }))}
                 >
@@ -391,7 +391,7 @@ export default function StudentsDocumentsPage() {
                 <input
                   type="file"
                   multiple
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-xs text-slate-200"
                   onChange={(event) =>
                     setFormState((prev) => ({
                       ...prev,

@@ -173,7 +173,7 @@ export default function FinanceScholarshipsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Scholarships</h1>
         <p className="mt-2 text-sm text-slate-400">Manage scholarship and discount awards with live finance data.</p>
@@ -191,29 +191,29 @@ export default function FinanceScholarshipsPage() {
       ) : null}
 
       <section className="col-span-12 grid grid-cols-12 gap-4">
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Total</p>
           <p className="mt-2 text-xl font-semibold">{summary.total}</p>
         </div>
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Active</p>
           <p className="mt-2 text-xl font-semibold">{summary.active}</p>
         </div>
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Paused</p>
           <p className="mt-2 text-xl font-semibold">{summary.paused}</p>
         </div>
-        <div className="col-span-6 md:col-span-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="col-span-6 md:col-span-3 rounded-2xl glass-panel p-4">
           <p className="text-xs text-slate-400">Ended</p>
           <p className="mt-2 text-xl font-semibold">{summary.ended}</p>
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Create scholarship</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             value={studentId}
             onChange={(event) => setStudentId(event.target.value)}
           >
@@ -225,13 +225,13 @@ export default function FinanceScholarshipsPage() {
             ))}
           </select>
           <input
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             placeholder="Program name"
             value={programName}
             onChange={(event) => setProgramName(event.target.value)}
           />
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             value={awardType}
             onChange={(event) => setAwardType(event.target.value as 'FIXED' | 'PERCENT' | 'FULL')}
           >
@@ -243,7 +243,7 @@ export default function FinanceScholarshipsPage() {
             type="number"
             min="0"
             step="0.01"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             placeholder={awardType === 'PERCENT' ? '0.00' : 'Amount'}
             value={awardType === 'PERCENT' ? percentage : amount}
             onChange={(event) => {
@@ -253,13 +253,13 @@ export default function FinanceScholarshipsPage() {
           />
           <input
             type="date"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             value={startDate}
             onChange={(event) => setStartDate(event.target.value)}
           />
           <input
             type="date"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             value={endDate}
             onChange={(event) => setEndDate(event.target.value)}
           />
@@ -276,18 +276,18 @@ export default function FinanceScholarshipsPage() {
         ) : null}
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-display font-semibold">Scholarship roster</h2>
           <div className="flex flex-wrap gap-2">
             <input
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search student/program"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
@@ -297,7 +297,7 @@ export default function FinanceScholarshipsPage() {
               <option value="ENDED">ENDED</option>
             </select>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200"
               onClick={() => {
                 setQuery('')
                 setStatusFilter('')
@@ -310,9 +310,9 @@ export default function FinanceScholarshipsPage() {
         {isLoading ? (
           <p className="mt-4 text-sm text-slate-300">Loading scholarships...</p>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[1040px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Student</th>
                   <th className="px-4 py-3">Program</th>

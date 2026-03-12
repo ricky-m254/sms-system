@@ -164,17 +164,17 @@ export default function AdmissionsAssessmentsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Assessments</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}
         <h2 className="text-lg font-display font-semibold">Schedule assessment</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={create}>
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.application}
             onChange={(e) => setForm((p) => ({ ...p, application: e.target.value }))}
             required
@@ -188,29 +188,29 @@ export default function AdmissionsAssessmentsPage() {
           </select>
           <input
             type="datetime-local"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.scheduled_at}
             onChange={(e) => setForm((p) => ({ ...p, scheduled_at: e.target.value }))}
             required
           />
           <input
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             placeholder="Venue"
             value={form.venue}
             onChange={(e) => setForm((p) => ({ ...p, venue: e.target.value }))}
           />
-          <button type="submit" className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400">
+          <button type="submit" className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400">
             Create
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
         {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading assessments...</p> : null}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Application</th>
                 <th className="px-4 py-3">Scheduled</th>
@@ -230,7 +230,7 @@ export default function AdmissionsAssessmentsPage() {
                   <td className="px-4 py-3">{row.venue ?? '--'}</td>
                   <td className="px-4 py-3">
                     <select
-                      className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={statusById[row.id] ?? row.status}
                       onChange={(e) => setStatusById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     >
@@ -243,14 +243,14 @@ export default function AdmissionsAssessmentsPage() {
                     <input
                       type="number"
                       step="0.01"
-                      className="w-24 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="w-24 rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={scoreById[row.id] ?? ''}
                       onChange={(e) => setScoreById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     />
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={passById[row.id] ?? 'unknown'}
                       onChange={(e) => setPassById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     >
@@ -261,7 +261,7 @@ export default function AdmissionsAssessmentsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <input
-                      className="w-full min-w-[140px] rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="w-full min-w-[140px] rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={notesById[row.id] ?? ''}
                       onChange={(e) => setNotesById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     />
@@ -269,7 +269,7 @@ export default function AdmissionsAssessmentsPage() {
                   <td className="px-4 py-3">
                     <button
                       type="button"
-                      className="rounded-lg border border-slate-700 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs"
                       onClick={() => saveRow(row)}
                     >
                       Save

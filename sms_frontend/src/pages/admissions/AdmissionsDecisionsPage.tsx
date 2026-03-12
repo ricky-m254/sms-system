@@ -174,16 +174,16 @@ export default function AdmissionsDecisionsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Decisions</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}
         <h2 className="text-lg font-display font-semibold">Record decision</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-5" onSubmit={create}>
-          <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.application} onChange={(e) => setForm((p) => ({ ...p, application: e.target.value }))} required>
+          <select className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.application} onChange={(e) => setForm((p) => ({ ...p, application: e.target.value }))} required>
             <option value="">Select application</option>
             {applications.map((item) => (
               <option key={item.id} value={item.id} disabled={decidedApplicationIds.has(item.id)}>
@@ -192,30 +192,30 @@ export default function AdmissionsDecisionsPage() {
               </option>
             ))}
           </select>
-          <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.decision} onChange={(e) => setForm((p) => ({ ...p, decision: e.target.value }))}>
+          <select className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.decision} onChange={(e) => setForm((p) => ({ ...p, decision: e.target.value }))}>
             <option value="Accept">Accept</option>
             <option value="Reject">Reject</option>
             <option value="Waitlist">Waitlist</option>
           </select>
-          <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.decision_date} onChange={(e) => setForm((p) => ({ ...p, decision_date: e.target.value }))} required />
-          <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.offer_deadline} onChange={(e) => setForm((p) => ({ ...p, offer_deadline: e.target.value }))} />
+          <input type="date" className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.decision_date} onChange={(e) => setForm((p) => ({ ...p, decision_date: e.target.value }))} required />
+          <input type="date" className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.offer_deadline} onChange={(e) => setForm((p) => ({ ...p, offer_deadline: e.target.value }))} />
           <button
             type="submit"
             disabled={isCreating}
-            className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isCreating ? 'Saving...' : 'Save'}
           </button>
-          <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm md:col-span-5" placeholder="Decision notes" value={form.decision_notes} onChange={(e) => setForm((p) => ({ ...p, decision_notes: e.target.value }))} />
+          <input className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm md:col-span-5" placeholder="Decision notes" value={form.decision_notes} onChange={(e) => setForm((p) => ({ ...p, decision_notes: e.target.value }))} />
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
         {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading decisions...</p> : null}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[980px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Application</th>
                 <th className="px-4 py-3">Decision</th>
@@ -240,7 +240,7 @@ export default function AdmissionsDecisionsPage() {
                           <button
                             type="button"
                             disabled={Boolean(respondingById[row.id])}
-                            className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
                             onClick={() => respond(row.id, 'Accepted')}
                           >
                             {respondingById[row.id] ? 'Working...' : 'Mark accepted'}
@@ -248,7 +248,7 @@ export default function AdmissionsDecisionsPage() {
                           <button
                             type="button"
                             disabled={Boolean(respondingById[row.id])}
-                            className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
                             onClick={() => respond(row.id, 'Declined')}
                           >
                             {respondingById[row.id] ? 'Working...' : 'Mark declined'}
@@ -261,7 +261,7 @@ export default function AdmissionsDecisionsPage() {
                         <button
                           type="button"
                           disabled={Boolean(downloadingById[row.id])}
-                          className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                          className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
                           onClick={() => downloadOfferLetter(row.id)}
                         >
                           {downloadingById[row.id] ? 'Downloading...' : 'Offer letter'}
@@ -283,11 +283,11 @@ export default function AdmissionsDecisionsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Waitlist queue</h2>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Position</th>
                 <th className="px-4 py-3">Application</th>

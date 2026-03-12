@@ -91,13 +91,13 @@ export default function MaintenanceChecklistPage() {
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
       <div className="flex gap-3">
-        <select value={filterRequest} onChange={e => setFilterRequest(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 min-w-[220px]">
+        <select value={filterRequest} onChange={e => setFilterRequest(e.target.value)} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-300 min-w-[220px]">
           <option value="">All Requests</option>
           {requests.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}
         </select>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <div className="rounded-2xl glass-panel overflow-hidden">
         {loading ? (
           <p className="px-5 py-8 text-sm text-slate-500 text-center">Loading...</p>
         ) : filtered.length === 0 ? (
@@ -105,7 +105,7 @@ export default function MaintenanceChecklistPage() {
         ) : (
           <ul className="divide-y divide-slate-800">
             {filtered.map(item => (
-              <li key={item.id} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-800/40 transition group">
+              <li key={item.id} className="flex items-center gap-4 px-5 py-3 hover:bg-white/[0.025] transition group">
                 <button onClick={() => toggle(item)} className="shrink-0 text-slate-400 hover:text-emerald-400 transition">
                   {item.is_completed
                     ? <CheckSquare className="h-5 w-5 text-emerald-400" />
@@ -131,7 +131,7 @@ export default function MaintenanceChecklistPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">Add Checklist Task</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -139,20 +139,20 @@ export default function MaintenanceChecklistPage() {
             {error && <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-2 text-xs text-rose-200">{error}</div>}
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Maintenance Request *</label>
-              <select value={requestId} onChange={e => setRequestId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={requestId} onChange={e => setRequestId(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">Select request</option>
                 {requests.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}
               </select>
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Task Description *</label>
-              <input value={taskDesc} onChange={e => setTaskDesc(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="e.g. Replace broken pane" />
+              <input value={taskDesc} onChange={e => setTaskDesc(e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" placeholder="e.g. Replace broken pane" />
             </div>
             <div className="flex gap-3 pt-1">
               <button onClick={addItem} disabled={saving} className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50 hover:bg-emerald-400 transition">
                 {saving ? 'Adding...' : 'Add Task'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
             </div>
           </div>
         </div>

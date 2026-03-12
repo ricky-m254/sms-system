@@ -69,7 +69,7 @@ export default function AssetsDepreciationPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Depreciation Schedule</h1>
         <p className="mt-2 text-sm text-slate-400">
           IPSAS 17 — Fixed Assets. Run annual depreciation for all active assets with a depreciation method configured on their category (Straight Line or Declining Balance).
@@ -79,13 +79,13 @@ export default function AssetsDepreciationPage() {
       {financeNotice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{financeNotice}</div> : null}
       {financeError ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{financeError}</div> : null}
 
-      <form onSubmit={handleRun} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={handleRun} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Run Depreciation</h2>
         <p className="mt-1 text-xs text-slate-400">Each asset can only be depreciated once per period label. Use a year (e.g. "2026") or a quarter (e.g. "2026-Q1").</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Period Label</label>
-            <input required placeholder="e.g. 2026" className="w-40 rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm" value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} />
+            <input required placeholder="e.g. 2026" className="w-40 rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm" value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} />
           </div>
           <button type="submit" disabled={isRunning} className="rounded-xl bg-emerald-500 px-6 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400 disabled:opacity-50">
             {isRunning ? 'Running…' : 'Run Depreciation'}
@@ -94,16 +94,16 @@ export default function AssetsDepreciationPage() {
         {runError ? <p className="mt-3 text-xs text-rose-300">{runError}</p> : null}
 
         {runResult ? (
-          <div className="mt-5 rounded-xl border border-slate-700 bg-slate-950/60 p-4 text-sm">
+          <div className="mt-5 rounded-xl border border-white/[0.09] bg-slate-950/60 p-4 text-sm">
             <p className="font-semibold text-slate-200">Period: {runResult.period_label} — {runResult.processed} asset(s) depreciated, {runResult.skipped} skipped</p>
             {runResult.entries.length > 0 ? (
               <table className="mt-3 min-w-full text-left text-xs">
-                <thead className="border-b border-slate-700 text-slate-400">
+                <thead className="border-b border-white/[0.09] text-slate-400">
                   <tr><th className="pb-2 pr-4">Code</th><th className="pb-2 pr-4">Asset</th><th className="pb-2 pr-4 text-right">Depreciation</th><th className="pb-2 text-right">Net Book Value</th></tr>
                 </thead>
                 <tbody>
                   {runResult.entries.map((e) => (
-                    <tr key={e.asset_code} className="border-b border-slate-800/50">
+                    <tr key={e.asset_code} className="border-b border-white/[0.05]">
                       <td className="py-1.5 pr-4 font-mono text-slate-300">{e.asset_code}</td>
                       <td className="py-1.5 pr-4 text-slate-200">{e.name}</td>
                       <td className="py-1.5 pr-4 text-right text-rose-300">-{fmt(e.depreciation_amount)}</td>
@@ -118,7 +118,7 @@ export default function AssetsDepreciationPage() {
         ) : null}
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Depreciation History</h2>
         {error ? <p className="mt-4 text-xs text-rose-300">{error}</p> : null}
         {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading…</p> : records.length === 0 ? (
@@ -126,7 +126,7 @@ export default function AssetsDepreciationPage() {
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-slate-400">
+              <thead className="border-b border-white/[0.07] text-slate-400">
                 <tr>
                   <th className="px-3 py-3 font-medium">Code</th>
                   <th className="px-3 py-3 font-medium">Asset</th>
@@ -140,7 +140,7 @@ export default function AssetsDepreciationPage() {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} className="border-b border-slate-800/50 hover:bg-slate-800/20">
+                  <tr key={r.id} className="border-b border-white/[0.05] hover:bg-slate-800/20">
                     <td className="px-3 py-3 font-mono text-xs text-slate-400">{r.asset_code}</td>
                     <td className="px-3 py-3 font-medium text-slate-100">{r.asset_name}</td>
                     <td className="px-3 py-3 text-slate-300">{r.period_label}</td>

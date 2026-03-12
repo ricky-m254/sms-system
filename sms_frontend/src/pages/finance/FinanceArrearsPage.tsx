@@ -136,7 +136,7 @@ export default function FinanceArrearsPage() {
 
   return (
     <section className="col-span-12 grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <button onClick={() => navigate('/modules/finance')} className="mb-4 flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200 transition">
           ← Back to Finance
         </button>
@@ -153,7 +153,7 @@ export default function FinanceArrearsPage() {
           )}
           <PrintButton />
         </div>
-        <div className="mt-4 flex gap-4 border-b border-slate-700">
+        <div className="mt-4 flex gap-4 border-b border-white/[0.09]">
           {(['arrears', 'carry-forward'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`pb-3 text-sm font-medium border-b-2 -mb-px transition ${tab === t ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-slate-500 hover:text-slate-300'}`}>
@@ -168,14 +168,14 @@ export default function FinanceArrearsPage() {
           <div className="col-span-12 flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2 text-sm text-slate-400">
               <span>Term:</span>
-              <select className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400" value={selectedTerm} onChange={e => setSelectedTerm(e.target.value)}>
+              <select className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400" value={selectedTerm} onChange={e => setSelectedTerm(e.target.value)}>
                 <option value="">All Terms</option>
                 {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-400">
               <span>Group by:</span>
-              <select className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400" value={groupBy} onChange={e => setGroupBy(e.target.value as 'student' | 'class')}>
+              <select className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-1.5 text-sm text-white outline-none focus:border-emerald-400" value={groupBy} onChange={e => setGroupBy(e.target.value as 'student' | 'class')}>
                 <option value="student">Student</option>
                 <option value="class">Class</option>
               </select>
@@ -190,10 +190,10 @@ export default function FinanceArrearsPage() {
           {loading && <p className="col-span-12 text-slate-400 text-sm">Loading…</p>}
 
           {!loading && groupBy === 'student' && (
-            <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+            <section className="col-span-12 rounded-2xl glass-panel overflow-x-auto">
               <table className="w-full text-sm text-slate-200">
                 <thead>
-                  <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+                  <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
                     <th className="px-5 py-4 text-left">Invoice</th>
                     <th className="px-5 py-4 text-left">Student</th>
                     <th className="px-5 py-4 text-left">Adm. No.</th>
@@ -210,7 +210,7 @@ export default function FinanceArrearsPage() {
                     <tr><td colSpan={9} className="py-10 text-center text-slate-500">No outstanding arrears found.</td></tr>
                   )}
                   {rows.map(row => (
-                    <tr key={row.invoice_id} className="hover:bg-slate-800/30 transition">
+                    <tr key={row.invoice_id} className="hover:bg-white/[0.02] transition">
                       <td className="px-5 py-3 font-mono text-xs text-slate-400">{row.invoice_number}</td>
                       <td className="px-5 py-3 font-medium text-white">
                         <button onClick={() => navigate(`/modules/finance/ledger?student=${row.student_id}`)} className="hover:text-emerald-400 transition text-left">
@@ -237,8 +237,8 @@ export default function FinanceArrearsPage() {
             <div className="col-span-12 space-y-4">
               {classGroups.length === 0 && <p className="text-slate-500 text-center py-10">No outstanding arrears found.</p>}
               {classGroups.map(group => (
-                <section key={group.class_name} className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700">
+                <section key={group.class_name} className="rounded-2xl glass-panel overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.09]">
                     <div>
                       <span className="font-semibold text-white">{group.class_name}</span>
                       <span className="ml-3 text-slate-500 text-sm">{group.student_count} student{group.student_count !== 1 ? 's' : ''}</span>
@@ -256,7 +256,7 @@ export default function FinanceArrearsPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-800/60">
                       {group.invoices.map(row => (
-                        <tr key={row.invoice_id} className="hover:bg-slate-800/30 transition">
+                        <tr key={row.invoice_id} className="hover:bg-white/[0.02] transition">
                           <td className="px-5 py-2 text-slate-300">{row.student_name} <span className="text-slate-600 text-xs">({row.admission_number})</span></td>
                           <td className="px-5 py-2 text-slate-400">{row.term}</td>
                           <td className="px-5 py-2 text-right font-mono font-semibold text-red-400">{fmt(row.balance_due)}</td>
@@ -276,10 +276,10 @@ export default function FinanceArrearsPage() {
         <>
           {cfLoading && <p className="col-span-12 text-slate-400 text-sm">Loading…</p>}
           {!cfLoading && (
-            <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+            <section className="col-span-12 rounded-2xl glass-panel overflow-x-auto">
               <table className="w-full text-sm text-slate-200">
                 <thead>
-                  <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+                  <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
                     <th className="px-5 py-4 text-left">Student</th>
                     <th className="px-5 py-4 text-left">Adm. No.</th>
                     <th className="px-5 py-4 text-left">From Term</th>
@@ -294,7 +294,7 @@ export default function FinanceArrearsPage() {
                     <tr><td colSpan={7} className="py-10 text-center text-slate-500">No carry forwards recorded yet.</td></tr>
                   )}
                   {carryForwards.map(cf => (
-                    <tr key={cf.id} className="hover:bg-slate-800/30 transition">
+                    <tr key={cf.id} className="hover:bg-white/[0.02] transition">
                       <td className="px-5 py-3 font-medium text-white">{cf.student_name}</td>
                       <td className="px-5 py-3 text-slate-500 text-xs">{cf.student_admission_number}</td>
                       <td className="px-5 py-3 text-slate-400">{cf.from_term_name}</td>
@@ -313,13 +313,13 @@ export default function FinanceArrearsPage() {
 
       {showCfForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.09] bg-[#0d1421] p-6 shadow-2xl">
             <h2 className="mb-4 text-lg font-semibold text-white">Add Balance Carry Forward</h2>
             {cfError && <p className="mb-3 text-sm text-red-400">{cfError}</p>}
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Student</label>
-                <select className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.student} onChange={e => setCfForm(f => ({ ...f, student: e.target.value }))}>
+                <select className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.student} onChange={e => setCfForm(f => ({ ...f, student: e.target.value }))}>
                   <option value="">Select student…</option>
                   {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.admission_number})</option>)}
                 </select>
@@ -327,14 +327,14 @@ export default function FinanceArrearsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs text-slate-400">From Term</label>
-                  <select className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.from_term} onChange={e => setCfForm(f => ({ ...f, from_term: e.target.value }))}>
+                  <select className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.from_term} onChange={e => setCfForm(f => ({ ...f, from_term: e.target.value }))}>
                     <option value="">Select…</option>
                     {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs text-slate-400">To Term</label>
-                  <select className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.to_term} onChange={e => setCfForm(f => ({ ...f, to_term: e.target.value }))}>
+                  <select className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.to_term} onChange={e => setCfForm(f => ({ ...f, to_term: e.target.value }))}>
                     <option value="">Select…</option>
                     {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
@@ -342,15 +342,15 @@ export default function FinanceArrearsPage() {
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Amount (KES)</label>
-                <input type="number" min="0" step="0.01" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.amount} onChange={e => setCfForm(f => ({ ...f, amount: e.target.value }))} />
+                <input type="number" min="0" step="0.01" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.amount} onChange={e => setCfForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Notes</label>
-                <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.notes} onChange={e => setCfForm(f => ({ ...f, notes: e.target.value }))} />
+                <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={cfForm.notes} onChange={e => setCfForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-3">
-              <button onClick={() => setShowCfForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
+              <button onClick={() => setShowCfForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
               <button onClick={handleCfSave} disabled={cfSaving} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{cfSaving ? 'Saving…' : 'Save'}</button>
             </div>
           </div>

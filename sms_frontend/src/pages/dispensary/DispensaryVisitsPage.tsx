@@ -127,10 +127,10 @@ export default function DispensaryVisitsPage() {
         <div className="relative flex-1 min-w-[200px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by student name or admission no…"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+            className="w-full bg-slate-950 border border-white/[0.07] rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
         </div>
         <select value={sevFilter} onChange={e => setSevFilter(e.target.value)}
-          className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+          className="bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
           <option value="">All Severities</option>
           <option value="MINOR">Minor</option>
           <option value="MODERATE">Moderate</option>
@@ -142,9 +142,9 @@ export default function DispensaryVisitsPage() {
         {loading ? (
           <div className="p-8 text-center text-slate-400">Loading…</div>
         ) : !visits.length ? (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 text-center text-slate-500">No visits found.</div>
+          <div className="glass-panel rounded-2xl p-8 text-center text-slate-500">No visits found.</div>
         ) : visits.map(visit => (
-          <div key={visit.id} className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+          <div key={visit.id} className="glass-panel rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => toggle(visit.id)}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -165,7 +165,7 @@ export default function DispensaryVisitsPage() {
               </div>
             </div>
             {expanded.has(visit.id) && (
-              <div className="px-5 pb-4 border-t border-slate-800/50 pt-3 space-y-3">
+              <div className="px-5 pb-4 border-t border-white/[0.05] pt-3 space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   {visit.diagnosis && <div><span className="text-slate-500 text-xs">Diagnosis:</span><p className="text-slate-300">{visit.diagnosis}</p></div>}
                   {visit.treatment && <div><span className="text-slate-500 text-xs">Treatment:</span><p className="text-slate-300">{visit.treatment}</p></div>}
@@ -178,7 +178,7 @@ export default function DispensaryVisitsPage() {
                   <div>
                     <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">Prescriptions</p>
                     <table className="w-full text-xs">
-                      <thead><tr className="text-slate-500 border-b border-slate-800">
+                      <thead><tr className="text-slate-500 border-b border-white/[0.07]">
                         <th className="text-left py-1 pr-3">Medication</th>
                         <th className="text-left py-1 pr-3">Dosage</th>
                         <th className="text-left py-1 pr-3">Frequency</th>
@@ -205,16 +205,16 @@ export default function DispensaryVisitsPage() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl w-full max-w-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold text-slate-100">New Visit Record</h2>
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Student *</label>
               <input value={studentSearch} onChange={e => { setStudentSearch(e.target.value); f('student', ''); }}
                 placeholder="Search student by name or admission no…"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               {studentResults.length > 0 && !form.student && (
-                <div className="bg-slate-800 border border-slate-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                <div className="bg-slate-800 border border-white/[0.09] rounded-lg mt-1 max-h-40 overflow-y-auto">
                   {studentResults.map(s => (
                     <button key={s.id} onClick={() => { f('student', String(s.id)); setStudentSearch(`${s.first_name} ${s.last_name} (${s.admission_number})`); setStudentResults([]); }}
                       className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700">
@@ -229,32 +229,32 @@ export default function DispensaryVisitsPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Visit Date *</label>
                 <input type="date" value={form.visit_date} onChange={e => f('visit_date', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Time</label>
                 <input type="time" value={form.visit_time} onChange={e => f('visit_time', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Complaint *</label>
                 <textarea rows={2} value={form.complaint} onChange={e => f('complaint', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Diagnosis</label>
                 <textarea rows={2} value={form.diagnosis} onChange={e => f('diagnosis', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Treatment</label>
                 <textarea rows={2} value={form.treatment} onChange={e => f('treatment', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Severity</label>
                 <select value={form.severity} onChange={e => f('severity', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
                   <option value="MINOR">Minor</option>
                   <option value="MODERATE">Moderate</option>
                   <option value="SERIOUS">Serious</option>
@@ -263,7 +263,7 @@ export default function DispensaryVisitsPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Follow-up Date</label>
                 <input type="date" value={form.follow_up_date} onChange={e => f('follow_up_date', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="flex items-center gap-4 col-span-2">
                 <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
@@ -279,13 +279,13 @@ export default function DispensaryVisitsPage() {
                 <div className="col-span-2">
                   <label className="text-xs text-slate-400 mb-1 block">Referred To</label>
                   <input value={form.referred_to} onChange={e => f('referred_to', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                    className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
                 </div>
               )}
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Notes</label>
                 <textarea rows={2} value={form.notes} onChange={e => f('notes', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
             </div>
 
@@ -298,23 +298,23 @@ export default function DispensaryVisitsPage() {
                 <div key={i} className="grid grid-cols-12 gap-2 mb-2 items-center">
                   <div className="col-span-3">
                     <input placeholder="Medication" value={rx.medication_name} onChange={e => setRxField(i, 'medication_name', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                      className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                   </div>
                   <div className="col-span-2">
                     <input placeholder="Dosage" value={rx.dosage} onChange={e => setRxField(i, 'dosage', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                      className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                   </div>
                   <div className="col-span-2">
                     <input placeholder="Frequency" value={rx.frequency} onChange={e => setRxField(i, 'frequency', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                      className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                   </div>
                   <div className="col-span-2">
                     <input type="number" placeholder="Qty" value={rx.quantity_dispensed} onChange={e => setRxField(i, 'quantity_dispensed', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                      className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                   </div>
                   <div className="col-span-2">
                     <input placeholder="Unit" value={rx.unit} onChange={e => setRxField(i, 'unit', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
+                      className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400" />
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <button onClick={() => removeRx(i)} className="text-rose-400 hover:text-rose-300"><ChevronUp size={14} /></button>
@@ -336,38 +336,38 @@ export default function DispensaryVisitsPage() {
 
       {addPrescriptionVisit !== null && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl w-full max-w-md p-6 space-y-4">
             <h2 className="text-lg font-semibold text-slate-100">Add Prescription</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Medication *</label>
                 <input value={rxForm.medication_name} onChange={e => setRxForm(r => ({ ...r, medication_name: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Dosage</label>
                 <input value={rxForm.dosage} onChange={e => setRxForm(r => ({ ...r, dosage: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Frequency</label>
                 <input value={rxForm.frequency} onChange={e => setRxForm(r => ({ ...r, frequency: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Quantity Dispensed</label>
                 <input type="number" value={rxForm.quantity_dispensed} onChange={e => setRxForm(r => ({ ...r, quantity_dispensed: Number(e.target.value) }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Unit</label>
                 <input value={rxForm.unit} onChange={e => setRxForm(r => ({ ...r, unit: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Notes</label>
                 <input value={rxForm.notes} onChange={e => setRxForm(r => ({ ...r, notes: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
             </div>
             <div className="flex justify-end gap-3">

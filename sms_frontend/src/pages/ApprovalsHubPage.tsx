@@ -551,8 +551,8 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
           className={`flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-sm pointer-events-auto
             transition-all duration-300 min-w-[260px] max-w-[360px]
             ${t.type === 'success'
-              ? 'bg-slate-900/95 border-emerald-500/40 shadow-emerald-500/10'
-              : 'bg-slate-900/95 border-red-500/40 shadow-red-500/10'}`}
+              ? 'bg-[#0d1421]/95 border-emerald-500/40 shadow-emerald-500/10'
+              : 'bg-[#0d1421]/95 border-red-500/40 shadow-red-500/10'}`}
         >
           <div className={`flex-shrink-0 rounded-full p-1 ${t.type === 'success' ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
             {t.type === 'success'
@@ -610,8 +610,8 @@ function ItemRow({
     <button
       onClick={onSelect}
       className={`group w-full text-left transition-all duration-150 relative overflow-hidden
-        border-l-[3px] px-3 py-3 hover:bg-slate-800/40
-        ${selected ? 'bg-slate-800/60' : 'bg-transparent'}`}
+        border-l-[3px] px-3 py-3 hover:bg-white/[0.025]
+        ${selected ? 'bg-white/[0.035]' : 'bg-transparent'}`}
       style={{ borderLeftColor: selected ? category.borderColor : 'transparent' }}
     >
       {/* subtle gradient on hover/selected */}
@@ -662,7 +662,7 @@ function DetailPanel({
   if (!item || !category) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-8">
-        <div className="rounded-3xl bg-slate-800/40 p-8 mb-4">
+        <div className="rounded-3xl bg-white/[0.025] p-8 mb-4">
           <SquareStack size={36} className="text-slate-600 mx-auto" />
         </div>
         <p className="text-sm font-semibold text-slate-400 mb-1">Select an item to review</p>
@@ -709,12 +709,12 @@ function DetailPanel({
         {/* Chips */}
         <div className="flex flex-wrap gap-2 mt-3">
           {item.chips.map(chip => (
-            <div key={chip.label} className="rounded-xl bg-slate-900/60 border border-white/10 px-3 py-1.5">
+            <div key={chip.label} className="rounded-xl glass-panel border border-white/10 px-3 py-1.5">
               <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600 mb-0.5">{chip.label}</p>
               <p className={`text-xs font-bold ${chip.mono ? 'font-mono' : ''} text-slate-200`}>{chip.value}</p>
             </div>
           ))}
-          <div className="rounded-xl bg-slate-900/60 border border-white/10 px-3 py-1.5">
+          <div className="rounded-xl glass-panel border border-white/10 px-3 py-1.5">
             <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600 mb-0.5">Age</p>
             <UrgencyBadge hours={item.ageHours} />
           </div>
@@ -725,13 +725,13 @@ function DetailPanel({
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
 
         {/* Detail grid */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-slate-800">
+        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-white/[0.07]">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Full Details</p>
           </div>
           <dl className="grid grid-cols-2 gap-px bg-slate-800">
             {item.details.map(d => (
-              <div key={d.label} className={`bg-slate-900/80 px-4 py-3 ${d.wide ? 'col-span-2' : ''}`}>
+              <div key={d.label} className={`bg-white/[0.03] px-4 py-3 ${d.wide ? 'col-span-2' : ''}`}>
                 <dt className="text-[9px] font-bold uppercase tracking-widest text-slate-600 mb-1">{d.label}</dt>
                 <dd className={`text-xs text-slate-200 leading-relaxed ${d.mono ? 'font-mono' : ''}`}>{d.value}</dd>
               </div>
@@ -740,7 +740,7 @@ function DetailPanel({
         </div>
 
         {/* Submitter info */}
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3">
           <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 text-xs font-bold text-slate-400">
             {(item.requestedBy[0] || '?').toUpperCase()}
           </div>
@@ -756,7 +756,7 @@ function DetailPanel({
         {/* Module link */}
         <button
           onClick={() => navigate(item.moduleRoute)}
-          className="w-full flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-left hover:border-slate-700 hover:bg-slate-800/50 transition group"
+          className="w-full flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-left hover:border-white/[0.09] hover:bg-white/[0.03] transition group"
         >
           <ExternalLink size={13} className="text-slate-500 group-hover:text-slate-300" />
           <span className="text-xs text-slate-500 group-hover:text-slate-300 transition">View in {category.moduleLabel}</span>
@@ -783,7 +783,7 @@ function DetailPanel({
               onChange={e => { setNotes(e.target.value); setError(null) }}
               placeholder={mode === 'approving' ? 'Optional note (e.g. verified with finance team)…' : 'Please provide a clear explanation…'}
               rows={3}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:border-slate-500 focus:outline-none resize-none"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:border-slate-500 focus:outline-none resize-none"
               autoFocus
             />
             {error && (
@@ -796,7 +796,7 @@ function DetailPanel({
       </div>
 
       {/* Action footer */}
-      <div className="flex-shrink-0 border-t border-slate-800 bg-slate-950/80 backdrop-blur-sm p-4">
+      <div className="flex-shrink-0 border-t border-white/[0.07] bg-slate-950/80 backdrop-blur-sm p-4">
         {mode === 'idle' && (
           <div className="grid grid-cols-3 gap-2">
             <button
@@ -834,7 +834,7 @@ function DetailPanel({
             <button
               onClick={() => { setMode('idle'); setNotes(''); setError(null) }}
               disabled={submitting}
-              className="rounded-xl border border-slate-700 px-3 py-2.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-600 transition flex-shrink-0 disabled:opacity-40"
+              className="rounded-xl border border-white/[0.09] px-3 py-2.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-600 transition flex-shrink-0 disabled:opacity-40"
             >
               Cancel
             </button>
@@ -990,7 +990,7 @@ export default function ApprovalsHubPage() {
         <div className="flex items-center gap-3 px-4 h-13 py-2.5">
           <button
             onClick={() => navigate('/dashboard')}
-            className="rounded-xl border border-slate-800 p-1.5 text-slate-500 hover:text-slate-300 hover:border-slate-700 transition flex-shrink-0"
+            className="rounded-xl border border-white/[0.07] p-1.5 text-slate-500 hover:text-slate-300 hover:border-white/[0.09] transition flex-shrink-0"
           >
             <ArrowLeft size={14} />
           </button>
@@ -1029,7 +1029,7 @@ export default function ApprovalsHubPage() {
           <button
             onClick={() => CATEGORIES.forEach(cat => void loadCategory(cat))}
             disabled={isLoading}
-            className="rounded-xl border border-slate-800 p-1.5 text-slate-500 hover:text-slate-300 hover:border-slate-700 transition disabled:opacity-40"
+            className="rounded-xl border border-white/[0.07] p-1.5 text-slate-500 hover:text-slate-300 hover:border-white/[0.09] transition disabled:opacity-40"
             title="Refresh all"
           >
             <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
@@ -1037,14 +1037,14 @@ export default function ApprovalsHubPage() {
         </div>
 
         {/* Category tabs — horizontal scroll */}
-        <div className="flex items-center gap-0 px-1 overflow-x-auto scrollbar-none border-t border-slate-800/60">
+        <div className="flex items-center gap-0 px-1 overflow-x-auto scrollbar-none border-t border-white/[0.06]">
           {/* All tab */}
           <button
             onClick={() => { setActiveKey('all'); setSelectedId(null) }}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold border-b-2 transition whitespace-nowrap ${
               activeKey === 'all'
                 ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-slate-500 hover:text-slate-300 hover:border-slate-700'
+                : 'border-transparent text-slate-500 hover:text-slate-300 hover:border-white/[0.09]'
             }`}
           >
             <SquareStack size={11} />
@@ -1064,7 +1064,7 @@ export default function ApprovalsHubPage() {
                 key={cat.key}
                 onClick={() => { setActiveKey(cat.key); setSelectedId(null) }}
                 className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold border-b-2 transition whitespace-nowrap ${
-                  active ? `border-[${cat.borderColor}] ${cat.textClass}` : 'border-transparent text-slate-500 hover:text-slate-300 hover:border-slate-700'
+                  active ? `border-[${cat.borderColor}] ${cat.textClass}` : 'border-transparent text-slate-500 hover:text-slate-300 hover:border-white/[0.09]'
                 }`}
                 style={active ? { borderBottomColor: cat.borderColor } : {}}
               >
@@ -1086,19 +1086,19 @@ export default function ApprovalsHubPage() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* Item List Pane */}
-        <div className={`flex flex-col border-r border-slate-800/60 bg-slate-950 overflow-hidden
+        <div className={`flex flex-col border-r border-white/[0.06] bg-slate-950 overflow-hidden
           ${mobileDetail ? 'hidden md:flex' : 'flex'}
           w-full md:w-[320px] lg:w-[360px] xl:w-[400px] flex-shrink-0`}>
 
           {/* List header: search + count */}
-          <div className="flex-shrink-0 border-b border-slate-800/60 px-3 py-2.5">
+          <div className="flex-shrink-0 border-b border-white/[0.06] px-3 py-2.5">
             <div className="relative">
               <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search items, names, codes…"
-                className="w-full rounded-xl border border-slate-800 bg-slate-900/60 pl-8 pr-3 py-2 text-xs text-slate-300 placeholder-slate-600 focus:border-slate-600 focus:outline-none focus:bg-slate-900"
+                className="w-full rounded-xl glass-panel pl-8 pr-3 py-2 text-xs text-slate-300 placeholder-slate-600 focus:border-slate-600 focus:outline-none focus:bg-[#0d1421]"
               />
               {search && (
                 <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400">
@@ -1119,10 +1119,10 @@ export default function ApprovalsHubPage() {
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="rounded-lg px-3 py-3 animate-pulse">
                     <div className="h-3 bg-slate-800 rounded w-3/4 mb-1.5" />
-                    <div className="h-2.5 bg-slate-800/60 rounded w-1/2 mb-2" />
+                    <div className="h-2.5 bg-white/[0.035] rounded w-1/2 mb-2" />
                     <div className="flex gap-2">
-                      <div className="h-4 w-14 bg-slate-800/40 rounded-full" />
-                      <div className="h-4 w-10 bg-slate-800/40 rounded-full" />
+                      <div className="h-4 w-14 bg-white/[0.025] rounded-full" />
+                      <div className="h-4 w-10 bg-white/[0.025] rounded-full" />
                     </div>
                   </div>
                 ))}
@@ -1144,7 +1144,7 @@ export default function ApprovalsHubPage() {
             {/* Empty state */}
             {!isLoading && filtered.length === 0 && !errors[activeKey] && (
               <div className="flex flex-col items-center gap-3 p-8 text-center">
-                <div className="rounded-2xl bg-slate-900/60 p-5">
+                <div className="rounded-2xl glass-panel p-5">
                   <TrendingUp size={22} className="text-emerald-500 mx-auto" />
                 </div>
                 <div>
@@ -1181,7 +1181,7 @@ export default function ApprovalsHubPage() {
 
           {/* Mobile back button */}
           {mobileDetail && (
-            <div className="flex-shrink-0 border-b border-slate-800/60 px-3 py-2 md:hidden">
+            <div className="flex-shrink-0 border-b border-white/[0.06] px-3 py-2 md:hidden">
               <button
                 onClick={() => setMobileDetail(false)}
                 className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition"

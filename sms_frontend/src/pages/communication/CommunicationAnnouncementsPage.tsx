@@ -127,7 +127,7 @@ export default function CommunicationAnnouncementsPage() {
           <p className="text-sm text-slate-400 mt-0.5">Broadcast messages to students, staff, and parents</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-700 transition">
+          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
             <RefreshCw size={13} className="text-slate-400" />
           </button>
           <button
@@ -162,14 +162,14 @@ export default function CommunicationAnnouncementsPage() {
             value={form.title}
             onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
             placeholder="Announcement title…"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+            className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
           />
           <textarea
             value={form.body}
             onChange={(e) => setForm(f => ({ ...f, body: e.target.value }))}
             rows={4}
             placeholder="Write your announcement…"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
           />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div>
@@ -177,7 +177,7 @@ export default function CommunicationAnnouncementsPage() {
               <select
                 value={form.priority}
                 onChange={(e) => setForm(f => ({ ...f, priority: e.target.value }))}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white"
+                className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-xs text-white"
               >
                 {['Critical', 'Urgent', 'Important', 'Normal', 'Low'].map(p => <option key={p}>{p}</option>)}
               </select>
@@ -187,7 +187,7 @@ export default function CommunicationAnnouncementsPage() {
               <select
                 value={form.audience_type}
                 onChange={(e) => setForm(f => ({ ...f, audience_type: e.target.value }))}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white"
+                className="w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-xs text-white"
               >
                 {['All', 'Students', 'Staff', 'Parents', 'Custom'].map(a => <option key={a}>{a}</option>)}
               </select>
@@ -211,7 +211,7 @@ export default function CommunicationAnnouncementsPage() {
             </div>
           </div>
           <div className="flex gap-2 pt-1">
-            <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white hover:border-slate-600 transition">Cancel</button>
+            <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-400 hover:text-white hover:border-slate-600 transition">Cancel</button>
             <button onClick={create} disabled={creating} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition disabled:opacity-50">
               {creating ? <><Loader2 size={13} className="animate-spin" /> Publishing…</> : <><Megaphone size={13} /> Publish</>}
             </button>
@@ -272,9 +272,9 @@ function AnnouncementCard({
   const isOpen = expanded === ann.id
 
   return (
-    <div className={`rounded-2xl border bg-slate-900/60 overflow-hidden transition-all ${ann.is_pinned ? 'border-amber-500/30' : 'border-slate-800'}`}>
+    <div className={`rounded-2xl border glass-panel overflow-hidden transition-all ${ann.is_pinned ? 'border-amber-500/30' : 'border-white/[0.07]'}`}>
       <div
-        className="flex items-start gap-3 px-4 py-3.5 cursor-pointer hover:bg-slate-800/30 transition"
+        className="flex items-start gap-3 px-4 py-3.5 cursor-pointer hover:bg-white/[0.02] transition"
         onClick={() => setExpanded(isOpen ? null : ann.id)}
       >
         <div className={`flex-shrink-0 mt-0.5 rounded-lg p-1.5 border ${pStyle.badge}`}>
@@ -296,14 +296,14 @@ function AnnouncementCard({
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={(e) => { e.stopPropagation(); onPin(ann) }}
-            className="h-7 w-7 rounded-lg border border-slate-700 flex items-center justify-center hover:bg-slate-700 transition"
+            className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition"
             title={ann.is_pinned ? 'Unpin' : 'Pin'}
           >
             {ann.is_pinned ? <PinOff size={11} className="text-amber-400" /> : <Pin size={11} className="text-slate-400" />}
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onRead(ann.id) }}
-            className="h-7 w-7 rounded-lg border border-slate-700 flex items-center justify-center hover:bg-slate-700 transition"
+            className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition"
             title="Mark read"
           >
             <CheckCheck size={11} className="text-slate-400" />
@@ -319,7 +319,7 @@ function AnnouncementCard({
         </div>
       </div>
       {isOpen && (
-        <div className="px-4 pb-4 border-t border-slate-800 pt-3">
+        <div className="px-4 pb-4 border-t border-white/[0.07] pt-3">
           <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{ann.body}</p>
         </div>
       )}

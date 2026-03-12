@@ -119,7 +119,7 @@ export default function ClockInRegistryPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex justify-between items-center">
+      <header className="rounded-2xl glass-panel p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-display font-semibold text-slate-100">Person Registry</h1>
           <p className="mt-2 text-sm text-slate-400">Manage biometric enrollment for students and staff.</p>
@@ -134,14 +134,14 @@ export default function ClockInRegistryPage() {
       </header>
 
       {isAdding && (
-        <form onSubmit={handleEnroll} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4 animate-in fade-in slide-in-from-top-4">
+        <form onSubmit={handleEnroll} className="rounded-2xl glass-panel p-6 space-y-4 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Enrollment Form</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-1">
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Fingerprint ID</label>
               <input
                 required
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition"
                 placeholder="Scanner ID (e.g. 101)"
                 value={formData.fingerprint_id}
                 onChange={e => setFormData({ ...formData, fingerprint_id: e.target.value })}
@@ -150,7 +150,7 @@ export default function ClockInRegistryPage() {
             <div className="space-y-1">
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Person Type</label>
               <select
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition"
                 value={formData.person_type}
                 onChange={e => setFormData({ ...formData, person_type: e.target.value as any, person_id: '', display_name: '' })}
               >
@@ -163,12 +163,12 @@ export default function ClockInRegistryPage() {
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Search Person</label>
               <input
                 required
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 outline-none transition"
                 placeholder="Name or ID..."
                 onChange={e => handleSearch(e.target.value)}
               />
               {searchResults.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 shadow-2xl p-1">
+                <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto rounded-xl border border-white/[0.09] bg-[#0d1421] shadow-2xl p-1">
                   {searchResults.map(res => (
                     <button
                       key={res.id}
@@ -190,7 +190,7 @@ export default function ClockInRegistryPage() {
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Display Name (Auto)</label>
               <input
                 readOnly
-                className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-800 px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed"
                 value={formData.display_name}
               />
             </div>
@@ -207,7 +207,7 @@ export default function ClockInRegistryPage() {
         </form>
       )}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <section className="rounded-2xl glass-panel overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-slate-400">Loading registry...</div>
         ) : entries.length === 0 ? (
@@ -215,7 +215,7 @@ export default function ClockInRegistryPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-800 bg-slate-950/40 text-slate-400">
+              <thead className="border-b border-white/[0.07] bg-slate-950/40 text-slate-400">
                 <tr>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Fingerprint ID</th>
                   <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Name</th>
@@ -227,7 +227,7 @@ export default function ClockInRegistryPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {entries.map(entry => (
-                  <tr key={entry.id} className="hover:bg-slate-800/40 transition">
+                  <tr key={entry.id} className="hover:bg-white/[0.025] transition">
                     <td className="px-6 py-4 font-mono text-emerald-400">{entry.fingerprint_id}</td>
                     <td className="px-6 py-4 font-medium text-slate-100">{entry.display_name}</td>
                     <td className="px-6 py-4">

@@ -61,24 +61,24 @@ export default function LibraryInventoryPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Inventory Audits</h1>
         <p className="mt-2 text-sm text-slate-400">Run stock audits and track found vs missing copies.</p>
       </header>
 
-      <form onSubmit={createAudit} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={createAudit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Start Audit</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <input
             type="number"
             min={0}
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Total found"
             value={totalFound}
             onChange={(e) => setTotalFound(e.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -93,7 +93,7 @@ export default function LibraryInventoryPage() {
         {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Audit History</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -110,7 +110,7 @@ export default function LibraryInventoryPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.audit_date}</td>
                   <td className="px-2 py-2">{row.total_expected}</td>
                   <td className="px-2 py-2">{row.total_found}</td>

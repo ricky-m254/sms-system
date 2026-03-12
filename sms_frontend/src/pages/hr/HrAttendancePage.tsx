@@ -384,7 +384,7 @@ export default function HrAttendancePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Attendance & Time</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Time Tracking</h1>
       </section>
@@ -401,25 +401,25 @@ export default function HrAttendancePage() {
       ) : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Records</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">{summary.total_records}</p>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Present</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">{summary.present_count}</p>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Late</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">{summary.late_count}</p>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Avg Overtime</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">{summary.average_overtime_hours}</p>
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Filters & Monthly Export</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
           <select
@@ -428,7 +428,7 @@ export default function HrAttendancePage() {
               setSelectedDepartmentFilter(event.target.value)
               setSelectedEmployeeFilter('')
             }}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           >
             <option value="">All departments</option>
             {departments.map((department) => (
@@ -440,7 +440,7 @@ export default function HrAttendancePage() {
           <select
             value={selectedEmployeeFilter}
             onChange={(event) => setSelectedEmployeeFilter(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           >
             <option value="">All employees</option>
             {filteredEmployees.map((employee) => (
@@ -453,13 +453,13 @@ export default function HrAttendancePage() {
             type="date"
             value={dateFrom}
             onChange={(event) => setDateFrom(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           />
           <input
             type="date"
             value={dateTo}
             onChange={(event) => setDateTo(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
             <input
@@ -468,7 +468,7 @@ export default function HrAttendancePage() {
               max={12}
               value={monthlyExportMonth}
               onChange={(event) => setMonthlyExportMonth(event.target.value)}
-              className="w-20 rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-2 text-sm"
+              className="w-20 rounded-lg border border-white/[0.09] bg-slate-950/60 px-2 py-2 text-sm"
             />
             <input
               type="number"
@@ -476,7 +476,7 @@ export default function HrAttendancePage() {
               max={2100}
               value={monthlyExportYear}
               onChange={(event) => setMonthlyExportYear(event.target.value)}
-              className="w-24 rounded-lg border border-slate-700 bg-slate-950/60 px-2 py-2 text-sm"
+              className="w-24 rounded-lg border border-white/[0.09] bg-slate-950/60 px-2 py-2 text-sm"
             />
           </div>
           <button
@@ -488,7 +488,7 @@ export default function HrAttendancePage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Overtime Policy Settings</h2>
         <p className="mt-1 text-xs text-slate-500">
           Policy settings are currently UI-level reporting controls and do not override backend attendance computation yet.
@@ -501,9 +501,9 @@ export default function HrAttendancePage() {
             value={overtimeThresholdHours}
             onChange={(event) => setOvertimeThresholdHours(event.target.value)}
             placeholder="Threshold hours"
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           />
-          <label className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-300">
+          <label className="flex items-center gap-2 rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm text-slate-300">
             <input
               type="checkbox"
               checked={includeBreakInPolicy}
@@ -511,19 +511,19 @@ export default function HrAttendancePage() {
             />
             Include break duration
           </label>
-          <div className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-300">
+          <div className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm text-slate-300">
             Preview avg overtime by policy: <span className="font-semibold text-slate-100">{policyOvertimePreview}</span>
           </div>
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Clock Actions</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <select
             value={clockEmployee}
             onChange={(event) => setClockEmployee(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           >
             <option value="">Select employee</option>
             {employees.map((employee) => (
@@ -536,19 +536,19 @@ export default function HrAttendancePage() {
             type="date"
             value={clockDate}
             onChange={(event) => setClockDate(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           />
           <input
             type="time"
             value={clockInTime}
             onChange={(event) => setClockInTime(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           />
           <input
             type="time"
             value={clockOutTime}
             onChange={(event) => setClockOutTime(event.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+            className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
             <button
@@ -572,8 +572,8 @@ export default function HrAttendancePage() {
         ) : null}
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Attendance Records</h2>
         </header>
         <div className="overflow-x-auto">
@@ -591,7 +591,7 @@ export default function HrAttendancePage() {
             </thead>
             <tbody>
               {(loading ? [] : records).map((record) => (
-                <tr key={record.id} className="border-t border-slate-800">
+                <tr key={record.id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-100">{record.employee_name}</td>
                   <td className="px-4 py-3 text-slate-300">{record.date}</td>
                   <td className="px-4 py-3 text-slate-300">{record.clock_in ?? '-'}</td>
@@ -606,8 +606,8 @@ export default function HrAttendancePage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Attendance Report (By Employee)</h2>
         </header>
         <div className="overflow-x-auto">
@@ -625,7 +625,7 @@ export default function HrAttendancePage() {
             </thead>
             <tbody>
               {(loading ? [] : reportRows).map((row) => (
-                <tr key={row.employee_id} className="border-t border-slate-800">
+                <tr key={row.employee_id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-100">{row.employee_id}</td>
                   <td className="px-4 py-3 text-slate-300">{row.employee_name}</td>
                   <td className="px-4 py-3 text-slate-300">{row.days}</td>
@@ -640,8 +640,8 @@ export default function HrAttendancePage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+      <section className="overflow-hidden rounded-xl glass-panel">
+        <header className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-100">Work Schedules</h2>
           <button
             onClick={openCreateSchedule}
@@ -664,7 +664,7 @@ export default function HrAttendancePage() {
             </thead>
             <tbody>
               {(loading ? [] : schedules).map((schedule) => (
-                <tr key={schedule.id} className="border-t border-slate-800">
+                <tr key={schedule.id} className="border-t border-white/[0.07]">
                   <td className="px-4 py-3 text-slate-300">
                     {schedule.employee_name || schedule.department_name || 'Global'}
                   </td>
@@ -704,7 +704,7 @@ export default function HrAttendancePage() {
 
       {showScheduleModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-          <div className="w-full max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5">
+          <div className="w-full max-w-2xl rounded-xl border border-white/[0.07] bg-[#0d1421] p-5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-100">
                 {scheduleForm.id ? 'Edit Work Schedule' : 'Create Work Schedule'}
@@ -717,7 +717,7 @@ export default function HrAttendancePage() {
               <select
                 value={scheduleForm.department}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, department: event.target.value }))}
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               >
                 <option value="">Department scope (optional)</option>
                 {departments.map((department) => (
@@ -729,7 +729,7 @@ export default function HrAttendancePage() {
               <select
                 value={scheduleForm.employee}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, employee: event.target.value }))}
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               >
                 <option value="">Employee scope (optional)</option>
                 {employees.map((employee) => (
@@ -742,13 +742,13 @@ export default function HrAttendancePage() {
                 type="time"
                 value={scheduleForm.shift_start}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, shift_start: event.target.value }))}
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               />
               <input
                 type="time"
                 value={scheduleForm.shift_end}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, shift_end: event.target.value }))}
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               />
               <input
                 type="number"
@@ -756,19 +756,19 @@ export default function HrAttendancePage() {
                 value={scheduleForm.break_duration}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, break_duration: event.target.value }))}
                 placeholder="Break duration (minutes)"
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               />
               <input
                 type="date"
                 value={scheduleForm.effective_from}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, effective_from: event.target.value }))}
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               />
               <input
                 type="date"
                 value={scheduleForm.effective_to}
                 onChange={(event) => setScheduleForm((prev) => ({ ...prev, effective_to: event.target.value }))}
-                className="rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm"
+                className="rounded-lg border border-white/[0.09] bg-slate-950/60 px-3 py-2 text-sm"
               />
               <div className="sm:col-span-2">
                 <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">Working Days</p>
@@ -779,7 +779,7 @@ export default function HrAttendancePage() {
                       className={`cursor-pointer rounded-lg border px-3 py-1 text-xs ${
                         scheduleForm.working_days.includes(day)
                           ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-200'
-                          : 'border-slate-700 bg-slate-950/60 text-slate-300'
+                          : 'border-white/[0.09] bg-slate-950/60 text-slate-300'
                       }`}
                     >
                       <input

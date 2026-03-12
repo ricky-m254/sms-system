@@ -21,18 +21,18 @@ export default function AnalyticsAtRiskPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold text-white font-sans">At-Risk Students</h1>
         <p className="text-sm text-slate-400 mt-1 font-sans">Students identified by the system as needing intervention.</p>
       </header>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300 font-sans">Loading...</div>
+        <div className="rounded-2xl glass-panel p-6 text-slate-300 font-sans">Loading...</div>
       ) : (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 font-sans">
+        <div className="rounded-2xl glass-panel p-6 font-sans">
           <div className="space-y-4 font-sans">
             {data.map((student) => (
-              <div key={student.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-5 font-sans">
+              <div key={student.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/[0.07] bg-slate-950/60 p-5 font-sans">
                 <div className="font-sans">
                   <h3 className="font-semibold text-slate-200 font-sans">{student.name}</h3>
                   <p className="text-xs text-slate-500 font-sans">{student.admission_number}</p>

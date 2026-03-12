@@ -82,10 +82,10 @@ export default function StoreMovementsPage() {
         <div className="relative flex-1 min-w-[200px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by item or reference…"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+            className="w-full bg-slate-950 border border-white/[0.07] rounded-lg pl-9 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
         </div>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-          className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+          className="bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
           <option value="">All Types</option>
           <option value="RECEIPT">Receipts</option>
           <option value="ISSUANCE">Issuances</option>
@@ -94,14 +94,14 @@ export default function StoreMovementsPage() {
         </select>
       </div>
 
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="glass-panel rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-400">Loading…</div>
         ) : !filtered.length ? (
           <div className="p-8 text-center text-slate-500">No transactions found.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-800">
+            <thead className="border-b border-white/[0.07]">
               <tr className="text-xs text-slate-500">
                 <th className="text-left px-4 py-3">Date</th>
                 <th className="text-left px-4 py-3">Item</th>
@@ -113,7 +113,7 @@ export default function StoreMovementsPage() {
             </thead>
             <tbody>
               {filtered.map(tx => (
-                <tr key={tx.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
+                <tr key={tx.id} className="border-b border-white/[0.05] hover:bg-white/[0.02]">
                   <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{tx.date}</td>
                   <td className="px-4 py-3 text-slate-200">{tx.item_name}</td>
                   <td className="px-4 py-3">
@@ -133,13 +133,13 @@ export default function StoreMovementsPage() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 space-y-4">
+          <div className="bg-[#0d1421] border border-white/[0.07] rounded-2xl w-full max-w-lg p-6 space-y-4">
             <h2 className="text-lg font-semibold text-slate-100">Record Stock Movement</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Item *</label>
                 <select value={form.item} onChange={e => setForm(f => ({ ...f, item: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
                   <option value="">Select item…</option>
                   {items.map(i => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
                 </select>
@@ -147,7 +147,7 @@ export default function StoreMovementsPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Type *</label>
                 <select value={form.transaction_type} onChange={e => setForm(f => ({ ...f, transaction_type: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400">
                   <option value="RECEIPT">Receipt (Stock In)</option>
                   <option value="ISSUANCE">Issuance (Stock Out)</option>
                   <option value="ADJUSTMENT">Adjustment</option>
@@ -157,27 +157,27 @@ export default function StoreMovementsPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Quantity *</label>
                 <input type="number" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Date *</label>
                 <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Reference</label>
                 <input value={form.reference} onChange={e => setForm(f => ({ ...f, reference: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Purpose</label>
                 <input value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-slate-400 mb-1 block">Notes</label>
                 <textarea rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
+                  className="w-full bg-slate-950 border border-white/[0.07] rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-400" />
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-2">

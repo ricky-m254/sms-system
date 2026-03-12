@@ -194,7 +194,7 @@ export default function HrTrainingPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Training & Development</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Programs, Enrollment, Completion Tracking</h1>
       </section>
@@ -202,62 +202,62 @@ export default function HrTrainingPage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Programs</p><p className="mt-2 text-2xl font-semibold text-slate-100">{programs.length}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Enrollments</p><p className="mt-2 text-2xl font-semibold text-slate-100">{enrollments.length}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Completed</p><p className="mt-2 text-2xl font-semibold text-slate-100">{enrollments.filter((e) => e.status === 'Completed').length}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Pending/Active</p><p className="mt-2 text-2xl font-semibold text-slate-100">{enrollments.filter((e) => ['Enrolled', 'Attended'].includes(e.status)).length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Programs</p><p className="mt-2 text-2xl font-semibold text-slate-100">{programs.length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Enrollments</p><p className="mt-2 text-2xl font-semibold text-slate-100">{enrollments.length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Completed</p><p className="mt-2 text-2xl font-semibold text-slate-100">{enrollments.filter((e) => e.status === 'Completed').length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Pending/Active</p><p className="mt-2 text-2xl font-semibold text-slate-100">{enrollments.filter((e) => ['Enrolled', 'Attended'].includes(e.status)).length}</p></article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <div className="grid gap-3 sm:grid-cols-3">
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search programs or enrollments..." className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-          <button onClick={() => { setSearch(''); setEnrollmentStatusFilter('All') }} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Reset Filters</button>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search programs or enrollments..." className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+          <button onClick={() => { setSearch(''); setEnrollmentStatusFilter('All') }} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-200">Reset Filters</button>
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Create Program</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <input value={programForm.title} onChange={(e) => setProgramForm((p) => ({ ...p, title: e.target.value }))} placeholder="Program title" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-            <input value={programForm.trainer} onChange={(e) => setProgramForm((p) => ({ ...p, trainer: e.target.value }))} placeholder="Trainer" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-            <input type="date" value={programForm.start_date} onChange={(e) => setProgramForm((p) => ({ ...p, start_date: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input type="date" value={programForm.end_date} onChange={(e) => setProgramForm((p) => ({ ...p, end_date: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input type="number" min="0" value={programForm.capacity} onChange={(e) => setProgramForm((p) => ({ ...p, capacity: e.target.value }))} placeholder="Capacity" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input type="number" min="0" step="0.01" value={programForm.cost} onChange={(e) => setProgramForm((p) => ({ ...p, cost: e.target.value }))} placeholder="Cost per participant" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={programForm.title} onChange={(e) => setProgramForm((p) => ({ ...p, title: e.target.value }))} placeholder="Program title" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+            <input value={programForm.trainer} onChange={(e) => setProgramForm((p) => ({ ...p, trainer: e.target.value }))} placeholder="Trainer" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+            <input type="date" value={programForm.start_date} onChange={(e) => setProgramForm((p) => ({ ...p, start_date: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input type="date" value={programForm.end_date} onChange={(e) => setProgramForm((p) => ({ ...p, end_date: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input type="number" min="0" value={programForm.capacity} onChange={(e) => setProgramForm((p) => ({ ...p, capacity: e.target.value }))} placeholder="Capacity" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input type="number" min="0" step="0.01" value={programForm.cost} onChange={(e) => setProgramForm((p) => ({ ...p, cost: e.target.value }))} placeholder="Cost per participant" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createProgram} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-60 sm:col-span-2">Save Program</button>
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Enroll Employee</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <select value={enrollmentForm.program} onChange={(e) => setEnrollmentForm((p) => ({ ...p, program: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+            <select value={enrollmentForm.program} onChange={(e) => setEnrollmentForm((p) => ({ ...p, program: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
               <option value="">Select program</option>
               {programs.map((program) => <option key={program.id} value={program.id}>{program.title}</option>)}
             </select>
-            <select value={enrollmentForm.employee} onChange={(e) => setEnrollmentForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+            <select value={enrollmentForm.employee} onChange={(e) => setEnrollmentForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
               <option value="">Select employee</option>
               {employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.employee_id} - {employee.full_name}</option>)}
             </select>
-            <select value={enrollmentForm.status} onChange={(e) => setEnrollmentForm((p) => ({ ...p, status: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={enrollmentForm.status} onChange={(e) => setEnrollmentForm((p) => ({ ...p, status: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option>Enrolled</option><option>Attended</option><option>Completed</option><option>Cancelled</option>
             </select>
-            <input type="date" value={enrollmentForm.completion_date} onChange={(e) => setEnrollmentForm((p) => ({ ...p, completion_date: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input type="date" value={enrollmentForm.completion_date} onChange={(e) => setEnrollmentForm((p) => ({ ...p, completion_date: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <button onClick={createEnrollment} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-60 sm:col-span-2">Save Enrollment</button>
           </div>
         </article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-100">Training Programs</h2>
-            <button onClick={exportPrograms} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Export</button>
+            <button onClick={exportPrograms} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Export</button>
           </div>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {filteredPrograms.map((program) => (
-              <div key={program.id} className="rounded-lg border border-slate-800 px-3 py-2">
+              <div key={program.id} className="rounded-lg border border-white/[0.07] px-3 py-2">
                 <p className="font-semibold text-slate-100">{program.title}</p>
                 <p>Trainer: {program.trainer || '-'} | Capacity: {program.capacity}</p>
                 <p>{program.start_date || '-'} to {program.end_date || '-'}</p>
@@ -267,19 +267,19 @@ export default function HrTrainingPage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-100">Enrollments</h2>
             <div className="flex items-center gap-2">
-              <select value={enrollmentStatusFilter} onChange={(e) => setEnrollmentStatusFilter(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs">
+              <select value={enrollmentStatusFilter} onChange={(e) => setEnrollmentStatusFilter(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs">
                 <option>All</option><option>Enrolled</option><option>Attended</option><option>Completed</option><option>Cancelled</option>
               </select>
-              <button onClick={exportEnrollments} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Export</button>
+              <button onClick={exportEnrollments} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Export</button>
             </div>
           </div>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {filteredEnrollments.map((enrollment) => (
-              <div key={enrollment.id} className="rounded-lg border border-slate-800 px-3 py-2">
+              <div key={enrollment.id} className="rounded-lg border border-white/[0.07] px-3 py-2">
                 <p className="font-semibold text-slate-100">{enrollment.employee_name}</p>
                 <p>{enrollment.program_title}</p>
                 <div className="mt-1 flex items-center gap-2">

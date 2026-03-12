@@ -105,26 +105,26 @@ export default function DispensaryDeliveryNotesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Delivery Notes</h1>
         <p className="mt-1 text-sm text-slate-400">Track medication deliveries from suppliers. Add items, mark received, and link to finance.</p>
       </header>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-200">New Delivery Note</h2>
         <div className="grid gap-3 sm:grid-cols-3">
-          <input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="Supplier name *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <input value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Notes" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+          <input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="Supplier name *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <input value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="Notes" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
         </div>
         <button onClick={createNote} disabled={saving || !supplier.trim()} className="mt-4 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Create Delivery Note'}</button>
       </div>
 
       <div className="space-y-3">
         {loading ? <p className="text-sm text-slate-400 px-2">Loading…</p> : notes.map(n => (
-          <div key={n.id} className="rounded-2xl border border-slate-800 bg-slate-900/60">
+          <div key={n.id} className="rounded-2xl glass-panel">
             <div className="flex flex-wrap items-start justify-between gap-3 p-4">
               <div>
                 <p className="font-semibold text-slate-100">{n.supplier}</p>
@@ -140,14 +140,14 @@ export default function DispensaryDeliveryNotesPage() {
               </div>
             </div>
             {expandedId === n.id ? (
-              <div className="border-t border-slate-800 p-4">
+              <div className="border-t border-white/[0.07] p-4">
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5 mb-3">
-                  <input value={itemMedicationName} onChange={e => setItemMedicationName(e.target.value)} placeholder="Medication name *" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm sm:col-span-2 lg:col-span-1" />
-                  <input type="number" value={itemQty} onChange={e => setItemQty(e.target.value)} placeholder="Qty" min={1} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm" />
-                  <select value={itemUnit} onChange={e => setItemUnit(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+                  <input value={itemMedicationName} onChange={e => setItemMedicationName(e.target.value)} placeholder="Medication name *" className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-sm sm:col-span-2 lg:col-span-1" />
+                  <input type="number" value={itemQty} onChange={e => setItemQty(e.target.value)} placeholder="Qty" min={1} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-sm" />
+                  <select value={itemUnit} onChange={e => setItemUnit(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-sm">
                     <option>tablets</option><option>capsules</option><option>ml</option><option>bottles</option><option>sachets</option><option>vials</option>
                   </select>
-                  <input value={itemUnitCost} onChange={e => setItemUnitCost(e.target.value)} placeholder="Unit cost" className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm" />
+                  <input value={itemUnitCost} onChange={e => setItemUnitCost(e.target.value)} placeholder="Unit cost" className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1.5 text-sm" />
                   <button onClick={() => addItem(n.id)} disabled={addingItem || !itemMedicationName.trim()} className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-200 disabled:opacity-50">Add Item</button>
                 </div>
                 <div className="space-y-1">

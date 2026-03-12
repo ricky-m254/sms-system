@@ -143,12 +143,12 @@ export default function AssetsMaintenancePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Asset Maintenance</h1>
         <p className="mt-2 text-sm text-slate-400">Schedule and record preventive or corrective maintenance tasks.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={handleSubmit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">{editingId ? 'Edit Record' : 'Log Maintenance'}</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1">
@@ -156,7 +156,7 @@ export default function AssetsMaintenancePage() {
             <select
               required
               disabled={!!editingId}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm disabled:opacity-50"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm disabled:opacity-50"
               value={assetId}
               onChange={(e) => setAssetId(e.target.value)}
             >
@@ -169,7 +169,7 @@ export default function AssetsMaintenancePage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Type</label>
             <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={maintenanceType}
               onChange={(e) => setMaintenanceType(e.target.value)}
             >
@@ -182,7 +182,7 @@ export default function AssetsMaintenancePage() {
             <label className="text-xs text-slate-400">Technician</label>
             <input
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={technicianName}
               onChange={(e) => setTechnicianName(e.target.value)}
             />
@@ -190,7 +190,7 @@ export default function AssetsMaintenancePage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Status</label>
             <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
@@ -204,7 +204,7 @@ export default function AssetsMaintenancePage() {
             <input
               type="date"
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={scheduledDate}
               onChange={(e) => setScheduledDate(e.target.value)}
             />
@@ -213,7 +213,7 @@ export default function AssetsMaintenancePage() {
             <label className="text-xs text-slate-400">Completed Date</label>
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={completedDate}
               onChange={(e) => setCompletedDate(e.target.value)}
             />
@@ -223,7 +223,7 @@ export default function AssetsMaintenancePage() {
             <input
               type="number"
               step="0.01"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={cost}
               onChange={(e) => setCost(e.target.value)}
             />
@@ -235,7 +235,7 @@ export default function AssetsMaintenancePage() {
             <textarea
               required
               rows={2}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -244,7 +244,7 @@ export default function AssetsMaintenancePage() {
             <label className="text-xs text-slate-400">Notes</label>
             <textarea
               rows={2}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -262,7 +262,7 @@ export default function AssetsMaintenancePage() {
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-xl border border-slate-700 px-6 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
+              className="rounded-xl border border-white/[0.09] px-6 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
             >
               Cancel
             </button>
@@ -270,12 +270,12 @@ export default function AssetsMaintenancePage() {
         </div>
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Maintenance Records</h2>
         {error ? <p className="mt-4 text-xs text-rose-300">{error}</p> : null}
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-800 text-slate-400">
+            <thead className="border-b border-white/[0.07] text-slate-400">
               <tr>
                 <th className="px-3 py-3 font-medium">Asset</th>
                 <th className="px-3 py-3 font-medium">Type</th>
@@ -287,7 +287,7 @@ export default function AssetsMaintenancePage() {
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {records.map((row) => (
-                <tr key={row.id} className="group hover:bg-slate-800/30">
+                <tr key={row.id} className="group hover:bg-white/[0.02]">
                   <td className="px-3 py-3">
                     <p className="font-semibold text-slate-200">{row.asset_name}</p>
                     <p className="text-xs text-slate-400">{row.asset_code}</p>

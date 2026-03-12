@@ -147,21 +147,21 @@ export default function HostelAttendancePage() {
           <Calendar className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
             type="date"
-            className="rounded-xl border border-slate-800 bg-slate-900/40 py-2.5 pl-10 pr-4 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none"
+            className="rounded-xl border border-white/[0.07] bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-slate-200 focus:border-emerald-500/50 focus:outline-none"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
           />
         </div>
-        <select value={filterTime} onChange={e => setFilterTime(e.target.value)} className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm text-slate-300 flex items-center gap-2">
+        <select value={filterTime} onChange={e => setFilterTime(e.target.value)} className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5 text-sm text-slate-300 flex items-center gap-2">
           <option value="">All Roll Calls</option>
           {ROLL_CALL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
+      <div className="overflow-hidden rounded-2xl glass-panel shadow-xl">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-800/40">
+            <tr className="border-b border-white/[0.07] bg-white/[0.025]">
               <th className="px-6 py-4 font-semibold text-slate-300">Student</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Date</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Roll Call</th>
@@ -215,7 +215,7 @@ export default function HostelAttendancePage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Attendance' : 'Record Attendance'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -224,7 +224,7 @@ export default function HostelAttendancePage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Student *</label>
-              <select value={form.student} onChange={e => setF('student', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.student} onChange={e => setF('student', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">Select student</option>
                 {students.map(s => <option key={s.id} value={s.id}>{`${s.first_name} ${s.last_name}`.trim()} ({s.admission_number})</option>)}
               </select>
@@ -232,19 +232,19 @@ export default function HostelAttendancePage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Date *</label>
-              <input type="date" value={form.date} onChange={e => setF('date', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+              <input type="date" value={form.date} onChange={e => setF('date', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Roll Call Time</label>
-                <select value={form.roll_call_time} onChange={e => setF('roll_call_time', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+                <select value={form.roll_call_time} onChange={e => setF('roll_call_time', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                   {ROLL_CALL_TIMES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Status</label>
-                <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+                <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                   {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
               </div>
@@ -252,14 +252,14 @@ export default function HostelAttendancePage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
 
             <div className="flex gap-3 pt-1">
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-50">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Record'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

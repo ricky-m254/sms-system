@@ -118,57 +118,57 @@ export default function PlatformSecurityCompliancePage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Security & Compliance</h1>
       </header>
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
-      <section className="col-span-12 lg:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Security Incidents</h2>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={createIncident}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={incidentForm.title} onChange={(e) => setIncidentForm((p) => ({ ...p, title: e.target.value }))} required />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Category" value={incidentForm.category} onChange={(e) => setIncidentForm((p) => ({ ...p, category: e.target.value }))} />
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={incidentForm.tenant} onChange={(e) => setIncidentForm((p) => ({ ...p, tenant: e.target.value }))}>
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={incidentForm.title} onChange={(e) => setIncidentForm((p) => ({ ...p, title: e.target.value }))} required />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Category" value={incidentForm.category} onChange={(e) => setIncidentForm((p) => ({ ...p, category: e.target.value }))} />
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={incidentForm.tenant} onChange={(e) => setIncidentForm((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">Platform-wide</option>
             {tenants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={incidentForm.severity} onChange={(e) => setIncidentForm((p) => ({ ...p, severity: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={incidentForm.severity} onChange={(e) => setIncidentForm((p) => ({ ...p, severity: e.target.value }))}>
             {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <textarea className="sm:col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" rows={3} placeholder="Details" value={incidentForm.details} onChange={(e) => setIncidentForm((p) => ({ ...p, details: e.target.value }))} />
+          <textarea className="sm:col-span-2 rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" rows={3} placeholder="Details" value={incidentForm.details} onChange={(e) => setIncidentForm((p) => ({ ...p, details: e.target.value }))} />
           <button type="submit" className="sm:col-span-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Create Incident</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {incidents.slice(0, 12).map((row) => (
-            <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="font-semibold">{row.title}</p>
               <p className="text-xs text-slate-400">{row.category || 'General'} | {row.severity} | {row.status}</p>
               <div className="mt-2 space-x-2">
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void incidentAction(row.id, 'investigate')}>Investigate</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void incidentAction(row.id, 'resolve')}>Resolve</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void incidentAction(row.id, 'close')}>Close</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void incidentAction(row.id, 'investigate')}>Investigate</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void incidentAction(row.id, 'resolve')}>Resolve</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void incidentAction(row.id, 'close')}>Close</button>
               </div>
             </div>
           ))}
           {isLoading ? <p className="text-slate-400">Loading incidents...</p> : null}
         </div>
       </section>
-      <section className="col-span-12 lg:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Compliance Reports</h2>
         <form className="mt-4 grid gap-3 sm:grid-cols-3" onSubmit={generateReport}>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={reportForm.report_type} onChange={(e) => setReportForm((p) => ({ ...p, report_type: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={reportForm.report_type} onChange={(e) => setReportForm((p) => ({ ...p, report_type: e.target.value }))}>
             {['AUDIT', 'ACCESS', 'SECURITY', 'BACKUP'].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <input type="date" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={reportForm.period_start} onChange={(e) => setReportForm((p) => ({ ...p, period_start: e.target.value }))} required />
-          <input type="date" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={reportForm.period_end} onChange={(e) => setReportForm((p) => ({ ...p, period_end: e.target.value }))} required />
+          <input type="date" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={reportForm.period_start} onChange={(e) => setReportForm((p) => ({ ...p, period_start: e.target.value }))} required />
+          <input type="date" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={reportForm.period_end} onChange={(e) => setReportForm((p) => ({ ...p, period_end: e.target.value }))} required />
           <button type="submit" className="sm:col-span-3 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Generate Report</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {reports.slice(0, 10).map((row) => (
-            <details key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <details key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <summary className="cursor-pointer font-semibold">{row.report_type} | {row.period_start} to {row.period_end}</summary>
               <p className="mt-2 text-xs text-slate-400">Generated: {row.generated_at} by {row.generated_by_username ?? 'system'}</p>
-              <pre className="mt-2 overflow-x-auto rounded border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300">{JSON.stringify(row.payload, null, 2)}</pre>
+              <pre className="mt-2 overflow-x-auto rounded border border-white/[0.07] bg-slate-950 p-2 text-xs text-slate-300">{JSON.stringify(row.payload, null, 2)}</pre>
             </details>
           ))}
         </div>

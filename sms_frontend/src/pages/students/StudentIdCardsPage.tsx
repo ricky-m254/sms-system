@@ -33,7 +33,7 @@ export default function StudentIdCardsPage() {
 
   return (
     <div className="space-y-6 font-sans p-6 text-white">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Student ID Cards</h1>
         <p className="text-sm text-slate-400 mt-1">Preview and print student identification cards.</p>
       </header>
@@ -43,7 +43,7 @@ export default function StudentIdCardsPage() {
       ) : (
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {students.map((student) => (
-            <div key={student.id} className="relative h-64 w-96 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl transition hover:scale-[1.02] cursor-pointer">
+            <div key={student.id} className="relative h-64 w-96 overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0d1421] shadow-2xl transition hover:scale-[1.02] cursor-pointer">
               {/* Card Background Decoration */}
               <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl"></div>
               <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl"></div>
@@ -60,7 +60,7 @@ export default function StudentIdCardsPage() {
                 </div>
 
                 <div className="mt-4 flex gap-4">
-                  <div className="h-24 w-24 overflow-hidden rounded-xl border border-slate-700 bg-slate-950">
+                  <div className="h-24 w-24 overflow-hidden rounded-xl border border-white/[0.09] bg-slate-950">
                     {student.photo_url ? (
                       <img src={student.photo_url} alt={student.full_name} className="h-full w-full object-cover" />
                     ) : (

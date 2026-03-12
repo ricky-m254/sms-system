@@ -21,10 +21,10 @@ export default function AlumniProfilesPage() {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <div className="rounded-2xl glass-panel overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
-            <thead className="border-b border-slate-800 bg-slate-950/50 text-slate-400 uppercase text-xs font-semibold">
+            <thead className="border-b border-white/[0.07] bg-slate-950/50 text-slate-400 uppercase text-xs font-semibold">
               <tr>
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Graduation Year</th>
@@ -40,7 +40,7 @@ export default function AlumniProfilesPage() {
                 </tr>
               ) : profiles.length > 0 ? (
                 profiles.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-800/40 transition">
+                  <tr key={p.id} className="hover:bg-white/[0.025] transition">
                     <td className="px-6 py-4 font-medium text-white">{p.first_name} {p.last_name}</td>
                     <td className="px-6 py-4">{p.graduation_year}</td>
                     <td className="px-6 py-4">{p.current_occupation || '-'}</td>

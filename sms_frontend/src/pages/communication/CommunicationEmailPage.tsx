@@ -122,7 +122,7 @@ export default function CommunicationEmailPage() {
           <p className="text-sm text-slate-400 mt-0.5">Create and send targeted email communications</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-700 transition">
+          <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
             <RefreshCw size={13} className="text-slate-400" />
           </button>
           <button
@@ -142,7 +142,7 @@ export default function CommunicationEmailPage() {
           { label: 'Drafts', value: stats.draft, color: 'text-blue-400', bg: 'bg-blue-500/10' },
           { label: 'Failed', value: stats.failed, color: 'text-red-400', bg: 'bg-red-500/10' },
         ].map(s => (
-          <div key={s.label} className={`rounded-xl border border-slate-800 ${s.bg} px-4 py-3`}>
+          <div key={s.label} className={`rounded-xl border border-white/[0.07] ${s.bg} px-4 py-3`}>
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-[11px] text-slate-500 mt-0.5">{s.label} Campaigns</p>
           </div>
@@ -163,7 +163,7 @@ export default function CommunicationEmailPage() {
       )}
 
       {/* Email targets bar */}
-      <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+      <div className="flex items-center gap-3 rounded-xl glass-panel px-4 py-3">
         <Users size={14} className="text-slate-400 flex-shrink-0" />
         <input
           value={emailTargets}
@@ -175,32 +175,32 @@ export default function CommunicationEmailPage() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="rounded-2xl border border-slate-700 bg-slate-800/40 p-5 space-y-4">
+        <div className="rounded-2xl border border-white/[0.09] bg-white/[0.025] p-5 space-y-4">
           <h2 className="text-sm font-bold text-white flex items-center gap-2"><Mail size={14} /> New Email Campaign</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               value={form.title}
               onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
               placeholder="Campaign title (internal)"
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
             />
             <input
               value={form.subject}
               onChange={(e) => setForm(f => ({ ...f, subject: e.target.value }))}
               placeholder="Email subject line"
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
             />
             <input
               value={form.sender_name}
               onChange={(e) => setForm(f => ({ ...f, sender_name: e.target.value }))}
               placeholder="Sender name"
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
             />
             <input
               value={form.sender_email}
               onChange={(e) => setForm(f => ({ ...f, sender_email: e.target.value }))}
               placeholder="Sender email"
-              className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              className="rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
             />
           </div>
           <textarea
@@ -208,10 +208,10 @@ export default function CommunicationEmailPage() {
             onChange={(e) => setForm(f => ({ ...f, body_text: e.target.value }))}
             rows={6}
             placeholder="Email body text…"
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+            className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
           />
           <div className="flex gap-2">
-            <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
+            <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
             <button onClick={create} disabled={creating} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-400 transition disabled:opacity-50">
               {creating ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />} Save Draft
             </button>
@@ -231,7 +231,7 @@ export default function CommunicationEmailPage() {
       ) : (
         <div className="space-y-2">
           {rows.map((c) => (
-            <div key={c.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+            <div key={c.id} className="rounded-2xl glass-panel overflow-hidden">
               <div className="flex items-center gap-4 px-4 py-4 flex-wrap sm:flex-nowrap">
                 <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center">
                   <Mail size={15} className="text-blue-400" />
@@ -252,7 +252,7 @@ export default function CommunicationEmailPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => setPreviewId(previewId === c.id ? null : c.id)}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:bg-slate-700 transition"
+                    className="flex items-center gap-1.5 rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-300 hover:bg-slate-700 transition"
                   >
                     <Eye size={12} /> Preview
                   </button>
@@ -273,7 +273,7 @@ export default function CommunicationEmailPage() {
                 </div>
               </div>
               {previewId === c.id && (
-                <div className="border-t border-slate-800 px-4 pb-4 pt-3 bg-slate-950/40">
+                <div className="border-t border-white/[0.07] px-4 pb-4 pt-3 bg-slate-950/40">
                   <div className="flex items-center gap-2 mb-2">
                     <ExternalLink size={11} className="text-slate-500" />
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Campaign Preview</p>

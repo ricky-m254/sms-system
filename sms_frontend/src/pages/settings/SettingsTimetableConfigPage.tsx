@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Clock, Plus, Trash2, AlertCircle, Check } from 'lucide-react'
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 interface BreakTime { name: string; start: string; end: string }
 
@@ -47,14 +47,14 @@ export default function SettingsTimetableConfigPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* School Week */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-5">
+      <section className="rounded-2xl glass-panel p-6 space-y-5">
         <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-sky-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">School Week</h2></div>
         <div>
           <label className="text-xs text-slate-400 mb-2 block font-semibold uppercase tracking-widest">School Days</label>
           <div className="flex flex-wrap gap-2">
             {DAYS.map(day => (
               <button key={day} onClick={() => toggleDay(day)}
-                className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${schoolDays.includes(day) ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'border border-slate-700 text-slate-500 hover:border-slate-500'}`}>
+                className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${schoolDays.includes(day) ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'border border-white/[0.09] text-slate-500 hover:border-slate-500'}`}>
                 {day.slice(0, 3)}
               </button>
             ))}
@@ -73,7 +73,7 @@ export default function SettingsTimetableConfigPage() {
       </section>
 
       {/* Periods */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-amber-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Lesson Periods</h2></div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -97,7 +97,7 @@ export default function SettingsTimetableConfigPage() {
           </label>
         </div>
         {/* Preview */}
-        <div className="rounded-xl border border-slate-700 bg-slate-950/60 p-4">
+        <div className="rounded-xl border border-white/[0.09] bg-slate-950/60 p-4">
           <p className="text-xs text-slate-500 mb-2 font-semibold">School Day Preview</p>
           <div className="flex flex-wrap gap-1.5">
             {Array.from({ length: periodsPerDay }).map((_, i) => {
@@ -105,7 +105,7 @@ export default function SettingsTimetableConfigPage() {
               const h = Math.floor(startMins / 60) % 24
               const m = startMins % 60
               return (
-                <div key={i} className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-center min-w-[56px]">
+                <div key={i} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-2 py-1 text-center min-w-[56px]">
                   <p className="text-[9px] text-slate-500">P{i + 1}</p>
                   <p className="text-[10px] font-mono text-slate-300">{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</p>
                 </div>
@@ -116,7 +116,7 @@ export default function SettingsTimetableConfigPage() {
       </section>
 
       {/* Break Times */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-emerald-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Break Times</h2></div>
         <div className="space-y-2">
           {breakTimes.map((b, i) => (

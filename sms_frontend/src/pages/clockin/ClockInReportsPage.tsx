@@ -46,18 +46,18 @@ export default function ClockInReportsPage() {
 
   return (
     <div className="space-y-6 font-sans text-slate-100">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Attendance Logs & Reports</h1>
         <p className="mt-2 text-sm text-slate-400">Detailed biometric scan logs for audit and compliance.</p>
         {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-wrap items-end gap-6 shadow-xl">
+      <section className="rounded-2xl glass-panel p-6 flex flex-wrap items-end gap-6 shadow-xl">
          <div className="space-y-1">
             <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Select Date</label>
             <input
               type="date"
-              className="w-48 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm focus:border-emerald-500 transition outline-none"
+              className="w-48 rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2 text-sm focus:border-emerald-500 transition outline-none"
               value={filters.date}
               onChange={e => setFilters({ ...filters, date: e.target.value })}
             />
@@ -65,7 +65,7 @@ export default function ClockInReportsPage() {
          <div className="space-y-1">
             <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Person Type</label>
             <select
-              className="w-48 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm focus:border-emerald-500 transition outline-none"
+              className="w-48 rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2 text-sm focus:border-emerald-500 transition outline-none"
               value={filters.person_type}
               onChange={e => setFilters({ ...filters, person_type: e.target.value as any })}
             >
@@ -86,22 +86,22 @@ export default function ClockInReportsPage() {
 
       {logs.length > 0 && (
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
             <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Total Scans</p>
             <p className="mt-1 text-2xl font-semibold text-slate-100">{stats.totalScans}</p>
           </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
             <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Unique Persons</p>
             <p className="mt-1 text-2xl font-semibold text-emerald-400">{stats.uniquePeople}</p>
           </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
             <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Late Arrivals</p>
             <p className="mt-1 text-2xl font-semibold text-amber-400">{stats.lateCount}</p>
           </div>
         </section>
       )}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-2xl">
+      <section className="rounded-2xl glass-panel overflow-hidden shadow-2xl">
          {isLoading ? (
            <div className="p-12 text-center text-slate-400">Loading audit trail...</div>
          ) : logs.length === 0 ? (
@@ -109,7 +109,7 @@ export default function ClockInReportsPage() {
          ) : (
            <div className="overflow-x-auto">
              <table className="w-full text-left text-sm">
-                <thead className="border-b border-slate-800 bg-slate-950/40 text-slate-400 font-bold uppercase tracking-wider text-xs">
+                <thead className="border-b border-white/[0.07] bg-slate-950/40 text-slate-400 font-bold uppercase tracking-wider text-xs">
                    <tr>
                       <th className="px-6 py-4">Scan Time</th>
                       <th className="px-6 py-4">Name</th>
@@ -121,7 +121,7 @@ export default function ClockInReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800 font-medium">
                    {logs.map(log => (
-                      <tr key={log.id} className="hover:bg-slate-800/40 transition group">
+                      <tr key={log.id} className="hover:bg-white/[0.025] transition group">
                          <td className="px-6 py-4 text-slate-100 font-mono text-xs italic">
                             {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                          </td>

@@ -188,36 +188,36 @@ export default function AcademicsAssignmentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Academics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Homework & Assignments</h1>
         <p className="mt-2 text-sm text-slate-400">Create assignments, track submissions, and grade student work.</p>
       </header>
 
-      {isLoading ? <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">Loading assignments...</div> : null}
+      {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading assignments...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">{error}</div> : null}
       {flash ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-xs text-emerald-200">{flash}</div> : null}
 
       <section className="col-span-12 grid gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Create Assignment</h2>
           <form className="mt-4 grid gap-3" onSubmit={createAssignment}>
-            <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={assignmentForm.title} onChange={(e) => setAssignmentForm((p) => ({ ...p, title: e.target.value }))} required />
+            <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={assignmentForm.title} onChange={(e) => setAssignmentForm((p) => ({ ...p, title: e.target.value }))} required />
             <div className="grid gap-3 sm:grid-cols-2">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.subject} onChange={(e) => setAssignmentForm((p) => ({ ...p, subject: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.subject} onChange={(e) => setAssignmentForm((p) => ({ ...p, subject: e.target.value }))} required>
                 <option value="">Subject</option>
                 {subjects.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.class_section} onChange={(e) => setAssignmentForm((p) => ({ ...p, class_section: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.class_section} onChange={(e) => setAssignmentForm((p) => ({ ...p, class_section: e.target.value }))} required>
                 <option value="">Class</option>
                 {classes.map((item) => <option key={item.id} value={item.id}>{item.display_name ?? item.name}</option>)}
               </select>
             </div>
-            <textarea className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Instructions" value={assignmentForm.description} onChange={(e) => setAssignmentForm((p) => ({ ...p, description: e.target.value }))} />
+            <textarea className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Instructions" value={assignmentForm.description} onChange={(e) => setAssignmentForm((p) => ({ ...p, description: e.target.value }))} />
             <div className="grid gap-3 sm:grid-cols-3">
-              <input type="datetime-local" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.due_date} onChange={(e) => setAssignmentForm((p) => ({ ...p, due_date: e.target.value }))} required />
-              <input type="number" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Max score" value={assignmentForm.max_score} onChange={(e) => setAssignmentForm((p) => ({ ...p, max_score: e.target.value }))} />
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.status} onChange={(e) => setAssignmentForm((p) => ({ ...p, status: e.target.value }))}>
+              <input type="datetime-local" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.due_date} onChange={(e) => setAssignmentForm((p) => ({ ...p, due_date: e.target.value }))} required />
+              <input type="number" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Max score" value={assignmentForm.max_score} onChange={(e) => setAssignmentForm((p) => ({ ...p, max_score: e.target.value }))} />
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignmentForm.status} onChange={(e) => setAssignmentForm((p) => ({ ...p, status: e.target.value }))}>
                 {['Draft', 'Published', 'Closed', 'Graded'].map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
             </div>
@@ -225,34 +225,34 @@ export default function AcademicsAssignmentsPage() {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Submit Work</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitWork}>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={submissionForm.assignment} onChange={(e) => setSubmissionForm((p) => ({ ...p, assignment: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={submissionForm.assignment} onChange={(e) => setSubmissionForm((p) => ({ ...p, assignment: e.target.value }))} required>
               <option value="">Assignment</option>
               {assignments.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={submissionForm.student} onChange={(e) => setSubmissionForm((p) => ({ ...p, student: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={submissionForm.student} onChange={(e) => setSubmissionForm((p) => ({ ...p, student: e.target.value }))} required>
               <option value="">Student</option>
               {students.map((item) => <option key={item.id} value={item.id}>{item.admission_number} - {item.first_name} {item.last_name}</option>)}
             </select>
-            <textarea className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Submission notes" value={submissionForm.notes} onChange={(e) => setSubmissionForm((p) => ({ ...p, notes: e.target.value }))} />
+            <textarea className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Submission notes" value={submissionForm.notes} onChange={(e) => setSubmissionForm((p) => ({ ...p, notes: e.target.value }))} />
             <button type="submit" className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900">Submit</button>
           </form>
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-display font-semibold">Assignments</h2>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={selectedAssignmentId} onChange={(e) => setSelectedAssignmentId(e.target.value)}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={selectedAssignmentId} onChange={(e) => setSelectedAssignmentId(e.target.value)}>
             <option value="">Select assignment</option>
             {assignments.map((item) => <option key={item.id} value={item.id}>{item.title} ({item.status})</option>)}
           </select>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="w-full min-w-[840px] text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2 text-left">Title</th>
                 <th className="px-3 py-2 text-left">Subject</th>
@@ -276,11 +276,11 @@ export default function AcademicsAssignmentsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Submissions {selectedAssignment ? `for ${selectedAssignment.title}` : ''}</h2>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="w-full min-w-[920px] text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2 text-left">Student</th>
                 <th className="px-3 py-2 text-left">Submitted</th>
@@ -299,7 +299,7 @@ export default function AcademicsAssignmentsPage() {
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      className="w-24 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-sm"
+                      className="w-24 rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1 text-sm"
                       value={gradeForm[item.id]?.score ?? item.score ?? ''}
                       onChange={(e) =>
                         setGradeForm((p) => ({
@@ -311,7 +311,7 @@ export default function AcademicsAssignmentsPage() {
                   </td>
                   <td className="px-3 py-2">
                     <input
-                      className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-sm"
+                      className="w-64 rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1 text-sm"
                       value={gradeForm[item.id]?.feedback ?? item.feedback ?? ''}
                       onChange={(e) =>
                         setGradeForm((p) => ({
@@ -322,7 +322,7 @@ export default function AcademicsAssignmentsPage() {
                     />
                   </td>
                   <td className="px-3 py-2">
-                    <button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => gradeSubmission(item.id)}>
+                    <button className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs" onClick={() => gradeSubmission(item.id)}>
                       Grade
                     </button>
                   </td>

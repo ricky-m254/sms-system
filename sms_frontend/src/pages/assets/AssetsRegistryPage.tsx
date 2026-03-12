@@ -156,19 +156,19 @@ export default function AssetsRegistryPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Asset Registry</h1>
         <p className="mt-2 text-sm text-slate-400">Manage school assets, tracking codes and lifecycle status.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={handleSubmit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">{editingId ? 'Edit Asset' : 'Add New Asset'}</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Asset Name</label>
             <input
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -176,7 +176,7 @@ export default function AssetsRegistryPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Category</label>
             <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -189,7 +189,7 @@ export default function AssetsRegistryPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Serial Number</label>
             <input
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={serialNumber}
               onChange={(e) => setSerialNumber(e.target.value)}
             />
@@ -198,7 +198,7 @@ export default function AssetsRegistryPage() {
             <label className="text-xs text-slate-400">Purchase Date</label>
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={purchaseDate}
               onChange={(e) => setPurchaseDate(e.target.value)}
             />
@@ -208,7 +208,7 @@ export default function AssetsRegistryPage() {
             <input
               type="number"
               step="0.01"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={purchaseCost}
               onChange={(e) => setPurchaseCost(e.target.value)}
             />
@@ -218,7 +218,7 @@ export default function AssetsRegistryPage() {
             <input
               type="number"
               step="0.01"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={currentValue}
               onChange={(e) => setCurrentValue(e.target.value)}
             />
@@ -226,7 +226,7 @@ export default function AssetsRegistryPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Location</label>
             <input
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -234,7 +234,7 @@ export default function AssetsRegistryPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Status</label>
             <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
@@ -247,7 +247,7 @@ export default function AssetsRegistryPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Condition</label>
             <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
             >
@@ -263,7 +263,7 @@ export default function AssetsRegistryPage() {
             <label className="text-xs text-slate-400">Description</label>
             <textarea
               rows={2}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -272,7 +272,7 @@ export default function AssetsRegistryPage() {
             <label className="text-xs text-slate-400">Notes</label>
             <textarea
               rows={2}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -290,7 +290,7 @@ export default function AssetsRegistryPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-xl border border-slate-700 px-6 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
+              className="rounded-xl border border-white/[0.09] px-6 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
             >
               Cancel
             </button>
@@ -298,11 +298,11 @@ export default function AssetsRegistryPage() {
         </div>
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-sm font-semibold text-slate-200">Asset Inventory</h2>
           <select
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-xs text-slate-300"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-1.5 text-xs text-slate-300"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -318,7 +318,7 @@ export default function AssetsRegistryPage() {
 
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-800 text-slate-400">
+            <thead className="border-b border-white/[0.07] text-slate-400">
               <tr>
                 <th className="px-3 py-3 font-medium">Code/Name</th>
                 <th className="px-3 py-3 font-medium">Category</th>
@@ -330,7 +330,7 @@ export default function AssetsRegistryPage() {
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {assets.map((asset) => (
-                <tr key={asset.id} className="group hover:bg-slate-800/30">
+                <tr key={asset.id} className="group hover:bg-white/[0.02]">
                   <td className="px-3 py-3">
                     <p className="font-semibold text-slate-200">{asset.asset_code}</p>
                     <p className="text-xs text-slate-400">{asset.name}</p>

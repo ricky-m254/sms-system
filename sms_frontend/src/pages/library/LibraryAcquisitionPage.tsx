@@ -74,28 +74,28 @@ export default function LibraryAcquisitionPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Acquisition Requests</h1>
         <p className="mt-2 text-sm text-slate-400">Track purchase requests through approval and receiving.</p>
       </header>
 
-      <form onSubmit={createRequest} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={createRequest} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">New Request</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Author"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="ISBN"
             value={isbn}
             onChange={(e) => setIsbn(e.target.value)}
@@ -103,13 +103,13 @@ export default function LibraryAcquisitionPage() {
           <input
             type="number"
             min={1}
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Quantity"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Estimated cost"
             value={estimatedCost}
             onChange={(e) => setEstimatedCost(e.target.value)}
@@ -122,7 +122,7 @@ export default function LibraryAcquisitionPage() {
           </button>
         </div>
         <textarea
-          className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+          className="mt-3 w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
           placeholder="Justification"
           rows={3}
           value={justification}
@@ -131,7 +131,7 @@ export default function LibraryAcquisitionPage() {
         {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Request List</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -148,7 +148,7 @@ export default function LibraryAcquisitionPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.title}</td>
                   <td className="px-2 py-2">{row.quantity}</td>
                   <td className="px-2 py-2">{row.estimated_cost ?? '-'}</td>

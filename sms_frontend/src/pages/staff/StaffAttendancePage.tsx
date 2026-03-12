@@ -79,21 +79,21 @@ export default function StaffAttendancePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Attendance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Daily Marking and Monthly Summary</h1>
       </section>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <div className="grid gap-3 md:grid-cols-5">
-          <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select value={selectedStaff} onChange={(e) => setSelectedStaff(e.target.value ? Number(e.target.value) : '')} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option value="">Select staff</option>
             {staff.map((row) => <option key={row.id} value={row.id}>{row.staff_id} - {row.full_name}</option>)}
           </select>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-          <select value={statusValue} onChange={(e) => setStatusValue(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+          <select value={statusValue} onChange={(e) => setStatusValue(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <option>Present</option>
             <option>Absent</option>
             <option>Late</option>
@@ -101,12 +101,12 @@ export default function StaffAttendancePage() {
             <option>On Leave</option>
           </select>
           <button onClick={markAttendance} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200">Mark</button>
-          <button onClick={exportCsv} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Export CSV</button>
+          <button onClick={exportCsv} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-200">Export CSV</button>
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Recent Attendance Records</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-left text-xs">
@@ -115,7 +115,7 @@ export default function StaffAttendancePage() {
               </thead>
               <tbody>
                 {rows.slice(0, 20).map((row) => (
-                  <tr key={row.id} className="border-t border-slate-800">
+                  <tr key={row.id} className="border-t border-white/[0.07]">
                     <td className="px-2 py-2">{row.date}</td>
                     <td className="px-2 py-2">{row.staff_name}</td>
                     <td className="px-2 py-2">{row.status}</td>
@@ -125,7 +125,7 @@ export default function StaffAttendancePage() {
             </table>
           </div>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold">Monthly Summary ({month}/{year})</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {summary.map((row) => (

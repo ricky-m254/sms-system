@@ -78,9 +78,9 @@ export default function MaintenanceCategoriesPage() {
       {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <div className="rounded-2xl glass-panel overflow-hidden">
         <table className="w-full text-left text-sm text-slate-300">
-          <thead className="border-b border-slate-800 bg-slate-950/50 text-slate-400 uppercase text-xs">
+          <thead className="border-b border-white/[0.07] bg-slate-950/50 text-slate-400 uppercase text-xs">
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Description</th>
@@ -94,7 +94,7 @@ export default function MaintenanceCategoriesPage() {
             ) : categories.length === 0 ? (
               <tr><td colSpan={4} className="px-5 py-10 text-center text-slate-500">No categories yet.</td></tr>
             ) : categories.map(c => (
-              <tr key={c.id} className="hover:bg-slate-800/40 transition">
+              <tr key={c.id} className="hover:bg-white/[0.025] transition">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
                     <Tag className="h-4 w-4 text-slate-500" />
@@ -121,7 +121,7 @@ export default function MaintenanceCategoriesPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Category' : 'New Category'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -129,11 +129,11 @@ export default function MaintenanceCategoriesPage() {
             {error && <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-2 text-xs text-rose-200">{error}</div>}
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Name *</label>
-              <input value={form.name} onChange={e => setF('name', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="e.g. Electrical" />
+              <input value={form.name} onChange={e => setF('name', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" placeholder="e.g. Electrical" />
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Description</label>
-              <textarea value={form.description} onChange={e => setF('description', e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.description} onChange={e => setF('description', e.target.value)} rows={2} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
               <input type="checkbox" checked={form.is_active} onChange={e => setF('is_active', e.target.checked)} className="rounded" />
@@ -143,7 +143,7 @@ export default function MaintenanceCategoriesPage() {
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50 hover:bg-emerald-400 transition">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
             </div>
           </div>
         </div>

@@ -63,7 +63,7 @@ export default function TimetableMySchedulePage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold">My Schedule</h1>
           <p className="mt-1 text-sm text-slate-400">Weekly teaching timetable for {username}.</p>
@@ -83,7 +83,7 @@ export default function TimetableMySchedulePage() {
       ) : (
         <div className="space-y-8">
            {/* Today's Status */}
-           <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+           <section className="rounded-2xl glass-panel p-6">
             <h2 className="text-lg font-display font-semibold mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
               Today's Status
@@ -93,7 +93,7 @@ export default function TimetableMySchedulePage() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {coverages.map(c => (
-                  <div key={c.id} className={`rounded-xl border p-4 ${c.status === 'Uncovered' ? 'bg-rose-500/10 border-rose-500/30' : 'bg-slate-950 border-slate-800'}`}>
+                  <div key={c.id} className={`rounded-xl border p-4 ${c.status === 'Uncovered' ? 'bg-rose-500/10 border-rose-500/30' : 'bg-slate-950 border-white/[0.07]'}`}>
                     <div className="flex justify-between items-start mb-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${c.status === 'Uncovered' ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-slate-900'}`}>
                         {c.status}
@@ -124,12 +124,12 @@ export default function TimetableMySchedulePage() {
                   </h3>
                   <div className="space-y-3">
                     {daySlots.length === 0 ? (
-                      <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/40 text-center">
+                      <div className="p-4 rounded-2xl border border-white/[0.07] bg-white/[0.02] text-center">
                         <p className="text-xs text-slate-600">No classes</p>
                       </div>
                     ) : (
                       daySlots.map(slot => (
-                        <div key={slot.id} className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/50 transition-colors group">
+                        <div key={slot.id} className="p-4 rounded-2xl glass-panel hover:border-emerald-500/50 transition-colors group">
                           <div className="flex justify-between items-start mb-2">
                             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">
                               {slot.start_time.substring(0,5)} - {slot.end_time.substring(0,5)}
@@ -140,7 +140,7 @@ export default function TimetableMySchedulePage() {
                           <p className="text-xs text-slate-400 mt-1">{slot.class_name}</p>
                           <p className="text-xs text-slate-500 mt-1">📍 {slot.room}</p>
                           
-                          <button className="mt-4 w-full py-2 rounded-xl border border-slate-700 bg-slate-950 text-[10px] font-bold text-slate-300 uppercase tracking-wider hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100">
+                          <button className="mt-4 w-full py-2 rounded-xl border border-white/[0.09] bg-slate-950 text-[10px] font-bold text-slate-300 uppercase tracking-wider hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100">
                             Request Change
                           </button>
                         </div>

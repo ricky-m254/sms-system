@@ -197,7 +197,7 @@ export default function FinanceSummaryPage() {
 
   return (
     <div className="space-y-8">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance Dashboard</p>
@@ -205,7 +205,7 @@ export default function FinanceSummaryPage() {
             <p className="mt-2 text-sm text-slate-400">High-level financial health and trends.</p>
           </div>
           <button
-            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+            className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
             onClick={() => void loadData(false)}
             disabled={isLoading || isRefreshing}
           >
@@ -215,7 +215,7 @@ export default function FinanceSummaryPage() {
       </header>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <p className="text-sm text-slate-300">Loading finance data...</p>
         </div>
       ) : null}
@@ -227,25 +227,25 @@ export default function FinanceSummaryPage() {
       ) : null}
 
       <section className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl p-6 md:col-span-6 lg:col-span-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Revenue billed</p>
           <p className="mt-3 text-2xl font-display font-semibold">
             Ksh {Number(summary?.revenue_billed ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl p-6 md:col-span-6 lg:col-span-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Cash collected</p>
           <p className="mt-3 text-2xl font-display font-semibold">
             Ksh {Number(summary?.cash_collected ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl p-6 md:col-span-6 lg:col-span-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Expenses</p>
           <p className="mt-3 text-2xl font-display font-semibold">
             Ksh {Number(summary?.total_expenses ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
           </p>
         </div>
-        <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-slate-900/60 p-6 md:col-span-6 lg:col-span-3">
+        <div className="col-span-12 rounded-2xl p-6 md:col-span-6 lg:col-span-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Receivables</p>
           <p className="mt-3 text-2xl font-display font-semibold">
             Ksh {Number(summary?.outstanding_receivables ?? 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
@@ -254,7 +254,7 @@ export default function FinanceSummaryPage() {
       </section>
 
       <section className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+        <div className="col-span-12 rounded-2xl p-6 lg:col-span-7" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <h2 className="text-lg font-display font-semibold">Cashflow from Operating Activities</h2>
           <p className="mt-1 text-sm text-slate-400">
             Payments collected vs operating spend with net movement.
@@ -301,7 +301,7 @@ export default function FinanceSummaryPage() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-5">
+        <div className="col-span-12 rounded-2xl p-6 lg:col-span-5" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <h2 className="text-lg font-display font-semibold">Debtors aging report</h2>
           <p className="mt-1 text-sm text-slate-400">Outstanding balances by aging bucket.</p>
           <div className="mt-4 h-64">
@@ -334,7 +334,7 @@ export default function FinanceSummaryPage() {
       </section>
 
       <section className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+        <div className="col-span-12 rounded-2xl p-6 lg:col-span-7" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <h2 className="text-lg font-display font-semibold">Payments by Method</h2>
           <p className="mt-1 text-sm text-slate-400">Revenue mix across payment channels.</p>
           <div className="mt-4 h-64">
@@ -352,7 +352,7 @@ export default function FinanceSummaryPage() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-5">
+        <div className="col-span-12 rounded-2xl p-6 lg:col-span-5" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <h2 className="text-lg font-display font-semibold">Operating Activities Trend</h2>
           <p className="mt-1 text-sm text-slate-400">Monthly collections and expense movement.</p>
           <div className="mt-4 h-64">

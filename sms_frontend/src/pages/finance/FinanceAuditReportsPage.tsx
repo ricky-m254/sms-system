@@ -641,7 +641,7 @@ export default function FinanceAuditReportsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Audit Reports</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -654,13 +654,13 @@ export default function FinanceAuditReportsPage() {
         </div>
       </header>
 
-      <section className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-5">
+      <section className="col-span-12 lg:col-span-4 rounded-2xl glass-panel p-6 space-y-5">
         <h2 className="text-base font-semibold">Report Settings</h2>
 
         <label className="block">
           <span className="text-xs text-slate-400 mb-1 block">Financial / Academic Year</span>
           <select
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+            className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
             value={selectedYear}
             onChange={(e) => {
               setSelectedYear(e.target.value)
@@ -678,11 +678,11 @@ export default function FinanceAuditReportsPage() {
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="text-xs text-slate-400 mb-1 block">Date From</span>
-            <input type="date" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+            <input type="date" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
           </label>
           <label className="block">
             <span className="text-xs text-slate-400 mb-1 block">Date To</span>
-            <input type="date" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            <input type="date" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           </label>
         </div>
 
@@ -727,10 +727,10 @@ export default function FinanceAuditReportsPage() {
       </section>
 
       <section className="col-span-12 lg:col-span-8 space-y-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-base font-semibold mb-4">Report Preview</h2>
           {!preview ? (
-            <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-8 text-center">
+            <div className="rounded-xl border border-white/[0.07] bg-slate-950/40 p-8 text-center">
               <p className="text-sm text-slate-400">Select settings and click <span className="text-emerald-400 font-semibold">Download IPSAS Audit PDF</span> to generate.</p>
               <p className="mt-2 text-xs text-slate-500">Includes a cover page + all selected IPSAS-compliant financial statements.</p>
             </div>
@@ -747,7 +747,7 @@ export default function FinanceAuditReportsPage() {
                 { label: 'Total Arrears', value: fmtMoney(Number(preview.totalArrears)) },
                 { label: 'Budget (Annual)', value: fmtMoney(Number(preview.totalAnnualBudget)) },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+                <div key={item.label} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-400">{item.label}</p>
                   <p className="mt-1 text-base font-semibold">{item.value}</p>
                 </div>
@@ -756,7 +756,7 @@ export default function FinanceAuditReportsPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-base font-semibold mb-1">IPSAS Compliance Coverage</h2>
           <p className="text-xs text-slate-400 mb-4">Standards addressed in this report package</p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -768,7 +768,7 @@ export default function FinanceAuditReportsPage() {
               { std: 'IPSAS 24', name: 'Budget Information', key: 'ipsas24_budget', note: 'Budget vs Actual Comparison' },
               { std: 'General', name: 'Notes to Financial Statements', key: 'notes', note: 'Accounting Policies + Disclosures' },
             ].map((item) => (
-              <div key={item.key} className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${selectedReports.has(item.key) ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-800 bg-slate-950/40 opacity-50'}`}>
+              <div key={item.key} className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${selectedReports.has(item.key) ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/[0.07] bg-slate-950/40 opacity-50'}`}>
                 <span className={`mt-0.5 h-2 w-2 rounded-full flex-shrink-0 ${selectedReports.has(item.key) ? 'bg-emerald-400' : 'bg-slate-700'}`} />
                 <div>
                   <p className={`font-semibold text-xs ${selectedReports.has(item.key) ? 'text-emerald-300' : 'text-slate-400'}`}>{item.std} — {item.name}</p>

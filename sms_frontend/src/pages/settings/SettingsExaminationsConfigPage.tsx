@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { ClipboardList, Plus, Trash2, AlertCircle, Check } from 'lucide-react'
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 interface ExamType { name: string; code: string; weight: number; requires_approval: boolean }
 interface GradeScale { min: number; max: number; grade: string; points: number; remark: string }
@@ -64,7 +64,7 @@ export default function SettingsExaminationsConfigPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* Exam Types */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-violet-400" />
@@ -76,7 +76,7 @@ export default function SettingsExaminationsConfigPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-slate-800 text-[10px] text-slate-500 uppercase tracking-widest">
+            <thead><tr className="border-b border-white/[0.07] text-[10px] text-slate-500 uppercase tracking-widest">
               <th className="text-left pb-2 font-semibold">Name</th>
               <th className="text-left pb-2 pl-2 font-semibold">Code</th>
               <th className="text-left pb-2 pl-2 font-semibold">Weight %</th>
@@ -107,7 +107,7 @@ export default function SettingsExaminationsConfigPage() {
       </section>
 
       {/* Grading Scale */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <ClipboardList className="h-4 w-4 text-amber-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Grading Scale</h2>
@@ -120,7 +120,7 @@ export default function SettingsExaminationsConfigPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-slate-800 text-[10px] text-slate-500 uppercase tracking-widest">
+            <thead><tr className="border-b border-white/[0.07] text-[10px] text-slate-500 uppercase tracking-widest">
               <th className="text-left pb-2 font-semibold">Min%</th>
               <th className="text-left pb-2 pl-2 font-semibold">Max%</th>
               <th className="text-left pb-2 pl-2 font-semibold">Grade</th>
@@ -149,7 +149,7 @@ export default function SettingsExaminationsConfigPage() {
       </section>
 
       {/* Report Card & Publishing */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <ClipboardList className="h-4 w-4 text-sky-400" />
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Report Card & Publishing</h2>

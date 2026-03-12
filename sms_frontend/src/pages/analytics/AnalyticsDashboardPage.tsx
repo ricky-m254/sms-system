@@ -42,7 +42,7 @@ export default function AnalyticsDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <div className="rounded-2xl glass-panel p-6">
         <p className="text-slate-300">Loading executive dashboard...</p>
       </div>
     )
@@ -58,7 +58,7 @@ export default function AnalyticsDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-white font-sans">
+      <header className="rounded-2xl glass-panel p-6 text-white font-sans">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Executive</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Dashboard</h1>
         <p className="mt-2 text-sm text-slate-400">Tenant: {tenantId ?? 'public'}</p>
@@ -74,11 +74,11 @@ export default function AnalyticsDashboardPage() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2 font-sans">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Enrollment by Grade</h2>
           <div className="mt-4 space-y-3">
             {data?.enrollment_by_grade.map((item) => (
-              <div key={item.grade} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <div key={item.grade} className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3">
                 <span className="text-slate-300 font-sans">{item.grade}</span>
                 <span className="text-lg font-semibold text-emerald-200 font-sans">{item.count}</span>
               </div>
@@ -86,11 +86,11 @@ export default function AnalyticsDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Revenue Trend</h2>
           <div className="mt-4 space-y-3">
             {data?.revenue_by_month.map((item) => (
-              <div key={item.month} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <div key={item.month} className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3">
                 <span className="text-slate-300 font-sans">{item.month}</span>
                 <span className="text-lg font-semibold text-emerald-200 font-sans">
                   {new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(item.amount)}
@@ -101,11 +101,11 @@ export default function AnalyticsDashboardPage() {
         </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 font-sans">
+      <section className="rounded-2xl glass-panel p-6 font-sans">
         <h2 className="text-lg font-display font-semibold text-emerald-400">Recent System Activity</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {data?.recent_activities.map((activity, idx) => (
-            <div key={idx} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 font-sans">
+            <div key={idx} className="rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3 font-sans">
               <p className="text-xs uppercase tracking-wide text-slate-500 font-sans">{activity.type}</p>
               <p className="mt-1 text-sm text-slate-200 font-sans">{activity.label}</p>
               <p className="mt-1 text-xs text-slate-500 font-sans">{activity.date}</p>
@@ -119,7 +119,7 @@ export default function AnalyticsDashboardPage() {
 
 function KpiCard({ label, value }: { label: string; value: any }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 font-sans">
+    <div className="rounded-2xl glass-panel p-6 font-sans">
       <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-sans">{label}</p>
       <p className="mt-3 text-3xl font-display font-semibold text-white font-sans">{value ?? 0}</p>
     </div>

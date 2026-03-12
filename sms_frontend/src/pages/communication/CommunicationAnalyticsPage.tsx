@@ -90,7 +90,7 @@ export default function CommunicationAnalyticsPage() {
           <h1 className="text-xl font-display font-bold text-white mt-0.5">Delivery Analytics</h1>
           <p className="text-sm text-slate-400 mt-0.5">Channel performance, delivery rates, and volume breakdown</p>
         </div>
-        <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-700 transition">
+        <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.09] hover:bg-slate-700 transition">
           <RefreshCw size={13} className="text-slate-400" />
         </button>
       </div>
@@ -109,7 +109,7 @@ export default function CommunicationAnalyticsPage() {
           {/* KPI Grid */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {kpis.map((k) => (
-              <div key={k.label} className={`rounded-2xl border ${k.border} bg-slate-900/60 p-4`}>
+              <div key={k.label} className={`rounded-2xl border ${k.border} glass-panel p-4`}>
                 <div className={`inline-flex items-center justify-center rounded-xl p-2 mb-3 ${k.bg} border ${k.border}`}>
                   <k.icon size={15} className={k.color} />
                 </div>
@@ -125,7 +125,7 @@ export default function CommunicationAnalyticsPage() {
           {/* Delivery Rates + Channel Mix */}
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Delivery Rates */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl glass-panel p-5">
               <div className="flex items-center gap-2 mb-5">
                 <CheckCircle2 size={15} className="text-slate-400" />
                 <h2 className="text-sm font-semibold text-white">Delivery Success Rates</h2>
@@ -138,7 +138,7 @@ export default function CommunicationAnalyticsPage() {
             </div>
 
             {/* Channel Volume */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl glass-panel p-5">
               <div className="flex items-center gap-2 mb-5">
                 <BarChart2 size={15} className="text-slate-400" />
                 <h2 className="text-sm font-semibold text-white">Volume by Channel</h2>
@@ -179,7 +179,7 @@ export default function CommunicationAnalyticsPage() {
               { label: 'Peak Hour', value: '9–11 AM', icon: Clock, note: 'Most messages sent' },
               { label: 'Avg. Open Rate (Email)', value: '41.2%', icon: Mail, note: 'Industry avg: 21%' },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+              <div key={s.label} className="rounded-2xl glass-panel p-4">
                 <s.icon size={13} className="text-slate-500 mb-2" />
                 <p className="text-xl font-bold text-white">{s.value}</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">{s.label}</p>

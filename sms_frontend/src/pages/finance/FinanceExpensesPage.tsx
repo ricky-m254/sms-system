@@ -582,14 +582,14 @@ export default function FinanceExpensesPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Expenses</h1>
         <p className="mt-2 text-sm text-slate-400">Track operational spend and categories.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading expenses...</p>
         </div>
       ) : null}
@@ -607,17 +607,17 @@ export default function FinanceExpensesPage() {
       ) : null}
 
       <section className="col-span-12 grid gap-6 lg:grid-cols-12">
-        <div id="budget-planner" className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
+        <div id="budget-planner" className="rounded-2xl glass-panel p-5 lg:col-span-3">
           <p className="text-xs uppercase text-slate-400">Total spend</p>
           <p className="mt-2 text-2xl font-semibold">{totalSpend.toLocaleString()}</p>
           <p className="mt-1 text-xs text-slate-400">Based on loaded expenses.</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
+        <div className="rounded-2xl glass-panel p-5 lg:col-span-3">
           <p className="text-xs uppercase text-slate-400">This month</p>
           <p className="mt-2 text-2xl font-semibold">{spendThisMonth.toLocaleString()}</p>
           <p className="mt-1 text-xs text-slate-400">Month: {currentMonthKey}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
+        <div className="rounded-2xl glass-panel p-5 lg:col-span-3">
           <p className="text-xs uppercase text-slate-400">Remaining budget</p>
           <p className="mt-2 text-2xl font-semibold">
             {monthlyBudgetValue ? remainingMonthly.toLocaleString() : '--'}
@@ -626,7 +626,7 @@ export default function FinanceExpensesPage() {
             {monthlyBudgetValue ? `${utilization.toFixed(0)}% used` : 'Set monthly budget'}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-3">
+        <div className="rounded-2xl glass-panel p-5 lg:col-span-3">
           <p className="text-xs uppercase text-slate-400">Budget planning</p>
           <div className="mt-2">
             <p className="text-2xl font-semibold">
@@ -678,7 +678,7 @@ export default function FinanceExpensesPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-display font-semibold">Spending trends</h2>
@@ -688,7 +688,7 @@ export default function FinanceExpensesPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
             <select
-              className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white"
+              className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs text-white"
               value={trendGranularity}
               onChange={(event) =>
                 setTrendGranularity(event.target.value as 'monthly' | 'weekly' | 'daily')
@@ -699,7 +699,7 @@ export default function FinanceExpensesPage() {
               <option value="daily">Daily</option>
             </select>
             <select
-              className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white"
+              className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs text-white"
               value={trendCategory}
               onChange={(event) => setTrendCategory(event.target.value)}
             >
@@ -733,7 +733,7 @@ export default function FinanceExpensesPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Expense list</h2>
@@ -742,7 +742,7 @@ export default function FinanceExpensesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <PrintButton />
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search category or description"
               value={expenseQuery}
               onChange={(event) => {
@@ -751,7 +751,7 @@ export default function FinanceExpensesPage() {
               }}
             />
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={categoryFilter}
               onChange={(event) => {
                 setCategoryFilter(event.target.value)
@@ -766,7 +766,7 @@ export default function FinanceExpensesPage() {
               ))}
             </select>
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={approvalFilter}
               onChange={(event) => {
                 setApprovalFilter(event.target.value)
@@ -779,7 +779,7 @@ export default function FinanceExpensesPage() {
               <option value="Rejected">Rejected</option>
             </select>
             <input
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[160px]"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[160px]"
               placeholder="Vendor"
               value={vendorQuery}
               onChange={(event) => {
@@ -789,7 +789,7 @@ export default function FinanceExpensesPage() {
             />
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -798,7 +798,7 @@ export default function FinanceExpensesPage() {
             />
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 sm:max-w-[150px]"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -806,13 +806,13 @@ export default function FinanceExpensesPage() {
               }}
             />
             <button
-              className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={handleExportCsv}
             >
               Export CSV
             </button>
             <button
-              className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={handleExportSummary}
             >
               Export summary
@@ -826,9 +826,9 @@ export default function FinanceExpensesPage() {
           </div>
         </div>
         <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[980px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Amount</th>
@@ -884,14 +884,14 @@ export default function FinanceExpensesPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={expensePage === 1}
               onClick={() => setExpensePage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={expensePage === totalExpensePages}
               onClick={() => setExpensePage((prev) => Math.min(totalExpensePages, prev + 1))}
             >
@@ -901,7 +901,7 @@ export default function FinanceExpensesPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Budget list</h2>
@@ -911,31 +911,31 @@ export default function FinanceExpensesPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search term or amount"
               value={budgetQuery}
               onChange={(event) => setBudgetQuery(event.target.value)}
             />
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-[150px] rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={budgetDateFrom}
               onChange={(event) => setBudgetDateFrom(event.target.value)}
             />
             <input
               type="date"
-              className="w-full max-w-[150px] rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-[150px] rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={budgetDateTo}
               onChange={(event) => setBudgetDateTo(event.target.value)}
             />
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={handleExportBudgetCsv}
             >
               Export CSV
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={handleExportBudgetSummary}
             >
               Export summary
@@ -948,14 +948,14 @@ export default function FinanceExpensesPage() {
             </button>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           {hasInvalidBudgetDateRange ? (
             <p className="px-4 py-3 text-xs text-amber-300">
               Invalid budget date range: From date cannot be after To date.
             </p>
           ) : null}
           <table className="min-w-[920px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Term</th>
@@ -994,7 +994,7 @@ export default function FinanceExpensesPage() {
 
       {showBudgetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.09] bg-[#0d1421] p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold">
                 {budgetModalMode === 'edit' ? 'Edit Budget' : 'Create Budget'}
@@ -1007,7 +1007,7 @@ export default function FinanceExpensesPage() {
                 <input
                   type="text"
                   placeholder="e.g. Operations Budget Q1"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
                   value={budgetName}
                   onChange={(e) => setBudgetName(e.target.value)}
                 />
@@ -1015,7 +1015,7 @@ export default function FinanceExpensesPage() {
               <label className="block">
                 <span className="text-xs text-slate-400 mb-1 block">Academic Year</span>
                 <select
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={selectedAcademicYear}
                   disabled={academicYears.length === 0}
                   onChange={(e) => { setSelectedAcademicYear(e.target.value); setBudgetTouched(false) }}
@@ -1027,7 +1027,7 @@ export default function FinanceExpensesPage() {
               <label className="block">
                 <span className="text-xs text-slate-400 mb-1 block">Term</span>
                 <select
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={selectedTerm}
                   disabled={terms.length === 0}
                   onChange={(e) => { setSelectedTerm(e.target.value); setBudgetTouched(false) }}
@@ -1044,7 +1044,7 @@ export default function FinanceExpensesPage() {
                   type="number"
                   min="0"
                   placeholder="e.g. 50000"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
                   value={monthlyBudget}
                   onChange={(e) => { setMonthlyBudget(e.target.value); setBudgetTouched(true) }}
                 />
@@ -1055,7 +1055,7 @@ export default function FinanceExpensesPage() {
                   type="number"
                   min="0"
                   placeholder="e.g. 150000"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
                   value={quarterlyBudget}
                   onChange={(e) => { setQuarterlyBudget(e.target.value); setBudgetTouched(true) }}
                 />
@@ -1066,7 +1066,7 @@ export default function FinanceExpensesPage() {
                   type="number"
                   min="0"
                   placeholder="e.g. 600000"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-400 outline-none"
                   value={annualBudget}
                   onChange={(e) => { setAnnualBudget(e.target.value); setBudgetTouched(true) }}
                 />
@@ -1087,7 +1087,7 @@ export default function FinanceExpensesPage() {
                 </button>
                 <button
                   onClick={() => { setShowBudgetModal(false); setBudgetNotice(null) }}
-                  className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-300 hover:text-white transition"
+                  className="rounded-xl border border-white/[0.09] px-4 py-2.5 text-sm text-slate-300 hover:text-white transition"
                 >
                   Cancel
                 </button>

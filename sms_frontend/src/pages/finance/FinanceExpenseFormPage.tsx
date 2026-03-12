@@ -145,7 +145,7 @@ export default function FinanceExpenseFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/expenses" label="Back to Expenses" />
       </div>
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">
           {isEdit ? 'Edit Expense' : 'Create Expense'}
@@ -156,17 +156,17 @@ export default function FinanceExpenseFormPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading expense...</p>
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+      <section className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-7">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block text-sm">
             Category
             <input
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.category}
               aria-invalid={Boolean(fieldErrors.category)}
               onChange={(event) => {
@@ -183,7 +183,7 @@ export default function FinanceExpenseFormPage() {
           <label className="block text-sm">
             Amount
             <input
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
               aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
@@ -201,7 +201,7 @@ export default function FinanceExpenseFormPage() {
             Expense Date
             <input
               type="date"
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.expense_date}
               aria-invalid={Boolean(fieldErrors.expense_date)}
               onChange={(event) => {
@@ -217,7 +217,7 @@ export default function FinanceExpenseFormPage() {
           <label className="block text-sm">
             Vendor / Payee
             <input
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.vendor}
               aria-invalid={Boolean(fieldErrors.vendor)}
               onChange={(event) => {
@@ -234,7 +234,7 @@ export default function FinanceExpenseFormPage() {
           <label className="block text-sm">
             Payment Method
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.payment_method}
               aria-invalid={Boolean(fieldErrors.payment_method)}
               onChange={(event) => {
@@ -258,7 +258,7 @@ export default function FinanceExpenseFormPage() {
           <label className="block text-sm">
             Invoice / Receipt Number
             <input
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.invoice_number}
               aria-invalid={Boolean(fieldErrors.invoice_number)}
               onChange={(event) => {
@@ -275,7 +275,7 @@ export default function FinanceExpenseFormPage() {
           <label className="block text-sm">
             Approval Status
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.approval_status}
               aria-invalid={Boolean(fieldErrors.approval_status)}
               onChange={(event) => {
@@ -296,7 +296,7 @@ export default function FinanceExpenseFormPage() {
           <label className="block text-sm">
             Description
             <textarea
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.description}
               onChange={(event) => setFormState((prev) => ({ ...prev, description: event.target.value }))}
               rows={3}
@@ -313,7 +313,7 @@ export default function FinanceExpenseFormPage() {
               {isSubmitting ? 'Saving...' : isEdit ? 'Update expense' : 'Create expense'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               type="button"
               onClick={() => navigate('/modules/finance/expenses')}
             >

@@ -293,7 +293,7 @@ export default function PlatformTenantsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Tenant Management</h1>
         <p className="mt-2 text-sm text-slate-300">
           Follow this flow: 1) Create or select a tenant, 2) update profile and status, 3) assign plan and generate invoice, 4) reset school admin credentials if needed.
@@ -301,19 +301,19 @@ export default function PlatformTenantsPage() {
       </header>
 
       <section className="col-span-12 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-2xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Total Tenants</p>
           <p className="mt-1 text-2xl font-semibold">{stats.total}</p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-2xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Active</p>
           <p className="mt-1 text-2xl font-semibold text-emerald-300">{stats.active}</p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-2xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Trial</p>
           <p className="mt-1 text-2xl font-semibold text-sky-300">{stats.trial}</p>
         </article>
-        <article className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-2xl glass-panel p-4">
           <p className="text-xs uppercase tracking-wide text-slate-400">Suspended</p>
           <p className="mt-1 text-2xl font-semibold text-amber-300">{stats.suspended}</p>
         </article>
@@ -322,39 +322,39 @@ export default function PlatformTenantsPage() {
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Step 1: Create Tenant</h2>
         <p className="mt-1 text-xs text-slate-400">Use this only when onboarding a new school tenant.</p>
         <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={createTenant}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="School name" value={createForm.name} onChange={(e) => setCreateForm((p) => ({ ...p, name: e.target.value }))} required />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Subdomain (optional)" value={createForm.subdomain} onChange={(e) => setCreateForm((p) => ({ ...p, subdomain: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Contact email" type="email" value={createForm.contact_email} onChange={(e) => setCreateForm((p) => ({ ...p, contact_email: e.target.value }))} />
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={createForm.subscription_plan} onChange={(e) => setCreateForm((p) => ({ ...p, subscription_plan: e.target.value }))}>
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="School name" value={createForm.name} onChange={(e) => setCreateForm((p) => ({ ...p, name: e.target.value }))} required />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Subdomain (optional)" value={createForm.subdomain} onChange={(e) => setCreateForm((p) => ({ ...p, subdomain: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Contact email" type="email" value={createForm.contact_email} onChange={(e) => setCreateForm((p) => ({ ...p, contact_email: e.target.value }))} />
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={createForm.subscription_plan} onChange={(e) => setCreateForm((p) => ({ ...p, subscription_plan: e.target.value }))}>
             <option value="">Plan (optional)</option>
             {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.code} - {plan.name}</option>)}
           </select>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Trial days" type="number" min={1} value={createForm.trial_days} onChange={(e) => setCreateForm((p) => ({ ...p, trial_days: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Max students" type="number" min={1} value={createForm.max_students} onChange={(e) => setCreateForm((p) => ({ ...p, max_students: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Max storage GB" type="number" min={1} value={createForm.max_storage_gb} onChange={(e) => setCreateForm((p) => ({ ...p, max_storage_gb: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="School admin username" value={createForm.school_admin_username} onChange={(e) => setCreateForm((p) => ({ ...p, school_admin_username: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm md:col-span-2" placeholder="School admin password (optional)" value={createForm.school_admin_password} onChange={(e) => setCreateForm((p) => ({ ...p, school_admin_password: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Trial days" type="number" min={1} value={createForm.trial_days} onChange={(e) => setCreateForm((p) => ({ ...p, trial_days: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Max students" type="number" min={1} value={createForm.max_students} onChange={(e) => setCreateForm((p) => ({ ...p, max_students: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Max storage GB" type="number" min={1} value={createForm.max_storage_gb} onChange={(e) => setCreateForm((p) => ({ ...p, max_storage_gb: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="School admin username" value={createForm.school_admin_username} onChange={(e) => setCreateForm((p) => ({ ...p, school_admin_username: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm md:col-span-2" placeholder="School admin password (optional)" value={createForm.school_admin_password} onChange={(e) => setCreateForm((p) => ({ ...p, school_admin_password: e.target.value }))} />
           <button className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70" type="submit" disabled={isCreating}>{isCreating ? 'Creating...' : 'Create Tenant'}</button>
         </form>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Step 2: Select and Operate Tenant</h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Search tenant" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Search tenant" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">All statuses</option>
             {['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELLED', 'ARCHIVED'].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <button type="button" className="rounded-lg border border-slate-700 px-3 py-2 text-sm" onClick={() => void loadTenants()}>Refresh</button>
+          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => void loadTenants()}>Refresh</button>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[980px] w-full text-left text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Name</th><th className="px-3 py-2">Schema</th><th className="px-3 py-2">Subdomain</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Limits</th><th className="px-3 py-2">Actions</th>
               </tr>
@@ -371,10 +371,10 @@ export default function PlatformTenantsPage() {
                     <td className="px-3 py-2">{row.status}</td>
                     <td className="px-3 py-2">{row.max_students} students | {row.max_storage_gb}GB</td>
                     <td className="px-3 py-2 space-x-2">
-                      <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => setSelectedTenantId(row.id)}>{selected ? 'Selected' : 'Select'}</button>
-                      <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => setConfirmAction({ kind: 'status', tenant: row, action: 'activate' })}>Activate</button>
-                      <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => setConfirmAction({ kind: 'status', tenant: row, action: 'suspend' })}>Suspend</button>
-                      <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => setConfirmAction({ kind: 'status', tenant: row, action: 'resume' })}>Resume</button>
+                      <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => setSelectedTenantId(row.id)}>{selected ? 'Selected' : 'Select'}</button>
+                      <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => setConfirmAction({ kind: 'status', tenant: row, action: 'activate' })}>Activate</button>
+                      <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => setConfirmAction({ kind: 'status', tenant: row, action: 'suspend' })}>Suspend</button>
+                      <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => setConfirmAction({ kind: 'status', tenant: row, action: 'resume' })}>Resume</button>
                     </td>
                   </tr>
                 )
@@ -386,20 +386,20 @@ export default function PlatformTenantsPage() {
       </section>
 
       {selectedTenant ? (
-        <section className="col-span-12 rounded-2xl border border-emerald-500/40 bg-slate-900/60 p-6">
+        <section className="col-span-12 rounded-2xl border border-emerald-500/40 glass-panel p-6">
           <h2 className="text-lg font-semibold">Step 3: Manage "{selectedTenant.name}"</h2>
           <p className="mt-1 text-xs text-slate-400">Edit profile, set billing plan, create invoice, and update tenant admin credentials.</p>
           <div className="mt-4 grid gap-6 lg:grid-cols-2">
-            <article className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+            <article className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
               <h3 className="text-sm font-semibold">A. Tenant Profile</h3>
               <div className="mt-3 grid gap-2">
-                <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Name" value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} />
-                <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Contact name" value={editForm.contact_name} onChange={(e) => setEditForm((p) => ({ ...p, contact_name: e.target.value }))} />
-                <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Contact email" value={editForm.contact_email} onChange={(e) => setEditForm((p) => ({ ...p, contact_email: e.target.value }))} />
-                <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Contact phone" value={editForm.contact_phone} onChange={(e) => setEditForm((p) => ({ ...p, contact_phone: e.target.value }))} />
+                <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Name" value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} />
+                <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Contact name" value={editForm.contact_name} onChange={(e) => setEditForm((p) => ({ ...p, contact_name: e.target.value }))} />
+                <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Contact email" value={editForm.contact_email} onChange={(e) => setEditForm((p) => ({ ...p, contact_email: e.target.value }))} />
+                <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Contact phone" value={editForm.contact_phone} onChange={(e) => setEditForm((p) => ({ ...p, contact_phone: e.target.value }))} />
                 <div className="grid grid-cols-2 gap-2">
-                  <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" type="number" min={1} placeholder="Max students" value={editForm.max_students} onChange={(e) => setEditForm((p) => ({ ...p, max_students: e.target.value }))} />
-                  <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" type="number" min={1} placeholder="Max storage GB" value={editForm.max_storage_gb} onChange={(e) => setEditForm((p) => ({ ...p, max_storage_gb: e.target.value }))} />
+                  <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" type="number" min={1} placeholder="Max students" value={editForm.max_students} onChange={(e) => setEditForm((p) => ({ ...p, max_students: e.target.value }))} />
+                  <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" type="number" min={1} placeholder="Max storage GB" value={editForm.max_storage_gb} onChange={(e) => setEditForm((p) => ({ ...p, max_storage_gb: e.target.value }))} />
                 </div>
                 <button type="button" className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70" disabled={isSavingProfile} onClick={() => void saveTenantProfile()}>
                   {isSavingProfile ? 'Saving...' : 'Save Profile'}
@@ -407,34 +407,34 @@ export default function PlatformTenantsPage() {
               </div>
             </article>
 
-            <article className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+            <article className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
               <h3 className="text-sm font-semibold">B. Subscription & Billing</h3>
               <div className="mt-3 grid gap-2">
-                <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignForm.plan_id} onChange={(e) => setAssignForm((p) => ({ ...p, plan_id: e.target.value }))}>
+                <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignForm.plan_id} onChange={(e) => setAssignForm((p) => ({ ...p, plan_id: e.target.value }))}>
                   <option value="">Select plan</option>
                   {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.code} - {plan.name}</option>)}
                 </select>
-                <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={assignForm.billing_cycle} onChange={(e) => setAssignForm((p) => ({ ...p, billing_cycle: e.target.value }))}>
+                <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignForm.billing_cycle} onChange={(e) => setAssignForm((p) => ({ ...p, billing_cycle: e.target.value }))}>
                   <option value="MONTHLY">MONTHLY</option>
                   <option value="ANNUAL">ANNUAL</option>
                 </select>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" className="rounded-lg border border-slate-700 px-3 py-2 text-sm disabled:opacity-70" disabled={isAssigningPlan} onClick={() => void assignPlan()}>
+                  <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm disabled:opacity-70" disabled={isAssigningPlan} onClick={() => void assignPlan()}>
                     {isAssigningPlan ? 'Assigning...' : 'Assign Plan'}
                   </button>
-                  <button type="button" className="rounded-lg border border-slate-700 px-3 py-2 text-sm" onClick={() => setConfirmAction({ kind: 'generate-invoice', tenant: selectedTenant })}>
+                  <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => setConfirmAction({ kind: 'generate-invoice', tenant: selectedTenant })}>
                     Generate Invoice
                   </button>
                 </div>
               </div>
             </article>
 
-            <article className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 lg:col-span-2">
+            <article className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 lg:col-span-2">
               <h3 className="text-sm font-semibold">C. School Admin Credentials</h3>
               <p className="mt-1 text-xs text-slate-400">Use this when the school admin forgot the password or the account must be handed over.</p>
               <div className="mt-3 grid gap-2 md:grid-cols-3">
-                <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Username (default admin)" value={credentialForm.username} onChange={(e) => setCredentialForm((p) => ({ ...p, username: e.target.value }))} />
-                <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="New password" type="password" value={credentialForm.password} onChange={(e) => setCredentialForm((p) => ({ ...p, password: e.target.value }))} />
+                <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Username (default admin)" value={credentialForm.username} onChange={(e) => setCredentialForm((p) => ({ ...p, username: e.target.value }))} />
+                <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="New password" type="password" value={credentialForm.password} onChange={(e) => setCredentialForm((p) => ({ ...p, password: e.target.value }))} />
                 <button
                   type="button"
                   className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-900"
@@ -447,7 +447,7 @@ export default function PlatformTenantsPage() {
           </div>
         </section>
       ) : (
-        <section className="col-span-12 rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 p-6 text-sm text-slate-400">
+        <section className="col-span-12 rounded-2xl border border-dashed border-white/[0.09] bg-white/[0.025] p-6 text-sm text-slate-400">
           Select a tenant from Step 2 to unlock profile, billing, and credential management actions.
         </section>
       )}

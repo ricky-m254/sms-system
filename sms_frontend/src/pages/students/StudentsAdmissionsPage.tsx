@@ -541,7 +541,7 @@ export default function StudentsAdmissionsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Admissions</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -550,7 +550,7 @@ export default function StudentsAdmissionsPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading admissions...</p>
         </div>
       ) : null}
@@ -567,7 +567,7 @@ export default function StudentsAdmissionsPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-display font-semibold">Pipeline stages</h2>
@@ -587,7 +587,7 @@ export default function StudentsAdmissionsPage() {
         ) : null}
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {pipelineStages.map((stage) => (
-            <div key={stage} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-sm">
+            <div key={stage} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3 text-sm">
               <div className="text-xs uppercase tracking-wide text-slate-500">{stage}</div>
               <div className="mt-2 text-2xl font-semibold text-slate-100">
                 {effectivePipelineCounts.get(stage) ?? 0}
@@ -598,7 +598,7 @@ export default function StudentsAdmissionsPage() {
       </section>
 
       <section className="col-span-12">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-display font-semibold">Applications</h2>
@@ -606,13 +606,13 @@ export default function StudentsAdmissionsPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
-                className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+                className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200"
                 onClick={() => setIsFormOpen(true)}
               >
                 New application
               </button>
               <input
-                className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none"
+                className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none"
                 placeholder="Search applicant or application #"
                 value={query}
                 onChange={(event) => {
@@ -621,7 +621,7 @@ export default function StudentsAdmissionsPage() {
                 }}
               />
               <select
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                 value={statusFilter}
                 onChange={(event) => {
                   setStatusFilter(event.target.value)
@@ -637,9 +637,9 @@ export default function StudentsAdmissionsPage() {
               </select>
             </div>
           </div>
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
             <table className="min-w-[720px] w-full text-left text-sm">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3">Applicant</th>
                   <th className="px-4 py-3">Grade</th>
@@ -654,7 +654,7 @@ export default function StudentsAdmissionsPage() {
                   <tr key={application.id} className="bg-slate-950/60">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-800 bg-slate-900">
+                        <div className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.07] bg-[#0d1421]">
                           {application.student_photo ? (
                             <img
                               src={application.student_photo}
@@ -722,14 +722,14 @@ export default function StudentsAdmissionsPage() {
             </span>
             <div className="flex gap-2">
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
                 disabled={page === 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
                 Prev
               </button>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
                 disabled={page === totalPages}
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               >
@@ -742,7 +742,7 @@ export default function StudentsAdmissionsPage() {
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-[900px] max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-[900px] max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="mb-4">
               <BackButton onClick={() => setIsFormOpen(false)} label="Back to Admissions" />
             </div>
@@ -752,7 +752,7 @@ export default function StudentsAdmissionsPage() {
                 <p className="mt-1 text-xs text-slate-400">Enter applicant details and submit.</p>
               </div>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => setIsFormOpen(false)}
               >
                 Close
@@ -768,7 +768,7 @@ export default function StudentsAdmissionsPage() {
                     <label className="block">
                       <span className="text-xs text-slate-400">First name</span>
                       <input
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         placeholder="First name"
                         value={formState.student_first_name}
                         onChange={(event) =>
@@ -782,7 +782,7 @@ export default function StudentsAdmissionsPage() {
                     <label className="block">
                       <span className="text-xs text-slate-400">Last name</span>
                       <input
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         placeholder="Last name"
                         value={formState.student_last_name}
                         onChange={(event) =>
@@ -797,7 +797,7 @@ export default function StudentsAdmissionsPage() {
                       <span className="text-xs text-slate-400">Date of birth</span>
                       <input
                         type="date"
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         value={formState.student_dob}
                         onChange={(event) =>
                           setFormState((prev) => ({ ...prev, student_dob: event.target.value }))
@@ -810,7 +810,7 @@ export default function StudentsAdmissionsPage() {
                     <label className="block">
                       <span className="text-xs text-slate-400">Gender</span>
                       <select
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         value={formState.student_gender}
                         onChange={(event) =>
                           setFormState((prev) => ({ ...prev, student_gender: event.target.value }))
@@ -828,7 +828,7 @@ export default function StudentsAdmissionsPage() {
                     <label className="block">
                       <span className="text-xs text-slate-400">Grade applying for</span>
                       <select
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         value={formState.applying_for_grade}
                         onChange={(event) =>
                           setFormState((prev) => ({ ...prev, applying_for_grade: event.target.value }))
@@ -849,7 +849,7 @@ export default function StudentsAdmissionsPage() {
                       <span className="text-xs text-slate-400">Application date</span>
                       <input
                         type="date"
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         value={formState.application_date}
                         onChange={(event) =>
                           setFormState((prev) => ({ ...prev, application_date: event.target.value }))
@@ -870,7 +870,7 @@ export default function StudentsAdmissionsPage() {
                     <label className="block">
                       <span className="text-xs text-slate-400">Previous school name (optional)</span>
                       <input
-                        className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                        className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                         placeholder="Previous school"
                         value={formState.previous_school}
                         onChange={(event) =>
@@ -888,7 +888,7 @@ export default function StudentsAdmissionsPage() {
                       <label className="block">
                         <span className="text-xs text-slate-400">Guardian name (optional)</span>
                         <input
-                          className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                          className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                           placeholder="Guardian name"
                           value={formState.guardian_name}
                           onChange={(event) =>
@@ -902,7 +902,7 @@ export default function StudentsAdmissionsPage() {
                       <label className="block">
                         <span className="text-xs text-slate-400">Guardian phone (optional)</span>
                         <input
-                          className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                          className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                           placeholder="+255700000001"
                           value={formState.guardian_phone}
                           onChange={(event) =>
@@ -916,7 +916,7 @@ export default function StudentsAdmissionsPage() {
                       <label className="block">
                         <span className="text-xs text-slate-400">Guardian email (optional)</span>
                         <input
-                          className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                          className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                           placeholder="guardian@example.com"
                           value={formState.guardian_email}
                           onChange={(event) =>
@@ -932,7 +932,7 @@ export default function StudentsAdmissionsPage() {
                 </div>
               </div>
 
-              <div className="border-t border-slate-800 pt-6">
+              <div className="border-t border-white/[0.07] pt-6">
                 <div className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                   Additional Information
                 </div>
@@ -940,7 +940,7 @@ export default function StudentsAdmissionsPage() {
                   <label className="block lg:col-span-2">
                     <span className="text-xs text-slate-400">Notes (optional)</span>
                     <textarea
-                      className="mt-2 w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                      className="mt-2 w-full rounded-lg border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
                       rows={4}
                       value={formState.notes}
                       onChange={(event) =>
@@ -950,7 +950,7 @@ export default function StudentsAdmissionsPage() {
                   </label>
                   <label className="block">
                     <span className="text-xs text-slate-400">Student photo (optional)</span>
-                    <div className="mt-2 rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-center text-xs text-slate-400">
+                    <div className="mt-2 rounded-xl border border-dashed border-white/[0.09] bg-slate-950/40 px-4 py-6 text-center text-xs text-slate-400">
                       <input
                         type="file"
                         accept="image/*"
@@ -967,7 +967,7 @@ export default function StudentsAdmissionsPage() {
                   </label>
                   <label className="block">
                     <span className="text-xs text-slate-400">Supporting documents (optional)</span>
-                    <div className="mt-2 rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-center text-xs text-slate-400">
+                    <div className="mt-2 rounded-xl border border-dashed border-white/[0.09] bg-slate-950/40 px-4 py-6 text-center text-xs text-slate-400">
                       <input
                         type="file"
                         multiple
@@ -1013,11 +1013,11 @@ export default function StudentsAdmissionsPage() {
 
       {selectedApplication ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-display font-semibold">Manage application</h3>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => {
                   clearFormErrors()
                   setSelectedApplication(null)
@@ -1027,7 +1027,7 @@ export default function StudentsAdmissionsPage() {
               </button>
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+              <div className="md:col-span-2 rounded-2xl glass-panel p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Uploads</p>
@@ -1035,10 +1035,10 @@ export default function StudentsAdmissionsPage() {
                   </div>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                  <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">
                     <p className="text-xs text-slate-400">Student photo</p>
                     <div className="mt-3 flex items-center gap-3">
-                      <div className="h-14 w-14 overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+                      <div className="h-14 w-14 overflow-hidden rounded-xl border border-white/[0.07] bg-[#0d1421]">
                         {selectedApplication.student_photo ? (
                           <img
                             src={selectedApplication.student_photo}
@@ -1052,7 +1052,7 @@ export default function StudentsAdmissionsPage() {
                         )}
                       </div>
                       <div className="text-xs text-slate-400">
-                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200">
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200">
                           <input
                             type="file"
                             accept="image/*"
@@ -1067,11 +1067,11 @@ export default function StudentsAdmissionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                  <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3">
                     <p className="text-xs text-slate-400">Documents</p>
                     <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
                       <span>{selectedApplication.uploaded_documents?.length ?? 0} file(s)</span>
-                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200">
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200">
                         <input
                           type="file"
                           multiple
@@ -1086,7 +1086,7 @@ export default function StudentsAdmissionsPage() {
                         selectedApplication.uploaded_documents?.map((doc) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between rounded-lg border border-slate-800 px-3 py-2 text-xs"
+                            className="flex items-center justify-between rounded-lg border border-white/[0.07] px-3 py-2 text-xs"
                           >
                             <a
                               className="truncate text-slate-200 underline-offset-2 hover:underline"
@@ -1115,7 +1115,7 @@ export default function StudentsAdmissionsPage() {
                 Interview date
                 <input
                   type="date"
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={interviewDate}
                   onChange={(event) => setInterviewDate(event.target.value)}
                 />
@@ -1123,7 +1123,7 @@ export default function StudentsAdmissionsPage() {
               <label className="block text-sm">
                 Assessment score
                 <input
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={assessmentScore}
                   onChange={(event) => setAssessmentScore(event.target.value)}
                   placeholder="0-100"
@@ -1132,7 +1132,7 @@ export default function StudentsAdmissionsPage() {
               <label className="block text-sm md:col-span-2">
                 Application stage
                 <select
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={applicationStatus}
                   onChange={(event) => setApplicationStatus(event.target.value)}
                 >
@@ -1156,20 +1156,20 @@ export default function StudentsAdmissionsPage() {
                 {isSavingMeta ? 'Saving...' : 'Save updates'}
               </button>
               <Link
-                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+                className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
                 to="/settings/students"
               >
                 Open Student Settings
               </Link>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+            <div className="mt-6 rounded-2xl glass-panel p-4">
               <h4 className="text-sm font-semibold">Enroll applicant</h4>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
                 <label className="block text-sm">
                   Admission #
                   <input
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={enrollForm.admission_number}
                     onChange={(event) =>
                       setEnrollForm((prev) => ({ ...prev, admission_number: event.target.value }))
@@ -1180,7 +1180,7 @@ export default function StudentsAdmissionsPage() {
                 <label className="block text-sm">
                   Class
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={enrollForm.school_class}
                     onChange={(event) =>
                       setEnrollForm((prev) => ({ ...prev, school_class: event.target.value }))
@@ -1197,7 +1197,7 @@ export default function StudentsAdmissionsPage() {
                 <label className="block text-sm">
                   Term
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={enrollForm.term}
                     onChange={(event) =>
                       setEnrollForm((prev) => ({ ...prev, term: event.target.value }))
@@ -1215,7 +1215,7 @@ export default function StudentsAdmissionsPage() {
                   Enrollment date
                   <input
                     type="date"
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={enrollForm.enrollment_date}
                     onChange={(event) =>
                       setEnrollForm((prev) => ({ ...prev, enrollment_date: event.target.value }))

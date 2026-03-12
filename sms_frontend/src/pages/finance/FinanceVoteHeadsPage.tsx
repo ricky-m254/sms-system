@@ -97,7 +97,7 @@ export default function FinanceVoteHeadsPage() {
 
   return (
     <section className="col-span-12 grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <button
           onClick={() => navigate('/modules/finance')}
           className="mb-4 flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200 transition"
@@ -115,7 +115,7 @@ export default function FinanceVoteHeadsPage() {
             <button
               onClick={handleSeed}
               disabled={seeding}
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 disabled:opacity-50"
             >
               {seeding ? 'Seeding…' : 'Seed Defaults'}
             </button>
@@ -141,14 +141,14 @@ export default function FinanceVoteHeadsPage() {
         {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
       </header>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         {loading ? (
           <p className="text-slate-400 text-sm">Loading…</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-slate-200">
               <thead>
-                <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+                <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
                   <th className="pb-3 pr-4 text-left">Order</th>
                   <th className="pb-3 pr-4 text-left">Name</th>
                   <th className="pb-3 pr-4 text-left">Description</th>
@@ -163,7 +163,7 @@ export default function FinanceVoteHeadsPage() {
                   <tr><td colSpan={7} className="py-8 text-center text-slate-500">No vote heads yet. Click &quot;Seed Defaults&quot; to add the standard set.</td></tr>
                 )}
                 {rows.map(vh => (
-                  <tr key={vh.id} className="hover:bg-slate-800/30 transition">
+                  <tr key={vh.id} className="hover:bg-white/[0.02] transition">
                     <td className="py-3 pr-4 text-slate-400">{vh.order}</td>
                     <td className="py-3 pr-4 font-medium text-white">{vh.name}</td>
                     <td className="py-3 pr-4 text-slate-400">{vh.description || '—'}</td>
@@ -194,7 +194,7 @@ export default function FinanceVoteHeadsPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.09] bg-[#0d1421] p-6 shadow-2xl">
             <h2 className="mb-4 text-lg font-semibold text-white">
               {editing ? 'Edit Vote Head' : 'Add Vote Head'}
             </h2>
@@ -202,20 +202,20 @@ export default function FinanceVoteHeadsPage() {
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Name</label>
-                <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Description</label>
-                <input className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                <input className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
               </div>
               <div>
                 <label className="mb-1 block text-xs text-slate-400">Allocation % <span className="text-slate-600">(0 = not auto-split)</span></label>
-                <input type="number" min="0" max="100" step="0.01" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.allocation_percentage} onChange={e => setForm(f => ({ ...f, allocation_percentage: e.target.value }))} />
+                <input type="number" min="0" max="100" step="0.01" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.allocation_percentage} onChange={e => setForm(f => ({ ...f, allocation_percentage: e.target.value }))} />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="mb-1 block text-xs text-slate-400">Display Order</label>
-                  <input type="number" min="0" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.order} onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
+                  <input type="number" min="0" className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400" value={form.order} onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
                 </div>
                 <div className="flex items-end gap-2 pb-1">
                   <input type="checkbox" id="vh-active" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="accent-emerald-500" />
@@ -224,7 +224,7 @@ export default function FinanceVoteHeadsPage() {
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-3">
-              <button onClick={() => setShowForm(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
+              <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>
               <button onClick={handleSave} disabled={saving} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </div>

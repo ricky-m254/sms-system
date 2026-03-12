@@ -131,12 +131,12 @@ export default function CommunicationParentPage() {
       )}
 
       {/* Recipients */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+      <div className="rounded-2xl glass-panel p-5 space-y-4">
         <h2 className="text-sm font-semibold text-white flex items-center gap-2">
           <Users size={14} className="text-slate-400" /> Recipients
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5">
+          <div className="flex items-center gap-2 rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5">
             <Mail size={13} className="text-slate-500 flex-shrink-0" />
             <input
               value={emails}
@@ -145,7 +145,7 @@ export default function CommunicationParentPage() {
               className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5">
+          <div className="flex items-center gap-2 rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5">
             <Phone size={13} className="text-slate-500 flex-shrink-0" />
             <input
               value={phones}
@@ -155,7 +155,7 @@ export default function CommunicationParentPage() {
             />
           </div>
         </div>
-        <div className="flex gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1 w-fit">
+        <div className="flex gap-1 rounded-xl border border-white/[0.07] bg-white/[0.02] p-1 w-fit">
           {([['both', 'Email + SMS'], ['email', 'Email Only'], ['sms', 'SMS Only']] as [ChannelType, string][]).map(([v, l]) => (
             <button key={v} onClick={() => setChannel(v)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${channel === v ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-slate-200'}`}>{l}</button>
           ))}
@@ -170,11 +170,11 @@ export default function CommunicationParentPage() {
           return (
             <div
               key={cfg.key}
-              className={`rounded-2xl border bg-slate-900/60 overflow-hidden transition-all ${isActive ? `border-${cfg.color}-500/30` : 'border-slate-800'}`}
+              className={`rounded-2xl border glass-panel overflow-hidden transition-all ${isActive ? `border-${cfg.color}-500/30` : 'border-white/[0.07]'}`}
             >
               <button
                 onClick={() => setActiveAction(isActive ? null : cfg.key)}
-                className="w-full flex items-center gap-3 p-4 text-left hover:bg-slate-800/30 transition"
+                className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/[0.02] transition"
               >
                 <div className={`flex-shrink-0 rounded-xl p-2.5 ${cfg.badgeBg} border ${cfg.border}`}>
                   <Icon size={16} className={cfg.badgeColor} />
@@ -187,13 +187,13 @@ export default function CommunicationParentPage() {
               </button>
 
               {isActive && (
-                <div className="border-t border-slate-800 p-4 space-y-3">
+                <div className="border-t border-white/[0.07] p-4 space-y-3">
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 block">Subject</label>
                     <input
                       value={getSubject(cfg.key)}
                       onChange={(e) => setSubjects(s => ({ ...s, [cfg.key]: e.target.value }))}
-                      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+                      className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
                     />
                   </div>
                   <div>
@@ -202,7 +202,7 @@ export default function CommunicationParentPage() {
                       value={getMessage(cfg.key)}
                       onChange={(e) => setMessages(m => ({ ...m, [cfg.key]: e.target.value }))}
                       rows={6}
-                      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+                      className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
                     />
                   </div>
                   <button

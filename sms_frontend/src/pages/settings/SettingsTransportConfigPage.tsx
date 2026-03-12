@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Bus, Plus, Trash2, AlertCircle, Check, MapPin } from 'lucide-react'
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 interface TransportRoute { name: string; stops: string; monthly_fee: number; vehicle: string }
 
@@ -40,7 +40,7 @@ export default function SettingsTransportConfigPage() {
       {success && <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"><Check className="h-4 w-4" />{success}</div>}
 
       {/* General Settings */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Bus className="h-4 w-4 text-amber-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">General Settings</h2></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -66,11 +66,11 @@ export default function SettingsTransportConfigPage() {
       </section>
 
       {/* Routes */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-sky-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Bus Routes</h2></div>
         <div className="space-y-4">
           {routes.map((r, i) => (
-            <div key={i} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+            <div key={i} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <input value={r.name} onChange={e => setRoutes(p => p.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Route name" className={`${cls} font-semibold`} />
                 <button onClick={() => setRoutes(p => p.filter((_, j) => j !== i))} className="mt-2 text-slate-600 hover:text-rose-400 transition flex-shrink-0"><Trash2 className="h-4 w-4" /></button>

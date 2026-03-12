@@ -135,7 +135,7 @@ export default function HostelLeavePage() {
       )}
 
       <div className="flex items-center gap-3">
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm text-slate-300">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5 text-sm text-slate-300">
           <option value="">All Requests</option>
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
@@ -143,10 +143,10 @@ export default function HostelLeavePage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
+      <div className="overflow-hidden rounded-2xl glass-panel shadow-xl">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-800/40">
+            <tr className="border-b border-white/[0.07] bg-white/[0.025]">
               <th className="px-6 py-4 font-semibold text-slate-300">Student</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Period</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Reason</th>
@@ -213,7 +213,7 @@ export default function HostelLeavePage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Leave Request' : 'Request Leave'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -222,7 +222,7 @@ export default function HostelLeavePage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Student *</label>
-              <select value={form.student} onChange={e => setF('student', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.student} onChange={e => setF('student', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">Select student</option>
                 {students.map(s => <option key={s.id} value={s.id}>{`${s.first_name} ${s.last_name}`.trim()} ({s.admission_number})</option>)}
               </select>
@@ -231,24 +231,24 @@ export default function HostelLeavePage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Leave From *</label>
-                <input type="date" value={form.leave_from} onChange={e => setF('leave_from', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+                <input type="date" value={form.leave_from} onChange={e => setF('leave_from', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Leave To *</label>
-                <input type="date" value={form.leave_to} onChange={e => setF('leave_to', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+                <input type="date" value={form.leave_to} onChange={e => setF('leave_to', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
               </div>
             </div>
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Reason *</label>
-              <textarea value={form.reason} onChange={e => setF('reason', e.target.value)} rows={3} placeholder="State the reason for leave..." className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.reason} onChange={e => setF('reason', e.target.value)} rows={3} placeholder="State the reason for leave..." className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
 
             <div className="flex gap-3 pt-1">
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-50">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Submit Request'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

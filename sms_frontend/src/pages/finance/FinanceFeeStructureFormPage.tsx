@@ -191,7 +191,7 @@ export default function FinanceFeeStructureFormPage() {
       <div className="col-span-12">
         <BackButton to="/modules/finance/fee-structures" label="Back to Fee Structures" />
       </div>
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">
           {isEdit ? 'Edit Fee Structure' : 'Create Fee Structure'}
@@ -202,17 +202,17 @@ export default function FinanceFeeStructureFormPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading fee structure...</p>
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 lg:col-span-7">
+      <section className="col-span-12 rounded-2xl glass-panel p-6 lg:col-span-7">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block text-sm">
             Name
             <input
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.name}
               aria-invalid={Boolean(fieldErrors.name)}
               onChange={(event) => {
@@ -232,7 +232,7 @@ export default function FinanceFeeStructureFormPage() {
               type="number"
               min="0"
               step="0.01"
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.amount}
               aria-invalid={Boolean(fieldErrors.amount)}
               onChange={(event) => {
@@ -249,7 +249,7 @@ export default function FinanceFeeStructureFormPage() {
           <label className="block text-sm">
             Category
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.category}
               aria-invalid={Boolean(fieldErrors.category)}
               onChange={(event) => {
@@ -274,7 +274,7 @@ export default function FinanceFeeStructureFormPage() {
           <label className="block text-sm">
             Academic Year
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.academic_year}
               aria-invalid={Boolean(fieldErrors.academic_year)}
               onChange={(event) => {
@@ -301,7 +301,7 @@ export default function FinanceFeeStructureFormPage() {
           <label className="block text-sm">
             Term
             <select
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={formState.term}
               aria-invalid={Boolean(fieldErrors.term)}
               onChange={(event) => {
@@ -327,7 +327,7 @@ export default function FinanceFeeStructureFormPage() {
               type="number"
               min="1"
               step="1"
-              className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               value={formState.grade_level}
               aria-invalid={Boolean(fieldErrors.grade_level)}
               onChange={(event) => {
@@ -360,7 +360,7 @@ export default function FinanceFeeStructureFormPage() {
               {isSubmitting ? 'Saving...' : isEdit ? 'Update fee' : 'Create fee'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               type="button"
               onClick={() => navigate('/modules/finance/fee-structures')}
             >

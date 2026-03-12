@@ -133,48 +133,48 @@ export default function HrAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">HR Analytics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Headcount, Turnover, Leave, Payroll Costs</h1>
       </section>
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <div className="grid gap-3 sm:grid-cols-5">
           <label className="text-xs text-slate-300">
             Year
-            <input value={year} onChange={(e) => setYear(e.target.value)} type="number" min="2000" max="2099" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={year} onChange={(e) => setYear(e.target.value)} type="number" min="2000" max="2099" className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
           </label>
           <label className="text-xs text-slate-300">
             Month
-            <input value={month} onChange={(e) => setMonth(e.target.value)} type="number" min="1" max="12" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={month} onChange={(e) => setMonth(e.target.value)} type="number" min="1" max="12" className="mt-1 w-full rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
           </label>
           <button onClick={() => void load(year, month)} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 sm:self-end">Refresh</button>
-          <button onClick={exportHeadcount} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:self-end">Export Headcount</button>
+          <button onClick={exportHeadcount} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-200 sm:self-end">Export Headcount</button>
         </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Headcount</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.headcount ?? 0}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Attendance Rate</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.attendance_rate_percent?.toFixed(2) ?? '0.00'}%</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Departments</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.departments ?? 0}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Positions</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.positions ?? 0}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Headcount</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.headcount ?? 0}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Attendance Rate</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.attendance_rate_percent?.toFixed(2) ?? '0.00'}%</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Departments</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.departments ?? 0}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Positions</p><p className="mt-2 text-2xl font-semibold text-slate-100">{summary?.positions ?? 0}</p></article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Turnover</h2>
           <p className="mt-2 text-xs text-slate-300">Year: {turnover?.year ?? '-'} | Rate: {turnover?.turnover_rate_percent ?? 0}%</p>
           <p className="mt-1 text-xs text-slate-300">Exits: {turnover?.exits ?? 0} / Base: {turnover?.headcount_base ?? 0}</p>
           <div className="mt-2 space-y-1 text-xs text-slate-300">{(turnover?.by_reason ?? []).map((row) => <p key={row.reason}>{row.reason}: {row.count}</p>)}</div>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Attendance</h2>
           <p className="mt-2 text-xs text-slate-300">{attendance?.month ?? '-'} / {attendance?.year ?? '-'}</p>
           <p className="mt-1 text-xs text-slate-300">Present: {attendance?.present_records ?? 0} | Absent: {attendance?.absent_records ?? 0}</p>
           <p className="mt-1 text-xs text-slate-300">Late: {attendance?.late_records ?? 0} | Overtime hrs: {attendance?.overtime_hours_total ?? '0.00'}</p>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Leave Utilization</h2>
           <p className="mt-2 text-xs text-slate-300">Used: {leave?.used_total ?? '0.00'} | Pending: {leave?.pending_total ?? '0.00'}</p>
           <p className="mt-1 text-xs text-slate-300">Available: {leave?.available_total ?? '0.00'}</p>
@@ -182,7 +182,7 @@ export default function HrAnalyticsPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Diversity (Gender)</h2>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {(diversity?.by_gender ?? []).map((row) => (
@@ -193,10 +193,10 @@ export default function HrAnalyticsPage() {
             {!loading && (diversity?.by_gender?.length ?? 0) === 0 ? <p className="text-slate-400">No diversity data.</p> : null}
           </div>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-slate-100">Payroll Costs</h2>
-            <button onClick={exportPayrollCosts} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Export</button>
+            <button onClick={exportPayrollCosts} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Export</button>
           </div>
           <p className="mt-2 text-xs text-slate-300">Gross: {payrollCosts?.total_gross ?? '0.00'}</p>
           <p className="mt-1 text-xs text-slate-300">Deductions: {payrollCosts?.total_deductions ?? '0.00'}</p>
@@ -209,7 +209,7 @@ export default function HrAnalyticsPage() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <h2 className="text-sm font-semibold text-slate-100">Headcount Breakdown</h2>
         <div className="mt-3 grid gap-4 lg:grid-cols-3">
           <div>

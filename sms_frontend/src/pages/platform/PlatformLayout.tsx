@@ -29,11 +29,11 @@ export default function PlatformLayout() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-12 gap-4 px-4 py-6 sm:gap-6 sm:px-6 sm:py-8">
-        <aside className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 md:col-span-3 lg:col-span-2">
+        <aside className="col-span-12 rounded-2xl glass-panel p-5 md:col-span-3 lg:col-span-2">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Platform</p>
           <h1 className="mt-2 text-lg font-display font-semibold">Super Admin</h1>
           <button
-            className="mt-4 w-full rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 md:hidden"
+            className="mt-4 w-full rounded-xl border border-white/[0.09] px-4 py-2.5 text-sm text-slate-200 md:hidden"
             onClick={() => setIsNavOpen((p) => !p)}
           >
             {isNavOpen ? 'Hide menu ↑' : 'Show menu ↓'}
@@ -47,7 +47,7 @@ export default function PlatformLayout() {
                 onClick={() => setIsNavOpen(false)}
                 className={({ isActive }) =>
                   `block rounded-xl px-4 py-2.5 transition ${
-                    isActive ? 'bg-emerald-500/15 text-emerald-200' : 'text-slate-300 hover:bg-slate-800/60'
+                    isActive ? 'bg-emerald-500/15 text-emerald-200' : 'text-slate-300 hover:bg-white/[0.035]'
                   }`
                 }
               >
@@ -55,11 +55,11 @@ export default function PlatformLayout() {
               </NavLink>
             ))}
           </div>
-          <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-xs text-slate-300">
+          <div className="mt-6 rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 text-xs text-slate-300">
             <p><strong>User:</strong> {username ?? 'platform-admin'}</p>
             <button
               type="button"
-              className="mt-3 w-full rounded-lg border border-slate-700 px-3 py-2.5 text-xs text-slate-200"
+              className="mt-3 w-full rounded-lg border border-white/[0.09] px-3 py-2.5 text-xs text-slate-200"
               onClick={() => { logout(); navigate('/platform/login') }}
             >
               Sign out

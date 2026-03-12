@@ -496,7 +496,7 @@ export default function StudentsReportsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
@@ -507,21 +507,21 @@ export default function StudentsReportsPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownloadModule('csv')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download Module CSV'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownloadModule('pdf')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download Module PDF'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
               onClick={() => setIsPrintModalOpen(true)}
             >
               Print Student Report
@@ -538,7 +538,7 @@ export default function StudentsReportsPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading report data...</p>
         </div>
       ) : null}
@@ -556,19 +556,19 @@ export default function StudentsReportsPage() {
       ) : null}
 
       <section className="col-span-12 grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Active Students</p>
           <p className="mt-2 text-2xl font-semibold">{enrollmentTotals.active_students}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Active Enrollments</p>
           <p className="mt-2 text-2xl font-semibold">{enrollmentTotals.active_enrollments}</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Attendance Rate</p>
           <p className="mt-2 text-2xl font-semibold">{attendanceTotals.rate}%</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <p className="text-xs uppercase text-slate-400">Behavior Incidents</p>
           <p className="mt-2 text-2xl font-semibold">
             {behaviorTotals.negative + behaviorTotals.positive}
@@ -577,7 +577,7 @@ export default function StudentsReportsPage() {
       </section>
 
       <section className="col-span-12 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <h2 className="text-base font-semibold text-white">Admissions Pipeline</h2>
           <div className="mt-4 space-y-2 text-sm text-slate-300">
             {Object.keys(admissionsCounts).length > 0 ? (
@@ -593,7 +593,7 @@ export default function StudentsReportsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <h2 className="text-base font-semibold text-white">Demographics</h2>
           <div className="mt-4 space-y-2 text-sm text-slate-300">
             {Object.keys(demographics).length > 0 ? (
@@ -609,7 +609,7 @@ export default function StudentsReportsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl glass-panel p-5">
           <h2 className="text-base font-semibold text-white">Attendance Summary</h2>
           <div className="mt-4 space-y-2 text-sm text-slate-300">
             <div className="flex items-center justify-between">
@@ -628,16 +628,16 @@ export default function StudentsReportsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-display font-semibold">Recent Behavior Incidents</h2>
             <p className="mt-1 text-sm text-slate-400">Latest entries from behavior logs.</p>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[860px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Category</th>
@@ -666,11 +666,11 @@ export default function StudentsReportsPage() {
 
       {isPrintModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-display font-semibold">Print Student Report</h3>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => setIsPrintModalOpen(false)}
               >
                 Close
@@ -680,7 +680,7 @@ export default function StudentsReportsPage() {
               <label className="block">
                 Select student
                 <select
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={selectedStudentId}
                   onChange={(event) => setSelectedStudentId(event.target.value)}
                 >
@@ -694,14 +694,14 @@ export default function StudentsReportsPage() {
               </label>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
-                  className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-100 disabled:opacity-70"
+                  className="w-full rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-100 disabled:opacity-70"
                   onClick={() => handleDownloadStudent('csv')}
                   disabled={!selectedStudentId || isDownloading}
                 >
                   {isDownloading ? 'Working...' : 'Download CSV'}
                 </button>
                 <button
-                  className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-100 disabled:opacity-70"
+                  className="w-full rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-100 disabled:opacity-70"
                   onClick={() => handleDownloadStudent('pdf')}
                   disabled={!selectedStudentId || isDownloading}
                 >

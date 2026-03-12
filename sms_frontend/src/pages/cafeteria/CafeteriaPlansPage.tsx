@@ -81,16 +81,16 @@ export default function CafeteriaPlansPage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
       {showForm ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="mb-4 text-sm font-semibold text-slate-200">New Meal Plan</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Plan name *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input type="number" value={pricePerDay} onChange={e => setPricePerDay(e.target.value)} placeholder="Price per day (Ksh) *" className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Plan name *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input type="number" value={pricePerDay} onChange={e => setPricePerDay(e.target.value)} placeholder="Price per day (Ksh) *" className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
             <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
               <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} className="accent-emerald-500" />
               Active
             </label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={2} className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
+            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={2} className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
           </div>
           <button onClick={save} disabled={saving || !name.trim() || !pricePerDay} className="mt-4 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">{saving ? 'Saving…' : 'Create Plan'}</button>
         </div>
@@ -98,7 +98,7 @@ export default function CafeteriaPlansPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? <p className="col-span-3 text-sm text-slate-400">Loading…</p> : plans.map(p => (
-          <div key={p.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <div key={p.id} className="rounded-2xl glass-panel p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-semibold text-slate-100">{p.name}</p>

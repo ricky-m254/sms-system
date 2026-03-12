@@ -163,45 +163,45 @@ export default function AdmissionsInquiriesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Inquiries</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}
         <h2 className="text-lg font-display font-semibold">New inquiry</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-3" onSubmit={submit}>
-          <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" placeholder="Parent name" value={form.parent_name} onChange={(e) => setForm((p) => ({ ...p, parent_name: e.target.value }))} required />
-          <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" placeholder="Parent phone" value={form.parent_phone} onChange={(e) => setForm((p) => ({ ...p, parent_phone: e.target.value }))} />
-          <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" placeholder="Parent email" value={form.parent_email} onChange={(e) => setForm((p) => ({ ...p, parent_email: e.target.value }))} />
-          <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" placeholder="Child name" value={form.child_name} onChange={(e) => setForm((p) => ({ ...p, child_name: e.target.value }))} required />
-          <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.inquiry_date} onChange={(e) => setForm((p) => ({ ...p, inquiry_date: e.target.value }))} required />
-          <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.inquiry_source} onChange={(e) => setForm((p) => ({ ...p, inquiry_source: e.target.value }))}>
+          <input className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" placeholder="Parent name" value={form.parent_name} onChange={(e) => setForm((p) => ({ ...p, parent_name: e.target.value }))} required />
+          <input className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" placeholder="Parent phone" value={form.parent_phone} onChange={(e) => setForm((p) => ({ ...p, parent_phone: e.target.value }))} />
+          <input className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" placeholder="Parent email" value={form.parent_email} onChange={(e) => setForm((p) => ({ ...p, parent_email: e.target.value }))} />
+          <input className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" placeholder="Child name" value={form.child_name} onChange={(e) => setForm((p) => ({ ...p, child_name: e.target.value }))} required />
+          <input type="date" className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.inquiry_date} onChange={(e) => setForm((p) => ({ ...p, inquiry_date: e.target.value }))} required />
+          <select className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.inquiry_source} onChange={(e) => setForm((p) => ({ ...p, inquiry_source: e.target.value }))}>
             {inquirySourceOptions.map((source) => (
               <option key={source} value={source}>
                 {source}
               </option>
             ))}
           </select>
-          <button className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-3">
+          <button className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-3">
             Create inquiry
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap gap-2">
           <input
-            className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             placeholder="Search parent/child"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="rounded-xl border border-slate-700 px-4 py-2 text-sm" onClick={load}>
+          <button className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm" onClick={load}>
             Search
           </button>
-          <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="all">All statuses</option>
             {statusOptions.map((value) => (
               <option key={value} value={value}>
@@ -214,9 +214,9 @@ export default function AdmissionsInquiriesPage() {
         {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading inquiries...</p> : null}
         {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
 
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[860px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Child</th>
                 <th className="px-4 py-3">Parent</th>
@@ -239,7 +239,7 @@ export default function AdmissionsInquiriesPage() {
                   <td className="px-4 py-3">{row.inquiry_date}</td>
                   <td className="px-4 py-3">
                     <select
-                      className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={statusById[row.id] ?? row.status}
                       onChange={(e) => setStatusById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     >
@@ -252,7 +252,7 @@ export default function AdmissionsInquiriesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={genderById[row.id] ?? 'Other'}
                       onChange={(e) => setGenderById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     >
@@ -265,14 +265,14 @@ export default function AdmissionsInquiriesPage() {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => updateStatus(row.id)}
                       >
                         Save status
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={() => convertToApplication(row.id)}
                         disabled={currentStatus === 'Applied' || currentStatus === 'Lost'}
                       >
@@ -280,7 +280,7 @@ export default function AdmissionsInquiriesPage() {
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={() => markLost(row.id)}
                         disabled={currentStatus === 'Lost'}
                       >

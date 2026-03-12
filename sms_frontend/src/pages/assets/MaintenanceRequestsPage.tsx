@@ -139,7 +139,7 @@ export default function MaintenanceRequestsPage() {
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
       <div className="flex gap-3 flex-wrap">
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-300">
           <option value="">All Statuses</option>
           {STATUSES.map(s => <option key={s}>{s}</option>)}
         </select>
@@ -151,7 +151,7 @@ export default function MaintenanceRequestsPage() {
         ) : filtered.length === 0 ? (
           <p className="text-sm text-slate-500 px-2">No maintenance requests found.</p>
         ) : filtered.map(r => (
-          <div key={r.id} className="rounded-2xl border border-slate-800 bg-slate-900/60">
+          <div key={r.id} className="rounded-2xl glass-panel">
             <div className="flex items-start justify-between gap-4 p-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -172,7 +172,7 @@ export default function MaintenanceRequestsPage() {
               </div>
             </div>
             {expandedId === r.id && (
-              <div className="border-t border-slate-800 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="border-t border-white/[0.07] p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div><p className="text-slate-500 uppercase tracking-wider mb-0.5">Due Date</p><p className="text-slate-200">{r.due_date || '—'}</p></div>
                 <div><p className="text-slate-500 uppercase tracking-wider mb-0.5">Cost Estimate</p><p className="text-slate-200">Ksh {Number(r.cost_estimate || 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}</p></div>
                 <div><p className="text-slate-500 uppercase tracking-wider mb-0.5">Actual Cost</p><p className="text-slate-200">Ksh {Number(r.actual_cost || 0).toLocaleString('en-KE', { minimumFractionDigits: 2 })}</p></div>
@@ -186,7 +186,7 @@ export default function MaintenanceRequestsPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-3 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Request' : 'New Request'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -194,54 +194,54 @@ export default function MaintenanceRequestsPage() {
             {error && <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-2 text-xs text-rose-200">{error}</div>}
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Title *</label>
-              <input value={form.title} onChange={e => setF('title', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="e.g. Broken window in Lab 2" />
+              <input value={form.title} onChange={e => setF('title', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" placeholder="e.g. Broken window in Lab 2" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Category</label>
-                <select value={form.category} onChange={e => setF('category', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+                <select value={form.category} onChange={e => setF('category', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                   <option value="">No category</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Priority</label>
-                <select value={form.priority} onChange={e => setF('priority', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+                <select value={form.priority} onChange={e => setF('priority', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                   {PRIORITIES.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Status</label>
-                <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+                <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                   {STATUSES.map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Location</label>
-                <input value={form.location} onChange={e => setF('location', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="Room / Block" />
+                <input value={form.location} onChange={e => setF('location', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" placeholder="Room / Block" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Due Date</label>
-                <input type="date" value={form.due_date} onChange={e => setF('due_date', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+                <input type="date" value={form.due_date} onChange={e => setF('due_date', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Cost Estimate (Ksh)</label>
-                <input type="number" value={form.cost_estimate} onChange={e => setF('cost_estimate', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="0" />
+                <input type="number" value={form.cost_estimate} onChange={e => setF('cost_estimate', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" placeholder="0" />
               </div>
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Description</label>
-              <textarea value={form.description} onChange={e => setF('description', e.target.value)} rows={3} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.description} onChange={e => setF('description', e.target.value)} rows={3} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
             <div className="flex gap-3 pt-1">
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50 hover:bg-emerald-400 transition">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
             </div>
           </div>
         </div>

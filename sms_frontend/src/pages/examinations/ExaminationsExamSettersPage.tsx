@@ -142,7 +142,7 @@ export default function ExaminationsExamSettersPage() {
       {/* Filter */}
       <div className="flex gap-3 flex-wrap">
         <select value={filterSession} onChange={e => setFilterSession(e.target.value)}
-          className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+          className="rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
           <option value="">All Sessions</option>
           {sessions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
@@ -172,14 +172,14 @@ export default function ExaminationsExamSettersPage() {
       {loading ? (
         <div className="py-20 text-center text-slate-500 animate-pulse">Loading...</div>
       ) : setters.length === 0 ? (
-        <div className="py-20 text-center text-slate-500 rounded-2xl border border-dashed border-slate-800">
+        <div className="py-20 text-center text-slate-500 rounded-2xl border border-dashed border-white/[0.07]">
           No exam setter assignments yet. Click "+ Assign Exam Setter" to begin.
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <div className="rounded-2xl glass-panel overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-700 text-xs uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-white/[0.09] text-xs uppercase tracking-wider text-slate-500">
                 <th className="px-4 py-3 text-left">Subject</th>
                 <th className="px-4 py-3 text-left">Class</th>
                 <th className="px-4 py-3 text-left">Session</th>
@@ -190,7 +190,7 @@ export default function ExaminationsExamSettersPage() {
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {setters.map(s => (
-                <tr key={s.id} className="hover:bg-slate-800/30 transition">
+                <tr key={s.id} className="hover:bg-white/[0.02] transition">
                   <td className="px-4 py-3 font-semibold text-slate-100">{s.subject_name}</td>
                   <td className="px-4 py-3 text-slate-300">{s.class_name}</td>
                   <td className="px-4 py-3 text-slate-400 text-xs">{s.session_name}</td>
@@ -216,7 +216,7 @@ export default function ExaminationsExamSettersPage() {
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.09] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-slate-100">{editing ? 'Edit Assignment' : 'Assign Exam Setter'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-4 w-4" /></button>
@@ -226,7 +226,7 @@ export default function ExaminationsExamSettersPage() {
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Exam Session *</label>
               <select value={form.session} onChange={e => setF('session', e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+                className="w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-100">
                 <option value="">Select session</option>
                 {sessions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
@@ -235,7 +235,7 @@ export default function ExaminationsExamSettersPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Subject *</label>
                 <select value={form.subject} onChange={e => setF('subject', e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+                  className="w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-100">
                   <option value="">Select subject</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
@@ -243,7 +243,7 @@ export default function ExaminationsExamSettersPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Class *</label>
                 <select value={form.school_class} onChange={e => setF('school_class', e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+                  className="w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-100">
                   <option value="">Select class</option>
                   {classes.map(c => <option key={c.id} value={c.id}>{c.display_name}</option>)}
                 </select>
@@ -252,7 +252,7 @@ export default function ExaminationsExamSettersPage() {
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Assigned Teacher *</label>
               <select value={form.teacher} onChange={e => setF('teacher', e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+                className="w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-100">
                 <option value="">Select teacher</option>
                 {users.map(u => <option key={u.id} value={u.id}>{teacherLabel(u)}</option>)}
               </select>
@@ -261,12 +261,12 @@ export default function ExaminationsExamSettersPage() {
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Submission Deadline</label>
                 <input type="date" value={form.deadline} onChange={e => setF('deadline', e.target.value)}
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+                  className="w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-100" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Notes</label>
                 <input value={form.notes} onChange={e => setF('notes', e.target.value)} placeholder="Optional"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+                  className="w-full rounded-xl border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-100" />
               </div>
             </div>
             <div className="flex gap-3 pt-1">
@@ -274,7 +274,7 @@ export default function ExaminationsExamSettersPage() {
                 className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50 hover:bg-emerald-400 transition">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Assign'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
             </div>
           </div>
         </div>

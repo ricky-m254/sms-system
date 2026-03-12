@@ -120,21 +120,21 @@ export default function BedSpacesPage() {
           <input
             type="text"
             placeholder="Search by bed or dormitory..."
-            className="w-full rounded-xl border border-slate-800 bg-slate-900/40 py-2.5 pl-10 pr-4 text-sm text-slate-200 placeholder:text-slate-600 focus:border-emerald-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-white/[0.07] bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-slate-200 placeholder:text-slate-600 focus:border-emerald-500/50 focus:outline-none"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        <select value={filterDorm} onChange={e => setFilterDorm(e.target.value)} className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm text-slate-300">
+        <select value={filterDorm} onChange={e => setFilterDorm(e.target.value)} className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5 text-sm text-slate-300">
           <option value="">All Dormitories</option>
           {dormitories.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
+      <div className="overflow-hidden rounded-2xl glass-panel shadow-xl">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-800/40">
+            <tr className="border-b border-white/[0.07] bg-white/[0.025]">
               <th className="px-6 py-4 font-semibold text-slate-300">Dormitory</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Bed Number</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Status</th>
@@ -175,7 +175,7 @@ export default function BedSpacesPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Bed Space' : 'Add Bed Space'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -184,7 +184,7 @@ export default function BedSpacesPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Dormitory *</label>
-              <select value={form.dormitory} onChange={e => setF('dormitory', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.dormitory} onChange={e => setF('dormitory', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">Select dormitory</option>
                 {dormitories.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
@@ -192,7 +192,7 @@ export default function BedSpacesPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Bed Number *</label>
-              <input value={form.bed_number} onChange={e => setF('bed_number', e.target.value)} placeholder="e.g. A-01, B-12" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+              <input value={form.bed_number} onChange={e => setF('bed_number', e.target.value)} placeholder="e.g. A-01, B-12" className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
             </div>
 
             <div className="flex items-center gap-3">
@@ -204,7 +204,7 @@ export default function BedSpacesPage() {
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-50">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

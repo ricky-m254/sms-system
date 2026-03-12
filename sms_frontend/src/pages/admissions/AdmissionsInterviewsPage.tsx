@@ -286,17 +286,17 @@ export default function AdmissionsInterviewsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Interviews</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}
         <h2 className="text-lg font-display font-semibold">Schedule interview</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={create}>
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.application}
             onChange={(e) => setForm((p) => ({ ...p, application: e.target.value }))}
             required
@@ -310,20 +310,20 @@ export default function AdmissionsInterviewsPage() {
           </select>
           <input
             type="date"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.interview_date}
             onChange={(e) => setForm((p) => ({ ...p, interview_date: e.target.value }))}
             required
           />
           <input
             type="time"
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.interview_time}
             onChange={(e) => setForm((p) => ({ ...p, interview_time: e.target.value }))}
             required
           />
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={form.interview_type}
             onChange={(e) => setForm((p) => ({ ...p, interview_type: e.target.value }))}
           >
@@ -332,22 +332,22 @@ export default function AdmissionsInterviewsPage() {
             <option value="Video">Video</option>
           </select>
           <input
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             placeholder="Location/Link"
             value={form.location}
             onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
           />
-          <button type="submit" className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-4">
+          <button type="submit" className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-4">
             Create
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-display font-semibold">Interview Calendar</h2>
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -360,12 +360,12 @@ export default function AdmissionsInterviewsPage() {
         </div>
         <div className="mt-4 space-y-3">
           {Object.entries(calendarGroups).map(([dateLabel, items]) => (
-            <div key={dateLabel} className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+            <div key={dateLabel} className="rounded-xl border border-white/[0.07] bg-slate-950/50 p-3">
               <p className="text-xs uppercase tracking-wide text-slate-400">{dateLabel}</p>
               <div className="mt-2 space-y-2">
                 {items.map((item) => (
                   <div key={item.id} className="flex flex-wrap items-center gap-2 text-sm text-slate-200">
-                    <span className="rounded-md border border-slate-700 px-2 py-1 text-xs">{formatDateTime(item.interview_date)}</span>
+                    <span className="rounded-md border border-white/[0.09] px-2 py-1 text-xs">{formatDateTime(item.interview_date)}</span>
                     <span>{item.application_number ?? `APP-${item.application}`}</span>
                     <span className="text-slate-400">({item.interview_type})</span>
                     <span className="text-slate-400">- {item.status}</span>
@@ -380,12 +380,12 @@ export default function AdmissionsInterviewsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
         {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading interviews...</p> : null}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[1120px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Application</th>
                 <th className="px-4 py-3">Date</th>
@@ -404,14 +404,14 @@ export default function AdmissionsInterviewsPage() {
                   <td className="px-4 py-3">
                     <input
                       type="datetime-local"
-                      className="w-[180px] rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="w-[180px] rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={dateById[row.id] ?? ''}
                       onChange={(e) => setDateById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     />
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={typeById[row.id] ?? row.interview_type}
                       onChange={(e) => setTypeById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     >
@@ -422,14 +422,14 @@ export default function AdmissionsInterviewsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <input
-                      className="w-full min-w-[160px] rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="w-full min-w-[160px] rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={locationById[row.id] ?? ''}
                       onChange={(e) => setLocationById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     />
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={statusById[row.id] ?? row.status}
                       onChange={(e) => setStatusById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                     >
@@ -441,7 +441,7 @@ export default function AdmissionsInterviewsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <input
-                      className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="w-full rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={feedbackById[row.id] ?? ''}
                       onChange={(e) => setFeedbackById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                       placeholder="Feedback"
@@ -451,7 +451,7 @@ export default function AdmissionsInterviewsPage() {
                     <input
                       type="number"
                       step="0.01"
-                      className="w-24 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs"
+                      className="w-24 rounded-lg border border-white/[0.07] bg-slate-950 px-2 py-1 text-xs"
                       value={scoreById[row.id] ?? ''}
                       onChange={(e) => setScoreById((prev) => ({ ...prev, [row.id]: e.target.value }))}
                       placeholder="Score"
@@ -461,28 +461,28 @@ export default function AdmissionsInterviewsPage() {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => saveSchedule(row)}
                       >
                         Save schedule
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => saveStatus(row)}
                       >
                         Save status
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => saveFeedback(row)}
                       >
                         Save feedback
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => markCompleted(row)}
                         disabled={row.status === 'Completed'}
                       >

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Home, Plus, Trash2, AlertCircle, Check } from 'lucide-react'
 
-const cls = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
+const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
 interface Hostel { name: string; gender: string; total_rooms: number; beds_per_room: number; fee_per_term: number }
 
@@ -44,26 +44,26 @@ export default function SettingsHostelConfigPage() {
 
       {/* Overview */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-xl glass-panel p-4">
           <p className="text-xs text-slate-500 mb-1">Total Hostels</p>
           <p className="text-2xl font-bold text-white">{hostels.length}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-xl glass-panel p-4">
           <p className="text-xs text-slate-500 mb-1">Total Capacity</p>
           <p className="text-2xl font-bold text-emerald-400">{totalCapacity.toLocaleString()}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-xl glass-panel p-4">
           <p className="text-xs text-slate-500 mb-1">Allocation Policy</p>
           <p className="text-sm font-semibold text-sky-300 capitalize">{allocationPolicy}</p>
         </div>
       </div>
 
       {/* Hostels */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Home className="h-4 w-4 text-violet-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Hostel Buildings</h2></div>
         <div className="space-y-4">
           {hostels.map((h, i) => (
-            <div key={i} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+            <div key={i} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 space-y-3">
               <div className="flex items-start gap-2 justify-between">
                 <input value={h.name} onChange={e => setHostels(p => p.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Hostel name" className={`${cls} font-semibold`} />
                 <button onClick={() => setHostels(p => p.filter((_, j) => j !== i))} className="mt-2 text-slate-600 hover:text-rose-400 transition flex-shrink-0"><Trash2 className="h-4 w-4" /></button>
@@ -103,7 +103,7 @@ export default function SettingsHostelConfigPage() {
       </section>
 
       {/* Policies */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <section className="rounded-2xl glass-panel p-6 space-y-4">
         <div className="flex items-center gap-2"><Home className="h-4 w-4 text-emerald-400" /><h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Allocation & Visit Policies</h2></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

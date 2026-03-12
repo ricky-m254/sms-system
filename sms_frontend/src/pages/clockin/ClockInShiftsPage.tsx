@@ -76,7 +76,7 @@ export default function ClockInShiftsPage() {
 
   return (
     <div className="space-y-6 font-sans text-slate-100">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex justify-between items-center">
+      <header className="rounded-2xl glass-panel p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-display font-semibold">Shift Schedule</h1>
           <p className="mt-2 text-sm text-slate-400">Configure school arrival times and late detection rules.</p>
@@ -91,14 +91,14 @@ export default function ClockInShiftsPage() {
       </header>
 
       {isAdding && (
-        <form onSubmit={handleAdd} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4 animate-in fade-in slide-in-from-top-4 shadow-2xl">
+        <form onSubmit={handleAdd} className="rounded-2xl glass-panel p-6 space-y-4 animate-in fade-in slide-in-from-top-4 shadow-2xl">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Define School Shift</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
              <div className="space-y-1">
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Shift Name</label>
               <input
                 required
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
                 placeholder="Morning Session"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -107,7 +107,7 @@ export default function ClockInShiftsPage() {
             <div className="space-y-1">
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Applicable To</label>
               <select
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
                 value={formData.person_type}
                 onChange={e => setFormData({ ...formData, person_type: e.target.value as any })}
               >
@@ -120,7 +120,7 @@ export default function ClockInShiftsPage() {
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Expected Arrival</label>
               <input
                 type="time"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
                 value={formData.expected_arrival}
                 onChange={e => setFormData({ ...formData, expected_arrival: e.target.value })}
               />
@@ -129,7 +129,7 @@ export default function ClockInShiftsPage() {
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Grace Period (Minutes)</label>
               <input
                 type="number"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
                 value={formData.grace_period_minutes}
                 onChange={e => setFormData({ ...formData, grace_period_minutes: parseInt(e.target.value) })}
               />
@@ -139,7 +139,7 @@ export default function ClockInShiftsPage() {
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Expected Departure</label>
               <input
                 type="time"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
                 value={formData.expected_departure}
                 onChange={e => setFormData({ ...formData, expected_departure: e.target.value })}
               />
@@ -147,7 +147,7 @@ export default function ClockInShiftsPage() {
             <div className="space-y-1">
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Shift Notes</label>
               <input
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
+                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none"
                 placeholder="Public holidays or early days..."
                 value={formData.notes}
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
@@ -170,11 +170,11 @@ export default function ClockInShiftsPage() {
         {isLoading ? (
           <div className="p-12 text-center text-slate-400">Loading schedules...</div>
         ) : shifts.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 italic rounded-2xl border border-slate-800 bg-slate-900/40">No shifts defined yet.</div>
+          <div className="p-12 text-center text-slate-500 italic rounded-2xl border border-white/[0.07] bg-white/[0.02]">No shifts defined yet.</div>
         ) : (
           shifts.map(shift => (
-            <article key={shift.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col md:flex-row items-center gap-8 group">
-              <div className="w-20 h-20 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
+            <article key={shift.id} className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row items-center gap-8 group">
+              <div className="w-20 h-20 rounded-2xl bg-slate-950 border border-white/[0.07] flex flex-col items-center justify-center">
                  <p className="text-[10px] font-bold text-slate-500 uppercase">Arrival</p>
                  <p className="text-xl font-bold text-emerald-400 font-mono tracking-tighter">{shift.expected_arrival}</p>
               </div>

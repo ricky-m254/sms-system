@@ -104,19 +104,19 @@ export default function AssetsCategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Asset Categories</h1>
         <p className="mt-2 text-sm text-slate-400">Classify assets and define depreciation rules.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={handleSubmit} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">{editingId ? 'Edit Category' : 'Add New Category'}</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Category Name</label>
             <input
               required
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -124,7 +124,7 @@ export default function AssetsCategoriesPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Depreciation Method</label>
             <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={depreciationMethod}
               onChange={(e) => setDepreciationMethod(e.target.value)}
             >
@@ -137,7 +137,7 @@ export default function AssetsCategoriesPage() {
             <label className="text-xs text-slate-400">Useful Life (Years)</label>
             <input
               type="number"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={usefulLifeYears}
               onChange={(e) => setUsefulLifeYears(e.target.value)}
             />
@@ -145,7 +145,7 @@ export default function AssetsCategoriesPage() {
           <div className="space-y-1">
             <label className="text-xs text-slate-400">Description</label>
             <input
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -163,7 +163,7 @@ export default function AssetsCategoriesPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-xl border border-slate-700 px-6 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
+              className="rounded-xl border border-white/[0.09] px-6 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
             >
               Cancel
             </button>
@@ -171,12 +171,12 @@ export default function AssetsCategoriesPage() {
         </div>
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Category List</h2>
         {error ? <p className="mt-4 text-xs text-rose-300">{error}</p> : null}
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-slate-800 text-slate-400">
+            <thead className="border-b border-white/[0.07] text-slate-400">
               <tr>
                 <th className="px-3 py-3 font-medium">Name</th>
                 <th className="px-3 py-3 font-medium">Depreciation</th>
@@ -186,7 +186,7 @@ export default function AssetsCategoriesPage() {
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {categories.map((cat) => (
-                <tr key={cat.id} className="group hover:bg-slate-800/30">
+                <tr key={cat.id} className="group hover:bg-white/[0.02]">
                   <td className="px-3 py-3">
                     <p className="font-semibold text-slate-200">{cat.name}</p>
                     <p className="text-xs text-slate-400">{cat.description}</p>

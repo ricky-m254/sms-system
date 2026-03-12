@@ -179,7 +179,7 @@ export default function FinanceFeeAssignmentsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Fee Assignments</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -188,7 +188,7 @@ export default function FinanceFeeAssignmentsPage() {
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading fee assignments...</p>
         </div>
       ) : null}
@@ -205,7 +205,7 @@ export default function FinanceFeeAssignmentsPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Assignment list</h2>
@@ -213,7 +213,7 @@ export default function FinanceFeeAssignmentsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <input
-              className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
               placeholder="Search student or fee"
               value={query}
               onChange={(event) => {
@@ -222,7 +222,7 @@ export default function FinanceFeeAssignmentsPage() {
               }}
             />
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -237,7 +237,7 @@ export default function FinanceFeeAssignmentsPage() {
               ))}
             </select>
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={feeFilter}
               onChange={(event) => {
                 setFeeFilter(event.target.value)
@@ -252,7 +252,7 @@ export default function FinanceFeeAssignmentsPage() {
               ))}
             </select>
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={termFilter}
               onChange={(event) => {
                 setTermFilter(event.target.value)
@@ -267,7 +267,7 @@ export default function FinanceFeeAssignmentsPage() {
               ))}
             </select>
             <select
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white sm:w-auto"
               value={statusFilter}
               onChange={(event) => {
                 setStatusFilter(event.target.value as 'all' | 'active' | 'inactive')
@@ -279,7 +279,7 @@ export default function FinanceFeeAssignmentsPage() {
               <option value="inactive">Inactive</option>
             </select>
             <button
-              className="w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 sm:w-auto"
+              className="w-full rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200 sm:w-auto"
               onClick={() => {
                 setQuery('')
                 setStudentFilter('all')
@@ -300,9 +300,9 @@ export default function FinanceFeeAssignmentsPage() {
           </div>
         </div>
         <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[840px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Fee</th>
@@ -360,14 +360,14 @@ export default function FinanceFeeAssignmentsPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >

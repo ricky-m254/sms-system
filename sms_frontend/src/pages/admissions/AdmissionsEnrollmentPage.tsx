@@ -130,18 +130,18 @@ export default function AdmissionsEnrollmentPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admissions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Enrollment Processing</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         {flash ? <p className="mb-4 text-sm text-emerald-300">{flash}</p> : null}
         {error ? <p className="mb-4 text-sm text-rose-300">{error}</p> : null}
         {isLoading ? <p className="mb-4 text-sm text-slate-400">Loading enrollment queue...</p> : null}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="w-full min-w-[860px] text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Application</th>
                 <th className="px-4 py-3">Student</th>
@@ -160,7 +160,7 @@ export default function AdmissionsEnrollmentPage() {
                       <button
                         type="button"
                         disabled={isEnrolling}
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
                         onClick={() => setSelectedId(row.id)}
                       >
                         Select
@@ -168,7 +168,7 @@ export default function AdmissionsEnrollmentPage() {
                       <button
                         type="button"
                         disabled={Boolean(checkingById[row.id]) || isEnrolling}
-                        className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60"
                         onClick={() => checkEligibility(row.id)}
                       >
                         {checkingById[row.id] ? 'Checking...' : 'Check'}
@@ -189,27 +189,27 @@ export default function AdmissionsEnrollmentPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Complete enrollment</h2>
         <p className="mt-1 text-sm text-slate-400">Selected application: {selectedId ?? '--'}</p>
         <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={enroll}>
-          <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.school_class} onChange={(e) => setForm((p) => ({ ...p, school_class: e.target.value }))} required>
+          <select className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.school_class} onChange={(e) => setForm((p) => ({ ...p, school_class: e.target.value }))} required>
             <option value="">Select class</option>
             {classes.map((item) => (
               <option key={item.id} value={item.id}>{item.display_name ?? `${item.name} ${item.stream ?? ''}`.trim()}</option>
             ))}
           </select>
-          <select className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.term} onChange={(e) => setForm((p) => ({ ...p, term: e.target.value }))} required>
+          <select className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.term} onChange={(e) => setForm((p) => ({ ...p, term: e.target.value }))} required>
             <option value="">Select term</option>
             {terms.map((item) => (
               <option key={item.id} value={item.id}>{item.name}</option>
             ))}
           </select>
-          <input className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" placeholder="Admission number (optional)" value={form.admission_number} onChange={(e) => setForm((p) => ({ ...p, admission_number: e.target.value }))} />
-          <input type="date" className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm" value={form.enrollment_date} onChange={(e) => setForm((p) => ({ ...p, enrollment_date: e.target.value }))} required />
+          <input className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" placeholder="Admission number (optional)" value={form.admission_number} onChange={(e) => setForm((p) => ({ ...p, admission_number: e.target.value }))} />
+          <input type="date" className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm" value={form.enrollment_date} onChange={(e) => setForm((p) => ({ ...p, enrollment_date: e.target.value }))} required />
           <button
             type="submit"
-            className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 md:col-span-4"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 md:col-span-4"
             disabled={!selectedId || isEnrolling}
           >
             {isEnrolling ? 'Enrolling...' : 'Enroll selected'}

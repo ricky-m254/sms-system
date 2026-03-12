@@ -166,43 +166,43 @@ export default function PlatformBackupRecoveryPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Backup & Recovery</h1>
       </header>
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
-      <section className="col-span-12 lg:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Backup Jobs</h2>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={createBackup}>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={backupForm.scope} onChange={(e) => setBackupForm((p) => ({ ...p, scope: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={backupForm.scope} onChange={(e) => setBackupForm((p) => ({ ...p, scope: e.target.value }))}>
             <option value="PLATFORM">Platform</option>
             <option value="TENANT">Tenant</option>
           </select>
-          <select disabled={backupForm.scope !== 'TENANT'} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={backupForm.tenant} onChange={(e) => setBackupForm((p) => ({ ...p, tenant: e.target.value }))}>
+          <select disabled={backupForm.scope !== 'TENANT'} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={backupForm.tenant} onChange={(e) => setBackupForm((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">Tenant (optional)</option>
             {tenants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={backupForm.backup_type} onChange={(e) => setBackupForm((p) => ({ ...p, backup_type: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={backupForm.backup_type} onChange={(e) => setBackupForm((p) => ({ ...p, backup_type: e.target.value }))}>
             <option value="FULL">Full</option>
             <option value="INCREMENTAL">Incremental</option>
           </select>
-          <input type="number" min={1} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Retention days" value={backupForm.retention_days} onChange={(e) => setBackupForm((p) => ({ ...p, retention_days: e.target.value }))} />
+          <input type="number" min={1} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Retention days" value={backupForm.retention_days} onChange={(e) => setBackupForm((p) => ({ ...p, retention_days: e.target.value }))} />
           <button type="submit" className="sm:col-span-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Queue Backup</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {backups.slice(0, 12).map((row) => (
-            <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="font-semibold">#{row.id} {row.scope} {row.backup_type} ({row.status})</p>
               <p className="text-xs text-slate-400">Tenant: {row.tenant_name ?? 'Platform'} | Size: {row.size_bytes || 0}</p>
               <div className="mt-2 space-x-2">
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void backupAction(row.id, 'start')}>Start</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void backupAction(row.id, 'complete')}>Complete</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void backupAction(row.id, 'fail')}>Fail</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void executeBackupEngine(row.id)}>Execute Engine</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void loadBackupExecutions(row.id)}>Executions</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void backupAction(row.id, 'start')}>Start</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void backupAction(row.id, 'complete')}>Complete</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void backupAction(row.id, 'fail')}>Fail</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void executeBackupEngine(row.id)}>Execute Engine</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void loadBackupExecutions(row.id)}>Executions</button>
               </div>
               {(executionsByBackup[row.id] ?? []).length > 0 ? (
-                <div className="mt-2 rounded border border-slate-800 p-2 text-xs text-slate-300">
+                <div className="mt-2 rounded border border-white/[0.07] p-2 text-xs text-slate-300">
                   {(executionsByBackup[row.id] ?? []).slice(0, 4).map((run) => (
                     <p key={run.id}>
                       {run.engine_mode}: {run.status} | {run.size_bytes} bytes
@@ -215,31 +215,31 @@ export default function PlatformBackupRecoveryPage() {
           {isLoading ? <p className="text-slate-400">Loading backups...</p> : null}
         </div>
       </section>
-      <section className="col-span-12 lg:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Restore Jobs</h2>
         <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={createRestore}>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={restoreForm.backup} onChange={(e) => setRestoreForm((p) => ({ ...p, backup: e.target.value }))} required>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={restoreForm.backup} onChange={(e) => setRestoreForm((p) => ({ ...p, backup: e.target.value }))} required>
             <option value="">Select backup job</option>
             {backups.map((item) => <option key={item.id} value={item.id}>#{item.id} {item.scope} {item.backup_type} ({item.status})</option>)}
           </select>
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={restoreForm.tenant} onChange={(e) => setRestoreForm((p) => ({ ...p, tenant: e.target.value }))}>
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={restoreForm.tenant} onChange={(e) => setRestoreForm((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">Tenant (optional)</option>
             {tenants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-          <input className="sm:col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Notes" value={restoreForm.notes} onChange={(e) => setRestoreForm((p) => ({ ...p, notes: e.target.value }))} />
+          <input className="sm:col-span-2 rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Notes" value={restoreForm.notes} onChange={(e) => setRestoreForm((p) => ({ ...p, notes: e.target.value }))} />
           <button type="submit" className="sm:col-span-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Request Restore</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {restores.slice(0, 12).map((row) => (
-            <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="font-semibold">Restore #{row.id} (backup #{row.backup})</p>
               <p className="text-xs text-slate-400">Tenant: {row.tenant_name ?? 'Platform'} | Status: {row.status}</p>
               <div className="mt-2 space-x-2">
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'approve')}>Approve</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'start')}>Start</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'complete')}>Complete</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'fail')}>Fail</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'execute')}>Execute</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'approve')}>Approve</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'start')}>Start</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'complete')}>Complete</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'fail')}>Fail</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void restoreAction(row.id, 'execute')}>Execute</button>
               </div>
             </div>
           ))}

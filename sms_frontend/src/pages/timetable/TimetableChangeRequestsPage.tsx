@@ -86,12 +86,12 @@ export default function TimetableChangeRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Change Requests</h1>
         <p className="mt-1 text-sm text-slate-400">Approval queue for timetable and duty changes.</p>
       </header>
 
-      <div className="flex border-b border-slate-800 gap-8 px-4">
+      <div className="flex border-b border-white/[0.07] gap-8 px-4">
         {['Pending', 'Approved', 'Rejected'].map((tab) => (
           <button
             key={tab}
@@ -120,13 +120,13 @@ export default function TimetableChangeRequestsPage() {
             <p className="text-slate-400 animate-pulse">Loading requests...</p>
           </div>
         ) : requests.length === 0 ? (
-          <div className="py-20 text-center border-2 border-dashed border-slate-800 rounded-2xl">
+          <div className="py-20 text-center border-2 border-dashed border-white/[0.07] rounded-2xl">
             <p className="text-slate-500 italic">No {activeTab.toLowerCase()} requests found.</p>
           </div>
         ) : (
           <div className="grid gap-6">
             {requests.map((request) => (
-              <article key={request.id} className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 flex flex-col md:flex-row gap-6">
+              <article key={request.id} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 flex flex-col md:flex-row gap-6">
                 <div className="flex-1 space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${getBadgeColor(request.request_type)}`}>
@@ -140,13 +140,13 @@ export default function TimetableChangeRequestsPage() {
                     <p className="text-sm text-emerald-400 mt-1 font-medium">{request.slot_display}</p>
                   </div>
 
-                  <div className="bg-slate-950/50 rounded-xl p-4 border border-slate-800/50">
+                  <div className="bg-slate-950/50 rounded-xl p-4 border border-white/[0.05]">
                     <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Reason</p>
                     <p className="text-sm text-slate-300 italic">"{request.reason}"</p>
                   </div>
 
                   {(request.status !== 'Pending') && (
-                    <div className="mt-4 pt-4 border-t border-slate-800/50 text-xs text-slate-400 flex flex-wrap gap-4">
+                    <div className="mt-4 pt-4 border-t border-white/[0.05] text-xs text-slate-400 flex flex-wrap gap-4">
                       <span>Reviewed by: <strong>{request.reviewed_by_name}</strong></span>
                       <span>Date: <strong>{request.reviewed_at ? formatDate(request.reviewed_at) : 'N/A'}</strong></span>
                     </div>
@@ -186,7 +186,7 @@ export default function TimetableChangeRequestsPage() {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <h3 className="text-xl font-display font-semibold mb-2">Reject Request</h3>
             <p className="text-sm text-slate-400 mb-6">Please provide a reason for rejecting this change request.</p>
             
@@ -196,7 +196,7 @@ export default function TimetableChangeRequestsPage() {
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Enter rejection notes..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition"
+              className="w-full bg-[#0d1421] border border-white/[0.07] rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition"
             />
 
             <div className="mt-8 flex gap-3">
@@ -208,7 +208,7 @@ export default function TimetableChangeRequestsPage() {
                 Confirm Rejection
               </button>
               <button
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-300 hover:bg-slate-900 transition"
+                className="flex-1 rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-300 hover:bg-[#0d1421] transition"
                 onClick={() => { setShowRejectModal(null); setRejectReason(''); }}
                 disabled={isProcessing}
               >

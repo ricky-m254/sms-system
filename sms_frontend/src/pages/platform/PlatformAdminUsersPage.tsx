@@ -170,7 +170,7 @@ export default function PlatformAdminUsersPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Super Admin Users & Roles</h1>
         <p className="mt-2 text-sm text-slate-300">
           Manage platform administrators: create users, change roles, activate/deactivate, revoke access, and reset passwords.
@@ -179,16 +179,16 @@ export default function PlatformAdminUsersPage() {
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Create or Grant Super Admin</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-5" onSubmit={grantAdmin}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="username" value={form.username} onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))} required />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="email" type="email" value={form.email} onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="password (optional)" type="password" value={form.password} onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} />
-          <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.role} onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value as AdminRole }))}>
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="username" value={form.username} onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))} required />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="email" type="email" value={form.email} onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="password (optional)" type="password" value={form.password} onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} />
+          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.role} onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value as AdminRole }))}>
             {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
           </select>
-          <label className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <label className="flex items-center gap-2 rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
             <input type="checkbox" checked={form.is_active} onChange={(e) => setForm((prev) => ({ ...prev, is_active: e.target.checked }))} />
             Active
           </label>
@@ -198,14 +198,14 @@ export default function PlatformAdminUsersPage() {
         </form>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Current Platform Admins</h2>
-          <button className="rounded-lg border border-slate-700 px-3 py-2 text-sm" onClick={() => void loadAdmins()}>Refresh</button>
+          <button className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => void loadAdmins()}>Refresh</button>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[1180px] w-full text-left text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Username</th>
                 <th className="px-3 py-2">Email</th>
@@ -225,14 +225,14 @@ export default function PlatformAdminUsersPage() {
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
                       <select
-                        className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs"
+                        className="rounded border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs"
                         value={roleEdits[row.id] ?? row.role}
                         onChange={(e) => setRoleEdits((prev) => ({ ...prev, [row.id]: e.target.value as AdminRole }))}
                       >
                         {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
                       </select>
                       <button
-                        className="rounded border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => void updateAdmin(row, { role: roleEdits[row.id] ?? row.role }, `Role updated for "${row.username}".`)}
                       >
                         Save
@@ -244,14 +244,14 @@ export default function PlatformAdminUsersPage() {
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
                       <input
-                        className="w-44 rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs"
+                        className="w-44 rounded border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs"
                         type="password"
                         placeholder="new password"
                         value={newPasswords[row.id] ?? ''}
                         onChange={(e) => setNewPasswords((prev) => ({ ...prev, [row.id]: e.target.value }))}
                       />
                       <button
-                        className="rounded border border-slate-700 px-2 py-1 text-xs"
+                        className="rounded border border-white/[0.09] px-2 py-1 text-xs"
                         onClick={() => setConfirmAction({ kind: 'reset-password', row })}
                       >
                         Reset
@@ -260,7 +260,7 @@ export default function PlatformAdminUsersPage() {
                   </td>
                   <td className="space-x-2 px-3 py-2">
                     <button
-                      className="rounded border border-slate-700 px-2 py-1 text-xs"
+                      className="rounded border border-white/[0.09] px-2 py-1 text-xs"
                       onClick={() => setConfirmAction({ kind: 'toggle-active', row })}
                     >
                       {row.is_active ? 'Deactivate' : 'Activate'}

@@ -41,7 +41,7 @@ export default function SettingsField({
             className={`relative h-7 w-12 rounded-full border transition ${
               isOn
                 ? 'border-emerald-400/60 bg-emerald-500/30'
-                : 'border-slate-700 bg-slate-900/60'
+                : 'border-slate-700 bg-[#0d1421]/60'
             }`}
           >
             <span

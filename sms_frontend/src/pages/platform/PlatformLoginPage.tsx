@@ -60,14 +60,14 @@ export default function PlatformLoginPage() {
             Platform-level access for tenant provisioning, support, monitoring, and analytics.
           </p>
         </div>
-        <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-2xl sm:p-8">
+        <div className="w-full max-w-md rounded-3xl border border-white/[0.07] bg-[#0d1421]/70 p-6 shadow-2xl sm:p-8">
           <h2 className="text-xl font-display font-semibold">Platform sign in</h2>
           <p className="mt-2 text-sm text-slate-400">Public schema login for Global Super Admin users.</p>
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block text-sm">
               Username
               <input
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
                 placeholder="platform-admin"
                 value={username}
                 onChange={(event) => setUsernameInput(event.target.value)}
@@ -77,7 +77,7 @@ export default function PlatformLoginPage() {
               Password
               <input
                 type="password"
-                className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
+                className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-emerald-400"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />

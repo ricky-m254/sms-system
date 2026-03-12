@@ -56,22 +56,22 @@ export default function LibraryReservationsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Reservations & Holds</h1>
         <p className="mt-2 text-sm text-slate-400">Queue management with pickup and cancellation.</p>
       </header>
 
-      <form onSubmit={createReservation} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <form onSubmit={createReservation} className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Place Reservation</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Resource ID"
             value={resourceId}
             onChange={(e) => setResourceId(e.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
+            className="rounded-xl border border-white/[0.09] bg-slate-950/70 px-3 py-2 text-sm"
             placeholder="Member ID"
             value={memberId}
             onChange={(e) => setMemberId(e.target.value)}
@@ -83,7 +83,7 @@ export default function LibraryReservationsPage() {
         {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
       </form>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="rounded-2xl glass-panel p-6">
         <h2 className="text-sm font-semibold text-slate-200">Reservation List</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -99,7 +99,7 @@ export default function LibraryReservationsPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
+                <tr key={row.id} className="border-t border-white/[0.07]">
                   <td className="px-2 py-2">{row.id}</td>
                   <td className="px-2 py-2">{row.resource_title || '-'}</td>
                   <td className="px-2 py-2">{row.member_member_id || '-'}</td>

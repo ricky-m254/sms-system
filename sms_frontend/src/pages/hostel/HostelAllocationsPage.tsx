@@ -138,17 +138,17 @@ export default function HostelAllocationsPage() {
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
       <div className="flex items-center gap-3">
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm text-slate-300">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5 text-sm text-slate-300">
           <option value="">All Statuses</option>
           <option value="Active">Active</option>
           <option value="Checked Out">Checked Out</option>
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl">
+      <div className="overflow-hidden rounded-2xl glass-panel shadow-xl">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-800/40">
+            <tr className="border-b border-white/[0.07] bg-white/[0.025]">
               <th className="px-6 py-4 font-semibold text-slate-300">Student</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Dorm & Bed</th>
               <th className="px-6 py-4 font-semibold text-slate-300">Term</th>
@@ -166,7 +166,7 @@ export default function HostelAllocationsPage() {
               <tr key={alloc.id} className="group hover:bg-emerald-500/5 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400 border border-slate-700">
+                    <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400 border border-white/[0.09]">
                       <User className="h-4 w-4" />
                     </div>
                     <span className="font-semibold text-slate-200">{alloc.student_name || `Student #${alloc.student}`}</span>
@@ -180,7 +180,7 @@ export default function HostelAllocationsPage() {
                 </td>
                 <td className="px-6 py-4 text-slate-400">{alloc.term_name || '—'}</td>
                 <td className="px-6 py-4 text-center">
-                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800/60 px-2 py-1 text-xs font-mono text-slate-400">
+                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.035] px-2 py-1 text-xs font-mono text-slate-400">
                     <Calendar className="h-3 w-3" />
                     {alloc.check_in_date}
                   </div>
@@ -206,7 +206,7 @@ export default function HostelAllocationsPage() {
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Allocation' : 'New Allocation'}</h2>
               <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
@@ -215,7 +215,7 @@ export default function HostelAllocationsPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Student *</label>
-              <select value={form.student} onChange={e => setF('student', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.student} onChange={e => setF('student', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">Select student</option>
                 {students.map(s => <option key={s.id} value={s.id}>{`${s.first_name} ${s.last_name}`.trim()} ({s.admission_number})</option>)}
               </select>
@@ -223,7 +223,7 @@ export default function HostelAllocationsPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Bed Space</label>
-              <select value={form.bed} onChange={e => setF('bed', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.bed} onChange={e => setF('bed', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">No bed assigned</option>
                 {availableBeds.map(b => <option key={b.id} value={b.id}>{b.dormitory_name} — {b.bed_number}</option>)}
               </select>
@@ -231,7 +231,7 @@ export default function HostelAllocationsPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Term</label>
-              <select value={form.term} onChange={e => setF('term', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.term} onChange={e => setF('term', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="">No term</option>
                 {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
@@ -240,17 +240,17 @@ export default function HostelAllocationsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Check-in Date *</label>
-                <input type="date" value={form.check_in_date} onChange={e => setF('check_in_date', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+                <input type="date" value={form.check_in_date} onChange={e => setF('check_in_date', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
               </div>
               <div>
                 <label className="text-xs text-slate-400 mb-1 block">Check-out Date</label>
-                <input type="date" value={form.check_out_date} onChange={e => setF('check_out_date', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
+                <input type="date" value={form.check_out_date} onChange={e => setF('check_out_date', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200" />
               </div>
             </div>
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Status</label>
-              <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
+              <select value={form.status} onChange={e => setF('status', e.target.value)} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200">
                 <option value="Active">Active</option>
                 <option value="Checked Out">Checked Out</option>
               </select>
@@ -258,14 +258,14 @@ export default function HostelAllocationsPage() {
 
             <div>
               <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
+              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-slate-200 resize-none" />
             </div>
 
             <div className="flex gap-3 pt-1">
               <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-50">
                 {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
               </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
             </div>
           </div>
         </div>

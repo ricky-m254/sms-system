@@ -135,59 +135,59 @@ export default function AcademicsCalendarPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Academics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Academic Calendar</h1>
         <p className="mt-2 text-sm text-slate-400">Create school calendar events and export iCal files.</p>
       </header>
 
-      {isLoading ? <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">Loading calendar...</div> : null}
+      {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading calendar...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">{error}</div> : null}
       {flash ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-xs text-emerald-200">{flash}</div> : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-display font-semibold">Create Event</h2>
-          <button className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200" onClick={exportCalendar}>
+          <button className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs font-semibold text-slate-200" onClick={exportCalendar}>
             Export iCal
           </button>
         </div>
         <form className="mt-4 grid gap-3" onSubmit={createEvent}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required />
           <div className="grid gap-3 sm:grid-cols-4">
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.event_type} onChange={(e) => setForm((p) => ({ ...p, event_type: e.target.value }))}>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.event_type} onChange={(e) => setForm((p) => ({ ...p, event_type: e.target.value }))}>
               {['Holiday', 'Exam', 'Sports', 'Trip', 'Meeting', 'Closure', 'Other'].map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
-            <input type="date" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.start_date} onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))} required />
-            <input type="date" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.end_date} onChange={(e) => setForm((p) => ({ ...p, end_date: e.target.value }))} required />
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.scope} onChange={(e) => setForm((p) => ({ ...p, scope: e.target.value as 'School-wide' | 'Class-specific' | 'Staff-only' }))}>
+            <input type="date" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.start_date} onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))} required />
+            <input type="date" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.end_date} onChange={(e) => setForm((p) => ({ ...p, end_date: e.target.value }))} required />
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.scope} onChange={(e) => setForm((p) => ({ ...p, scope: e.target.value as 'School-wide' | 'Class-specific' | 'Staff-only' }))}>
               {['School-wide', 'Class-specific', 'Staff-only'].map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.academic_year} onChange={(e) => setForm((p) => ({ ...p, academic_year: e.target.value }))} required>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.academic_year} onChange={(e) => setForm((p) => ({ ...p, academic_year: e.target.value }))} required>
               <option value="">Academic Year</option>
               {years.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.term} onChange={(e) => setForm((p) => ({ ...p, term: e.target.value }))}>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.term} onChange={(e) => setForm((p) => ({ ...p, term: e.target.value }))}>
               <option value="">Term (optional)</option>
               {terms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
-            <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={form.class_section} onChange={(e) => setForm((p) => ({ ...p, class_section: e.target.value }))} disabled={form.scope !== 'Class-specific'}>
+            <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={form.class_section} onChange={(e) => setForm((p) => ({ ...p, class_section: e.target.value }))} disabled={form.scope !== 'Class-specific'}>
               <option value="">Class (if class-specific)</option>
               {classes.map((item) => <option key={item.id} value={item.id}>{item.display_name ?? item.name}</option>)}
             </select>
           </div>
-          <textarea className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
+          <textarea className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
           <button type="submit" className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900">Create Event</button>
         </form>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Calendar Events</h2>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="w-full min-w-[980px] text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2 text-left">Title</th>
                 <th className="px-3 py-2 text-left">Type</th>
@@ -208,7 +208,7 @@ export default function AcademicsCalendarPage() {
                   <td className="px-3 py-2">{item.scope} {item.class_section_name ? `(${item.class_section_name})` : ''}</td>
                   <td className="px-3 py-2">{item.is_public ? 'Yes' : 'No'}</td>
                   <td className="px-3 py-2">
-                    <button className="rounded-lg border border-slate-700 px-2 py-1 text-xs" onClick={() => setArchiveTarget(item)}>
+                    <button className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs" onClick={() => setArchiveTarget(item)}>
                       Archive
                     </button>
                   </td>

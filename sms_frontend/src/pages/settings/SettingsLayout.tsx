@@ -97,7 +97,7 @@ function SidebarGroup({ group }: { group: SidebarGroup }) {
     <div>
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-800/40"
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition hover:bg-white/[0.025]"
       >
         <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${group.color}`} />
         <span className="flex-1 text-[11px] font-bold uppercase tracking-widest text-slate-500">{group.label}</span>
@@ -124,7 +124,7 @@ function SidebarGroup({ group }: { group: SidebarGroup }) {
                     `flex items-center rounded-lg px-3 py-2 text-xs transition ${
                       isActive
                         ? 'bg-emerald-500/15 text-emerald-200 font-medium'
-                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-slate-100'
+                        : 'text-slate-300 hover:bg-white/[0.03] hover:text-slate-100'
                     }`
                   }
                 >
@@ -147,7 +147,7 @@ export default function SettingsLayout() {
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-12 gap-4 px-4 py-6 sm:gap-6 sm:px-6 sm:py-8">
         {/* Sidebar */}
         <aside className="col-span-12 md:col-span-4 lg:col-span-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sticky top-6">
+          <div className="rounded-2xl glass-panel p-4 sticky top-6">
             <ModuleToolbar />
 
             {/* Control Center header */}
@@ -163,7 +163,7 @@ export default function SettingsLayout() {
 
             {/* Mobile toggle */}
             <button
-              className="w-full rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-300 mb-3 md:hidden"
+              className="w-full rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-300 mb-3 md:hidden"
               onClick={() => setMobileOpen(p => !p)}
             >
               {mobileOpen ? 'Hide menu' : 'Show menu'}
@@ -179,7 +179,7 @@ export default function SettingsLayout() {
                 ← Back to Dashboard
               </button>
 
-              <div className="border-t border-slate-800/60 pt-3 space-y-3">
+              <div className="border-t border-white/[0.06] pt-3 space-y-3">
                 {SIDEBAR_GROUPS.map(group => (
                   <SidebarGroup key={group.label} group={group} />
                 ))}

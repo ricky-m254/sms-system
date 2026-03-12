@@ -193,7 +193,7 @@ export default function FinanceReconciliationPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Gateway and Reconciliation</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -202,7 +202,7 @@ export default function FinanceReconciliationPage() {
       </header>
 
       {busy ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+        <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">
           Loading reconciliation data...
         </div>
       ) : null}
@@ -217,20 +217,20 @@ export default function FinanceReconciliationPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 xl:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 xl:col-span-6 rounded-2xl glass-panel p-5">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Gateway Transactions</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
               onClick={exportGatewayCsv}
             >
               Export CSV
             </button>
             <button
               type="button"
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
               onClick={() => void loadData()}
               disabled={busy || actingLine !== null || actingTxId !== null}
             >
@@ -238,9 +238,9 @@ export default function FinanceReconciliationPage() {
             </button>
           </div>
         </div>
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[820px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Provider</th>
                 <th className="px-3 py-2">External ID</th>
@@ -262,7 +262,7 @@ export default function FinanceReconciliationPage() {
                     {!tx.is_reconciled ? (
                       <button
                         type="button"
-                        className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                        className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                         onClick={() => void markReconciled(tx.id)}
                         disabled={actingTxId !== null || actingLine !== null || busy}
                       >
@@ -286,20 +286,20 @@ export default function FinanceReconciliationPage() {
         </div>
       </section>
 
-      <section className="col-span-12 xl:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 xl:col-span-6 rounded-2xl glass-panel p-5">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Webhook Events</h2>
           <button
             type="button"
-            className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+            className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
             onClick={exportEventsCsv}
           >
             Export CSV
           </button>
         </div>
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[760px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Provider</th>
                 <th className="px-3 py-2">Type</th>
@@ -330,11 +330,11 @@ export default function FinanceReconciliationPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="col-span-12 rounded-2xl glass-panel p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold">Bank Statement Lines</h2>
           <div className="flex flex-wrap gap-2">
-            <label className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 cursor-pointer">
+            <label className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200 cursor-pointer">
               {isImporting ? 'Importing...' : 'Import CSV'}
               <input
                 type="file"
@@ -346,7 +346,7 @@ export default function FinanceReconciliationPage() {
             </label>
             <button
               type="button"
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200"
               onClick={() => void exportLinesCsv()}
               disabled={isImporting || busy || actingLine !== null || actingTxId !== null}
             >
@@ -356,12 +356,12 @@ export default function FinanceReconciliationPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search reference/narration/source"
-              className="w-72 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="w-72 rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             />
             <select
               value={lineStatus}
               onChange={(e) => setLineStatus(e.target.value)}
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
             >
               <option value="">All statuses</option>
               <option value="UNMATCHED">UNMATCHED</option>
@@ -371,7 +371,7 @@ export default function FinanceReconciliationPage() {
             </select>
             <button
               type="button"
-              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-xs text-slate-200"
               onClick={() => {
                 setSearch('')
                 setLineStatus('')
@@ -381,9 +381,9 @@ export default function FinanceReconciliationPage() {
             </button>
           </div>
         </div>
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[1060px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-3 py-2">Date</th>
                 <th className="px-3 py-2">Amount</th>
@@ -407,7 +407,7 @@ export default function FinanceReconciliationPage() {
                     <div className="flex flex-wrap gap-1">
                       <button
                         type="button"
-                        className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                        className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                         onClick={() => void withLineAction(line.id, 'auto-match')}
                         disabled={actingLine !== null || actingTxId !== null || busy}
                       >
@@ -417,7 +417,7 @@ export default function FinanceReconciliationPage() {
                       </button>
                       <button
                         type="button"
-                        className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                        className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                         onClick={() => void withLineAction(line.id, 'clear')}
                         disabled={actingLine !== null || actingTxId !== null || busy}
                       >
@@ -427,7 +427,7 @@ export default function FinanceReconciliationPage() {
                       </button>
                       <button
                         type="button"
-                        className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                        className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                         onClick={() => void withLineAction(line.id, 'unmatch')}
                         disabled={actingLine !== null || actingTxId !== null || busy}
                       >
@@ -437,7 +437,7 @@ export default function FinanceReconciliationPage() {
                       </button>
                       <button
                         type="button"
-                        className="rounded border border-slate-700 px-2 py-0.5 text-[11px] text-slate-200"
+                        className="rounded border border-white/[0.09] px-2 py-0.5 text-[11px] text-slate-200"
                         onClick={() => void withLineAction(line.id, 'ignore')}
                         disabled={actingLine !== null || actingTxId !== null || busy}
                       >

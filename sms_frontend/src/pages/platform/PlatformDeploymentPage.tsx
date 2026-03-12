@@ -236,55 +236,55 @@ export default function PlatformDeploymentPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <h1 className="text-2xl font-display font-semibold">Deployment & Maintenance</h1>
       </header>
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
-      <section className="col-span-12 lg:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Maintenance Windows</h2>
-        <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+        <div className="mt-3 rounded-lg border border-white/[0.07] bg-slate-950/60 p-3 text-xs text-slate-300">
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={forceWindowComplete} onChange={(e) => setForceWindowComplete(e.target.checked)} />
             Force early completion when using Complete
           </label>
         </div>
         <form className="mt-4 grid gap-3" onSubmit={createWindow}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={windowForm.title} onChange={(e) => setWindowForm((p) => ({ ...p, title: e.target.value }))} required />
-          <textarea className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" rows={2} placeholder="Description" value={windowForm.description} onChange={(e) => setWindowForm((p) => ({ ...p, description: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Title" value={windowForm.title} onChange={(e) => setWindowForm((p) => ({ ...p, title: e.target.value }))} required />
+          <textarea className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" rows={2} placeholder="Description" value={windowForm.description} onChange={(e) => setWindowForm((p) => ({ ...p, description: e.target.value }))} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <input type="datetime-local" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={windowForm.starts_at} onChange={(e) => setWindowForm((p) => ({ ...p, starts_at: e.target.value }))} required />
-            <input type="datetime-local" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={windowForm.ends_at} onChange={(e) => setWindowForm((p) => ({ ...p, ends_at: e.target.value }))} required />
+            <input type="datetime-local" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={windowForm.starts_at} onChange={(e) => setWindowForm((p) => ({ ...p, starts_at: e.target.value }))} required />
+            <input type="datetime-local" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={windowForm.ends_at} onChange={(e) => setWindowForm((p) => ({ ...p, ends_at: e.target.value }))} required />
           </div>
           <label className="text-sm text-slate-300"><input type="checkbox" className="mr-2" checked={windowForm.notify_tenants} onChange={(e) => setWindowForm((p) => ({ ...p, notify_tenants: e.target.checked }))} />Notify tenants</label>
           <button type="submit" className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Schedule Window</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {windows.slice(0, 10).map((row) => (
-            <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="font-semibold">{row.title}</p>
               <p className="text-xs text-slate-400">{row.starts_at} - {row.ends_at}</p>
               <p className="text-xs text-slate-300">Status: {row.status}</p>
               <div className="mt-2 space-x-2">
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void windowAction(row.id, 'start')}>Start</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void windowAction(row.id, 'complete')}>Complete</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void windowAction(row.id, 'cancel')}>Cancel</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void windowAction(row.id, 'start')}>Start</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void windowAction(row.id, 'complete')}>Complete</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void windowAction(row.id, 'cancel')}>Cancel</button>
               </div>
             </div>
           ))}
           {isLoading ? <p className="text-slate-400">Loading windows...</p> : null}
         </div>
       </section>
-      <section className="col-span-12 lg:col-span-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 lg:col-span-6 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-semibold">Releases & Feature Flags</h2>
-        <div className="mt-3 grid gap-3 rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3 rounded-lg border border-white/[0.07] bg-slate-950/60 p-3 text-xs text-slate-300 sm:grid-cols-3">
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={allowStartWithoutMaintenance} onChange={(e) => setAllowStartWithoutMaintenance(e.target.checked)} />
             Allow start without maintenance window
           </label>
           <label className="inline-flex items-center gap-2">
             Completion health status
-            <select className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs" value={releaseHealthStatus} onChange={(e) => setReleaseHealthStatus(e.target.value as 'healthy' | 'degraded' | 'failed')}>
+            <select className="rounded border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs" value={releaseHealthStatus} onChange={(e) => setReleaseHealthStatus(e.target.value as 'healthy' | 'degraded' | 'failed')}>
               <option value="healthy">healthy</option>
               <option value="degraded">degraded</option>
               <option value="failed">failed</option>
@@ -296,24 +296,24 @@ export default function PlatformDeploymentPage() {
           </label>
         </div>
         <form className="mt-4 grid gap-3" onSubmit={createRelease}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Version (e.g. v1.2.0)" value={releaseForm.version} onChange={(e) => setReleaseForm((p) => ({ ...p, version: e.target.value }))} required />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Environment" value={releaseForm.environment} onChange={(e) => setReleaseForm((p) => ({ ...p, environment: e.target.value }))} />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Notes" value={releaseForm.notes} onChange={(e) => setReleaseForm((p) => ({ ...p, notes: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Version (e.g. v1.2.0)" value={releaseForm.version} onChange={(e) => setReleaseForm((p) => ({ ...p, version: e.target.value }))} required />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Environment" value={releaseForm.environment} onChange={(e) => setReleaseForm((p) => ({ ...p, environment: e.target.value }))} />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Notes" value={releaseForm.notes} onChange={(e) => setReleaseForm((p) => ({ ...p, notes: e.target.value }))} />
           <button type="submit" className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900">Create Release</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {releases.slice(0, 8).map((row) => (
-            <div key={row.id} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <div key={row.id} className="rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <p className="font-semibold">{row.version} ({row.environment})</p>
               <p className="text-xs text-slate-300">Status: {row.status}</p>
               <div className="mt-2 space-x-2">
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'start')}>Start</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'complete')}>Complete</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'fail')}>Fail</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'rollback')}>Rollback</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void triggerPipeline(row.id)}>Trigger Pipeline</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void runHealthChecks(row.id)}>Run Health Checks</button>
-                <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void loadHookRuns(row.id)}>Hook Runs</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'start')}>Start</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'complete')}>Complete</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'fail')}>Fail</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void releaseAction(row.id, 'rollback')}>Rollback</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void triggerPipeline(row.id)}>Trigger Pipeline</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void runHealthChecks(row.id)}>Run Health Checks</button>
+                <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void loadHookRuns(row.id)}>Hook Runs</button>
               </div>
               {row.health_summary?.status ? (
                 <p className="mt-2 text-xs text-slate-400">
@@ -321,7 +321,7 @@ export default function PlatformDeploymentPage() {
                 </p>
               ) : null}
               {(hookRunsByRelease[row.id] ?? []).length > 0 ? (
-                <div className="mt-2 rounded border border-slate-800 p-2 text-xs text-slate-300">
+                <div className="mt-2 rounded border border-white/[0.07] p-2 text-xs text-slate-300">
                   {(hookRunsByRelease[row.id] ?? []).slice(0, 4).map((run) => (
                     <p key={run.id}>
                       {run.hook_type}: {run.status} {run.response_status ? `(${run.response_status})` : ''} {run.error ? `- ${run.error}` : ''}
@@ -333,28 +333,28 @@ export default function PlatformDeploymentPage() {
           ))}
         </div>
         <form className="mt-6 grid gap-3" onSubmit={createFlag}>
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Flag key" value={flagForm.key} onChange={(e) => setFlagForm((p) => ({ ...p, key: e.target.value }))} required />
-          <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Description" value={flagForm.description} onChange={(e) => setFlagForm((p) => ({ ...p, description: e.target.value }))} />
-          <input type="number" min={0} max={100} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Rollout %" value={flagForm.rollout_percent} onChange={(e) => setFlagForm((p) => ({ ...p, rollout_percent: e.target.value }))} />
-          <button type="submit" className="rounded-lg border border-slate-700 px-4 py-2 text-sm">Create Flag</button>
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Flag key" value={flagForm.key} onChange={(e) => setFlagForm((p) => ({ ...p, key: e.target.value }))} required />
+          <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Description" value={flagForm.description} onChange={(e) => setFlagForm((p) => ({ ...p, description: e.target.value }))} />
+          <input type="number" min={0} max={100} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Rollout %" value={flagForm.rollout_percent} onChange={(e) => setFlagForm((p) => ({ ...p, rollout_percent: e.target.value }))} />
+          <button type="submit" className="rounded-lg border border-white/[0.09] px-4 py-2 text-sm">Create Flag</button>
         </form>
         <div className="mt-4 space-y-2 text-sm">
           {flags.slice(0, 10).map((flag) => (
-            <div key={flag.id} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+            <div key={flag.id} className="flex items-center justify-between rounded-lg border border-white/[0.07] bg-slate-950/60 p-3">
               <div><p className="font-semibold">{flag.key}</p><p className="text-xs text-slate-400">{flag.description || '--'} | rollout {flag.rollout_percent}%</p></div>
-              <button className="rounded border border-slate-700 px-2 py-1 text-xs" onClick={() => void toggleFlag(flag.id)}>{flag.is_enabled ? 'Disable' : 'Enable'}</button>
+              <button className="rounded border border-white/[0.09] px-2 py-1 text-xs" onClick={() => void toggleFlag(flag.id)}>{flag.is_enabled ? 'Disable' : 'Enable'}</button>
             </div>
           ))}
         </div>
-        <form className="mt-4 grid gap-2 rounded-lg border border-slate-800 bg-slate-950/60 p-3" onSubmit={evaluateFlag}>
+        <form className="mt-4 grid gap-2 rounded-lg border border-white/[0.07] bg-slate-950/60 p-3" onSubmit={evaluateFlag}>
           <p className="text-xs uppercase tracking-wide text-slate-400">Runtime Flag Evaluation</p>
-          <input className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs" placeholder="flag key" value={flagEval.key} onChange={(e) => setFlagEval((p) => ({ ...p, key: e.target.value }))} required />
+          <input className="rounded border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs" placeholder="flag key" value={flagEval.key} onChange={(e) => setFlagEval((p) => ({ ...p, key: e.target.value }))} required />
           <div className="grid gap-2 sm:grid-cols-2">
-            <input className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs" placeholder="tenant_id (optional)" value={flagEval.tenant_id} onChange={(e) => setFlagEval((p) => ({ ...p, tenant_id: e.target.value }))} />
-            <input className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs" placeholder="actor_id (optional)" value={flagEval.actor_id} onChange={(e) => setFlagEval((p) => ({ ...p, actor_id: e.target.value }))} />
+            <input className="rounded border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs" placeholder="tenant_id (optional)" value={flagEval.tenant_id} onChange={(e) => setFlagEval((p) => ({ ...p, tenant_id: e.target.value }))} />
+            <input className="rounded border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs" placeholder="actor_id (optional)" value={flagEval.actor_id} onChange={(e) => setFlagEval((p) => ({ ...p, actor_id: e.target.value }))} />
           </div>
-          <button type="submit" className="rounded border border-slate-700 px-3 py-1 text-xs">Evaluate Flag</button>
-          {flagEval.result ? <pre className="overflow-x-auto rounded border border-slate-800 p-2 text-[11px] text-slate-300">{flagEval.result}</pre> : null}
+          <button type="submit" className="rounded border border-white/[0.09] px-3 py-1 text-xs">Evaluate Flag</button>
+          {flagEval.result ? <pre className="overflow-x-auto rounded border border-white/[0.07] p-2 text-[11px] text-slate-300">{flagEval.result}</pre> : null}
         </form>
       </section>
     </div>

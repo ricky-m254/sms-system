@@ -262,7 +262,7 @@ export default function AcademicsSubjectsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Academics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Subjects & Curriculum</h1>
         <p className="mt-2 text-sm text-slate-400">
@@ -270,21 +270,21 @@ export default function AcademicsSubjectsPage() {
         </p>
       </header>
 
-      {isLoading ? <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">Loading subjects and curriculum...</div> : null}
+      {isLoading ? <div className="col-span-12 rounded-2xl glass-panel p-4 text-sm text-slate-300">Loading subjects and curriculum...</div> : null}
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">{error}</div> : null}
       {flash ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-xs text-emerald-200">{flash}</div> : null}
 
       <section className="col-span-12 grid gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Departments</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitDepartment}>
-            <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Department name" value={departmentForm.name} onChange={(e) => setDepartmentForm((prev) => ({ ...prev, name: e.target.value }))} required />
-            <textarea className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Description" value={departmentForm.description} onChange={(e) => setDepartmentForm((prev) => ({ ...prev, description: e.target.value }))} rows={2} />
+            <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Department name" value={departmentForm.name} onChange={(e) => setDepartmentForm((prev) => ({ ...prev, name: e.target.value }))} required />
+            <textarea className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Description" value={departmentForm.description} onChange={(e) => setDepartmentForm((prev) => ({ ...prev, description: e.target.value }))} rows={2} />
             <button className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900" type="submit">Create department</button>
           </form>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="w-full min-w-[420px] text-sm">
-              <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Name</th><th className="px-3 py-2 text-left">Description</th></tr></thead>
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Name</th><th className="px-3 py-2 text-left">Description</th></tr></thead>
               <tbody className="divide-y divide-slate-800">
                 {sortedDepartments.map((item) => (
                   <tr key={item.id} className="bg-slate-950/50"><td className="px-3 py-2">{item.name}</td><td className="px-3 py-2">{item.description || '--'}</td></tr>
@@ -294,29 +294,29 @@ export default function AcademicsSubjectsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Subjects</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitSubject}>
             <div className="grid gap-3 sm:grid-cols-2">
-              <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Subject name" value={subjectForm.name} onChange={(e) => setSubjectForm((prev) => ({ ...prev, name: e.target.value }))} required />
-              <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Code" value={subjectForm.code} onChange={(e) => setSubjectForm((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))} required />
+              <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Subject name" value={subjectForm.name} onChange={(e) => setSubjectForm((prev) => ({ ...prev, name: e.target.value }))} required />
+              <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Code" value={subjectForm.code} onChange={(e) => setSubjectForm((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))} required />
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={subjectForm.department} onChange={(e) => setSubjectForm((prev) => ({ ...prev, department: e.target.value }))}>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={subjectForm.department} onChange={(e) => setSubjectForm((prev) => ({ ...prev, department: e.target.value }))}>
                 <option value="">No department</option>
                 {sortedDepartments.map((dep) => <option key={dep.id} value={dep.id}>{dep.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={subjectForm.subject_type} onChange={(e) => setSubjectForm((prev) => ({ ...prev, subject_type: e.target.value as 'Compulsory' | 'Elective' }))}>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={subjectForm.subject_type} onChange={(e) => setSubjectForm((prev) => ({ ...prev, subject_type: e.target.value as 'Compulsory' | 'Elective' }))}>
                 <option value="Compulsory">Compulsory</option>
                 <option value="Elective">Elective</option>
               </select>
-              <input type="number" min={0} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Periods/week" value={subjectForm.periods_week} onChange={(e) => setSubjectForm((prev) => ({ ...prev, periods_week: Number(e.target.value) }))} />
+              <input type="number" min={0} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Periods/week" value={subjectForm.periods_week} onChange={(e) => setSubjectForm((prev) => ({ ...prev, periods_week: Number(e.target.value) }))} />
             </div>
             <button className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900" type="submit">Create subject</button>
           </form>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="w-full min-w-[520px] text-sm">
-              <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Code</th><th className="px-3 py-2 text-left">Name</th><th className="px-3 py-2 text-left">Department</th><th className="px-3 py-2 text-left">Type</th></tr></thead>
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Code</th><th className="px-3 py-2 text-left">Name</th><th className="px-3 py-2 text-left">Department</th><th className="px-3 py-2 text-left">Type</th></tr></thead>
               <tbody className="divide-y divide-slate-800">
                 {sortedSubjects.map((item) => (
                   <tr key={item.id} className="bg-slate-950/50"><td className="px-3 py-2">{item.code}</td><td className="px-3 py-2">{item.name}</td><td className="px-3 py-2">{item.department_name || '--'}</td><td className="px-3 py-2">{item.subject_type}</td></tr>
@@ -328,19 +328,19 @@ export default function AcademicsSubjectsPage() {
       </section>
 
       <section className="col-span-12 grid gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Subject Mappings</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitMapping}>
             <div className="grid gap-3 sm:grid-cols-3">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={mappingForm.subject} onChange={(e) => setMappingForm((prev) => ({ ...prev, subject: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={mappingForm.subject} onChange={(e) => setMappingForm((prev) => ({ ...prev, subject: e.target.value }))} required>
                 <option value="">Select subject</option>
                 {sortedSubjects.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={mappingForm.grade_level} onChange={(e) => setMappingForm((prev) => ({ ...prev, grade_level: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={mappingForm.grade_level} onChange={(e) => setMappingForm((prev) => ({ ...prev, grade_level: e.target.value }))} required>
                 <option value="">Select grade</option>
                 {grades.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={mappingForm.academic_year} onChange={(e) => setMappingForm((prev) => ({ ...prev, academic_year: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={mappingForm.academic_year} onChange={(e) => setMappingForm((prev) => ({ ...prev, academic_year: e.target.value }))} required>
                 <option value="">Select year</option>
                 {years.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
@@ -348,9 +348,9 @@ export default function AcademicsSubjectsPage() {
             <label className="flex items-center gap-2 text-xs text-slate-300"><input type="checkbox" checked={mappingForm.is_compulsory} onChange={(e) => setMappingForm((prev) => ({ ...prev, is_compulsory: e.target.checked }))} />Compulsory in this grade</label>
             <button className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900" type="submit">Create mapping</button>
           </form>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="w-full min-w-[540px] text-sm">
-              <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Grade</th><th className="px-3 py-2 text-left">Year</th><th className="px-3 py-2 text-left">Compulsory</th></tr></thead>
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Grade</th><th className="px-3 py-2 text-left">Year</th><th className="px-3 py-2 text-left">Compulsory</th></tr></thead>
               <tbody className="divide-y divide-slate-800">
                 {sortedMappings.map((item) => (
                   <tr key={item.id} className="bg-slate-950/50"><td className="px-3 py-2">{item.subject_code} - {item.subject_name}</td><td className="px-3 py-2">{item.grade_level_name}</td><td className="px-3 py-2">{item.academic_year_name}</td><td className="px-3 py-2">{item.is_compulsory ? 'Yes' : 'No'}</td></tr>
@@ -360,32 +360,32 @@ export default function AcademicsSubjectsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Syllabus Topics</h2>
           <form className="mt-4 grid gap-3" onSubmit={submitTopic}>
             <div className="grid gap-3 sm:grid-cols-3">
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={topicForm.subject} onChange={(e) => setTopicForm((prev) => ({ ...prev, subject: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={topicForm.subject} onChange={(e) => setTopicForm((prev) => ({ ...prev, subject: e.target.value }))} required>
                 <option value="">Select subject</option>
                 {sortedSubjects.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={topicForm.grade_level} onChange={(e) => setTopicForm((prev) => ({ ...prev, grade_level: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={topicForm.grade_level} onChange={(e) => setTopicForm((prev) => ({ ...prev, grade_level: e.target.value }))} required>
                 <option value="">Select grade</option>
                 {grades.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
-              <select className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" value={topicForm.term} onChange={(e) => setTopicForm((prev) => ({ ...prev, term: e.target.value }))} required>
+              <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={topicForm.term} onChange={(e) => setTopicForm((prev) => ({ ...prev, term: e.target.value }))} required>
                 <option value="">Select term</option>
                 {terms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
             </div>
             <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
-              <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Topic name" value={topicForm.topic_name} onChange={(e) => setTopicForm((prev) => ({ ...prev, topic_name: e.target.value }))} required />
-              <input type="number" min={1} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" placeholder="Order" value={topicForm.order} onChange={(e) => setTopicForm((prev) => ({ ...prev, order: Number(e.target.value) }))} required />
+              <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Topic name" value={topicForm.topic_name} onChange={(e) => setTopicForm((prev) => ({ ...prev, topic_name: e.target.value }))} required />
+              <input type="number" min={1} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Order" value={topicForm.order} onChange={(e) => setTopicForm((prev) => ({ ...prev, order: Number(e.target.value) }))} required />
             </div>
             <button className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-slate-900" type="submit">Create topic</button>
           </form>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Topic</th><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Grade</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Done</th><th className="px-3 py-2 text-left">Action</th></tr></thead>
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Topic</th><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Grade</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Done</th><th className="px-3 py-2 text-left">Action</th></tr></thead>
               <tbody className="divide-y divide-slate-800">
                 {sortedTopics.map((item) => (
                   <tr key={item.id} className="bg-slate-950/50">
@@ -395,7 +395,7 @@ export default function AcademicsSubjectsPage() {
                     <td className="px-3 py-2">{item.term_name}</td>
                     <td className="px-3 py-2">{item.is_completed ? `Yes (${item.completed_date || ''})` : 'No'}</td>
                     <td className="px-3 py-2">
-                      <button className="rounded-lg border border-slate-700 px-2 py-1 text-xs disabled:opacity-60" onClick={() => markComplete(item.id)} disabled={item.is_completed}>Mark complete</button>
+                      <button className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:opacity-60" onClick={() => markComplete(item.id)} disabled={item.is_completed}>Mark complete</button>
                     </td>
                   </tr>
                 ))}
@@ -405,11 +405,11 @@ export default function AcademicsSubjectsPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <h2 className="text-lg font-display font-semibold">Syllabus Progress</h2>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="w-full min-w-[720px] text-sm">
-            <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Grade</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Completed</th><th className="px-3 py-2 text-left">Total</th><th className="px-3 py-2 text-left">Progress</th></tr></thead>
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-3 py-2 text-left">Subject</th><th className="px-3 py-2 text-left">Grade</th><th className="px-3 py-2 text-left">Term</th><th className="px-3 py-2 text-left">Completed</th><th className="px-3 py-2 text-left">Total</th><th className="px-3 py-2 text-left">Progress</th></tr></thead>
             <tbody className="divide-y divide-slate-800">
               {progress.map((item) => (
                 <tr key={`${item.subject_id}-${item.grade_level_name}-${item.term_name}`} className="bg-slate-950/50">

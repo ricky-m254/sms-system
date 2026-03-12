@@ -108,14 +108,14 @@ export default function StudentsDashboardPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Dashboard</h1>
         <p className="mt-2 text-sm text-slate-400">Tenant: {tenantId ?? 'public'}</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading students data...</p>
         </div>
       ) : null}
@@ -127,25 +127,25 @@ export default function StudentsDashboardPage() {
       ) : null}
 
       <section className="col-span-12 grid gap-6 md:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active students</p>
           <p className="mt-3 text-3xl font-display font-semibold">
             {summary?.students_active ?? 0}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active enrollments</p>
           <p className="mt-3 text-3xl font-display font-semibold">
             {summary?.enrollments_active ?? 0}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Signed in</p>
           <p className="mt-3 text-lg font-semibold text-emerald-200">
             {username ?? 'user'}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Attendance rate</p>
           <p className="mt-3 text-3xl font-display font-semibold">
             {dashboard?.kpis.attendance_rate ?? 0}%
@@ -155,18 +155,18 @@ export default function StudentsDashboardPage() {
       </section>
 
       <section className="col-span-12 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Operational alerts</h2>
           <div className="mt-4 space-y-3 text-sm text-slate-300">
-            <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+            <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3">
               <p className="text-slate-400">Pending admissions</p>
               <p className="text-xl font-semibold text-amber-200">{dashboard?.kpis.pending_admissions ?? 0}</p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+            <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3">
               <p className="text-slate-400">Students below 85% attendance</p>
               <p className="text-xl font-semibold text-rose-200">{dashboard?.alerts.low_attendance_students ?? 0}</p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+            <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3">
               <p className="text-slate-400">High/Critical behavior incidents (14 days)</p>
               <p className="text-xl font-semibold text-rose-200">
                 {dashboard?.alerts.critical_behavior_incidents ?? 0}
@@ -175,11 +175,11 @@ export default function StudentsDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl glass-panel p-6">
           <h2 className="text-lg font-display font-semibold">Recent activity</h2>
           <div className="mt-4 space-y-2">
             {(dashboard?.recent_activity ?? []).map((item, idx) => (
-              <div key={`${item.type}-${item.date}-${idx}`} className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+              <div key={`${item.type}-${item.date}-${idx}`} className="rounded-xl border border-white/[0.07] bg-slate-950/60 px-4 py-3">
                 <p className="text-xs uppercase tracking-wide text-slate-400">{item.type}</p>
                 <p className="mt-1 text-sm text-slate-200">{item.label}</p>
                 <p className="mt-1 text-xs text-slate-500">{item.date}</p>
@@ -192,7 +192,7 @@ export default function StudentsDashboardPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Student roster</h2>
@@ -201,15 +201,15 @@ export default function StudentsDashboardPage() {
             </p>
           </div>
           <input
-            className="w-full max-w-xs rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
+            className="w-full max-w-xs rounded-xl border border-white/[0.07] bg-slate-950 px-4 py-2 text-sm text-white outline-none focus:border-emerald-400"
             placeholder="Search by name or admission number"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[720px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Admission #</th>
                 <th className="px-4 py-3">Name</th>
@@ -246,19 +246,19 @@ export default function StudentsDashboardPage() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
-            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+            className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
             onClick={() => navigate('/modules/students/admissions')}
           >
             View admissions
           </button>
           <button
-            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+            className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
             onClick={() => navigate('/modules/students/attendance')}
           >
             Record attendance
           </button>
           <button
-            className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200"
+            className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-200"
             onClick={() => navigate('/modules/students/reports')}
           >
             Open reports

@@ -36,13 +36,13 @@ export default function MyPTMSlotsPage() {
         {loading ? (
           <div className="col-span-full py-12 text-center text-slate-500">Loading your slots...</div>
         ) : slots.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-slate-500 italic rounded-2xl border border-dashed border-slate-800 bg-slate-900/40">
+          <div className="col-span-full py-12 text-center text-slate-500 italic rounded-2xl border border-dashed border-white/[0.07] bg-white/[0.02]">
             <Clock className="mx-auto h-12 w-12 text-slate-700 mb-3" />
             <p>You have no slots scheduled yet.</p>
           </div>
         ) : slots.map((slot) => (
           <div key={slot.id} className={`rounded-2xl border p-5 transition-all duration-300 ${
-            slot.is_booked ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-900/60 border-slate-800'
+            slot.is_booked ? 'bg-emerald-500/10 border-emerald-500/30' : 'glass-panel border-white/[0.07]'
           }`}>
              <div className="flex items-center justify-between">
                <div className="flex items-center gap-2">

@@ -138,7 +138,7 @@ export default function HrPerformancePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+      <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Performance Management</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Goals, Reviews, and Appraisal Tracking</h1>
       </section>
@@ -146,51 +146,51 @@ export default function HrPerformancePage() {
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Goals</p><p className="mt-2 text-2xl font-semibold text-slate-100">{goals.length}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Goals Achieved</p><p className="mt-2 text-2xl font-semibold text-slate-100">{goals.filter((g) => g.status === 'Achieved').length}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Reviews</p><p className="mt-2 text-2xl font-semibold text-slate-100">{reviews.length}</p></article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"><p className="text-xs text-slate-400">Submitted Reviews</p><p className="mt-2 text-2xl font-semibold text-slate-100">{reviews.filter((r) => r.status === 'Submitted').length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Goals</p><p className="mt-2 text-2xl font-semibold text-slate-100">{goals.length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Goals Achieved</p><p className="mt-2 text-2xl font-semibold text-slate-100">{goals.filter((g) => g.status === 'Achieved').length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Reviews</p><p className="mt-2 text-2xl font-semibold text-slate-100">{reviews.length}</p></article>
+        <article className="rounded-xl glass-panel p-4"><p className="text-xs text-slate-400">Submitted Reviews</p><p className="mt-2 text-2xl font-semibold text-slate-100">{reviews.filter((r) => r.status === 'Submitted').length}</p></article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <section className="rounded-xl glass-panel p-4">
         <div className="grid gap-3 sm:grid-cols-3">
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search goals/reviews..." className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-          <button onClick={() => { setSearch(''); setGoalStatusFilter('All'); setReviewStatusFilter('All') }} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Reset Filters</button>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search goals/reviews..." className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+          <button onClick={() => { setSearch(''); setGoalStatusFilter('All'); setReviewStatusFilter('All') }} className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-slate-200">Reset Filters</button>
         </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Create Goal</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <select value={goalForm.employee} onChange={(e) => setGoalForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+            <select value={goalForm.employee} onChange={(e) => setGoalForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
               <option value="">Select employee</option>
               {employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.employee_id} - {employee.full_name}</option>)}
             </select>
-            <input value={goalForm.title} onChange={(e) => setGoalForm((p) => ({ ...p, title: e.target.value }))} placeholder="Goal title" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-            <input type="date" value={goalForm.target_date} onChange={(e) => setGoalForm((p) => ({ ...p, target_date: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <input type="number" min="0" step="0.01" value={goalForm.weight} onChange={(e) => setGoalForm((p) => ({ ...p, weight: e.target.value }))} placeholder="Weight %" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <select value={goalForm.status} onChange={(e) => setGoalForm((p) => ({ ...p, status: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
+            <input value={goalForm.title} onChange={(e) => setGoalForm((p) => ({ ...p, title: e.target.value }))} placeholder="Goal title" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+            <input type="date" value={goalForm.target_date} onChange={(e) => setGoalForm((p) => ({ ...p, target_date: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <input type="number" min="0" step="0.01" value={goalForm.weight} onChange={(e) => setGoalForm((p) => ({ ...p, weight: e.target.value }))} placeholder="Weight %" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <select value={goalForm.status} onChange={(e) => setGoalForm((p) => ({ ...p, status: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2">
               <option>Not Started</option><option>In Progress</option><option>Achieved</option><option>Not Achieved</option>
             </select>
             <button onClick={createGoal} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-60 sm:col-span-2">Save Goal</button>
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <h2 className="text-sm font-semibold text-slate-100">Create Review</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <select value={reviewForm.employee} onChange={(e) => setReviewForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={reviewForm.employee} onChange={(e) => setReviewForm((p) => ({ ...p, employee: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Reviewee</option>
               {employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.full_name}</option>)}
             </select>
-            <select value={reviewForm.reviewer} onChange={(e) => setReviewForm((p) => ({ ...p, reviewer: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <select value={reviewForm.reviewer} onChange={(e) => setReviewForm((p) => ({ ...p, reviewer: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option value="">Reviewer</option>
               {employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.full_name}</option>)}
             </select>
-            <input value={reviewForm.review_period} onChange={(e) => setReviewForm((p) => ({ ...p, review_period: e.target.value }))} placeholder="Review period (e.g. Q3 2026)" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-            <input type="number" min="0" max="5" step="0.01" value={reviewForm.overall_rating} onChange={(e) => setReviewForm((p) => ({ ...p, overall_rating: e.target.value }))} placeholder="Overall rating" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            <select value={reviewForm.status} onChange={(e) => setReviewForm((p) => ({ ...p, status: e.target.value }))} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <input value={reviewForm.review_period} onChange={(e) => setReviewForm((p) => ({ ...p, review_period: e.target.value }))} placeholder="Review period (e.g. Q3 2026)" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+            <input type="number" min="0" max="5" step="0.01" value={reviewForm.overall_rating} onChange={(e) => setReviewForm((p) => ({ ...p, overall_rating: e.target.value }))} placeholder="Overall rating" className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" />
+            <select value={reviewForm.status} onChange={(e) => setReviewForm((p) => ({ ...p, status: e.target.value }))} className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm">
               <option>Draft</option><option>Submitted</option><option>Acknowledged</option>
             </select>
             <button onClick={createReview} disabled={working} className="rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-60 sm:col-span-2">Save Review</button>
@@ -199,19 +199,19 @@ export default function HrPerformancePage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-100">Goals</h2>
             <div className="flex items-center gap-2">
-              <select value={goalStatusFilter} onChange={(e) => setGoalStatusFilter(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs">
+              <select value={goalStatusFilter} onChange={(e) => setGoalStatusFilter(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs">
                 <option>All</option><option>Not Started</option><option>In Progress</option><option>Achieved</option><option>Not Achieved</option>
               </select>
-              <button onClick={exportGoals} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Export</button>
+              <button onClick={exportGoals} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Export</button>
             </div>
           </div>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {filteredGoals.map((goal) => (
-              <div key={goal.id} className="rounded-lg border border-slate-800 px-3 py-2">
+              <div key={goal.id} className="rounded-lg border border-white/[0.07] px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold text-slate-100">{goal.title}</p>
@@ -229,25 +229,25 @@ export default function HrPerformancePage() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <article className="rounded-xl glass-panel p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-100">Reviews</h2>
             <div className="flex items-center gap-2">
-              <select value={reviewStatusFilter} onChange={(e) => setReviewStatusFilter(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs">
+              <select value={reviewStatusFilter} onChange={(e) => setReviewStatusFilter(e.target.value)} className="rounded-lg border border-white/[0.09] bg-slate-950 px-2 py-1 text-xs">
                 <option>All</option><option>Draft</option><option>Submitted</option><option>Acknowledged</option>
               </select>
-              <button onClick={exportReviews} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200">Export</button>
+              <button onClick={exportReviews} className="rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200">Export</button>
             </div>
           </div>
           <div className="mt-3 space-y-2 text-xs text-slate-300">
             {filteredReviews.map((review) => (
-              <div key={review.id} className="rounded-lg border border-slate-800 px-3 py-2">
+              <div key={review.id} className="rounded-lg border border-white/[0.07] px-3 py-2">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold text-slate-100">{review.employee_name} | {review.review_period}</p>
                     <p className="mt-1">Reviewer: {review.reviewer_name || '-'}</p>
                     <p>Rating: {review.overall_rating || '-'}</p>
-                    <button onClick={() => void submitReview(review.id)} disabled={working} className="mt-2 rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-200 disabled:opacity-60">Submit</button>
+                    <button onClick={() => void submitReview(review.id)} disabled={working} className="mt-2 rounded-md border border-white/[0.09] px-2 py-1 text-[11px] text-slate-200 disabled:opacity-60">Submit</button>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <span className={`rounded-full px-2 py-1 text-[10px] ${statusBadgeClass(review.status)}`}>{review.status}</span>

@@ -187,14 +187,14 @@ export default function StudentsBehaviorPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <header className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Behavior & Discipline</h1>
         <p className="mt-2 text-sm text-slate-400">Log incidents and track student conduct.</p>
       </header>
 
       {isLoading ? (
-        <div className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="col-span-12 rounded-2xl glass-panel p-6">
           <p className="text-sm text-slate-300">Loading incidents...</p>
         </div>
       ) : null}
@@ -217,7 +217,7 @@ export default function StudentsBehaviorPage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Recent incidents</h2>
@@ -225,21 +225,21 @@ export default function StudentsBehaviorPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('csv')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download CSV'}
             </button>
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200 disabled:opacity-70"
               onClick={() => handleDownload('pdf')}
               disabled={isDownloading}
             >
               {isDownloading ? 'Working...' : 'Download PDF'}
             </button>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={studentFilter}
               onChange={(event) => {
                 setStudentFilter(event.target.value)
@@ -254,7 +254,7 @@ export default function StudentsBehaviorPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={incidentType}
               onChange={(event) => {
                 setIncidentType(event.target.value)
@@ -269,7 +269,7 @@ export default function StudentsBehaviorPage() {
               ))}
             </select>
             <select
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={severityFilter}
               onChange={(event) => {
                 setSeverityFilter(event.target.value)
@@ -285,7 +285,7 @@ export default function StudentsBehaviorPage() {
             </select>
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={dateFrom}
               onChange={(event) => {
                 setDateFrom(event.target.value)
@@ -294,7 +294,7 @@ export default function StudentsBehaviorPage() {
             />
             <input
               type="date"
-              className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
               value={dateTo}
               onChange={(event) => {
                 setDateTo(event.target.value)
@@ -302,7 +302,7 @@ export default function StudentsBehaviorPage() {
               }}
             />
             <button
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200"
+              className="rounded-xl border border-white/[0.09] px-3 py-2 text-sm text-slate-200"
               onClick={() => {
                 setStudentFilter('')
                 setIncidentType('all')
@@ -325,9 +325,9 @@ export default function StudentsBehaviorPage() {
             </button>
           </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.07]">
           <table className="min-w-[860px] w-full text-left text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
               <tr>
                 <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Type</th>
@@ -364,14 +364,14 @@ export default function StudentsBehaviorPage() {
           </span>
           <div className="flex gap-2">
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
               Prev
             </button>
             <button
-              className="rounded-lg border border-slate-700 px-3 py-1 text-xs"
+              className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >
@@ -383,14 +383,14 @@ export default function StudentsBehaviorPage() {
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950 p-6">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Behavior</p>
                 <h3 className="text-lg font-display font-semibold">Log incident</h3>
               </div>
               <button
-                className="rounded-lg border border-slate-700 px-3 py-1 text-xs text-slate-200"
+                className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
                 onClick={() => setIsFormOpen(false)}
               >
                 Close
@@ -401,7 +401,7 @@ export default function StudentsBehaviorPage() {
               <label className="block text-sm">
                 Student
                 <select
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.student}
                   onChange={(event) => setFormState((prev) => ({ ...prev, student: event.target.value }))}
                 >
@@ -417,7 +417,7 @@ export default function StudentsBehaviorPage() {
                 <label className="block text-sm">
                   Incident type
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={formState.incident_type}
                     onChange={(event) =>
                       setFormState((prev) => ({ ...prev, incident_type: event.target.value }))
@@ -434,7 +434,7 @@ export default function StudentsBehaviorPage() {
                 <label className="block text-sm">
                   Severity
                   <select
-                    className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                     value={formState.severity}
                     onChange={(event) => setFormState((prev) => ({ ...prev, severity: event.target.value }))}
                   >
@@ -450,7 +450,7 @@ export default function StudentsBehaviorPage() {
               <label className="block text-sm">
                 Category
                 <input
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.category}
                   onChange={(event) => setFormState((prev) => ({ ...prev, category: event.target.value }))}
                 />
@@ -459,7 +459,7 @@ export default function StudentsBehaviorPage() {
                 Incident date
                 <input
                   type="date"
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.incident_date}
                   onChange={(event) =>
                     setFormState((prev) => ({ ...prev, incident_date: event.target.value }))
@@ -470,7 +470,7 @@ export default function StudentsBehaviorPage() {
                 Notes
                 <textarea
                   rows={3}
-                  className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white"
+                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
                   value={formState.description}
                   onChange={(event) =>
                     setFormState((prev) => ({ ...prev, description: event.target.value }))
