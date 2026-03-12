@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { Calendar, Users, Clock, Plus, CheckCircle } from 'lucide-react'
 import PageHero from '../../components/PageHero'
@@ -12,6 +13,7 @@ interface PTMStats {
 }
 
 export default function PTMDashboardPage() {
+  const navigate = useNavigate()
   const [stats, setStats] = useState<PTMStats | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -37,7 +39,7 @@ export default function PTMDashboardPage() {
       />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-display font-bold text-white tracking-tight">PTM Dashboard</h1>
-        <button className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition">
+        <button onClick={() => navigate('/modules/ptm/sessions')} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition">
           <Plus className="h-4 w-4" />
           Create Session
         </button>

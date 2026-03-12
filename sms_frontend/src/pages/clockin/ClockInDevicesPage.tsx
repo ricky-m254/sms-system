@@ -227,7 +227,10 @@ export default function ClockInDevicesPage() {
                     >
                      Delete Device
                    </button>
-                   <button className="text-slate-400 hover:text-slate-100 text-xs font-semibold uppercase tracking-wider">
+                   <button
+                     onClick={() => window.open('https://developer.android.com/studio', '_blank', 'noopener,noreferrer')}
+                     className="text-slate-400 hover:text-slate-100 text-xs font-semibold uppercase tracking-wider"
+                   >
                      Download SDK
                    </button>
                 </div>

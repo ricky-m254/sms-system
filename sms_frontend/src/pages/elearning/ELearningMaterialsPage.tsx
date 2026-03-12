@@ -274,10 +274,12 @@ export default function ELearningMaterialsPage() {
                   <p className="text-xs text-slate-500 mt-1">{b.author}</p>
                   <p className="text-xs text-slate-500">{b.pages} pg · {b.year}</p>
                   <button
+                    onClick={() => b.available && window.open('https://www.klb.co.ke/e-resources', '_blank', 'noopener,noreferrer')}
+                    disabled={!b.available}
                     className="mt-2 w-full py-1.5 rounded-lg text-xs font-semibold transition-all capitalize"
                     style={b.available
                       ? { background: 'rgba(16,185,129,0.15)', color: '#34d399' }
-                      : { background: 'rgba(255,255,255,0.05)', color: '#64748b' }}
+                      : { background: 'rgba(255,255,255,0.05)', color: '#64748b', cursor: 'not-allowed' }}
                   >
                     {b.available ? 'Read Now' : 'Unavailable'}
                   </button>

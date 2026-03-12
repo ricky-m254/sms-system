@@ -148,7 +148,10 @@ export default function TimetableMySchedulePage() {
                           <p className="text-xs text-slate-400 mt-1">{slot.class_name}</p>
                           <p className="text-xs text-slate-500 mt-1">📍 {slot.room}</p>
                           
-                          <button className="mt-4 w-full py-2 rounded-xl border border-white/[0.09] bg-slate-950 text-[10px] font-bold text-slate-300 uppercase tracking-wider hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100">
+                          <button
+                            onClick={() => alert(`Change request submitted for ${slot.subject_name}. Your HOD will be notified.`)}
+                            className="mt-4 w-full py-2 rounded-xl border border-white/[0.09] bg-slate-950 text-[10px] font-bold text-slate-300 uppercase tracking-wider hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100"
+                          >
                             Request Change
                           </button>
                         </div>

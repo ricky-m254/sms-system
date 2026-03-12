@@ -203,7 +203,11 @@ export default function CommunicationMessagingPage() {
                 >
                   <RefreshCw size={11} className="text-slate-400" />
                 </button>
-                <button className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition">
+                <button
+                  onClick={() => alert('Message options: Archive, Mark as Read, or Delete this conversation.')}
+                  className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition"
+                  title="More options"
+                >
                   <MoreHorizontal size={13} className="text-slate-400" />
                 </button>
               </>

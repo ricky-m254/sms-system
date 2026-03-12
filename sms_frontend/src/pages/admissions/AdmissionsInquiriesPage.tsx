@@ -188,7 +188,7 @@ export default function AdmissionsInquiriesPage() {
               </option>
             ))}
           </select>
-          <button className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-3">
+          <button type="submit" className="rounded-xl border border-white/[0.09] bg-slate-950/60 px-4 py-2 text-sm font-semibold hover:border-emerald-400 md:col-span-3">
             Create inquiry
           </button>
         </form>

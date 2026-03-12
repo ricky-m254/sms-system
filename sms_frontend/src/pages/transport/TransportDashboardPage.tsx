@@ -223,7 +223,9 @@ export default function TransportDashboardPage() {
                         <p className="text-xs font-bold text-emerald-400">{pct}%</p>
                         <p className="text-[9px] text-slate-500 mt-0.5">Load</p>
                       </div>
-                      <button className="col-span-3 rounded-xl py-1.5 text-[11px] font-bold transition hover:opacity-80 flex items-center justify-center gap-1.5"
+                      <button
+                        onClick={() => window.open(`tel:${bus.phone}`, '_self')}
+                        className="col-span-3 rounded-xl py-1.5 text-[11px] font-bold transition hover:opacity-80 flex items-center justify-center gap-1.5"
                         style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
                         <Phone size={10} /> Call {bus.driver.split(' ')[0]}
                       </button>

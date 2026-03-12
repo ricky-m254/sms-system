@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { BookOpen, Users, RotateCcw, AlertTriangle, Clock, TrendingUp, Star, ChevronRight, Loader2 } from 'lucide-react'
 import { apiClient } from '../../api/client'
 
@@ -40,9 +41,11 @@ function GlassCard({ children, className = '' }: { children: React.ReactNode; cl
 }
 
 export default function LibraryDashboardPage() {
+  const navigate = useNavigate()
   const [data, setData] = useState<DashboardData | null>(null)
   const [overdue, setOverdue] = useState<OverdueItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [reminderSent, setReminderSent] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     Promise.all([
@@ -93,10 +96,10 @@ export default function LibraryDashboardPage() {
               {data ? `${data.total_resources.toLocaleString()} titles · ${data.total_copies.toLocaleString()} copies` : 'Loading…'} · Open 7:00 AM – 6:00 PM
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: '#6366f1', color: '#fff' }}>
+              <button onClick={() => navigate('/modules/library/catalog')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: '#6366f1', color: '#fff' }}>
                 <BookOpen size={15} /> Search Catalog
               </button>
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.15)' }}>
+              <button onClick={() => navigate('/modules/library/circulation')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.15)' }}>
                 <RotateCcw size={15} /> Return Book
               </button>
             </div>
@@ -149,7 +152,7 @@ export default function LibraryDashboardPage() {
             <h2 className="text-lg font-display font-bold text-white flex items-center gap-2">
               <TrendingUp size={18} className="text-indigo-400" /> Most Popular Books
             </h2>
-            <button className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
+            <button onClick={() => navigate('/modules/library/catalog')} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
               Full Catalog <ChevronRight size={14} />
             </button>
           </div>
@@ -252,8 +255,18 @@ export default function LibraryDashboardPage() {
                       <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(239,68,68,0.15)', color: '#fca5a5' }}>{o.overdue_days} days</span>
                     </td>
                     <td className="px-4 py-3">
-                      <button className="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style={{ background: 'rgba(239,68,68,0.1)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.2)' }}>
-                        Send Reminder
+                      <button
+                        onClick={() => {
+                          apiClient.post(`library/circulation/${o.id}/send_reminder/`, {}).catch(() => {})
+                          setReminderSent(prev => new Set(prev).add(o.id))
+                        }}
+                        disabled={reminderSent.has(o.id)}
+                        className="px-3 py-1 rounded-lg text-xs font-semibold transition-all"
+                        style={reminderSent.has(o.id)
+                          ? { background: 'rgba(16,185,129,0.1)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.2)' }
+                          : { background: 'rgba(239,68,68,0.1)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.2)' }}
+                      >
+                        {reminderSent.has(o.id) ? 'Sent ✓' : 'Send Reminder'}
                       </button>
                     </td>
                   </tr>

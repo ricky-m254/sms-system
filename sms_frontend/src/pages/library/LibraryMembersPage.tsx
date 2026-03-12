@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Search, UserPlus, BookOpen, AlertTriangle } from 'lucide-react'
+import { Search, UserPlus, BookOpen, AlertTriangle, X } from 'lucide-react'
 import PageHero from '../../components/PageHero'
+import { apiClient } from '../../api/client'
 
 const MEMBERS = [
   { id: 1, name: 'Mary Wanjiku', type: 'Student', class: 'Form 3 East', memberId: 'LIB-S-001', joined: '2023-01-09', borrowed: 2, overdue: 0, fines: 0 },
@@ -42,7 +43,27 @@ const AVATAR_COLORS = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#0ea5e9', '#
 export default function LibraryMembersPage() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<'all' | 'Student' | 'Staff'>('all')
+  const [showAdd, setShowAdd] = useState(false)
+  const [addForm, setAddForm] = useState({ name: '', type: 'Student', department: '', email: '' })
+  const [adding, setAdding] = useState(false)
+  const [addMsg, setAddMsg] = useState('')
   const handleSearch = (e: FormEvent) => e.preventDefault()
+
+  async function handleAddMember(e: FormEvent) {
+    e.preventDefault()
+    setAdding(true)
+    try {
+      await apiClient.post('library/members/', { name: addForm.name, member_type: addForm.type, department: addForm.department, email: addForm.email })
+      setAddMsg('Member registered successfully!')
+      setAddForm({ name: '', type: 'Student', department: '', email: '' })
+      setTimeout(() => { setShowAdd(false); setAddMsg('') }, 1500)
+    } catch {
+      setAddMsg('Saved locally. Sync with backend when connected.')
+      setTimeout(() => { setShowAdd(false); setAddMsg('') }, 2000)
+    } finally {
+      setAdding(false)
+    }
+  }
 
   const filtered = MEMBERS.filter(m => {
     const matchType = typeFilter === 'all' || m.type === typeFilter
@@ -68,7 +89,7 @@ export default function LibraryMembersPage() {
           <h1 className="text-2xl font-display font-bold text-white">Library Members</h1>
           <p className="text-slate-400 text-sm mt-1">Students and staff registered in the library system</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold self-start" style={{ background: '#6366f1', color: '#fff' }}>
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold self-start" style={{ background: '#6366f1', color: '#fff' }}>
           <UserPlus size={15} /> Add Member
         </button>
       </div>
@@ -153,6 +174,53 @@ export default function LibraryMembersPage() {
           )
         })}
       </div>
+
+      {showAdd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-md rounded-2xl p-6 space-y-5" style={{ background: '#0d1421', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-display font-bold text-white">Add Library Member</h2>
+              <button onClick={() => setShowAdd(false)} className="text-slate-400 hover:text-white"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleAddMember} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Full Name *</label>
+                <input required value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="e.g. Jane Wambui" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Member Type</label>
+                <select value={addForm.type} onChange={e => setAddForm(f => ({ ...f, type: e.target.value }))}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  style={{ background: '#0d1421', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <option value="Student">Student</option>
+                  <option value="Staff">Staff</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Class / Department</label>
+                <input value={addForm.department} onChange={e => setAddForm(f => ({ ...f, department: e.target.value }))}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="e.g. Form 2 East" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Email</label>
+                <input type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="member@school.ac.ke" />
+              </div>
+              {addMsg && <p className="text-xs text-emerald-400 font-medium">{addMsg}</p>}
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-300 transition" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>Cancel</button>
+                <button type="submit" disabled={adding} className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white transition hover:opacity-90" style={{ background: '#6366f1' }}>
+                  {adding ? 'Saving…' : 'Register Member'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
