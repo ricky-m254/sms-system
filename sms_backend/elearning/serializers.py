@@ -27,6 +27,8 @@ class VirtualSessionSerializer(serializers.ModelSerializer):
 class OnlineQuizSerializer(serializers.ModelSerializer):
     question_count = serializers.SerializerMethodField()
     attempt_count = serializers.SerializerMethodField()
+    course_name = serializers.CharField(source='course.title', read_only=True)
+    subject_name = serializers.SerializerMethodField()
 
     class Meta:
         model = OnlineQuiz
@@ -37,6 +39,11 @@ class OnlineQuizSerializer(serializers.ModelSerializer):
 
     def get_attempt_count(self, obj):
         return obj.attempts.count()
+
+    def get_subject_name(self, obj):
+        if obj.course and obj.course.subject:
+            return obj.course.subject.name
+        return ''
 
 
 class CourseSerializer(serializers.ModelSerializer):

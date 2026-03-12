@@ -10,6 +10,8 @@ interface Material {
   title: string
   material_type: string
   content: string
+  file_url: string
+  link_url: string
   course_name: string
   sequence: number
   is_active: boolean
@@ -129,7 +131,7 @@ export default function ELearningMaterialsPage() {
   }, [])
 
   const matchesSearch = (title: string, subj: string) =>
-    (subject === 'All Subjects' || title.toLowerCase().includes(subj.toLowerCase())) &&
+    (subject === 'All Subjects' || subj === subject) &&
     (search === '' || title.toLowerCase().includes(search.toLowerCase()))
 
   const showVideos    = tab === 'all' || tab === 'videos'
@@ -145,6 +147,13 @@ export default function ELearningMaterialsPage() {
     m.is_active &&
     (search === '' || m.title.toLowerCase().includes(search.toLowerCase()) || m.course_name.toLowerCase().includes(search.toLowerCase()))
   )
+
+  const openMaterial = (m: Material) => {
+    const url = m.link_url || m.file_url || m.content
+    if (url && url.startsWith('http')) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  }
 
   const totalCount = filteredVideos.length + filteredEbooks.length + filteredMaterials.length + filteredPapers.length
 
@@ -301,8 +310,10 @@ export default function ELearningMaterialsPage() {
                       <p className="text-xs text-slate-500 mt-0.5">{m.material_type} · Seq. {m.sequence}</p>
                     </div>
                     <button
+                      onClick={() => openMaterial(m)}
+                      title={m.link_url || m.file_url ? 'Open resource' : 'No URL available'}
                       className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-blue-500/20"
-                      style={{ background: 'rgba(59,130,246,0.1)' }}
+                      style={{ background: 'rgba(59,130,246,0.1)', opacity: m.link_url || m.file_url ? 1 : 0.4 }}
                     >
                       <Download size={15} className="text-blue-400" />
                     </button>

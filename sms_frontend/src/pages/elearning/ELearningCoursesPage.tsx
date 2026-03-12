@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, Users, BookOpen, Clock, Star, Play, ChevronRight, Loader2 } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
@@ -44,6 +45,7 @@ function GlassCard({ children, className = '' }: { children: React.ReactNode; cl
 }
 
 export default function ELearningCoursesPage() {
+  const navigate = useNavigate()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -181,6 +183,7 @@ export default function ELearningCoursesPage() {
                       <Star size={12} fill="#f59e0b" /> <span>4.8</span>
                     </div>
                     <button
+                      onClick={() => navigate('/modules/elearning/materials')}
                       className="flex items-center gap-1 text-xs font-semibold transition-colors hover:text-emerald-300"
                       style={{ color: '#10b981' }}
                     >
