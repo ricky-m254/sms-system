@@ -123,16 +123,23 @@ export default function AcademicsAssignmentsPage() {
     void loadSubmissions(selectedAssignmentId)
   }, [selectedAssignmentId])
 
+  const formatDT = (v: string) => v ? (v.length === 16 ? `${v}:00` : v) : null
+
   const createAssignment = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
     setFlash(null)
     try {
       await apiClient.post('/academics/assignments/', {
-        ...assignmentForm,
+        title: assignmentForm.title,
         subject: Number(assignmentForm.subject),
         class_section: Number(assignmentForm.class_section),
+        description: assignmentForm.description,
+        due_date: formatDT(assignmentForm.due_date),
         max_score: assignmentForm.max_score ? Number(assignmentForm.max_score) : null,
+        publish_date: formatDT(assignmentForm.publish_date),
+        status: assignmentForm.status,
+        is_active: assignmentForm.is_active,
       })
       setAssignmentForm({
         title: '',

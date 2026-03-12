@@ -26,6 +26,7 @@ export default function ClockInRegistryPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Enrollment Form State
+  const [showForm, setShowForm] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [formData, setFormData] = useState({
     fingerprint_id: '',
@@ -96,6 +97,7 @@ export default function ClockInRegistryPage() {
 
       await apiClient.post('/clockin/registry/', payload)
       setIsAdding(false)
+      setShowForm(false)
       setFormData({ fingerprint_id: '', person_type: 'STUDENT', person_id: '', display_name: '' })
       fetchEntries()
     } catch (err: any) {
@@ -134,14 +136,14 @@ export default function ClockInRegistryPage() {
           {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
         </div>
         <button 
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => setShowForm(!showForm)}
           className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
         >
-          {isAdding ? 'Cancel' : '+ Enroll Person'}
+          {showForm ? 'Cancel' : '+ Enroll Person'}
         </button>
       </header>
 
-      {isAdding && (
+      {showForm && (
         <form onSubmit={handleEnroll} className="rounded-2xl glass-panel p-6 space-y-4 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Enrollment Form</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

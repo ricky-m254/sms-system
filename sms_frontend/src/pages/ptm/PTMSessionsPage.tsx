@@ -40,6 +40,13 @@ export default function PTMSessionsPage() {
     slot_duration_minutes: '30', is_virtual: false, notes: '',
   })
 
+  const [editSession, setEditSession] = useState<PTMSession | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
+  const [editForm, setEditForm] = useState({
+    title: '', date: '', venue: '', start_time: '', end_time: '',
+    slot_duration_minutes: '30', is_virtual: false, notes: '',
+  })
+
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok })
     setTimeout(() => setToast(null), 4000)
@@ -97,6 +104,45 @@ export default function PTMSessionsPage() {
       showToast('Failed to create session — check all fields', false)
     } finally {
       setCreating(false)
+    }
+  }
+
+  function openEditSession(session: PTMSession) {
+    setEditSession(session)
+    setEditForm({
+      title: session.title,
+      date: session.date,
+      venue: session.venue || '',
+      start_time: session.start_time,
+      end_time: session.end_time,
+      slot_duration_minutes: String(session.slot_duration_minutes),
+      is_virtual: session.is_virtual,
+      notes: session.notes || '',
+    })
+  }
+
+  async function handleEditSession(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editSession) return
+    setEditSaving(true)
+    try {
+      const res = await apiClient.patch<PTMSession>(`/ptm/sessions/${editSession.id}/`, {
+        title: editForm.title,
+        date: editForm.date,
+        venue: editForm.venue,
+        start_time: editForm.start_time,
+        end_time: editForm.end_time,
+        slot_duration_minutes: Number(editForm.slot_duration_minutes),
+        is_virtual: editForm.is_virtual,
+        notes: editForm.notes,
+      })
+      setSessions(prev => prev.map(s => s.id === editSession.id ? res.data : s))
+      setEditSession(null)
+      showToast('Session updated successfully')
+    } catch {
+      showToast('Failed to update session', false)
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -244,8 +290,8 @@ export default function PTMSessionsPage() {
                   {expandedId === session.id ? 'Hide Slots' : 'View Slots'}
                 </button>
                 <button
-                  onClick={() => showToast('Session editing available via the Admin Panel')}
-                  className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition"
+                  onClick={() => openEditSession(session)}
+                  className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-emerald-400 transition"
                 >
                   Edit Session
                 </button>
@@ -287,6 +333,69 @@ export default function PTMSessionsPage() {
           </div>
         ))}
       </div>
+
+      {editSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-lg rounded-3xl border p-6 space-y-4" style={{ background: '#0d1117', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-display font-bold text-white">Edit PTM Session</h2>
+              <button onClick={() => setEditSession(null)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all">
+                <X size={16} className="text-slate-400" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSession} className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Session Title *</label>
+                <input required className={INPUT} value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Term 1 PTM" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Date *</label>
+                  <input required type="date" className={INPUT} value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Slot Duration (min)</label>
+                  <input type="number" min="5" max="120" className={INPUT} value={editForm.slot_duration_minutes} onChange={e => setEditForm(f => ({ ...f, slot_duration_minutes: e.target.value }))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Start Time *</label>
+                  <input required type="time" className={INPUT} value={editForm.start_time} onChange={e => setEditForm(f => ({ ...f, start_time: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">End Time *</label>
+                  <input required type="time" className={INPUT} value={editForm.end_time} onChange={e => setEditForm(f => ({ ...f, end_time: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Venue</label>
+                <input className={INPUT} value={editForm.venue} onChange={e => setEditForm(f => ({ ...f, venue: e.target.value }))} placeholder="Library / Hall / Google Meet link" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Notes</label>
+                <textarea className={INPUT} rows={2} value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="Additional information..." />
+              </div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="rounded accent-emerald-500" checked={editForm.is_virtual} onChange={e => setEditForm(f => ({ ...f, is_virtual: e.target.checked }))} />
+                <span className="text-sm text-slate-300">Virtual Meeting (online)</span>
+              </label>
+              <div className="flex gap-3 pt-2">
+                <button type="submit" disabled={editSaving}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-bold transition hover:opacity-90 disabled:opacity-50"
+                  style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }}>
+                  {editSaving ? 'Saving…' : 'Save Changes'}
+                </button>
+                <button type="button" onClick={() => setEditSession(null)}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-bold transition hover:opacity-80"
+                  style={{ background: 'rgba(255,255,255,0.04)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

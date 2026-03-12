@@ -19,6 +19,7 @@ export default function ClockInShiftsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [showAddForm, setShowAddForm] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -89,6 +90,7 @@ export default function ClockInShiftsPage() {
       await apiClient.post('/clockin/shifts/', formData)
       setFormData({ name: '', person_type: 'ALL', expected_arrival: '07:30', grace_period_minutes: 15, expected_departure: '15:30', notes: '' })
       setIsAdding(false)
+      setShowAddForm(false)
       fetchShifts()
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to add shift.')
@@ -175,14 +177,14 @@ export default function ClockInShiftsPage() {
           {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
         </div>
         <button 
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => setShowAddForm(!showAddForm)}
           className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
         >
-          {isAdding ? 'Cancel' : '+ New Shift'}
+          {showAddForm ? 'Cancel' : '+ New Shift'}
         </button>
       </header>
 
-      {isAdding && (
+      {showAddForm && (
         <form onSubmit={handleAdd} className="rounded-2xl glass-panel p-6 space-y-4 animate-in fade-in slide-in-from-top-4 shadow-2xl">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Define School Shift</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

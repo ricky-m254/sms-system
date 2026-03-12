@@ -21,6 +21,7 @@ export default function ClockInDevicesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  const [showForm, setShowForm] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [formData, setFormData] = useState({
     device_id: '',
@@ -55,6 +56,7 @@ export default function ClockInDevicesPage() {
       await apiClient.post('/clockin/devices/', formData)
       setFormData({ device_id: '', name: '', location: '', device_type: 'BOTH', notes: '' })
       setIsAdding(false)
+      setShowForm(false)
       fetchDevices()
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to add device.')
@@ -92,14 +94,14 @@ export default function ClockInDevicesPage() {
           {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
         </div>
         <button 
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => setShowForm(!showForm)}
           className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
         >
-          {isAdding ? 'Cancel' : '+ Register Device'}
+          {showForm ? 'Cancel' : '+ Register Device'}
         </button>
       </header>
 
-      {isAdding && (
+      {showForm && (
         <form onSubmit={handleAdd} className="rounded-2xl glass-panel p-6 space-y-4 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-display font-semibold text-emerald-400">Register New Device</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

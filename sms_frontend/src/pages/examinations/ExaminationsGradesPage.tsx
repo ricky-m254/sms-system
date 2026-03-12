@@ -21,7 +21,7 @@ const gradeColor = (g: string) => {
 }
 
 const inputCls = 'w-full rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none transition focus:ring-1 focus:ring-emerald-500/40'
-const inputStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } as const
+const inputStyle = { background: '#0f172a', border: '1px solid rgba(255,255,255,0.12)', colorScheme: 'dark' } as const
 
 export default function ExaminationsGradesPage() {
   const [grades, setGrades] = useState<GradeBoundary[]>([])
@@ -105,7 +105,7 @@ export default function ExaminationsGradesPage() {
 
       <select value={filterSession} onChange={e => setFilterSession(e.target.value ? Number(e.target.value) : '')}
         className="rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none min-w-[200px]"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.12)', colorScheme: 'dark' }}>
         <option value="">All sessions</option>
         {sessions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
       </select>
