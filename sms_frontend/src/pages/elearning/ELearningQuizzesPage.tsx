@@ -1,24 +1,49 @@
-import { useState } from 'react'
-import { CheckCircle, Clock, Target, Trophy, BookOpen, ChevronRight, AlertCircle, BarChart2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { CheckCircle, Clock, Target, Trophy, BookOpen, ChevronRight, AlertCircle, BarChart2, Loader2 } from 'lucide-react'
 import PageHero from '../../components/PageHero'
+import { apiClient } from '../../api/client'
 
-const QUIZZES = [
-  { id: 1, subject: 'Mathematics', title: 'Form 3 CAT: Quadratic Equations', questions: 20, timeLimit: 45, maxScore: 40, passPct: 50, attempts: 38, avgScore: 72, completed: true, myScore: 85, from: '#1d4ed8', to: '#3b82f6', dueDate: 'Submitted' },
-  { id: 2, subject: 'Biology', title: 'Form 2: Cell Biology Quiz', questions: 25, timeLimit: 40, maxScore: 50, passPct: 50, attempts: 40, avgScore: 68, completed: true, myScore: 90, from: '#166534', to: '#22c55e', dueDate: 'Submitted' },
-  { id: 3, subject: 'Chemistry', title: 'Organic Chemistry: Functional Groups', questions: 15, timeLimit: 30, maxScore: 30, passPct: 60, attempts: 35, avgScore: 61, completed: false, myScore: null, from: '#581c87', to: '#a855f7', dueDate: '14 Mar 2025' },
-  { id: 4, subject: 'Physics', title: 'Electromagnetism: Faraday & Lenz', questions: 20, timeLimit: 35, maxScore: 40, passPct: 55, attempts: 28, avgScore: 55, completed: false, myScore: null, from: '#0c4a6e', to: '#0ea5e9', dueDate: '18 Mar 2025' },
-  { id: 5, subject: 'English', title: 'Grammar & Comprehension Test', questions: 30, timeLimit: 60, maxScore: 60, passPct: 50, attempts: 44, avgScore: 70, completed: true, myScore: 78, from: '#065f46', to: '#10b981', dueDate: 'Submitted' },
-  { id: 6, subject: 'Mathematics', title: 'Form 3: Matrices Quick Quiz', questions: 10, timeLimit: 20, maxScore: 20, passPct: 50, attempts: 0, avgScore: 0, completed: false, myScore: null, from: '#1d4ed8', to: '#3b82f6', dueDate: '20 Mar 2025' },
-  { id: 7, subject: 'History', title: 'Colonial Kenya: Multiple Choice', questions: 20, timeLimit: 30, maxScore: 20, passPct: 50, attempts: 38, avgScore: 65, completed: false, myScore: null, from: '#7c2d12', to: '#f97316', dueDate: '21 Mar 2025' },
-  { id: 8, subject: 'Computer Studies', title: 'Programming Fundamentals Quiz', questions: 25, timeLimit: 40, maxScore: 50, passPct: 55, attempts: 30, avgScore: 74, completed: true, myScore: 88, from: '#1e1b4b', to: '#6366f1', dueDate: 'Submitted' },
-  { id: 9, subject: 'Kiswahili', title: 'Sarufi ya Kiswahili: Vihusishi', questions: 15, timeLimit: 25, maxScore: 30, passPct: 50, attempts: 42, avgScore: 58, completed: false, myScore: null, from: '#92400e', to: '#f59e0b', dueDate: '22 Mar 2025' },
-  { id: 10, subject: 'Biology', title: 'Form 3: Genetics & Heredity', questions: 20, timeLimit: 35, maxScore: 40, passPct: 60, attempts: 0, avgScore: 0, completed: false, myScore: null, from: '#166534', to: '#22c55e', dueDate: '25 Mar 2025' },
-]
+interface Quiz {
+  id: number
+  title: string
+  instructions: string
+  time_limit_minutes: number
+  max_attempts: number
+  is_published: boolean
+  due_date: string | null
+  question_count: number
+  attempt_count: number
+  created_at: string
+  course: number
+  course_name?: string
+}
+
+const SUBJECT_COLORS: Record<string, { from: string; to: string }> = {
+  'Mathematics':    { from: '#1d4ed8', to: '#3b82f6' },
+  'Biology':        { from: '#166534', to: '#22c55e' },
+  'Chemistry':      { from: '#581c87', to: '#a855f7' },
+  'Physics':        { from: '#0c4a6e', to: '#0ea5e9' },
+  'English':        { from: '#065f46', to: '#10b981' },
+  'Kiswahili':      { from: '#92400e', to: '#f59e0b' },
+  'History':        { from: '#7c2d12', to: '#f97316' },
+  'Geography':      { from: '#14532d', to: '#84cc16' },
+  'Computer Studies': { from: '#1e1b4b', to: '#6366f1' },
+  'Business Studies': { from: '#1e3a5f', to: '#64748b' },
+  'Agriculture':    { from: '#052e16', to: '#16a34a' },
+}
+function guessSubjectColors(title: string) {
+  for (const [subj, colors] of Object.entries(SUBJECT_COLORS)) {
+    if (title.toLowerCase().includes(subj.toLowerCase())) return colors
+  }
+  return { from: '#1e293b', to: '#475569' }
+}
 
 function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border ${className}`}
-      style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}>
+    <div
+      className={`rounded-2xl border ${className}`}
+      style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}
+    >
       {children}
     </div>
   )
@@ -42,13 +67,28 @@ function ScoreRing({ score, max, color }: { score: number; max: number; color: s
 }
 
 export default function ELearningQuizzesPage() {
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all')
+  const [quizzes, setQuizzes] = useState<Quiz[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'published'>('all')
 
-  const completed = QUIZZES.filter(q => q.completed)
-  const pending = QUIZZES.filter(q => !q.completed)
-  const avgMyScore = completed.length > 0 ? Math.round(completed.reduce((s, q) => s + (q.myScore || 0), 0) / completed.length) : 0
+  useEffect(() => {
+    apiClient.get('elearning/quizzes/')
+      .then(r => {
+        const data = r.data
+        setQuizzes(Array.isArray(data) ? data : data.results ?? [])
+      })
+      .catch(() => setQuizzes([]))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const shown = filter === 'completed' ? completed : filter === 'pending' ? pending : QUIZZES
+  const published = quizzes.filter(q => q.is_published)
+  const pending = quizzes.filter(q => !q.is_published)
+  const withAttempts = quizzes.filter(q => q.attempt_count > 0)
+
+  const shown =
+    filter === 'published' ? published :
+    filter === 'pending' ? pending :
+    quizzes
 
   return (
     <div className="space-y-6">
@@ -66,91 +106,109 @@ export default function ELearningQuizzesPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Quizzes', value: QUIZZES.length, icon: BookOpen, color: '#6366f1' },
-          { label: 'Completed', value: completed.length, icon: CheckCircle, color: '#10b981' },
-          { label: 'Pending', value: pending.length, icon: AlertCircle, color: '#f59e0b' },
-          { label: 'Avg Score', value: `${avgMyScore}%`, icon: Trophy, color: '#3b82f6' },
-        ].map(s => {
-          const Icon = s.icon
-          return (
-            <GlassCard key={s.label} className="p-5 flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}20` }}>
-                <Icon size={20} style={{ color: s.color }} />
-              </div>
-              <div>
-                <p className="text-2xl font-display font-bold text-white">{s.value}</p>
-                <p className="text-xs text-slate-400">{s.label}</p>
-              </div>
-            </GlassCard>
-          )
-        })}
-      </div>
-
-      {/* Filter */}
-      <div className="flex gap-2">
-        {(['all', 'pending', 'completed'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className="px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-all"
-            style={filter === f
-              ? { background: '#10b981', color: '#fff' }
-              : { background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
-            {f === 'all' ? 'All Quizzes' : f === 'pending' ? `Pending (${pending.length})` : `Completed (${completed.length})`}
-          </button>
-        ))}
-      </div>
-
-      {/* Quiz Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {shown.map(q => (
-          <GlassCard key={q.id} className={`p-5 hover:border-slate-600 transition-all ${!q.completed ? 'cursor-pointer' : ''}`}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl flex-shrink-0"
-                style={{ background: `linear-gradient(135deg, ${q.from}, ${q.to})` }}>
-                {q.subject.slice(0, 1)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold" style={{ color: q.to }}>{q.subject}</p>
-                    <p className="text-sm font-bold text-white leading-snug mt-0.5">{q.title}</p>
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 size={32} className="text-emerald-500 animate-spin" />
+        </div>
+      ) : (
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Quizzes', value: quizzes.length, icon: BookOpen, color: '#6366f1' },
+              { label: 'Published', value: published.length, icon: CheckCircle, color: '#10b981' },
+              { label: 'Drafts', value: pending.length, icon: AlertCircle, color: '#f59e0b' },
+              { label: 'With Attempts', value: withAttempts.length, icon: Trophy, color: '#3b82f6' },
+            ].map(s => {
+              const Icon = s.icon
+              return (
+                <GlassCard key={s.label} className="p-5 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}20` }}>
+                    <Icon size={20} style={{ color: s.color }} />
                   </div>
-                  {q.completed && q.myScore !== null && (
-                    <ScoreRing score={q.myScore} max={100} color={q.myScore >= 70 ? '#10b981' : q.myScore >= 50 ? '#f59e0b' : '#ef4444'} />
-                  )}
-                </div>
-                <div className="flex items-center gap-4 mt-2 flex-wrap">
-                  <span className="flex items-center gap-1 text-xs text-slate-400"><Target size={12} /> {q.questions} Qs</span>
-                  <span className="flex items-center gap-1 text-xs text-slate-400"><Clock size={12} /> {q.timeLimit} min</span>
-                  <span className="flex items-center gap-1 text-xs text-slate-400"><BarChart2 size={12} /> Avg: {q.avgScore > 0 ? `${q.avgScore}%` : 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between mt-3">
                   <div>
-                    {q.completed ? (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399' }}>
-                        <CheckCircle size={11} /> Submitted
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-xs text-amber-400"><Clock size={11} /> Due: {q.dueDate}</span>
-                    )}
+                    <p className="text-2xl font-display font-bold text-white">{s.value}</p>
+                    <p className="text-xs text-slate-400">{s.label}</p>
                   </div>
-                  {!q.completed ? (
-                    <button className="flex items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-bold transition-all hover:opacity-90" style={{ background: '#10b981', color: '#fff' }}>
-                      Start Quiz <ChevronRight size={13} />
-                    </button>
-                  ) : (
-                    <button className="flex items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all" style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)' }}>
-                      View Results <ChevronRight size={13} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </GlassCard>
-        ))}
-      </div>
+                </GlassCard>
+              )
+            })}
+          </div>
+
+          {/* Filter */}
+          <div className="flex gap-2">
+            {([['all', 'All Quizzes'], ['published', `Published (${published.length})`], ['pending', `Drafts (${pending.length})`]] as const).map(([f, label]) => (
+              <button
+                key={f} onClick={() => setFilter(f)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                style={filter === f
+                  ? { background: '#10b981', color: '#fff' }
+                  : { background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Quiz Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {shown.length === 0 ? (
+              <GlassCard className="col-span-full p-10 text-center">
+                <BookOpen size={40} className="mx-auto text-slate-600 mb-3" />
+                <p className="text-slate-400">No quizzes found</p>
+              </GlassCard>
+            ) : shown.map(q => {
+              const { from, to } = guessSubjectColors(q.title)
+              const subjectLabel = q.title.split('—')[0]?.trim() ?? 'General'
+              return (
+                <GlassCard key={q.id} className="p-5 hover:border-slate-600 transition-all cursor-pointer">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl flex-shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
+                    >
+                      {subjectLabel.slice(0, 1)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-semibold" style={{ color: to }}>{subjectLabel}</p>
+                          <p className="text-sm font-bold text-white leading-snug mt-0.5">{q.title}</p>
+                        </div>
+                        {q.attempt_count > 0 && (
+                          <ScoreRing score={q.attempt_count} max={q.max_attempts} color="#10b981" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 mt-2 flex-wrap">
+                        <span className="flex items-center gap-1 text-xs text-slate-400"><Target size={12} /> {q.question_count} Qs</span>
+                        <span className="flex items-center gap-1 text-xs text-slate-400"><Clock size={12} /> {q.time_limit_minutes} min</span>
+                        <span className="flex items-center gap-1 text-xs text-slate-400"><BarChart2 size={12} /> {q.attempt_count} attempts</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <div>
+                          {q.is_published ? (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399' }}>
+                              <CheckCircle size={11} /> Published
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-xs text-amber-400"><Clock size={11} /> Draft</span>
+                          )}
+                        </div>
+                        <button
+                          className="flex items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-bold transition-all hover:opacity-90"
+                          style={{ background: q.is_published ? '#10b981' : 'rgba(255,255,255,0.05)', color: q.is_published ? '#fff' : '#64748b' }}
+                        >
+                          {q.is_published ? 'Start Quiz' : 'Preview'} <ChevronRight size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </GlassCard>
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }

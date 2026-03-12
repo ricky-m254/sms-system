@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
-import PageHero from '../../components/PageHero'
 import {
   Users, BarChart2, Building2, Briefcase, ChevronRight,
   UserCheck, TrendingUp, Award, Clock, Shield, GraduationCap,

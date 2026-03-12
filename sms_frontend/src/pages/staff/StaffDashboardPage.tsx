@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { useNavigate } from 'react-router-dom'
-import PageHero from '../../components/PageHero'
 import {
   Users, TrendingUp, BookOpen, Shield, Car, ChefHat,
   Stethoscope, Monitor, Wrench, GraduationCap, BarChart2,

@@ -188,6 +188,9 @@ class Command(BaseCommand):
         self.stdout.write("  Seeding library resources + members + transactions…")
         self._seed_library(students, admin)
 
+        self.stdout.write("  Seeding e-learning courses + materials + quizzes…")
+        self._seed_elearning(classes, terms, admin)
+
         self.stdout.write("  Seeding cafeteria (meal plans + menus + enrollments)…")
         self._seed_cafeteria(students)
 
@@ -1086,6 +1089,147 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(f'    → Library: {LibraryResource.objects.count()} books, {ResourceCopy.objects.count()} copies, {LibraryMember.objects.count()} members')
+
+    # ── E-Learning ────────────────────────────────────────────────────────────
+    def _seed_elearning(self, classes, terms, admin_user):
+        try:
+            from elearning.models import Course, CourseMaterial, OnlineQuiz, QuizQuestion, VirtualSession
+        except ImportError:
+            self.stdout.write("    E-Learning app not available — skipping")
+            return
+
+        import random
+        from datetime import date, timedelta
+        random.seed(77)
+
+        from school.models import Subject
+        from django.contrib.auth.models import User
+
+        term = None
+        try:
+            from academics.models import Term as AcademicTerm
+            term = AcademicTerm.objects.filter(is_active=True).first()
+        except Exception:
+            pass
+        teachers = list(User.objects.exclude(username='admin')[:12])
+        if not teachers:
+            teachers = [admin_user]
+
+        # Flatten classes dict {form: {stream: cls}} → flat list
+        flat_classes = []
+        if isinstance(classes, dict):
+            for form_dict in classes.values():
+                if isinstance(form_dict, dict):
+                    flat_classes.extend(form_dict.values())
+                else:
+                    flat_classes.append(form_dict)
+        else:
+            flat_classes = list(classes)
+
+        COURSE_DATA = [
+            ('Mathematics Form 3 — Quadratic Equations', 'MTH301', 'Mathematics', 'Quadratic equations, inequalities and graphs for Form 3 students.', 12, 4.8),
+            ('Biology Form 2 — Cell Biology & Genetics', 'BIO201', 'Biology', 'Cell structure, organelles, cell division and basic genetics.', 10, 4.9),
+            ('Chemistry Form 3 — Organic Chemistry', 'CHE301', 'Chemistry', 'Introduction to organic compounds, hydrocarbons and reactions.', 14, 4.7),
+            ('Physics Form 3 — Electromagnetism', 'PHY301', 'Physics', 'Electromagnetic induction, Faraday\'s law and applications.', 11, 4.6),
+            ('English Form 4 — Essay Writing', 'ENG401', 'English', 'Advanced composition, argumentative essays and literary analysis.', 8, 4.5),
+            ('Kiswahili Form 3 — Fasihi', 'KSW301', 'Kiswahili', 'Ushairi, riwaya na tamthilia — uchambuzi wa kina.', 9, 4.4),
+            ('History Form 3 — Nationalism in Africa', 'HIS301', 'History', 'African nationalism, independence movements and post-colonial Africa.', 7, 4.3),
+            ('Geography Form 2 — Climatology', 'GEO201', 'Geography', 'World climate zones, weather patterns and climate change.', 8, 4.5),
+            ('Computer Studies Form 3 — Programming', 'COM301', 'Computer Studies', 'Introduction to Python programming, algorithms and data structures.', 10, 4.8),
+            ('Business Studies Form 4 — Entrepreneurship', 'BST401', 'Business Studies', 'Business planning, financial literacy and entrepreneurial skills.', 6, 4.2),
+            ('Agriculture Form 2 — Crop Production', 'AGR201', 'Agriculture', 'Soil science, crop husbandry and sustainable farming practices.', 7, 4.4),
+            ('Mathematics Form 4 — Matrices & Calculus', 'MTH401', 'Mathematics', 'Matrices, transformations, differentiation and integration.', 14, 4.9),
+        ]
+
+        MATERIAL_TYPES = ['PDF', 'Video', 'Note', 'Presentation']
+        created_count = 0
+
+        for i, (title, code, subject_name, desc, lessons, rating) in enumerate(COURSE_DATA):
+            teacher = teachers[i % len(teachers)]
+            subject = Subject.objects.filter(name__icontains=subject_name.split()[0]).first()
+            school_class = flat_classes[i % len(flat_classes)] if flat_classes else None
+
+            course, created = Course.objects.get_or_create(
+                title=title,
+                defaults={
+                    'teacher': teacher,
+                    'subject': subject,
+                    'school_class': school_class,
+                    'term': term,
+                    'description': desc,
+                    'is_published': True,
+                }
+            )
+            if not created:
+                continue
+            created_count += 1
+
+            # Add materials
+            material_titles = [
+                (f'{title} — Week 1 Notes', 'PDF'),
+                (f'{title} — Introduction Video', 'Video'),
+                (f'{title} — Week 2 Notes', 'PDF'),
+                (f'{title} — Practice Exercises', 'Note'),
+                (f'{title} — Revision Summary', 'Presentation'),
+            ]
+            for seq, (mat_title, mat_type) in enumerate(material_titles[:3], 1):
+                CourseMaterial.objects.get_or_create(
+                    course=course,
+                    title=mat_title,
+                    defaults={
+                        'material_type': mat_type,
+                        'content': f'Study notes for {title}. Topic {seq}: key concepts and worked examples.',
+                        'sequence': seq,
+                        'is_active': True,
+                    }
+                )
+
+            # Add a quiz
+            quiz, _ = OnlineQuiz.objects.get_or_create(
+                course=course,
+                title=f'{title} — End of Topic Quiz',
+                defaults={
+                    'instructions': 'Answer all questions. Select the best answer for each.',
+                    'time_limit_minutes': 30,
+                    'max_attempts': 2,
+                    'is_published': True,
+                }
+            )
+
+            # Add questions
+            SAMPLE_QUESTIONS = [
+                ('What is the main topic covered in this course?', 'A', 'The course subject', 'Mathematics', 'English', 'History'),
+                ('Which method is used to solve quadratic equations?', 'B', 'Factorisation', 'Factorisation', 'Painting', 'Singing'),
+                ('What does CBC stand for in Kenyan education?', 'A', 'Competency Based Curriculum', 'Competency Based Curriculum', 'Central Bank Committee', 'Class Based Content'),
+            ]
+            for seq, (qtext, ans, opt_a, opt_b, opt_c, opt_d) in enumerate(SAMPLE_QUESTIONS[:2], 1):
+                if not quiz.questions.filter(sequence=seq).exists():
+                    QuizQuestion.objects.create(
+                        quiz=quiz,
+                        question_text=qtext,
+                        question_type='MCQ',
+                        option_a=opt_a, option_b=opt_b, option_c=opt_c, option_d=opt_d,
+                        correct_answer=ans,
+                        marks=5,
+                        sequence=seq,
+                    )
+
+            # Add a virtual session
+            session_date = date.today() + timedelta(days=random.randint(1, 14))
+            VirtualSession.objects.get_or_create(
+                course=course,
+                title=f'{title} — Live Q&A Session',
+                defaults={
+                    'session_date': session_date,
+                    'start_time': '14:00:00',
+                    'end_time': '15:30:00',
+                    'platform': random.choice(['Zoom', 'Google Meet']),
+                    'meeting_link': f'https://meet.example.com/{code.lower()}-session',
+                    'notes': f'Live interactive session for {title}. Come prepared with questions.',
+                }
+            )
+
+        self.stdout.write(f'    → E-Learning: {Course.objects.count()} courses, {CourseMaterial.objects.count()} materials, {OnlineQuiz.objects.count()} quizzes')
 
     # ── Cafeteria ─────────────────────────────────────────────────────────────
     def _seed_cafeteria(self, students):

@@ -71,6 +71,7 @@ from .views import (
     UserManagementListCreateView,
     UserManagementDetailView,
     DemoResetView,
+    CurrentUserView,
 )
 
 # ==========================================
@@ -136,6 +137,7 @@ router.register(r'dispensary/outside-treatments', DispensaryOutsideTreatmentView
 urlpatterns = [
     # 1. Authentication (JWT)
     path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/me/', CurrentUserView.as_view(), name='current_user'),
 
     # 2. Summary Endpoints (must come before router to avoid /students/{pk} collisions)
     path('finance/summary/', FinancialSummaryView.as_view(), name='financial_summary'),

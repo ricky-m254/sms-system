@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import PageHero from '../../components/PageHero'
 import {
   UserPlus, ClipboardList, Star, CheckCircle2, ChevronRight,
   Users, TrendingUp, Calendar, Filter,

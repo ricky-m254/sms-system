@@ -952,3 +952,66 @@ class LibraryReportsMemberActivityView(LibraryAccessMixin, APIView):
             ],
             status=status.HTTP_200_OK,
         )
+
+
+class LibraryDashboardView(LibraryAccessMixin, APIView):
+    """Aggregated dashboard statistics for the library module."""
+
+    def get(self, request):
+        today = date.today()
+
+        total_resources = LibraryResource.objects.filter(is_active=True).count()
+        total_copies = ResourceCopy.objects.filter(is_active=True).count()
+        available_copies = ResourceCopy.objects.filter(is_active=True, status="Available").count()
+        borrowed_copies = ResourceCopy.objects.filter(is_active=True, status="Issued").count()
+
+        overdue_count = CirculationTransaction.objects.filter(
+            return_date__isnull=True, due_date__lt=today
+        ).count()
+
+        total_members = LibraryMember.objects.filter(is_active=True).count()
+
+        # Recent transactions (last 6)
+        recent_txns = (
+            CirculationTransaction.objects
+            .select_related("copy__resource", "member")
+            .order_by("-issue_date")[:6]
+        )
+        recent_activity = []
+        for txn in recent_txns:
+            recent_activity.append({
+                "id": txn.id,
+                "member": str(txn.member),
+                "book": txn.copy.resource.title if txn.copy else "",
+                "action": "Returned" if txn.return_date else "Borrowed",
+                "date": str(txn.return_date or txn.issue_date),
+            })
+
+        # Top 5 popular resources
+        popular_raw = (
+            CirculationTransaction.objects
+            .values("copy__resource__id", "copy__resource__title",
+                    "copy__resource__authors")
+            .annotate(borrow_count=Count("id"))
+            .order_by("-borrow_count")[:5]
+        )
+        popular = [
+            {
+                "id": row["copy__resource__id"],
+                "title": row["copy__resource__title"],
+                "authors": row["copy__resource__authors"],
+                "borrow_count": row["borrow_count"],
+            }
+            for row in popular_raw
+        ]
+
+        return Response({
+            "total_resources": total_resources,
+            "total_copies": total_copies,
+            "available_copies": available_copies,
+            "borrowed_copies": borrowed_copies,
+            "overdue_count": overdue_count,
+            "total_members": total_members,
+            "recent_activity": recent_activity,
+            "popular_resources": popular,
+        })

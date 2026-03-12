@@ -11,6 +11,7 @@ from .views import (
     IssueResourceView,
     InventoryAuditViewSet,
     LibraryCategoryViewSet,
+    LibraryDashboardView,
     LibraryMemberViewSet,
     LibraryReportsCirculationView,
     LibraryReportsFinesView,
@@ -35,6 +36,7 @@ router.register(r"inventory/audits", InventoryAuditViewSet, basename="library_in
 router.register(r"acquisition/requests", AcquisitionRequestViewSet, basename="library_acquisition_requests")
 
 urlpatterns = [
+    path("dashboard/", LibraryDashboardView.as_view(), name="library_dashboard"),
     path("circulation/issue/", IssueResourceView.as_view(), name="library_issue"),
     path("circulation/return/", ReturnResourceView.as_view(), name="library_return"),
     path("circulation/renew/", RenewResourceView.as_view(), name="library_renew"),

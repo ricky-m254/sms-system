@@ -780,77 +780,147 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-6xl flex flex-col gap-6 px-5 py-7 sm:px-8">
 
         {/* ── Hero Banner ─────────────────────────────── */}
-        <header
-          className={`relative overflow-hidden rounded-3xl animate-sun-rise hero-${greeting.period}`}
-        >
-          {/* Ambient light overlay */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: 'radial-gradient(ellipse at 25% 65%, rgba(255,255,255,0.18) 0%, transparent 55%), radial-gradient(ellipse at 82% 15%, rgba(255,255,255,0.10) 0%, transparent 50%)',
+        <header className="relative overflow-hidden rounded-3xl animate-sun-rise">
+          {/* Dynamic gradient background */}
+          <div className="absolute inset-0" style={{
+            background: greeting.period === 'morning'
+              ? 'linear-gradient(135deg, #0c0820 0%, #1c0a28 25%, #2e0c14 55%, #180d04 100%)'
+              : greeting.period === 'afternoon'
+              ? 'linear-gradient(135deg, #051814 0%, #092418 30%, #0d1c2e 65%, #071420 100%)'
+              : 'linear-gradient(135deg, #07091c 0%, #0f0f2e 35%, #160828 70%, #07091c 100%)',
           }} />
-          {/* Stars for evening */}
-          {greeting.period === 'evening' && (
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[{t:'8%',l:'14%'},{t:'5%',l:'72%'},{t:'15%',l:'88%'},{t:'22%',l:'42%'},{t:'10%',l:'55%'},{t:'18%',l:'25%'},{t:'3%',l:'38%'}].map((s,i) => (
-                <div key={i} className="absolute w-0.5 h-0.5 bg-white rounded-full opacity-70 animate-pulse"
-                  style={{ top: s.t, left: s.l, animationDelay: `${i * 0.4}s` }} />
-              ))}
-            </div>
-          )}
+          {/* Aurora glow orbs */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute rounded-full blur-[100px]" style={{
+              width: 420, height: 320,
+              background: greeting.period === 'morning'
+                ? 'radial-gradient(circle, rgba(251,146,60,0.28) 0%, transparent 70%)'
+                : greeting.period === 'afternoon'
+                ? 'radial-gradient(circle, rgba(16,185,129,0.22) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)',
+              top: -60, right: -40,
+            }} />
+            <div className="absolute rounded-full blur-[80px]" style={{
+              width: 280, height: 200,
+              background: greeting.period === 'morning'
+                ? 'radial-gradient(circle, rgba(234,179,8,0.18) 0%, transparent 70%)'
+                : greeting.period === 'afternoon'
+                ? 'radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(99,102,241,0.20) 0%, transparent 70%)',
+              bottom: -20, left: 80,
+            }} />
+          </div>
+          {/* Dot-grid overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+          }} />
+          {/* Diagonal accent line */}
+          <div className="absolute pointer-events-none" style={{
+            top: 0, right: '28%', width: 1, height: '100%',
+            background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.06) 60%, transparent 100%)',
+            transform: 'skewX(-12deg)',
+          }} />
 
-          <div className="relative z-10 px-6 py-7 sm:px-8 sm:py-9 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-            <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-              {/* Orb — now floating */}
-              <div className="flex-shrink-0 animate-float">
-                <GreetingOrb period={greeting.period} />
-              </div>
-              <div className="min-w-0">
-                {/* School chip */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3 text-[11px] font-bold text-white"
-                  style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)', backdropFilter: 'blur(4px)' }}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  <span className="capitalize">{(schoolName ?? tenantId ?? 'Rynatyschool').toUpperCase()}</span>
-                </div>
-                {/* Main greeting */}
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white leading-tight capitalize drop-shadow-md">
-                  {greeting.text.split(',')[0]},
-                  <span className="block sm:inline ml-0 sm:ml-2 text-white/80 capitalize">
-                    {greeting.text.split(',').slice(1).join(',').trim()}
+          <div className="relative z-10 px-6 pt-5 pb-5 sm:px-8 sm:pt-7">
+            {/* Top bar: school badge + refresh */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+                  <span className="text-[10px] font-bold tracking-widest text-emerald-300 uppercase">
+                    {tenantId ?? 'DEMO_SCHOOL'}
                   </span>
-                </h1>
-                {/* Date */}
-                <p className="mt-2 text-[13px] text-white/55 font-medium capitalize">
-                  <span className="hidden sm:inline">{new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                  <span className="sm:hidden">{new Date().toLocaleDateString('en-KE', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                </p>
+                </div>
+                <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span className="text-[9px] text-slate-500 font-semibold tracking-wider uppercase">RSM · v1.0</span>
+                </div>
               </div>
+              <button onClick={() => void loadSummary()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:scale-105 active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.11)', color: '#94a3b8' }}>
+                <RefreshCw size={11} className={isLoading ? 'animate-spin' : ''} />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
             </div>
 
-            {/* Right: stats strip + refresh */}
-            <div className="flex flex-col items-start sm:items-end gap-3">
-              {/* Mini stat chips */}
+            {/* Main content: greeting left + stats right */}
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+              <div className="flex items-center gap-5 min-w-0">
+                {/* Orb */}
+                <div className="flex-shrink-0 animate-float hidden sm:block">
+                  <GreetingOrb period={greeting.period} />
+                </div>
+                <div className="min-w-0">
+                  {/* Period label */}
+                  <div className="text-[9px] font-black tracking-[0.3em] uppercase mb-2" style={{
+                    color: greeting.period === 'morning' ? '#fbbf24'
+                      : greeting.period === 'afternoon' ? '#34d399' : '#a78bfa',
+                    letterSpacing: '0.28em',
+                  }}>
+                    {greeting.period === 'morning' ? '☀ MORNING BRIEFING'
+                      : greeting.period === 'afternoon' ? '⛅ AFTERNOON BRIEFING' : '🌙 EVENING BRIEFING'}
+                  </div>
+                  {/* Massive period word */}
+                  <h1 className="font-display font-black leading-none tracking-tight select-none">
+                    <span className="block text-[42px] sm:text-[52px] md:text-[64px] leading-none" style={{
+                      background: greeting.period === 'morning'
+                        ? 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 40%, #f97316 80%, #ef4444 100%)'
+                        : greeting.period === 'afternoon'
+                        ? 'linear-gradient(135deg, #d1fae5 0%, #34d399 40%, #10b981 70%, #0ea5e9 100%)'
+                        : 'linear-gradient(135deg, #ede9fe 0%, #c4b5fd 40%, #8b5cf6 70%, #6366f1 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}>
+                      {greeting.period === 'morning' ? 'MORNING' : greeting.period === 'afternoon' ? 'AFTERNOON' : 'EVENING'}
+                    </span>
+                    <span className="block text-[15px] sm:text-[18px] text-white/60 font-semibold mt-1 tracking-normal capitalize">
+                      {username ? `${username} · ` : ''}{new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </span>
+                  </h1>
+                </div>
+              </div>
+
+              {/* Right: live stat chips */}
               {data && (
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { label: 'Students', value: data.summary.students?.active ?? 0 },
-                    { label: 'Modules', value: assignedModuleKeys.length },
-                    { label: 'Pending', value: activity.pendingItems.length },
-                  ].map(chip => (
-                    <div key={chip.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white"
-                      style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)' }}>
-                      <span className="text-[13px] font-bold capitalize">{chip.label}:</span>
-                      <span className="text-[13px] font-bold">{Number(chip.value).toLocaleString()}</span>
+                <div className="flex flex-row sm:flex-col gap-2 sm:items-end flex-shrink-0">
+                  {([
+                    { label: 'Active Students', value: data.summary.students?.active ?? 0, color: '#38bdf8' },
+                    { label: 'Active Modules', value: assignedModuleKeys.length, color: '#34d399' },
+                    { label: 'Pending Tasks', value: activity.pendingItems.length, color: '#fbbf24' },
+                  ] as { label: string; value: number; color: string }[]).map(s => (
+                    <div key={s.label} className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl flex-shrink-0"
+                      style={{ background: 'rgba(255,255,255,0.055)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                      <span className="text-[22px] sm:text-[26px] font-black font-display leading-none" style={{ color: s.color }}>
+                        {Number(s.value).toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-semibold leading-tight max-w-[52px]">{s.label}</span>
                     </div>
                   ))}
                 </div>
               )}
-              <button
-                onClick={() => void loadSummary()}
-                className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-semibold transition-all hover:scale-[1.03] active:scale-[0.98] capitalize"
-                style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.30)', color: 'white', backdropFilter: 'blur(4px)' }}
-              >
-                <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
-                Refresh Data
-              </button>
+            </div>
+
+            {/* Quick action pills */}
+            <div className="mt-5 pt-4 flex flex-wrap gap-2 border-t border-white/[0.06]">
+              {([
+                { label: 'Students', icon: '👥', route: '/modules/students/directory' },
+                { label: 'Academics', icon: '🎓', route: '/modules/academics/dashboard' },
+                { label: 'Finance', icon: '💰', route: '/modules/finance/dashboard' },
+                { label: 'E-Learning', icon: '💻', route: '/modules/elearning/dashboard' },
+                { label: 'Library', icon: '📚', route: '/modules/library/dashboard' },
+                { label: 'Reports', icon: '📊', route: '/modules/analytics/dashboard' },
+              ] as { label: string; icon: string; route: string }[]).map(q => (
+                <button key={q.label} onClick={() => navigate(q.route)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold transition-all hover:scale-105 hover:brightness-125 active:scale-95"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', color: '#cbd5e1' }}>
+                  <span className="text-[13px]">{q.icon}</span>
+                  <span>{q.label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </header>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { sportsApi } from '../../api/sports_cafeteria'
-import PageHero from '../../components/PageHero'
 import {
   Trophy, Users, Calendar, Award, ChevronRight, Star,
   Zap, Shield, Music, BookOpen, Leaf, Target,

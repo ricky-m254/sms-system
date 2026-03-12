@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
-import PageHero from '../../components/PageHero'
 import {
   BookOpen, FileText, Layers, Package, ChevronRight,
   GraduationCap, Star, Clock, CheckCircle2, TrendingUp,

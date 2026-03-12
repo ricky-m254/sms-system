@@ -1174,6 +1174,41 @@ class AdmissionsPipelineSummaryView(APIView):
             "counts": ordered,
         }, status=status.HTTP_200_OK)
 
+class CurrentUserView(APIView):
+    """Return the currently authenticated user's profile, role and assigned modules."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        profile = getattr(user, 'userprofile', None)
+        role = getattr(profile, 'role', None)
+        role_name = getattr(role, 'name', 'ADMIN') if role else 'ADMIN'
+        # Use Django's get_FOO_display() for the human-readable role label
+        role_display = role.get_name_display() if role else role_name
+
+        # Super-admin / admin roles get ALL active modules
+        if role_name in ('ADMIN', 'TENANT_SUPER_ADMIN') or user.is_superuser:
+            module_keys = list(Module.objects.filter(is_active=True).values_list('key', flat=True).order_by('key'))
+        else:
+            module_keys = list(
+                UserModuleAssignment.objects.filter(
+                    user=user, is_active=True, module__is_active=True
+                ).values_list('module__key', flat=True)
+            )
+
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'role': role_name,
+            'role_display': role_display,
+            'is_superuser': user.is_superuser,
+            'assigned_module_keys': module_keys,
+        })
+
+
 class TenantSequenceResetView(APIView):
     permission_classes = [IsSchoolAdmin, HasModuleAccess]
     module_key = "CORE"

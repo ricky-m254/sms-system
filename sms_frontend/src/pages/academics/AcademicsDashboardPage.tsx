@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
-import PageHero from '../../components/PageHero'
 import {
   BookOpen, TrendingUp, Users, AlertTriangle,
   CheckCircle2, BarChart2, ClipboardList, CalendarDays,
