@@ -137,7 +137,6 @@ export default function CommunicationNotificationsPage() {
         subtitle="Manage push notifications and alerts"
         icon="🔔"
       />
-      </div>
 
       {/* Alerts */}
       {error && (

@@ -123,7 +123,6 @@ export default function CommunicationEmailPage() {
         subtitle="Create and send targeted email communications"
         icon="📧"
       />
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

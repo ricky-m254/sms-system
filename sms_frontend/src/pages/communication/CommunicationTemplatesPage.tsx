@@ -173,7 +173,6 @@ export default function CommunicationTemplatesPage() {
         subtitle="Reusable message templates with merge field support"
         icon="📄"
       />
-      </div>
 
       {/* Alerts */}
       {error && (
