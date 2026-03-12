@@ -89,7 +89,7 @@ export default function PageHero({
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl sm:rounded-3xl px-5 py-7 sm:px-8 sm:py-9"
+      className="col-span-12 relative overflow-hidden rounded-2xl sm:rounded-3xl px-5 py-7 sm:px-8 sm:py-9"
       style={{ background: bg }}
     >
       {/* Ambient light blobs */}

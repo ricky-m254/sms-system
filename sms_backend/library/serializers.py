@@ -64,7 +64,20 @@ class CirculationTransactionSerializer(serializers.ModelSerializer):
     copy_accession_number = serializers.CharField(source="copy.accession_number", read_only=True)
     resource_title = serializers.CharField(source="copy.resource.title", read_only=True)
     member_member_id = serializers.CharField(source="member.member_id", read_only=True)
-    member_name = serializers.CharField(source="member.user.username", read_only=True)
+    member_name = serializers.SerializerMethodField()
+
+    def get_member_name(self, obj):
+        m = obj.member
+        if not m:
+            return ""
+        if m.student:
+            full = f"{m.student.first_name} {m.student.last_name}".strip()
+            if full:
+                return full
+        if m.user:
+            full = m.user.get_full_name().strip()
+            return full or m.user.username
+        return m.member_id
 
     class Meta:
         model = CirculationTransaction

@@ -986,7 +986,7 @@ class Command(BaseCommand):
         try:
             from library.models import (
                 LibraryCategory, LibraryResource, ResourceCopy,
-                LibraryMember, CirculationRule, CirculationTransaction,
+                LibraryMember, CirculationRule, CirculationTransaction, FineRecord,
             )
         except ImportError:
             self.stdout.write("    Library app not available — skipping")
@@ -1088,7 +1088,114 @@ class Command(BaseCommand):
                 }
             )
 
-        self.stdout.write(f'    → Library: {LibraryResource.objects.count()} books, {ResourceCopy.objects.count()} copies, {LibraryMember.objects.count()} members')
+        # ── Circulation transactions and fines ────────────────────────────────
+        from datetime import date, timedelta
+        from decimal import Decimal as D
+        today = date.today()
+        members = list(LibraryMember.objects.filter(is_active=True))
+        issued_copies = list(ResourceCopy.objects.filter(status='Issued', is_active=True)[:20])
+        available_copies = list(ResourceCopy.objects.filter(status='Available', is_active=True)[:10])
+
+        # Only seed if no transactions exist yet
+        if CirculationTransaction.objects.count() == 0 and members:
+            # 1. Active/overdue transactions — use the "Issued" copies
+            for idx, copy in enumerate(issued_copies):
+                member = members[idx % len(members)]
+                # First 8 copies: issued 20-30 days ago → overdue (14-day loan)
+                # Remaining: issued 2-10 days ago → still active
+                if idx < 8:
+                    issue_dt = today - timedelta(days=random.randint(20, 30))
+                else:
+                    issue_dt = today - timedelta(days=random.randint(2, 10))
+                due_dt = issue_dt + timedelta(days=14)
+                overdue = due_dt < today
+                overdue_days = max(0, (today - due_dt).days) if overdue else 0
+                fine_amt = D(str(round(overdue_days * 5.0, 2))) if overdue else None
+                CirculationTransaction.objects.create(
+                    copy=copy,
+                    member=member,
+                    transaction_type='Issue',
+                    issue_date=issue_dt,
+                    due_date=due_dt,
+                    return_date=None,
+                    is_overdue=overdue,
+                    overdue_days=overdue_days,
+                    fine_amount=fine_amt,
+                    issued_by=admin_user,
+                    is_active=True,
+                )
+
+            # 2. Returned transactions — use available copies (returned last week)
+            for idx, copy in enumerate(available_copies[:6]):
+                member = members[(idx + 3) % len(members)]
+                issue_dt = today - timedelta(days=random.randint(15, 25))
+                due_dt = issue_dt + timedelta(days=14)
+                return_dt = due_dt - timedelta(days=random.randint(0, 3))
+                CirculationTransaction.objects.create(
+                    copy=copy,
+                    member=member,
+                    transaction_type='Return',
+                    issue_date=issue_dt,
+                    due_date=due_dt,
+                    return_date=return_dt,
+                    is_overdue=False,
+                    overdue_days=0,
+                    issued_by=admin_user,
+                    returned_to=admin_user,
+                    condition_at_return='Good',
+                    is_active=True,
+                )
+
+            # 3. Overdue fines — create FineRecord for first 5 overdue transactions
+            overdue_txns = CirculationTransaction.objects.filter(is_overdue=True, fine_amount__gt=0)[:5]
+            for txn in overdue_txns:
+                FineRecord.objects.get_or_create(
+                    transaction=txn,
+                    defaults={
+                        'member': txn.member,
+                        'fine_type': 'Overdue',
+                        'amount': txn.fine_amount or D('50.00'),
+                        'amount_paid': D('0.00'),
+                        'status': 'Pending',
+                        'is_active': True,
+                    }
+                )
+
+            # 4. One paid fine
+            if members:
+                paid_copy = available_copies[0] if available_copies else issued_copies[0]
+                old_issue = today - timedelta(days=30)
+                old_due = old_issue + timedelta(days=14)
+                old_return = old_due + timedelta(days=7)
+                paid_txn = CirculationTransaction.objects.create(
+                    copy=paid_copy,
+                    member=members[0],
+                    transaction_type='Return',
+                    issue_date=old_issue,
+                    due_date=old_due,
+                    return_date=old_return,
+                    is_overdue=True,
+                    overdue_days=7,
+                    fine_amount=D('35.00'),
+                    fine_paid=True,
+                    issued_by=admin_user,
+                    returned_to=admin_user,
+                    condition_at_return='Good',
+                    is_active=True,
+                )
+                FineRecord.objects.get_or_create(
+                    transaction=paid_txn,
+                    defaults={
+                        'member': members[0],
+                        'fine_type': 'Overdue',
+                        'amount': D('35.00'),
+                        'amount_paid': D('35.00'),
+                        'status': 'Paid',
+                        'is_active': True,
+                    }
+                )
+
+        self.stdout.write(f'    → Library: {LibraryResource.objects.count()} books, {ResourceCopy.objects.count()} copies, {LibraryMember.objects.count()} members, {CirculationTransaction.objects.count()} transactions, {FineRecord.objects.count()} fines')
 
     # ── E-Learning ────────────────────────────────────────────────────────────
     def _seed_elearning(self, classes, terms, admin_user):
