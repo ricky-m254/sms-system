@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import { apiClient } from '../../api/client'
 import { Link } from 'react-router-dom'
+import { X } from 'lucide-react'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadBlob, extractFilename } from '../../utils/download'
 import PageHero from '../../components/PageHero'
@@ -31,6 +33,14 @@ export default function StudentsDirectoryPage() {
   const pageSize = 8
   const [exportError, setExportError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [showAddStudent, setShowAddStudent] = useState(false)
+  const [addSaving, setAddSaving] = useState(false)
+  const [addMsg, setAddMsg] = useState('')
+  const [classes, setClasses] = useState<{ id: number; display_name: string }[]>([])
+  const [newStudent, setNewStudent] = useState({
+    first_name: '', last_name: '', gender: 'Male', date_of_birth: '',
+    school_class: '', enrollment_date: new Date().toISOString().slice(0, 10),
+  })
 
   useEffect(() => {
     let isMounted = true
@@ -76,6 +86,12 @@ export default function StudentsDirectoryPage() {
     }
   }, [page, query, genderFilter, statusFilter])
 
+  useEffect(() => {
+    apiClient.get('/academics/classes/').then(res => {
+      setClasses(res.data.results || res.data || [])
+    }).catch(() => setClasses([]))
+  }, [])
+
   const filteredStudents = useMemo(() => {
     if (isServerPaginated) return students
     const term = query.trim().toLowerCase()
@@ -103,6 +119,39 @@ export default function StudentsDirectoryPage() {
     1,
     Math.ceil((isServerPaginated ? totalCount : filteredStudents.length) / pageSize),
   )
+
+  const handleAddStudent = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!newStudent.first_name || !newStudent.last_name) {
+      setAddMsg('First and last name are required.')
+      return
+    }
+    setAddSaving(true)
+    setAddMsg('')
+    try {
+      const payload: Record<string, unknown> = {
+        first_name: newStudent.first_name.trim(),
+        last_name: newStudent.last_name.trim(),
+        gender: newStudent.gender,
+        is_active: true,
+      }
+      if (newStudent.date_of_birth) payload.date_of_birth = newStudent.date_of_birth
+      if (newStudent.enrollment_date) payload.enrollment_date = newStudent.enrollment_date
+      if (newStudent.school_class) payload.school_class = Number(newStudent.school_class)
+      await apiClient.post('/students/', payload)
+      setAddMsg('Student added successfully!')
+      setNewStudent({ first_name: '', last_name: '', gender: 'Male', date_of_birth: '', school_class: '', enrollment_date: new Date().toISOString().slice(0, 10) })
+      setTimeout(() => { setShowAddStudent(false); setAddMsg(''); setPage(1) }, 1500)
+    } catch (err: any) {
+      const detail = err?.response?.data
+      if (detail?.first_name?.[0]) setAddMsg(detail.first_name[0])
+      else if (detail?.error) setAddMsg(detail.error)
+      else if (typeof detail === 'string') setAddMsg(detail)
+      else setAddMsg('Unable to create student. Please try again.')
+    } finally {
+      setAddSaving(false)
+    }
+  }
 
   const handleExport = async (format: 'csv' | 'pdf') => {
     setExportError(null)
@@ -135,6 +184,12 @@ export default function StudentsDirectoryPage() {
         title="Student Directory"
         subtitle="Browse and search all students."
         icon="📋"
+        actions={
+          <button onClick={() => { setShowAddStudent(true); setAddMsg('') }}
+            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
+            + Add Student
+          </button>
+        }
       />
 
       {isLoading ? (
@@ -281,6 +336,83 @@ export default function StudentsDirectoryPage() {
           </div>
         </div>
       </section>
+
+      {showAddStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-lg rounded-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto" style={{ background: '#0d1421', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Students</p>
+                <h2 className="text-lg font-display font-bold text-white">New Student</h2>
+              </div>
+              <button onClick={() => setShowAddStudent(false)} className="text-slate-400 hover:text-white"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">First Name *</label>
+                  <input required value={newStudent.first_name} onChange={e => setNewStudent(s => ({ ...s, first_name: e.target.value }))}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="First name" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">Last Name *</label>
+                  <input required value={newStudent.last_name} onChange={e => setNewStudent(s => ({ ...s, last_name: e.target.value }))}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} placeholder="Last name" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">Gender</label>
+                  <select value={newStudent.gender} onChange={e => setNewStudent(s => ({ ...s, gender: e.target.value }))}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">Date of Birth</label>
+                  <input type="date" value={newStudent.date_of_birth} onChange={e => setNewStudent(s => ({ ...s, date_of_birth: e.target.value }))}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">Class</label>
+                  <select value={newStudent.school_class} onChange={e => setNewStudent(s => ({ ...s, school_class: e.target.value }))}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <option value="">Select class</option>
+                    {classes.map(c => <option key={c.id} value={c.id}>{c.display_name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5">Enrollment Date</label>
+                  <input type="date" value={newStudent.enrollment_date} onChange={e => setNewStudent(s => ({ ...s, enrollment_date: e.target.value }))}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                </div>
+              </div>
+              {addMsg && (
+                <p className={`text-xs font-medium ${addMsg.includes('successfully') ? 'text-emerald-400' : 'text-rose-400'}`}>{addMsg}</p>
+              )}
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setShowAddStudent(false)}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-300 transition"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>Cancel</button>
+                <button type="submit" disabled={addSaving}
+                  className="flex-1 rounded-xl py-2.5 text-sm font-bold text-slate-950 transition hover:opacity-90" style={{ background: '#10b981' }}>
+                  {addSaving ? 'Creating…' : 'Create Student'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

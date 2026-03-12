@@ -23,6 +23,8 @@ type StudentRef = {
   admission_number: string
   first_name: string
   last_name: string
+  school_class?: number
+  class_name?: string
 }
 
 const isNetworkError = (err: unknown) => !(err as { response?: unknown })?.response
@@ -30,6 +32,8 @@ const isNetworkError = (err: unknown) => !(err as { response?: unknown })?.respo
 export default function StudentsBehaviorPage() {
   const [incidents, setIncidents] = useState<BehaviorIncident[]>([])
   const [students, setStudents] = useState<StudentRef[]>([])
+  const [classes, setClasses] = useState<{ id: number; display_name: string }[]>([])
+  const [formClassFilter, setFormClassFilter] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
@@ -107,8 +111,19 @@ export default function StudentsBehaviorPage() {
       }
     }
 
+    const loadClasses = async () => {
+      try {
+        const res = await apiClient.get('/academics/classes/')
+        if (!isMounted) return
+        setClasses(res.data.results || res.data || [])
+      } catch {
+        if (!isMounted) return
+      }
+    }
+
     loadIncidents()
     loadStudents()
+    loadClasses()
     return () => {
       isMounted = false
     }
@@ -394,28 +409,45 @@ export default function StudentsBehaviorPage() {
               </div>
               <button
                 className="rounded-lg border border-white/[0.09] px-3 py-1 text-xs text-slate-200"
-                onClick={() => setIsFormOpen(false)}
+                onClick={() => { setIsFormOpen(false); setFormClassFilter(''); setFormError(null) }}
               >
                 Close
               </button>
             </div>
 
             <div className="mt-4 grid gap-4">
-              <label className="block text-sm">
-                Student
-                <select
-                  className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
-                  value={formState.student}
-                  onChange={(event) => setFormState((prev) => ({ ...prev, student: event.target.value }))}
-                >
-                  <option value="">Select student</option>
-                  {students.map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {student.admission_number} - {student.first_name} {student.last_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="block text-sm">
+                  Filter by Class
+                  <select
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
+                    value={formClassFilter}
+                    onChange={(event) => { setFormClassFilter(event.target.value); setFormState((prev) => ({ ...prev, student: '' })) }}
+                  >
+                    <option value="">All classes</option>
+                    {classes.map((cls) => (
+                      <option key={cls.id} value={cls.id}>{cls.display_name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm">
+                  Student
+                  <select
+                    className="mt-2 w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white"
+                    value={formState.student}
+                    onChange={(event) => setFormState((prev) => ({ ...prev, student: event.target.value }))}
+                  >
+                    <option value="">Select student</option>
+                    {students
+                      .filter(s => !formClassFilter || String(s.school_class) === formClassFilter)
+                      .map((student) => (
+                        <option key={student.id} value={student.id}>
+                          {student.admission_number} - {student.first_name} {student.last_name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block text-sm">
                   Incident type

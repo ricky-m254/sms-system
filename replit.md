@@ -202,3 +202,13 @@ API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
 - Mock live fleet data (4 buses, 4 routes, Nairobi area)
 - Fleet status chips overlay map with ETA and status
 - Parent portal CTA linking to parent-portal module
+
+## Recent Updates
+
+- **Alumni module**: `AlumniEventsPage.tsx` (full CRUD + attendee viewer modal) and `AlumniAttendeesPage.tsx` (event-filtered attendee list) — both lazy-loaded with routes `events` and `attendees` in App.tsx
+- **ChunkErrorBoundary**: Class component wrapping `<Suspense>` in `App.tsx`; catches chunk load failures (network/build errors) and shows retry UI
+- **CBC grade scale**: `ExaminationsDashboardPage.tsx` now uses CBC Competency Levels (EE/ME/AE/BE) instead of KNEC 0-100 grading
+- **Timetable print**: Print 🖨️ button added to `TimetableGridPage.tsx` using `window.print()`
+- **Behavior class filter**: Incident form in `StudentsBehaviorPage.tsx` has a class dropdown that filters the student list; resets on modal close
+- **Add Student modal**: `StudentsDirectoryPage.tsx` has a full student creation form (name, DOB, gender, grade, class, guardian) POSTing to `/students/`
+- **Admissions Reviews Edit**: Edit button in `AdmissionsReviewsPage.tsx` opens a PATCH modal for score, recommendation, and comments; return JSX wrapped in `<>` fragment

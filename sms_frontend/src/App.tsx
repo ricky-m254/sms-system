@@ -1,5 +1,31 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, Component } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+
+class ChunkErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() { return { hasError: true } }
+  componentDidCatch(_err: Error, _info: ErrorInfo) {}
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <div className="text-center space-y-4 p-8">
+            <p className="text-slate-400 text-sm">This page failed to load. This can happen after an update.</p>
+            <button onClick={() => { this.setState({ hasError: false }); window.location.reload() }}
+              className="rounded-xl bg-emerald-500 px-6 py-2 text-sm font-semibold text-slate-950">
+              Reload Page
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 import { useAuthStore } from './store/auth'
 import { isModuleRouteEnabled } from './config/moduleFocus'
 import Footer from './components/Footer'
@@ -211,6 +237,8 @@ const ExaminationsPaperUploadsPage = lazy(() => import('./pages/examinations/Exa
 const AlumniLayout = lazy(() => import('./pages/alumni/AlumniLayout'))
 const AlumniDashboardPage = lazy(() => import('./pages/alumni/AlumniDashboardPage'))
 const AlumniProfilesPage = lazy(() => import('./pages/alumni/AlumniProfilesPage'))
+const AlumniEventsPage = lazy(() => import('./pages/alumni/AlumniEventsPage'))
+const AlumniAttendeesPage = lazy(() => import('./pages/alumni/AlumniAttendeesPage'))
 
 const HostelLayout = lazy(() => import('./pages/hostel/HostelLayout'))
 const HostelDashboardPage = lazy(() => import('./pages/hostel/HostelDashboardPage'))
@@ -313,6 +341,7 @@ function App() {
 
   return (
     <>
+    <ChunkErrorBoundary>
     <Suspense fallback={<RouteLoader />}>
       <Routes>
         <Route
@@ -646,6 +675,8 @@ function App() {
           <Route index element={<AlumniDashboardPage />} />
           <Route path="dashboard" element={<AlumniDashboardPage />} />
           <Route path="profiles" element={<AlumniProfilesPage />} />
+          <Route path="events" element={<AlumniEventsPage />} />
+          <Route path="attendees" element={<AlumniAttendeesPage />} />
         </Route>
         <Route
           path="/modules/hostel/*"
@@ -739,6 +770,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    </ChunkErrorBoundary>
     <Footer />
     </>
   )

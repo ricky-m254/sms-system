@@ -974,7 +974,9 @@ export default function ApprovalsHubPage() {
       const actionLabel = action === 'approve' ? 'Approved' : action === 'clarify' ? 'Clarification sent' : 'Rejected'
       addToast('success', `${actionLabel} successfully.`)
     } catch (e: unknown) {
-      addToast('error', e instanceof Error ? e.message : 'Action failed. Try again.')
+      const axiosErr = e as { response?: { data?: { detail?: string; error?: string } } }
+      const serverMsg = axiosErr?.response?.data?.detail || axiosErr?.response?.data?.error
+      addToast('error', serverMsg || (e instanceof Error ? e.message : 'Action failed. Try again.'))
       throw e
     }
   }

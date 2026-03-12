@@ -189,32 +189,25 @@ export default function ExaminationsDashboardPage() {
         </div>
       </div>
 
-      {/* KNEC Grade Scale quick-ref */}
+      {/* CBC Competency Level quick-ref */}
       <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2"><CheckCircle2 size={11} /> KNEC Grade Scale Reference</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2"><CheckCircle2 size={11} /> CBC Competency Level Reference</p>
         <div className="flex flex-wrap gap-2">
           {[
-            { grade: 'A',  range: '75–100', pts: 12, color: '#10b981' },
-            { grade: 'A−', range: '70–74',  pts: 11, color: '#34d399' },
-            { grade: 'B+', range: '65–69',  pts: 10, color: '#38bdf8' },
-            { grade: 'B',  range: '60–64',  pts: 9,  color: '#60a5fa' },
-            { grade: 'B−', range: '55–59',  pts: 8,  color: '#818cf8' },
-            { grade: 'C+', range: '50–54',  pts: 7,  color: '#a78bfa' },
-            { grade: 'C',  range: '45–49',  pts: 6,  color: '#fbbf24' },
-            { grade: 'C−', range: '40–44',  pts: 5,  color: '#fb923c' },
-            { grade: 'D+', range: '35–39',  pts: 4,  color: '#f87171' },
-            { grade: 'D',  range: '30–34',  pts: 3,  color: '#f87171' },
-            { grade: 'D−', range: '25–29',  pts: 2,  color: '#ef4444' },
-            { grade: 'E',  range: '0–24',   pts: 1,  color: '#ef4444' },
+            { grade: 'EE',  range: '80–100', label: 'Exceeds Expectation', color: '#10b981' },
+            { grade: 'ME',  range: '60–79',  label: 'Meets Expectation',   color: '#34d399' },
+            { grade: 'AE',  range: '40–59',  label: 'Approaches Expectation', color: '#fbbf24' },
+            { grade: 'BE',  range: '0–39',   label: 'Below Expectation',   color: '#f87171' },
           ].map(g => (
-            <div key={g.grade} className="rounded-xl px-3 py-2 flex flex-col items-center min-w-[60px]"
+            <div key={g.grade} className="rounded-xl px-4 py-3 flex flex-col items-center min-w-[120px] flex-1"
               style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${g.color}30` }}>
-              <span className="text-base font-bold" style={{ color: g.color }}>{g.grade}</span>
-              <span className="text-[9px] text-slate-500 tabular-nums">{g.range}%</span>
-              <span className="text-[9px] text-slate-600">{g.pts} pts</span>
+              <span className="text-xl font-bold" style={{ color: g.color }}>{g.grade}</span>
+              <span className="text-[10px] font-semibold mt-1" style={{ color: g.color }}>{g.range}%</span>
+              <span className="text-[9px] text-slate-400 text-center mt-0.5 leading-tight">{g.label}</span>
             </div>
           ))}
         </div>
+        <p className="text-[10px] text-slate-600 mt-3">CBC (Competency Based Curriculum) — Kenya Institute of Curriculum Development (KICD) standards · PP1 to Grade 9</p>
       </div>
 
     </div>

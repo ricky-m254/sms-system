@@ -172,9 +172,14 @@ export default function TimetableGridPage() {
           <h1 className="text-xl font-display font-semibold">Weekly Timetable</h1>
           <p className="mt-1 text-sm text-slate-400">Manage and view lesson schedules.</p>
         </div>
-        <button onClick={() => openAddModal()} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
-          + Add Slot
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => window.print()} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm font-medium text-slate-200 hover:border-white/20 transition">
+            🖨️ Print
+          </button>
+          <button onClick={() => openAddModal()} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
+            + Add Slot
+          </button>
+        </div>
       </header>
 
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}

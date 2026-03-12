@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import PageHero from '../../components/PageHero'
@@ -14,6 +15,13 @@ type Review = {
   reviewed_at: string
 }
 
+type EditReview = {
+  id: number
+  overall_score: string
+  recommendation: string
+  comments: string
+}
+
 type Application = { id: number; application_number?: string; student_first_name: string; student_last_name: string }
 
 const recommendationOptions = ['Accept', 'Reject', 'Waitlist', 'Further Review']
@@ -26,6 +34,8 @@ export default function AdmissionsReviewsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
+  const [editReview, setEditReview] = useState<EditReview | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
   const [form, setForm] = useState({
     application: '',
     overall_score: '',
@@ -101,6 +111,44 @@ export default function AdmissionsReviewsPage() {
     }
   }
 
+  const openEdit = (row: Review) => {
+    setEditReview({
+      id: row.id,
+      overall_score: row.overall_score != null ? String(row.overall_score) : '',
+      recommendation: row.recommendation,
+      comments: row.comments ?? '',
+    })
+  }
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editReview) return
+    if (editReview.overall_score.trim()) {
+      const parsed = Number(editReview.overall_score)
+      if (Number.isNaN(parsed) || parsed < 0 || parsed > MAX_SCORE) {
+        setError(`Score must be between 0 and ${MAX_SCORE}.`)
+        return
+      }
+    }
+    setEditSaving(true)
+    try {
+      await apiClient.patch(`/admissions/reviews/${editReview.id}/`, {
+        overall_score: editReview.overall_score ? Number(editReview.overall_score) : undefined,
+        recommendation: editReview.recommendation,
+        comments: editReview.comments || undefined,
+      })
+      setEditReview(null)
+      setFlash('Review updated.')
+      await load()
+    } catch (err: any) {
+      const detail = err?.response?.data
+      if (detail?.error) setError(String(detail.error))
+      else setError('Unable to update review.')
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
   const shortlist = async (applicationId: number) => {
     try {
       setError(null)
@@ -116,6 +164,7 @@ export default function AdmissionsReviewsPage() {
   }
 
   return (
+    <>
     <div className="space-y-6">
       <PageHero
         badge="ADMISSIONS"
@@ -185,7 +234,7 @@ export default function AdmissionsReviewsPage() {
                 <th className="px-4 py-3">Recommendation</th>
                 <th className="px-4 py-3">Reviewer</th>
                 <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Shortlist</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -197,14 +246,23 @@ export default function AdmissionsReviewsPage() {
                   <td className="px-4 py-3">{row.reviewer_name ?? '--'}</td>
                   <td className="px-4 py-3">{row.reviewed_at?.slice(0, 10)}</td>
                   <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={() => shortlist(row.application)}
-                      disabled={shortlistedIds.has(row.application)}
-                    >
-                      {shortlistedIds.has(row.application) ? 'Shortlisted' : 'Shortlist'}
-                    </button>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-emerald-400/40 px-2 py-1 text-xs text-emerald-300 hover:border-emerald-400 transition"
+                        onClick={() => openEdit(row)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-white/[0.09] px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => shortlist(row.application)}
+                        disabled={shortlistedIds.has(row.application)}
+                      >
+                        {shortlistedIds.has(row.application) ? 'Shortlisted' : 'Shortlist'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -220,5 +278,52 @@ export default function AdmissionsReviewsPage() {
         </div>
       </section>
     </div>
+    {editReview && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+        <div className="w-full max-w-lg rounded-2xl p-6 space-y-5" style={{ background: '#0d1421', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-display font-bold text-white">Edit Review</h2>
+            <button onClick={() => setEditReview(null)} className="text-slate-400 hover:text-white"><X size={18} /></button>
+          </div>
+          <form onSubmit={saveEdit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">Overall Score</label>
+              <input type="number" step="0.01" value={editReview.overall_score}
+                onChange={e => setEditReview(r => r ? { ...r, overall_score: e.target.value } : null)}
+                className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                placeholder="Score (optional)" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">Recommendation</label>
+              <select value={editReview.recommendation}
+                onChange={e => setEditReview(r => r ? { ...r, recommendation: e.target.value } : null)}
+                className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                {recommendationOptions.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">Comments</label>
+              <textarea rows={3} value={editReview.comments}
+                onChange={e => setEditReview(r => r ? { ...r, comments: e.target.value } : null)}
+                className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                placeholder="Additional comments..." />
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button type="button" onClick={() => setEditReview(null)}
+                className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-300"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>Cancel</button>
+              <button type="submit" disabled={editSaving}
+                className="flex-1 rounded-xl py-2.5 text-sm font-bold text-slate-950 hover:opacity-90" style={{ background: '#10b981' }}>
+                {editSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
