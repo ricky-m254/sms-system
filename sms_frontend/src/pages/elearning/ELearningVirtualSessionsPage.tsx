@@ -1,231 +1,176 @@
-import { useEffect, useState } from 'react'
-import { apiClient } from '../../api/client'
-import ConfirmDialog from '../../components/ConfirmDialog'
-import { Video, X, Pencil } from 'lucide-react'
+import { useState } from 'react'
+import { Video, Clock, Users, Calendar, Link2, Play, ChevronLeft, ChevronRight } from 'lucide-react'
 
-interface Session {
-  id: number
-  title: string
-  course: number
-  course_name?: string
-  session_date: string
-  start_time: string
-  end_time: string
-  meeting_link: string
-  platform: string
-  notes: string
+type TabId = 'upcoming' | 'live' | 'past'
+
+const SESSIONS = [
+  { id: 1, subject: 'Physics', title: 'Electromagnetism & Waves — Form 3', teacher: 'Mr. Samuel Kiprotich', date: '2025-03-12', time: '14:00', duration: 90, students: 34, status: 'live', from: '#0c4a6e', to: '#0ea5e9', meeting: 'https://meet.google.com/demo' },
+  { id: 2, subject: 'Mathematics', title: 'Matrices & Transformations — Form 4', teacher: 'Mr. David Mwangi', date: '2025-03-13', time: '10:00', duration: 60, students: 38, status: 'upcoming', from: '#1d4ed8', to: '#3b82f6', meeting: 'https://meet.google.com/demo' },
+  { id: 3, subject: 'English', title: 'Essay Writing & Composition — Form 3', teacher: 'Ms. Faith Achieng', date: '2025-03-13', time: '11:00', duration: 60, students: 46, status: 'upcoming', from: '#065f46', to: '#10b981', meeting: 'https://meet.google.com/demo' },
+  { id: 4, subject: 'Chemistry', title: 'Redox Reactions Lab Demonstration', teacher: 'Mr. Daniel Otieno', date: '2025-03-14', time: '15:00', duration: 120, students: 38, status: 'upcoming', from: '#581c87', to: '#a855f7', meeting: 'https://meet.google.com/demo' },
+  { id: 5, subject: 'Biology', title: 'Genetics & DNA — Form 3 Revision', teacher: 'Ms. Grace Wanjiku', date: '2025-03-14', time: '09:00', duration: 60, students: 42, status: 'upcoming', from: '#166534', to: '#22c55e', meeting: 'https://meet.google.com/demo' },
+  { id: 6, subject: 'Computer Studies', title: 'Python Basics — Form 2', teacher: 'Mr. Brian Ndegwa', date: '2025-03-17', time: '13:00', duration: 90, students: 32, status: 'upcoming', from: '#1e1b4b', to: '#6366f1', meeting: 'https://meet.google.com/demo' },
+  { id: 7, subject: 'Geography', title: 'Map Reading & Physical Features', teacher: 'Mr. George Abuya', date: '2025-02-28', time: '10:00', duration: 60, students: 38, status: 'past', from: '#14532d', to: '#84cc16', recording: true },
+  { id: 8, subject: 'History', title: 'The Scramble for Africa', teacher: 'Mr. James Wafula', date: '2025-02-26', time: '11:00', duration: 60, students: 40, status: 'past', from: '#7c2d12', to: '#f97316', recording: true },
+  { id: 9, subject: 'Mathematics', title: 'Calculus Introduction — Differentiation', teacher: 'Mr. David Mwangi', date: '2025-02-25', time: '10:00', duration: 75, students: 38, status: 'past', from: '#1d4ed8', to: '#3b82f6', recording: true },
+  { id: 10, subject: 'Biology', title: 'Cell Biology: Mitosis vs Meiosis', teacher: 'Ms. Grace Wanjiku', date: '2025-02-24', time: '14:00', duration: 60, students: 44, status: 'past', from: '#166534', to: '#22c55e', recording: false },
+]
+
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-2xl border ${className}`}
+      style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}>
+      {children}
+    </div>
+  )
 }
 
-type Course = { id: number; title: string }
-
-function asArray<T>(v: T[] | { results?: T[] }): T[] {
-  return Array.isArray(v) ? v : (v.results ?? [])
+function SessionCard({ s }: { s: typeof SESSIONS[0] }) {
+  const durationText = s.duration >= 60 ? `${Math.floor(s.duration / 60)}h${s.duration % 60 > 0 ? ` ${s.duration % 60}m` : ''}` : `${s.duration}m`
+  return (
+    <GlassCard className={`p-5 hover:border-slate-600 transition-all ${s.status === 'live' ? 'border-emerald-500/40' : ''}`}>
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-xl font-bold"
+          style={{ background: `linear-gradient(135deg, ${s.from}, ${s.to})` }}>
+          {s.subject.slice(0, 1)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-bold text-white">{s.title}</p>
+            {s.status === 'live' && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE NOW
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">{s.subject} · {s.teacher}</p>
+          <div className="flex items-center gap-4 mt-2 flex-wrap">
+            <span className="flex items-center gap-1 text-xs text-slate-400"><Calendar size={12} /> {s.date}</span>
+            <span className="flex items-center gap-1 text-xs text-slate-400"><Clock size={12} /> {s.time} · {durationText}</span>
+            <span className="flex items-center gap-1 text-xs text-slate-400"><Users size={12} /> {s.students} students</span>
+          </div>
+        </div>
+        <div className="flex-shrink-0">
+          {s.status === 'live' ? (
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-90" style={{ background: '#10b981', color: '#fff' }}>
+              <Video size={13} /> Join Now
+            </button>
+          ) : s.status === 'upcoming' ? (
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)' }}>
+              <Link2 size={13} /> Get Link
+            </button>
+          ) : (
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+              style={(s as any).recording
+                ? { background: 'rgba(245,158,11,0.15)', color: '#fcd34d', border: '1px solid rgba(245,158,11,0.2)' }
+                : { background: 'rgba(255,255,255,0.05)', color: '#64748b' }}>
+              <Play size={13} /> {(s as any).recording ? 'Watch Recording' : 'No Recording'}
+            </button>
+          )}
+        </div>
+      </div>
+    </GlassCard>
+  )
 }
-
-const PLATFORMS = ['Zoom', 'Google Meet', 'Teams', 'Other']
-
-const emptyForm = () => ({
-  title: '', course: '', session_date: '', start_time: '', end_time: '',
-  meeting_link: '', platform: 'Zoom', notes: '',
-})
 
 export default function ELearningVirtualSessionsPage() {
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
-  const [modal, setModal] = useState(false)
-  const [editing, setEditing] = useState<Session | null>(null)
-  const [form, setForm] = useState(emptyForm())
-  const [saving, setSaving] = useState(false)
+  const [tab, setTab] = useState<TabId>('upcoming')
+  const [weekOffset, setWeekOffset] = useState(0)
 
-  const [deleteTarget, setDeleteTarget] = useState<Session | null>(null)
-  const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const liveSessions = SESSIONS.filter(s => s.status === 'live')
+  const upcomingSessions = SESSIONS.filter(s => s.status === 'upcoming')
+  const pastSessions = SESSIONS.filter(s => s.status === 'past')
 
-  const load = async () => {
-    setLoading(true)
-    try {
-      const [sRes, cRes] = await Promise.all([
-        apiClient.get<Session[] | { results: Session[] }>('/elearning/sessions/'),
-        apiClient.get<Course[] | { results: Course[] }>('/elearning/courses/'),
-      ])
-      setSessions(asArray(sRes.data)); setCourses(asArray(cRes.data))
-    } catch { setError('Unable to load sessions.') }
-    finally { setLoading(false) }
-  }
+  const shown = tab === 'live' ? liveSessions : tab === 'upcoming' ? upcomingSessions : pastSessions
 
-  useEffect(() => { void load() }, [])
-
-  const openCreate = () => { setEditing(null); setForm(emptyForm()); setError(null); setModal(true) }
-  const openEdit = (s: Session) => {
-    setEditing(s)
-    setForm({
-      title: s.title, course: String(s.course), session_date: s.session_date,
-      start_time: s.start_time, end_time: s.end_time, meeting_link: s.meeting_link,
-      platform: s.platform, notes: s.notes,
-    })
-    setError(null); setModal(true)
-  }
-
-  const save = async () => {
-    if (!form.title.trim() || !form.course || !form.session_date || !form.start_time || !form.end_time) {
-      setError('Title, course, date, start time and end time are required.'); return
-    }
-    setSaving(true); setError(null)
-    try {
-      const payload = {
-        title: form.title.trim(),
-        course: Number(form.course),
-        session_date: form.session_date,
-        start_time: form.start_time,
-        end_time: form.end_time,
-        meeting_link: form.meeting_link,
-        platform: form.platform,
-        notes: form.notes,
-      }
-      if (editing) {
-        await apiClient.put(`/elearning/sessions/${editing.id}/`, payload)
-        setNotice('Session updated.')
-      } else {
-        await apiClient.post('/elearning/sessions/', payload)
-        setNotice('Session scheduled.')
-      }
-      setModal(false); await load()
-    } catch { setError('Unable to schedule session.') }
-    finally { setSaving(false) }
-  }
-
-  const confirmDelete = async () => {
-    if (!deleteTarget) return
-    setDeleting(true); setDeleteError(null)
-    try { await apiClient.delete(`/elearning/sessions/${deleteTarget.id}/`); setDeleteTarget(null); await load() }
-    catch { setDeleteError('Unable to delete session.') }
-    finally { setDeleting(false) }
-  }
-
-  const setF = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
-
-  const platformColor = (p: string) => {
-    if (p === 'Zoom') return 'text-blue-400'
-    if (p === 'Google Meet') return 'text-green-400'
-    if (p === 'Teams') return 'text-purple-400'
-    return 'text-slate-400'
-  }
+  const today = new Date(2025, 2, 12)
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - today.getDay() + weekOffset * 7)
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-white">Virtual Sessions</h1>
-          <p className="text-slate-400 mt-1">Live online classes and interactive sessions.</p>
+          <h1 className="text-2xl font-display font-bold text-white">Virtual Sessions</h1>
+          <p className="text-slate-400 text-sm mt-1">Live and recorded online classes with your teachers</p>
         </div>
-        <button onClick={openCreate} className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-semibold px-6 py-2 rounded-xl transition">
-          Schedule Session
+        <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold self-start" style={{ background: '#10b981', color: '#fff' }}>
+          <Video size={15} /> Schedule Session
         </button>
       </div>
 
-      {error && !modal ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
-      {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full py-20 text-center animate-pulse text-slate-400">Loading virtual sessions...</div>
-        ) : sessions.length === 0 ? (
-          <div className="col-span-full py-20 text-center text-slate-500 italic rounded-2xl border border-dashed border-slate-800">No virtual sessions scheduled.</div>
-        ) : sessions.map(session => (
-          <div key={session.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col justify-between shadow-xl hover:border-emerald-500/30 transition">
-            <div>
-              <div className="flex justify-between items-start mb-3">
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                  <Video className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => openEdit(session)} className="p-1 text-slate-500 hover:text-slate-200 transition"><Pencil className="h-4 w-4" /></button>
-                  <button onClick={() => setDeleteTarget(session)} className="text-xs font-semibold text-rose-400 hover:text-rose-300">Delete</button>
-                </div>
-              </div>
-              <h3 className="text-lg font-display font-bold text-white">{session.title}</h3>
-              <p className="mt-0.5 text-xs text-slate-400 uppercase tracking-wider">{session.course_name || '-'}</p>
-              <div className="mt-3 space-y-1 text-sm text-slate-300">
-                <p className="font-medium">{session.session_date}</p>
-                <p className="text-slate-400">{session.start_time} – {session.end_time}</p>
-                <span className={`text-xs font-semibold uppercase tracking-wider ${platformColor(session.platform)}`}>{session.platform}</span>
-              </div>
-              {session.notes && <p className="mt-2 text-xs text-slate-500 line-clamp-2">{session.notes}</p>}
-            </div>
-            <div className="mt-4">
-              {session.meeting_link ? (
-                <a href={session.meeting_link} target="_blank" rel="noopener noreferrer"
-                  className="block w-full text-center bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-2.5 rounded-xl border border-slate-700 hover:border-emerald-500/50 transition text-sm">
-                  Join Meeting
-                </a>
-              ) : <p className="text-xs text-slate-500 text-center">No meeting link set</p>}
-            </div>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: 'Live Now', value: liveSessions.length, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+          { label: 'Upcoming', value: upcomingSessions.length, color: '#6366f1', bg: 'rgba(99,102,241,0.1)' },
+          { label: 'Recordings', value: pastSessions.filter(s => (s as any).recording).length, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+        ].map(s => (
+          <GlassCard key={s.label} className="p-5 text-center">
+            <p className="text-3xl font-display font-bold" style={{ color: s.color }}>{s.value}</p>
+            <p className="text-xs text-slate-400 mt-1">{s.label}</p>
+          </GlassCard>
         ))}
       </div>
 
-      {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-display font-semibold">{editing ? 'Edit Session' : 'Schedule Session'}</h2>
-              <button onClick={() => setModal(false)} className="text-slate-500 hover:text-white"><X className="h-5 w-5" /></button>
-            </div>
-            {error && <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-2 text-xs text-rose-200">{error}</div>}
-
-            <div>
-              <label className="text-xs text-slate-400 mb-1 block">Session Title *</label>
-              <input value={form.title} onChange={e => setF('title', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="e.g. Week 3 – Algebra Live" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 mb-1 block">Course *</label>
-              <select value={form.course} onChange={e => setF('course', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
-                <option value="">Select course</option>
-                {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 mb-1 block">Date *</label>
-              <input type="date" value={form.session_date} onChange={e => setF('session_date', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">Start Time *</label>
-                <input type="time" value={form.start_time} onChange={e => setF('start_time', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
-              </div>
-              <div>
-                <label className="text-xs text-slate-400 mb-1 block">End Time *</label>
-                <input type="time" value={form.end_time} onChange={e => setF('end_time', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 mb-1 block">Platform</label>
-              <select value={form.platform} onChange={e => setF('platform', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200">
-                {PLATFORMS.map(p => <option key={p}>{p}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 mb-1 block">Meeting Link</label>
-              <input value={form.meeting_link} onChange={e => setF('meeting_link', e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200" placeholder="https://zoom.us/j/..." />
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-              <textarea value={form.notes} onChange={e => setF('notes', e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 resize-none" />
-            </div>
-            <div className="flex gap-3 pt-1">
-              <button onClick={save} disabled={saving} className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50 hover:bg-emerald-400 transition">
-                {saving ? 'Saving...' : editing ? 'Update' : 'Schedule'}
-              </button>
-              <button onClick={() => setModal(false)} className="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition">Cancel</button>
-            </div>
+      {/* Week Calendar Strip */}
+      <GlassCard className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-white">Week of {weekStart.toLocaleDateString('en-KE', { month: 'short', day: 'numeric' })}</h2>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setWeekOffset(w => w - 1)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-all" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <ChevronLeft size={16} className="text-slate-400" />
+            </button>
+            <button onClick={() => setWeekOffset(0)} className="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399' }}>Today</button>
+            <button onClick={() => setWeekOffset(w => w + 1)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-all" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <ChevronRight size={16} className="text-slate-400" />
+            </button>
           </div>
         </div>
-      )}
+        <div className="grid grid-cols-7 gap-2">
+          {DAYS.map((day, i) => {
+            const d = new Date(weekStart)
+            d.setDate(weekStart.getDate() + i)
+            const isToday = d.toDateString() === today.toDateString()
+            const hasSessions = SESSIONS.some(s => s.date === d.toISOString().slice(0, 10))
+            return (
+              <div key={day} className={`rounded-xl p-2 text-center transition-all ${isToday ? 'border' : ''}`}
+                style={isToday ? { background: 'rgba(16,185,129,0.15)', borderColor: '#10b981' } : { background: 'rgba(255,255,255,0.03)' }}>
+                <p className="text-xs text-slate-500">{day}</p>
+                <p className={`text-sm font-bold mt-0.5 ${isToday ? 'text-emerald-400' : 'text-white'}`}>{d.getDate()}</p>
+                {hasSessions && <div className="w-1.5 h-1.5 rounded-full mx-auto mt-1" style={{ background: isToday ? '#10b981' : '#6366f1' }} />}
+              </div>
+            )
+          })}
+        </div>
+      </GlassCard>
 
-      <ConfirmDialog open={!!deleteTarget} title="Delete Session" description={`Delete session "${deleteTarget?.title}"?`} confirmLabel="Delete" isProcessing={deleting} error={deleteError} onConfirm={confirmDelete} onCancel={() => setDeleteTarget(null)} />
+      {/* Tab Bar */}
+      <div className="flex gap-2">
+        {(['upcoming', 'live', 'past'] as TabId[]).map(t => (
+          <button key={t} onClick={() => setTab(t)}
+            className="px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-all"
+            style={tab === t
+              ? { background: '#10b981', color: '#fff' }
+              : { background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {t} {t === 'live' && liveSessions.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-emerald-400 text-black font-bold">{liveSessions.length}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Sessions List */}
+      <div className="space-y-3">
+        {shown.length === 0 ? (
+          <GlassCard className="p-10 text-center">
+            <Video size={40} className="mx-auto text-slate-600 mb-3" />
+            <p className="text-slate-400">No {tab} sessions</p>
+          </GlassCard>
+        ) : shown.map(s => <SessionCard key={s.id} s={s} />)}
+      </div>
     </div>
   )
 }

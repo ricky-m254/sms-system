@@ -1,158 +1,165 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { apiClient } from '../../api/client'
+import { Search, RotateCcw, BookOpen, AlertTriangle, CheckCircle, Clock } from 'lucide-react'
 
-type Tx = {
-  id: number
-  member_member_id: string
-  copy_accession_number: string
-  resource_title: string
-  due_date: string | null
-  return_date: string | null
+const TRANSACTIONS = [
+  { id: 1, student: 'Mary Wanjiku', class: 'Form 3 East', book: 'KLB Mathematics Form 3', isbn: '9789966102', borrowed: '2025-03-10', due: '2025-03-24', returned: null, status: 'Active', renewals: 0 },
+  { id: 2, student: 'John Mwangi', class: 'Form 2 West', book: 'Things Fall Apart', isbn: '9780385474542', borrowed: '2025-03-08', due: '2025-03-22', returned: '2025-03-12', status: 'Returned', renewals: 0 },
+  { id: 3, student: 'Grace Murugi', class: 'Form 4 East', book: 'A Grain of Wheat', isbn: '9780435906856', borrowed: '2025-02-24', due: '2025-03-10', returned: null, status: 'Overdue', renewals: 1 },
+  { id: 4, student: 'David Njoroge', class: 'Form 2 North', book: 'KLB Biology Form 2', isbn: '9789966201', borrowed: '2025-03-11', due: '2025-03-25', returned: null, status: 'Active', renewals: 0 },
+  { id: 5, student: 'Faith Achieng', class: 'Form 3 South', book: 'Oxford Geography Form 3', isbn: '9780195476804', borrowed: '2025-03-05', due: '2025-03-19', returned: null, status: 'Active', renewals: 0 },
+  { id: 6, student: 'James Wafula', class: 'Form 2 East', book: 'The River Between', isbn: '9780435908843', borrowed: '2025-03-07', due: '2025-03-21', returned: '2025-03-12', status: 'Returned', renewals: 0 },
+  { id: 7, student: 'Peter Kamau', class: 'Form 3 East', book: 'KLB Chemistry Form 3', isbn: '9789966301', borrowed: '2025-02-25', due: '2025-03-05', returned: null, status: 'Overdue', renewals: 0 },
+  { id: 8, student: 'Alice Nyambura', class: 'Form 4 West', book: 'Oral Literature in Africa', isbn: '9780198121497', borrowed: '2025-02-23', due: '2025-03-03', returned: null, status: 'Overdue', renewals: 0 },
+  { id: 9, student: 'Samuel Kiprotich', class: 'Form 2 South', book: 'KLB Physics Form 2', isbn: '9789966400', borrowed: '2025-02-19', due: '2025-03-01', returned: null, status: 'Overdue', renewals: 0 },
+  { id: 10, student: 'Esther Chepkoech', class: 'Form 4 East', book: 'Business Studies Form 4', isbn: '9789966100789', borrowed: '2025-02-18', due: '2025-02-28', returned: null, status: 'Overdue', renewals: 0 },
+  { id: 11, student: 'Ruth Adhiambo', class: 'Form 1 East', book: 'KLB Mathematics Form 1', isbn: '9789966100', borrowed: '2025-03-09', due: '2025-03-23', returned: null, status: 'Active', renewals: 0 },
+  { id: 12, student: 'Michael Ochieng', class: 'Form 3 North', book: 'Blossoms of the Savannah', isbn: '9789966254313', borrowed: '2025-03-06', due: '2025-03-20', returned: null, status: 'Active', renewals: 1 },
+  { id: 13, student: 'Caroline Kiptoo', class: 'Form 2 West', book: 'KLB Chemistry Form 2', isbn: '9789966300', borrowed: '2025-03-01', due: '2025-03-15', returned: '2025-03-11', status: 'Returned', renewals: 0 },
+  { id: 14, student: 'Brian Ndegwa', class: 'Form 3 South', book: 'Computer Studies for Secondary', isbn: '9789966451001', borrowed: '2025-03-10', due: '2025-03-24', returned: null, status: 'Active', renewals: 0 },
+  { id: 15, student: 'Mercy Atieno', class: 'Form 4 North', book: 'Longman English Form 4', isbn: '9789966451414', borrowed: '2025-03-08', due: '2025-03-22', returned: null, status: 'Active', renewals: 0 },
+]
+
+type StatusFilter = 'all' | 'Active' | 'Overdue' | 'Returned'
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  Active: { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
+  Overdue: { bg: 'rgba(239,68,68,0.15)', text: '#fca5a5' },
+  Returned: { bg: 'rgba(99,102,241,0.15)', text: '#a5b4fc' },
+}
+
+function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-2xl border ${className}`}
+      style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}>
+      {children}
+    </div>
+  )
 }
 
 export default function LibraryCirculationPage() {
-  const [transactions, setTransactions] = useState<Tx[]>([])
-  const [memberId, setMemberId] = useState('')
-  const [copyId, setCopyId] = useState('')
-  const [txId, setTxId] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const handleSearch = (e: FormEvent) => e.preventDefault()
 
-  const load = async () => {
-    try {
-      const response = await apiClient.get<Tx[]>('/library/circulation/transactions/')
-      setTransactions(response.data ?? [])
-      setError(null)
-    } catch {
-      setError('Circulation API unavailable.')
-    }
-  }
+  const filtered = TRANSACTIONS.filter(t => {
+    const matchStatus = statusFilter === 'all' || t.status === statusFilter
+    const matchSearch = search === '' ||
+      t.student.toLowerCase().includes(search.toLowerCase()) ||
+      t.book.toLowerCase().includes(search.toLowerCase()) ||
+      t.isbn.includes(search)
+    return matchStatus && matchSearch
+  })
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  const issue = async (event: FormEvent) => {
-    event.preventDefault()
-    try {
-      await apiClient.post('/library/circulation/issue/', { member: Number(memberId), copy: Number(copyId) })
-      setMemberId('')
-      setCopyId('')
-      await load()
-    } catch {
-      setError('Issue request failed.')
-    }
-  }
-
-  const returnTx = async () => {
-    if (!txId) return
-    try {
-      await apiClient.post('/library/circulation/return/', { transaction: Number(txId) })
-      setTxId('')
-      await load()
-    } catch {
-      setError('Return request failed.')
-    }
-  }
-
-  const renewTx = async () => {
-    if (!txId) return
-    try {
-      await apiClient.post('/library/circulation/renew/', { transaction: Number(txId) })
-      setTxId('')
-      await load()
-    } catch {
-      setError('Renew request failed.')
-    }
-  }
+  const active = TRANSACTIONS.filter(t => t.status === 'Active').length
+  const overdue = TRANSACTIONS.filter(t => t.status === 'Overdue').length
+  const returned = TRANSACTIONS.filter(t => t.status === 'Returned').length
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h1 className="text-xl font-display font-semibold">Circulation Management</h1>
-        <p className="mt-2 text-sm text-slate-400">Issue, return, and renew workflows.</p>
-      </header>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <form onSubmit={issue} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-sm font-semibold text-slate-200">Issue Resource</h2>
-          <div className="mt-4 grid gap-3">
-            <input
-              className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
-              placeholder="Member ID (numeric)"
-              value={memberId}
-              onChange={(e) => setMemberId(e.target.value)}
-            />
-            <input
-              className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
-              placeholder="Copy ID (numeric)"
-              value={copyId}
-              onChange={(e) => setCopyId(e.target.value)}
-            />
-            <button type="submit" className="rounded-xl border border-emerald-500/60 bg-emerald-500/15 px-3 py-2 text-sm font-semibold text-emerald-200">
-              Issue
-            </button>
-          </div>
-        </form>
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-sm font-semibold text-slate-200">Return / Renew</h2>
-          <div className="mt-4 grid gap-3">
-            <input
-              className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm"
-              placeholder="Transaction ID"
-              value={txId}
-              onChange={(e) => setTxId(e.target.value)}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={returnTx} className="rounded-xl border border-sky-500/60 bg-sky-500/15 px-3 py-2 text-sm font-semibold text-sky-200">
-                Return
-              </button>
-              <button onClick={renewTx} className="rounded-xl border border-amber-500/60 bg-amber-500/15 px-3 py-2 text-sm font-semibold text-amber-200">
-                Renew
-              </button>
-            </div>
-          </div>
-          {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-white">Circulation</h1>
+          <p className="text-slate-400 text-sm mt-1">Track all borrowing and return transactions</p>
         </div>
-      </section>
+        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold self-start" style={{ background: '#6366f1', color: '#fff' }}>
+          <BookOpen size={15} /> Issue Book
+        </button>
+      </div>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="text-sm font-semibold text-slate-200">Transactions</h2>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="text-slate-400">
-              <tr>
-                <th className="px-2 py-2">ID</th>
-                <th className="px-2 py-2">Member</th>
-                <th className="px-2 py-2">Copy</th>
-                <th className="px-2 py-2">Resource</th>
-                <th className="px-2 py-2">Due</th>
-                <th className="px-2 py-2">Returned</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((row) => (
-                <tr key={row.id} className="border-t border-slate-800">
-                  <td className="px-2 py-2">{row.id}</td>
-                  <td className="px-2 py-2">{row.member_member_id || '-'}</td>
-                  <td className="px-2 py-2">{row.copy_accession_number || '-'}</td>
-                  <td className="px-2 py-2">{row.resource_title || '-'}</td>
-                  <td className="px-2 py-2">{row.due_date || '-'}</td>
-                  <td className="px-2 py-2">{row.return_date ? 'Yes' : 'No'}</td>
-                </tr>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: 'Currently Borrowed', value: active, icon: BookOpen, color: '#10b981' },
+          { label: 'Overdue', value: overdue, icon: AlertTriangle, color: '#ef4444' },
+          { label: 'Returned Today', value: returned, icon: CheckCircle, color: '#6366f1' },
+        ].map(s => {
+          const Icon = s.icon
+          return (
+            <GlassCard key={s.label} className="p-5 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${s.color}20` }}>
+                <Icon size={20} style={{ color: s.color }} />
+              </div>
+              <div>
+                <p className="text-2xl font-display font-bold text-white">{s.value}</p>
+                <p className="text-xs text-slate-400">{s.label}</p>
+              </div>
+            </GlassCard>
+          )
+        })}
+      </div>
+
+      {/* Search + Filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleSearch} className="relative flex-1">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search student, book, or ISBN…"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
+        </form>
+        <div className="flex gap-2">
+          {(['all', 'Active', 'Overdue', 'Returned'] as StatusFilter[]).map(f => (
+            <button key={f} onClick={() => setStatusFilter(f)}
+              className="px-3 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap"
+              style={statusFilter === f
+                ? { background: '#6366f1', color: '#fff' }
+                : { background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {f === 'all' ? 'All' : f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
+      <GlassCard className="overflow-auto">
+        <table className="w-full text-sm min-w-[800px]">
+          <thead>
+            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              {['#', 'Student', 'Class', 'Book Title', 'Borrowed', 'Due Date', 'Status', 'Actions'].map(h => (
+                <th key={h} className="text-left text-xs font-semibold text-slate-400 px-4 py-3 uppercase tracking-wider">{h}</th>
               ))}
-              {!transactions.length ? (
-                <tr>
-                  <td className="px-2 py-4 text-slate-500" colSpan={6}>
-                    No transactions yet.
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((t, i) => {
+              const sc = STATUS_COLORS[t.status]
+              return (
+                <tr key={t.id} className="border-t hover:bg-white/5 transition-colors" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{i + 1}</td>
+                  <td className="px-4 py-3 font-semibold text-white">{t.student}</td>
+                  <td className="px-4 py-3 text-slate-400 text-xs">{t.class}</td>
+                  <td className="px-4 py-3">
+                    <p className="text-white font-medium">{t.book}</p>
+                    <p className="text-xs text-slate-500">{t.isbn}</p>
+                  </td>
+                  <td className="px-4 py-3 text-slate-400 text-xs">{t.borrowed}</td>
+                  <td className="px-4 py-3 text-slate-300 text-xs flex items-center gap-1">
+                    <Clock size={11} /> {t.due}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: sc.bg, color: sc.text }}>{t.status}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {t.status !== 'Returned' && (
+                        <button className="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399' }}>
+                          Return
+                        </button>
+                      )}
+                      {t.status === 'Active' && t.renewals < 2 && (
+                        <button className="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style={{ background: 'rgba(99,102,241,0.1)', color: '#a5b4fc' }}>
+                          <RotateCcw size={11} className="inline mr-1" />Renew
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              )
+            })}
+          </tbody>
+        </table>
+      </GlassCard>
     </div>
   )
 }
