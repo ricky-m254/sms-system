@@ -125,27 +125,46 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--schema_name", type=str, default="demo_school")
+        parser.add_argument(
+            "--library-only",
+            action="store_true",
+            default=False,
+            help="Only seed library resources, members, transactions and fines (fast, safe to run in build).",
+        )
 
     def handle(self, *args, **options):
         schema_name = options["schema_name"]
+        library_only = options["library_only"]
 
-        with schema_context("public"):
-            tenant, _ = Tenant.objects.get_or_create(
-                schema_name=schema_name,
-                defaults={
-                    "name": "St. Mary's Nairobi High School",
-                    "paid_until": date(2030, 1, 1),
-                    "is_active": True,
-                },
-            )
-            Domain.objects.get_or_create(
-                domain="demo.localhost",
-                tenant=tenant,
-                defaults={"is_primary": True},
-            )
+        if not library_only:
+            with schema_context("public"):
+                tenant, _ = Tenant.objects.get_or_create(
+                    schema_name=schema_name,
+                    defaults={
+                        "name": "St. Mary's Nairobi High School",
+                        "paid_until": date(2030, 1, 1),
+                        "is_active": True,
+                    },
+                )
+                Domain.objects.get_or_create(
+                    domain="demo.localhost",
+                    tenant=tenant,
+                    defaults={"is_primary": True},
+                )
 
         with schema_context(schema_name):
-            self._seed_all(schema_name)
+            if library_only:
+                self.stdout.write("  Seeding library data only (fast mode)…")
+                from django.contrib.auth.models import User
+                from school.models import Student
+                admin = User.objects.filter(is_superuser=True).first() or User.objects.filter(username="admin").first()
+                if not admin:
+                    self.stdout.write("  No admin user found — skipping library seed")
+                    return
+                students = list(Student.objects.filter(is_active=True))
+                self._seed_library(students, admin)
+            else:
+                self._seed_all(schema_name)
 
         self.stdout.write(self.style.SUCCESS(
             f"Kenyan school data seeded successfully for schema '{schema_name}'."

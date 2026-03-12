@@ -36,8 +36,8 @@ python manage.py seed_demo \
   --admin_pass admin123 \
   --admin_email admin@demo.school 2>&1 || true
 
-echo "==> [build] Seeding Kenya school data (library, e-learning, demo data) for demo_school..."
-python manage.py seed_kenya_school --schema_name demo_school 2>&1 || true
+echo "==> [build] Seeding library data for demo_school (fast — library only)..."
+python manage.py seed_kenya_school --schema_name demo_school --library-only 2>&1 || true
 
 echo "==> [build] Registering production domain..."
 python manage.py shell << 'PYEOF'
