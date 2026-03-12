@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { User, Filter, Search } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface PTMBooking {
   id: number
@@ -27,6 +28,13 @@ export default function PTMBookingsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="PTM"
+        badgeColor="violet"
+        title="PTM Bookings"
+        subtitle="Parent-teacher meeting appointment bookings"
+        icon="🤝"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white tracking-tight">PTM Bookings</h1>

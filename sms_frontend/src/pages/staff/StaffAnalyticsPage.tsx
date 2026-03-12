@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type SummaryPayload = {
   total_staff: number
@@ -59,6 +60,13 @@ export default function StaffAnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Staff Analytics"
+        subtitle="Attendance, performance and workload metrics"
+        icon="👤"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Staff Analytics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Headcount, Attendance, Performance, Compliance</h1>

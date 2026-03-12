@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 interface DashboardData {
   total_alumni: number
@@ -20,9 +21,13 @@ export default function AlumniDashboardPage() {
 
   return (
     <div className="space-y-6 text-white font-sans">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-display font-bold text-white">Alumni Dashboard</h1>
-      </div>
+      <PageHero
+        badge="ALUMNI"
+        badgeColor="violet"
+        title="Alumni Dashboard"
+        subtitle="Track and engage with former students and graduates"
+        icon="🎓"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="rounded-2xl glass-panel p-6">

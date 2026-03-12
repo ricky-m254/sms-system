@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type TimetableSlot = {
   id: number
@@ -159,6 +160,13 @@ export default function TimetableGridPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="TIMETABLE"
+        badgeColor="violet"
+        title="Timetable Grid"
+        subtitle="Visual weekly timetable for all classes"
+        icon="📅"
+      />
       <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold">Weekly Timetable</h1>

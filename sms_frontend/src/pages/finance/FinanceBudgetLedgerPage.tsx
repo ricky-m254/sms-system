@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { apiClient } from '../../api/client'
 import BackButton from '../../components/BackButton'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type Budget = {
   id: number
@@ -77,6 +78,13 @@ export default function FinanceBudgetLedgerPage() {
       <header className="col-span-12 rounded-2xl glass-panel p-6">
         <BackButton to="/modules/finance" label="Back to Finance" />
         <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Budget Ledger"
+        subtitle="Track budget vs actual spend by vote head"
+        icon="💰"
+      />
           <div>
             <h1 className="text-2xl font-display font-bold text-white">Budget vs Actual Ledger</h1>
             <p className="mt-1 text-sm text-slate-400">Track spending against allocated budgets per vote head</p>

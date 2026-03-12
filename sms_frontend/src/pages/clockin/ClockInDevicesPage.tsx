@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Device = {
   id: number
@@ -77,6 +78,13 @@ export default function ClockInDevicesPage() {
 
   return (
     <div className="space-y-6 font-sans text-slate-100">
+      <PageHero
+        badge="CLOCK-IN"
+        badgeColor="emerald"
+        title="Devices"
+        subtitle="Manage biometric and RFID clock-in devices"
+        icon="⏰"
+      />
       <header className="rounded-2xl glass-panel p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-display font-semibold">Biometric Devices</h1>

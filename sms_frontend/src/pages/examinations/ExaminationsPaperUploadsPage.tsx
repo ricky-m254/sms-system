@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PrintButton from '../../components/PrintButton'
 import { CheckCircle2, Clock, FileText, Printer, Upload, X, XCircle } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Session { id: number; name: string }
 interface Subject { id: number; name: string }
@@ -138,6 +139,13 @@ export default function ExaminationsPaperUploadsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Paper Uploads"
+        subtitle="Upload and manage examination question papers"
+        icon="📝"
+      />
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

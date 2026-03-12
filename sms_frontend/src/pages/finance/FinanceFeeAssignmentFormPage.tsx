@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse, type PaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 import BackButton from '../../components/BackButton'
+import PageHero from '../../components/PageHero'
 
 type FeeStructure = { id: number; name: string; amount?: number }
 type FinanceStudent = { id: number; admission_number: string; first_name: string; last_name: string }
@@ -174,16 +175,16 @@ export default function FinanceFeeAssignmentFormPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Fee Assignment"
+        subtitle="Assign fee structures to student groups"
+        icon="💰"
+      />
       <div className="col-span-12">
         <BackButton to="/modules/finance/fee-assignments" label="Back to Fee Assignments" />
       </div>
-      <PageHero
-        badge="FINANCE MODULE"
-        badgeColor="emerald"
-        title={isEdit ? 'Edit Fee Assignment' : 'Assign Fee'}
-        subtitle={isEdit ? 'Update an existing assignment.' : 'Assign a fee structure to a student or an entire class.'}
-        icon="💰"
-      />
 
       {!isEdit && (
         <div className="col-span-12 flex gap-2">

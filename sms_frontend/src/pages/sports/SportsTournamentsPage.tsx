@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Club = { id: number; name: string }
 type Tournament = { id: number; name: string; club: number | null; club_name?: string; start_date: string; end_date: string | null; location: string; result: string; position_achieved: string; notes: string }

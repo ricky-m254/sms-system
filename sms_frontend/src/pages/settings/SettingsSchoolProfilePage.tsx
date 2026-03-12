@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Building2, Globe, Mail, MapPin, Phone, Upload, Check, AlertCircle } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface ProfileData {
   id?: number
@@ -116,6 +117,13 @@ export default function SettingsSchoolProfilePage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="slate"
+        title="School Profile"
+        subtitle="Branding, contact details and school identity"
+        icon="⚙️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">School Profile</h1>
         <p className="mt-1 text-sm text-slate-400">Configure your school's identity, contact information, and financial settings. This information appears on all printed documents.</p>

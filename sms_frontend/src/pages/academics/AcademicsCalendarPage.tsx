@@ -4,6 +4,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type AcademicYear = { id: number; name: string }
 type Term = { id: number; name: string }

@@ -69,10 +69,10 @@ export default function TransportRoutesPage() {
     <div className="space-y-6">
       <PageHero
         badge="TRANSPORT"
-        badgeColor="sky"
+        badgeColor="amber"
         title="Routes"
-        subtitle="Configure bus routes, stops, and student transport assignments."
-        icon="🗺️"
+        subtitle="Manage transport routes and stops"
+        icon="🚌"
       />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}

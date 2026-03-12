@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type Application = { id: number; application_number?: string; student_first_name: string; student_last_name: string }
 type Decision = {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { useAuthStore } from '../../store/auth'
+import PageHero from '../../components/PageHero'
 
 type ExecutiveDashboardData = {
   kpis: {
@@ -43,6 +44,13 @@ export default function AnalyticsDashboardPage() {
   if (isLoading) {
     return (
       <div className="rounded-2xl glass-panel p-6">
+      <PageHero
+        badge="ANALYTICS"
+        badgeColor="blue"
+        title="Dashboard"
+        subtitle="Manage dashboard for this school"
+        icon="📊"
+      />
         <p className="text-slate-300">Loading executive dashboard...</p>
       </div>
     )

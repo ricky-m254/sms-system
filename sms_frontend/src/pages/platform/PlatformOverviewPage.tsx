@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import { publicApiClient } from '../../api/publicClient'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type OverviewPayload = {
   tenants: {

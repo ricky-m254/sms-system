@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Calendar, Users, Clock, Plus, CheckCircle } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface PTMStats {
   total_sessions: number
@@ -27,6 +28,13 @@ export default function PTMDashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="PTM"
+        badgeColor="violet"
+        title="P T M Dashboard"
+        subtitle="Manage p t m dashboard for this school"
+        icon="🤝"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-display font-bold text-white tracking-tight">PTM Dashboard</h1>
         <button className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition">

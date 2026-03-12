@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Search, Download, Play, Book, FileText, ExternalLink, Youtube } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type TabId = 'all' | 'videos' | 'ebooks' | 'documents' | 'papers'
 
@@ -149,6 +150,13 @@ export default function ELearningMaterialsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="E-LEARNING"
+        badgeColor="violet"
+        title="Learning Materials"
+        subtitle="Textbooks, videos, and digital resources per subject"
+        icon="🎓"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white capitalize">Learning Materials</h1>
         <p className="text-slate-400 text-sm mt-1 capitalize">CBC Kenya videos, e-books, study notes, and KCSE past papers</p>

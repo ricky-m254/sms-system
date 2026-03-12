@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type CirculationReport = {
   active_borrowings: number
@@ -64,6 +65,13 @@ export default function LibraryReportsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="LIBRARY"
+        badgeColor="teal"
+        title="Library Reports"
+        subtitle="Borrowing trends, top books, and usage statistics"
+        icon="📚"
+      />
       <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Reports & Analytics</h1>
         <p className="mt-2 text-sm text-slate-400">Circulation, overdue, fines, and member activity insights.</p>

@@ -117,14 +117,14 @@ export default function CommunicationParentPage() {
 
   return (
     <div className="space-y-5 pb-8">
-      {/* Header */}
       <PageHero
         badge="COMMUNICATION"
         badgeColor="rose"
-        title="Parent Communication"
-        subtitle="Send targeted communications to parents and guardians"
-        icon="👨‍👩‍👧"
+        title="Parent Broadcasts"
+        subtitle="Mass messages and announcements to parents"
+        icon="📣"
       />
+      {/* Header */}
 
       {error && (
         <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">

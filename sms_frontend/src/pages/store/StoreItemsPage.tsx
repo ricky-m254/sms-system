@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import PageHero from '../../components/PageHero'
 
 interface Category { id: number; name: string; item_type: string; }
 interface StoreItem {
@@ -64,6 +65,13 @@ export default function StoreItemsPage() {
 
   return (
     <div className="space-y-5">
+      <PageHero
+        badge="STORE"
+        badgeColor="orange"
+        title="Store Items"
+        subtitle="School store inventory and stock catalogue"
+        icon="📦"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">
           {filterType ? `${filterType === 'FOOD' ? 'Food' : 'Office'} Store` : 'All Items'}

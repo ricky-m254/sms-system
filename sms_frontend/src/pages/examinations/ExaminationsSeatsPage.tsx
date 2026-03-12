@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Session = { id: number; name: string }
 type Paper = { id: number; subject_name: string; session: number }
@@ -75,6 +76,13 @@ export default function ExaminationsSeatsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Seating Plans"
+        subtitle="Assign candidates to examination halls and seats"
+        icon="📝"
+      />
       <div className="flex items-center justify-between">
         <div><p className="text-xs uppercase tracking-[0.3em] text-slate-400">Examinations</p><h1 className="mt-1 text-2xl font-display font-bold text-white">Seat Allocation</h1></div>
         <button onClick={openCreate} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">+ Allocate Seat</button>

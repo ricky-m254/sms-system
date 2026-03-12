@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Vehicle = { id: number; registration: string }
 type Incident = { id: number; vehicle: number; vehicle_registration: string; incident_date: string; description: string; severity: string; reported_by: string; resolved: boolean }
@@ -83,6 +84,13 @@ export default function TransportIncidentsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="TRANSPORT"
+        badgeColor="amber"
+        title="Transport Incidents"
+        subtitle="Log and track vehicle incidents and accidents"
+        icon="🚌"
+      />
       <section className="rounded-2xl glass-panel p-5 flex items-center justify-between">
         <div><p className="text-xs uppercase tracking-[0.3em] text-slate-400">Transport</p><h1 className="mt-1 text-2xl font-display font-semibold">Incidents</h1></div>
         <button onClick={openCreate} className="rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/30 transition">+ Log Incident</button>

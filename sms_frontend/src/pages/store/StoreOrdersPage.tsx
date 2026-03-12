@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import PageHero from '../../components/PageHero'
 
 interface StoreItem { id: number; name: string; unit: string; }
 interface OrderItem {
@@ -99,6 +100,13 @@ export default function StoreOrdersPage() {
 
   return (
     <div className="space-y-5">
+      <PageHero
+        badge="STORE"
+        badgeColor="orange"
+        title="Purchase Orders"
+        subtitle="Procurement requests and supplier orders"
+        icon="📦"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">Order Requests</h1>
         <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">

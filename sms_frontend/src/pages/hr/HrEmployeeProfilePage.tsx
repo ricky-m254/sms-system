@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Employee = {
   id: number
@@ -218,6 +219,13 @@ export default function HrEmployeeProfilePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Employee Profile"
+        subtitle="Detailed staff record and career history"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

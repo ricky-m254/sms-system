@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type Entry = {
   id: number
@@ -119,6 +120,13 @@ export default function FinanceCashbookPage() {
           ← Back to Finance
         </button>
         <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Cashbook"
+        subtitle="Daily cash receipts and payments"
+        icon="💰"
+      />
           <div>
             <h1 className="text-2xl font-display font-bold text-white">Cashbook & Bankbook</h1>
             <p className="mt-1 text-sm text-slate-400">Daily transaction ledger with running balances</p>

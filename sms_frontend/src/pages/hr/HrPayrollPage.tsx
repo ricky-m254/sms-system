@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
 import PayslipPrintModal from '../../components/PayslipPrintModal'
+import PageHero from '../../components/PageHero'
 
 type Employee = {
   id: number
@@ -451,6 +452,13 @@ export default function HrPayrollPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Payroll"
+        subtitle="Monthly salary processing and pay slips"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <div className="flex items-start justify-between gap-4">
           <div>

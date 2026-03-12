@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type StaffDept = { id: number; name: string; code: string; department_type: string }
 type SchoolDept = { id: number; name: string; description: string; is_active: boolean }
@@ -112,6 +113,13 @@ export default function StaffDepartmentsRolesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Departments & Roles"
+        subtitle="Organisational units and role definitions"
+        icon="👤"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Departments & Roles</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Organization and Role Assignments</h1>

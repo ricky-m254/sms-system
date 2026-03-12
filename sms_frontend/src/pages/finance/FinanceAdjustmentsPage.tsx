@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type InvoiceAdjustment = {
   id: number

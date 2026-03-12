@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 import {
   Bed, Users, Building, ChevronRight, CheckCircle2,
   AlertCircle, Clock, Moon, Sun, TrendingUp, DoorOpen, Shield,

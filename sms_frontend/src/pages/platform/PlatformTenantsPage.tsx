@@ -3,6 +3,7 @@ import { publicApiClient } from '../../api/publicClient'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type Plan = {
   id: number
@@ -294,11 +295,11 @@ export default function PlatformTenantsPage() {
   return (
     <div className="grid grid-cols-12 gap-6">
       <PageHero
-        badge="MODULE"
-        badgeColor="emerald"
-        title="Tenant Management"
-        subtitle="Follow this flow: 1) Create or select a tenant, 2) update profile and status, 3) assign plan and generate invoice, 4) reset school admin credentials if needed."
-        icon="📋"
+        badge="PLATFORM"
+        badgeColor="rose"
+        title="Tenants"
+        subtitle="Manage all school tenants on the platform"
+        icon="🛡️"
       />
 
       <section className="col-span-12 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

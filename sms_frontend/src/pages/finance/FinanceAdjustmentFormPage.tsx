@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 import BackButton from '../../components/BackButton'
+import PageHero from '../../components/PageHero'
 
 type Invoice = {
   id: number

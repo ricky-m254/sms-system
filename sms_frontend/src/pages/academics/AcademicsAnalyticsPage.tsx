@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type StudentProfile = {
   student_id: number

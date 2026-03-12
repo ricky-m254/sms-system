@@ -3,6 +3,7 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import { publicApiClient } from '../../api/publicClient'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type AdminRole = 'OWNER' | 'ADMIN' | 'SUPPORT' | 'AUDITOR'
 

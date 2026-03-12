@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Student = { id: number; full_name: string; admission_number: string }
 type MealTransaction = { id: number; student: number; student_name: string; date: string; meal_type: string; served: boolean; notes: string }
@@ -94,6 +95,13 @@ export default function CafeteriaLogsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="CAFETERIA"
+        badgeColor="teal"
+        title="Meal Logs"
+        subtitle="Daily food service records and consumption logs"
+        icon="🍽️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Daily Logs</h1>
         <p className="mt-1 text-sm text-slate-400">Track daily meal serving and wallet transactions.</p>

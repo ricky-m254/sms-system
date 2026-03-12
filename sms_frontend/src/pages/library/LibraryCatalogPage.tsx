@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Search, Grid3X3, List, BookOpen } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const CATEGORIES = ['All', 'Textbooks', 'Literature', 'Reference', 'Science', 'Humanities', 'Language', 'Mathematics', 'Technology', 'Fiction']
 
@@ -117,6 +118,13 @@ export default function LibraryCatalogPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="LIBRARY"
+        badgeColor="teal"
+        title="Book Catalogue"
+        subtitle="Search and browse the school library collection"
+        icon="📚"
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

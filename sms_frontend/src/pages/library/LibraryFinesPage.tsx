@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Fine = {
   id: number
@@ -76,6 +77,13 @@ export default function LibraryFinesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="LIBRARY"
+        badgeColor="teal"
+        title="Fines & Penalties"
+        subtitle="Track outstanding fines and payments"
+        icon="📚"
+      />
       <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Fines & Fees</h1>
         <p className="mt-2 text-sm text-slate-400">Track overdue and penalty balances.</p>

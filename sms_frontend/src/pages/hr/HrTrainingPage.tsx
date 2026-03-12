@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Employee = { id: number; employee_id: string; full_name: string }
 type TrainingProgram = {
@@ -194,6 +195,13 @@ export default function HrTrainingPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Training & CPD"
+        subtitle="Continuing professional development records"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Training & Development</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Programs, Enrollment, Completion Tracking</h1>

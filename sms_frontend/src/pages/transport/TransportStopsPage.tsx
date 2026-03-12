@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Route = { id: number; name: string }
 type Stop = { id: number; route: number; stop_name: string; sequence: number; estimated_time: string; landmark: string }
@@ -66,6 +67,13 @@ export default function TransportStopsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="TRANSPORT"
+        badgeColor="amber"
+        title="Bus Stops"
+        subtitle="Manage route stops and passenger pickup points"
+        icon="🚌"
+      />
       <section className="rounded-2xl glass-panel p-5 flex items-center justify-between">
         <div><p className="text-xs uppercase tracking-[0.3em] text-slate-400">Transport</p><h1 className="mt-1 text-2xl font-display font-semibold">Route Stops</h1></div>
         <button onClick={openCreate} className="rounded-xl bg-emerald-500/20 border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/30 transition">+ Add Stop</button>

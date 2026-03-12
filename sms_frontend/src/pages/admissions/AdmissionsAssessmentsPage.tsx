@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import PageHero from '../../components/PageHero'
 
 type Application = { id: number; application_number?: string; student_first_name: string; student_last_name: string }
 type Assessment = {
@@ -166,9 +167,9 @@ export default function AdmissionsAssessmentsPage() {
     <div className="space-y-6">
       <PageHero
         badge="ADMISSIONS"
-        badgeColor="violet"
+        badgeColor="amber"
         title="Assessments"
-        subtitle="Assessments management and overview."
+        subtitle="Entrance tests and applicant evaluation results"
         icon="📋"
       />
 

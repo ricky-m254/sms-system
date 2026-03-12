@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Role = { id: number; name: string; description: string }
 
@@ -156,6 +157,13 @@ export default function SettingsUsersPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="slate"
+        title="User Accounts"
+        subtitle="Create and manage user accounts and passwords"
+        icon="⚙️"
+      />
       <div className="rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

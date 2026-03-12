@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Calendar, MapPin, Clock, Plus, MoreHorizontal, Video } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface PTMSession {
   id: number
@@ -28,6 +29,13 @@ export default function PTMSessionsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="PTM"
+        badgeColor="violet"
+        title="PTM Sessions"
+        subtitle="Schedule and manage parent-teacher meetings"
+        icon="🤝"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white tracking-tight tracking-tight">PTM Sessions</h1>

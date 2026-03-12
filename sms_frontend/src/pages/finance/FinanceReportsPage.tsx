@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadBlob, extractFilename } from '../../utils/download'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type FinanceSummary = {
   revenue_billed?: number
@@ -368,6 +369,13 @@ export default function FinanceReportsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Finance Reports"
+        subtitle="Income statements, balance sheets and forecasts"
+        icon="💰"
+      />
       <header className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

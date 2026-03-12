@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Subject = { id: number; name: string }
 type SchoolClass = { id: number; name: string }

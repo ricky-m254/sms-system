@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type Invoice = {
   id: number

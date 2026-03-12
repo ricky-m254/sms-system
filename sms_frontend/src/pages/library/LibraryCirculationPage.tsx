@@ -60,16 +60,10 @@ export default function LibraryCirculationPage() {
     <div className="space-y-6">
       <PageHero
         badge="LIBRARY"
-        badgeColor="violet"
+        badgeColor="teal"
         title="Circulation"
-        subtitle="Track all borrowing and return transactions across the school library."
+        subtitle="Track borrowing, returns and renewals"
         icon="🔄"
-        actions={
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: '#6366f1', color: '#fff' }}>
-            <BookOpen size={15} /> Issue Book
-          </button>
-        }
       />
 
       {/* Stats */}

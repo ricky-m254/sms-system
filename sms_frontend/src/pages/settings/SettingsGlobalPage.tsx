@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Check, AlertCircle, Palette, Type, Monitor } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface GlobalSettings {
   primary_color: string
@@ -62,6 +63,13 @@ export default function SettingsGlobalPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="sky"
+        title="Global Settings"
+        subtitle="System-wide preferences and school information"
+        icon="⚙️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Global Theme & Branding</h1>
         <p className="mt-1 text-sm text-slate-400">Customize the system's appearance. These colors appear on buttons, highlights, headers, and printed documents throughout the system.</p>

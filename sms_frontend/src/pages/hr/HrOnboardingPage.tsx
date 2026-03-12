@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Employee = {
   id: number
@@ -128,6 +129,13 @@ export default function HrOnboardingPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Onboarding"
+        subtitle="New hire checklist and induction workflow"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Onboarding</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Checklist Tracking and Task Completion</h1>

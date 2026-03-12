@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 export default function ParentPortalFinancePage() {
   const [summary, setSummary] = useState<any>({})

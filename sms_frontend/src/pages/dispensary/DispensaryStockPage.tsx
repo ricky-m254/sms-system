@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Edit2, Trash2, AlertTriangle, Search } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import PageHero from '../../components/PageHero'
 
 interface Med {
   id: number; medication_name: string; generic_name: string; current_quantity: number;
@@ -54,6 +55,13 @@ export default function DispensaryStockPage() {
 
   return (
     <div className="space-y-5">
+      <PageHero
+        badge="DISPENSARY"
+        badgeColor="rose"
+        title="Medicine Stock"
+        subtitle="Medical supplies inventory and stock levels"
+        icon="💊"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">Medication Stock</h1>
         <button onClick={openAdd} className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">

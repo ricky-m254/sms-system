@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Users, Clock, AlertTriangle, TrendingUp, Fingerprint, Activity } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type DashboardData = {
   students_in: number
@@ -101,6 +102,13 @@ export default function ClockInDashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <PageHero
+        badge="CLOCK-IN"
+        badgeColor="emerald"
+        title="Dashboard"
+        subtitle="Manage dashboard for this school"
+        icon="⏰"
+      />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">

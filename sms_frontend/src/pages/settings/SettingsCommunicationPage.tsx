@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Check, AlertCircle, Mail, MessageSquare, Phone, RefreshCw } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface CommSettings {
   smtp_host: string
@@ -104,6 +105,13 @@ export default function SettingsCommunicationPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="sky"
+        title="Communication Config"
+        subtitle="Email, SMS gateway and notification settings"
+        icon="⚙️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Communication Settings</h1>
         <p className="mt-1 text-sm text-slate-400">

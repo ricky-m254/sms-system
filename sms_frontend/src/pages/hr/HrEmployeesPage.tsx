@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Department = { id: number; name: string }
 type Position = { id: number; title: string }
@@ -187,6 +188,13 @@ export default function HrEmployeesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Employees"
+        subtitle="Full staff directory and employment details"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Employee Directory</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Staff Profiles</h1>

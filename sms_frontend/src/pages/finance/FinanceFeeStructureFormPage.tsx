@@ -5,6 +5,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 import BackButton from '../../components/BackButton'
 import { useCurrentAcademicContext } from '../../hooks/useCurrentAcademicContext'
+import PageHero from '../../components/PageHero'
 
 type FeeStructure = {
   id: number

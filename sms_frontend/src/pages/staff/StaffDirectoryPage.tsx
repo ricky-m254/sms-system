@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 import {
   Search, Download, Plus, X, Users, GraduationCap, Wrench,
   Shield, ChefHat, Car, Stethoscope, Monitor, BookOpen,
@@ -134,6 +135,13 @@ export default function StaffDirectoryPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Staff Directory"
+        subtitle="All teaching and non-teaching staff"
+        icon="👤"
+      />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

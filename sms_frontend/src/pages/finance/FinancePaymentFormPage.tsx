@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 import BackButton from '../../components/BackButton'
+import PageHero from '../../components/PageHero'
 
 type FinanceStudent = {
   id: number
@@ -179,16 +180,16 @@ export default function FinancePaymentFormPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Record Payment"
+        subtitle="Enter and process a student fee payment"
+        icon="💰"
+      />
       <div className="col-span-12">
         <BackButton to="/modules/finance/payments" label="Back to Payments" />
       </div>
-      <PageHero
-        badge="FINANCE MODULE"
-        badgeColor="emerald"
-        title="Record Payment"
-        subtitle="Add a new payment entry."
-        icon="💰"
-      />
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">

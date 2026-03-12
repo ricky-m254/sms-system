@@ -1,6 +1,14 @@
+import PageHero from '../../components/PageHero'
 export default function VisitorMgmtAuthorizedPickupsPage() {
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="VISITORS"
+        badgeColor="sky"
+        title="Authorised Pickups"
+        subtitle="Pre-approved pickup contacts per student"
+        icon="🪪"
+      />
       <header>
         <h1 className="text-2xl font-display font-bold text-white">Authorized Pickups</h1>
         <p className="text-slate-400">Manage guardians authorized to pick up students</p>

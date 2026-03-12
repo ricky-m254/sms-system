@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import PageHero from '../../components/PageHero'
 import {
   type FeatureToggles,
   type ModuleThemeSettings,
@@ -201,6 +202,13 @@ export default function ModuleSettingsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="sky"
+        title="Module Settings"
+        subtitle="Enable, disable and configure school modules"
+        icon="⚙️"
+      />
       <aside className="col-span-12 rounded-2xl glass-panel p-4 lg:col-span-4">
         <h2 className="text-sm font-semibold text-slate-100">Module Settings</h2>
         <p className="mt-1 text-xs text-slate-400">Select a module to configure its theme and feature toggles.</p>

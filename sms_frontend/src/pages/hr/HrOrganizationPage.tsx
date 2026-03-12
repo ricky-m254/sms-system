@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Department = {
   id: number
@@ -313,6 +314,13 @@ export default function HrOrganizationPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Organisation Chart"
+        subtitle="School departments, roles and hierarchy"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Departments & Positions</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Organization Structure</h1>

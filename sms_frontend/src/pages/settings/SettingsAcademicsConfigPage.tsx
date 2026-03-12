@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { GraduationCap, BookOpen, Calendar, Plus, Trash2, Save, AlertCircle, Check } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface AcademicConfig {
   academic_year_start: string
@@ -99,6 +100,13 @@ export default function SettingsAcademicsConfigPage() {
 
   return (
     <div className="space-y-8 max-w-4xl">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="sky"
+        title="Academics Config"
+        subtitle="Grading scale, CBC strands and subject setup"
+        icon="⚙️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Academic Configuration</h1>
         <p className="mt-1 text-sm text-slate-400">Define your school's academic structure — years, terms, grades, classes, and subjects. This configuration drives all academic modules.</p>

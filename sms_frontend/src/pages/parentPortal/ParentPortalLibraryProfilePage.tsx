@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Borrowing = {
   id: number; book_title?: string; isbn?: string; due_date: string | null; borrowed_date?: string; status?: string

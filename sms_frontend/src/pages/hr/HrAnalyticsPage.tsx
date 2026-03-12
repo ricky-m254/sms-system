@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Summary = {
   headcount: number
@@ -133,6 +134,13 @@ export default function HrAnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="HR Analytics"
+        subtitle="Workforce insights, trends and dashboards"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">HR Analytics</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Headcount, Turnover, Leave, Payroll Costs</h1>

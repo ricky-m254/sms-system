@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import PageHero from '../../components/PageHero'
 
 type FinanceSummary = {
   revenue_billed: number
@@ -168,6 +169,13 @@ export default function FinanceSummaryPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Finance Summary"
+        subtitle="IPSAS-compliant overview of school finances"
+        icon="💰"
+      />
 
       {/* ── Hero Banner ── */}
       <div className="relative overflow-hidden rounded-3xl px-6 py-9 md:px-10"

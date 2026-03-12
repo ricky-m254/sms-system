@@ -107,14 +107,8 @@ export default function DormitoriesPage() {
         badge="HOSTEL"
         badgeColor="sky"
         title="Dormitories"
-        subtitle="Manage school housing facilities, capacity, and bed allocations."
+        subtitle="Manage school boarding dormitories and rooms"
         icon="🏠"
-        actions={
-          <button onClick={openCreate} className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition duration-200">
-            <Plus className="h-4 w-4" />
-            Add Dormitory
-          </button>
-        }
       />
 
       {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}

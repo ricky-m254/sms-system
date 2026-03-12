@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Calendar, User, Clock, Filter, ListChecks, Pencil, Trash2, X } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Attendance {
   id: number
@@ -113,6 +114,13 @@ export default function HostelAttendancePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HOSTEL"
+        badgeColor="sky"
+        title="Hostel Attendance"
+        subtitle="Daily roll-call and night attendance records"
+        icon="🏠"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white tracking-tight">Hostel Attendance</h1>

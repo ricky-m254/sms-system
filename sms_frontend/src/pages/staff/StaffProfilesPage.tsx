@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type StaffRow = { id: number; staff_id: string; full_name: string }
 type ProfilePayload = {
@@ -101,6 +102,13 @@ export default function StaffProfilesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Staff Profiles"
+        subtitle="Individual staff profile cards and details"
+        icon="👤"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Staff Profiles</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Qualifications, Assignments, Emergency Contacts</h1>

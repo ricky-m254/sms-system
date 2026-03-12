@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 import {
   Users, Calendar, Pill, ArrowUpRight, ChevronRight,
   Heart, Activity, AlertTriangle, CheckCircle2, Clock,

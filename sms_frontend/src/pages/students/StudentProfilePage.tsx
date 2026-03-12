@@ -5,6 +5,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import { buildPrintDocument, openPrintWindow, type TenantPrintMeta } from '../../utils/printTemplate'
 import { downloadBlob, extractFilename } from '../../utils/download'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 const tabs = [
   'Personal',

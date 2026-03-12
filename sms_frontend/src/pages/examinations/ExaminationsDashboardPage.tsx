@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 import {
   ClipboardList, FileText, BarChart3, Users, TrendingUp, Award,
   BookOpen, CheckCircle2,
@@ -51,6 +52,13 @@ export default function ExaminationsDashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Dashboard"
+        subtitle="Manage dashboard for this school"
+        icon="📝"
+      />
 
       {/* Header */}
       <div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Topic = { id: number; topic: string; week_number: number; scheme_title?: string }
 type LessonPlan = { id: number; topic: number; topic_name?: string; date: string; lesson_objectives: string; introduction: string; conclusion: string; assessment_activity: string; homework: string; is_approved: boolean }

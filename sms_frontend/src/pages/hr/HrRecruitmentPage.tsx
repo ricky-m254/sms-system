@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Department = { id: number; name: string }
 type Position = { id: number; title: string; department: number }
@@ -264,6 +265,13 @@ export default function HrRecruitmentPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HR"
+        badgeColor="violet"
+        title="Recruitment"
+        subtitle="Job postings, applications and interviews"
+        icon="👥"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Recruitment & ATS</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Job Postings, Applications, Interviews</h1>

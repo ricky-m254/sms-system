@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Visit = { id: number; student_name: string; visit_date: string; complaint: string; diagnosis: string; treatment: string; staff_name: string }
 type StockItem = { id: number; item_name: string; quantity: number; unit: string; expiry_date: string; reorder_level: number }
@@ -33,6 +34,13 @@ export default function FinanceDispensaryPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Dispensary Finance"
+        subtitle="Medical supply costs and dispensary expenses"
+        icon="💰"
+      />
       <section className="rounded-2xl glass-panel p-5 flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>

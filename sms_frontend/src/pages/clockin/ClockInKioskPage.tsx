@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import axios from 'axios'
 import { resolveApiBaseUrl } from '../../api/baseUrl'
 import { Fingerprint, Keyboard, QrCode, Clock, CheckCircle2, XCircle, AlertTriangle, Wifi } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type ScanMode = 'fingerprint' | 'pin' | 'qr'
 
@@ -122,6 +123,13 @@ export default function ClockInKioskPage() {
     >
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <PageHero
+        badge="CLOCK-IN"
+        badgeColor="emerald"
+        title="Kiosk"
+        subtitle="Self-service attendance check-in terminal"
+        icon="⏰"
+      />
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[180px]" style={{ background: 'rgba(16,185,129,0.07)' }} />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[180px]" style={{ background: 'rgba(14,165,233,0.05)' }} />
         {phase === 'success' && (

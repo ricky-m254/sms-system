@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, AlertTriangle, ShoppingCart, Tag, ArrowRight } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import PageHero from '../../components/PageHero'
 
 interface DashboardData {
   total_items: number;
@@ -32,6 +33,13 @@ export default function StoreDashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STORE"
+        badgeColor="orange"
+        title="Dashboard"
+        subtitle="Manage dashboard for this school"
+        icon="📦"
+      />
       <h1 className="text-2xl font-bold text-slate-100">Store Dashboard</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

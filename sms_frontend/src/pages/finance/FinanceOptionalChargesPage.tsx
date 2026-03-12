@@ -233,6 +233,13 @@ export default function FinanceOptionalChargesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Optional Charges"
+        subtitle="Manage optional and ad-hoc student charges"
+        icon="💰"
+      />
       <header className="rounded-2xl glass-panel p-6">
         <BackButton to="/modules/finance" label="Back to Finance" />
         <div className="flex items-center justify-between">
@@ -592,3 +599,4 @@ export default function FinanceOptionalChargesPage() {
 }
 
 import React from 'react'
+import PageHero from '../../components/PageHero'

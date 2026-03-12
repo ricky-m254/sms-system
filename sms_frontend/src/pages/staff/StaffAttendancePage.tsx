@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type AttendanceRow = { id: number; staff: number; staff_name: string; date: string; status: string; clock_in: string | null; clock_out: string | null }
@@ -79,6 +80,13 @@ export default function StaffAttendancePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Staff Attendance"
+        subtitle="Daily check-in records and leave tracking"
+        icon="👤"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Attendance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Daily Marking and Monthly Summary</h1>

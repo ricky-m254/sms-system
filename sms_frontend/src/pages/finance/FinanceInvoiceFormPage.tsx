@@ -5,6 +5,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage, mapApiFieldErrors } from '../../utils/forms'
 import BackButton from '../../components/BackButton'
+import PageHero from '../../components/PageHero'
 
 type FinanceStudent = {
   id: number

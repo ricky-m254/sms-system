@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, Users, RotateCcw, AlertTriangle, Clock, TrendingUp, Star, ChevronRight } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const TOP_BOOKS = [
   { title: 'KLB Mathematics Form 3', author: 'Kenya Literature Bureau', borrows: 28, from: '#1d4ed8', to: '#3b82f6', icon: '📐', available: 2, total: 5 },

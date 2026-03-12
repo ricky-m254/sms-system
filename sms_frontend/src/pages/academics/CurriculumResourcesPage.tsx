@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Subject = { id: number; name: string }
 type Resource = { id: number; title: string; resource_type: string; subject: number; subject_name?: string; external_url: string; description: string; created_at: string }
@@ -66,9 +67,9 @@ export default function CurriculumResourcesPage() {
     <div className="space-y-6">
       <PageHero
         badge="ACADEMICS"
-        badgeColor="blue"
-        title="Learning Resources"
-        subtitle="Add links, documents, videos and other resources for each subject."
+        badgeColor="emerald"
+        title="Curriculum Resources"
+        subtitle="Schemes of work, lesson notes and materials"
         icon="📖"
       />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}

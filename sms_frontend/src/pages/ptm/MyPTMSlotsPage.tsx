@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { User, Clock } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface PTMSlot {
   id: number
@@ -25,6 +26,13 @@ export default function MyPTMSlotsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="PTM"
+        badgeColor="violet"
+        title="My PTM Slots"
+        subtitle="Manage your available parent-teacher meeting slots"
+        icon="🤝"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white tracking-tight">My PTM Slots</h1>

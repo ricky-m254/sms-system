@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Pencil, Trash2, X, Wrench, ChevronDown } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Category { id: number; name: string }
 interface Request {
@@ -125,6 +126,13 @@ export default function MaintenanceRequestsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="ASSETS"
+        badgeColor="blue"
+        title="Maintenance Requests"
+        subtitle="Log and track facility and equipment repairs"
+        icon="🏗️"
+      />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Maintenance</p>

@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PrintButton from '../../components/PrintButton'
 import { Pencil, X } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Session { id: number; name: string }
 interface Subject { id: number; name: string }
@@ -123,6 +124,13 @@ export default function ExaminationsExamSettersPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Exam Setters"
+        subtitle="Assign subject teachers to set exam papers"
+        icon="📝"
+      />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold text-white">Exam Setter Assignments</h1>

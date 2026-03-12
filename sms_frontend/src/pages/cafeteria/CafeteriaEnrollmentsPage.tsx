@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Student = { id: number; full_name: string; admission_number: string }
 type MealPlan = { id: number; name: string; is_active: boolean }
@@ -80,6 +81,13 @@ export default function CafeteriaEnrollmentsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="CAFETERIA"
+        badgeColor="teal"
+        title="Meal Enrollments"
+        subtitle="Student meal plan subscriptions and enrollments"
+        icon="🍽️"
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Student Enrollments</h1>

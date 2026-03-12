@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client';
 import BackButton from '../../components/BackButton';
 import PrintButton from '../../components/PrintButton';
 import { ShoppingCart, CheckCircle, XCircle, Clock, PackageCheck, Receipt } from 'lucide-react';
+import PageHero from '../../components/PageHero'
 
 interface OrderItem {
   id: number;
@@ -94,6 +95,13 @@ export default function FinanceStoreRequestsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Store Requests"
+        subtitle="Finance approval for store purchase orders"
+        icon="💰"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <BackButton to="/modules/finance" label="Finance Module" />

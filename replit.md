@@ -186,7 +186,8 @@ Cafeteria, Sports, Hostel, Assets, Maintenance, Visitor, Dispensary, Communicati
 ### PageHero Shared Component
 - **Component**: `sms_frontend/src/components/PageHero.tsx`
 - 9 color themes: emerald, sky, violet, amber, rose, blue, orange, pink, teal
-- Deployed to 90+ inner sub-module pages via Python upgrade script
+- Deployed to **196 pages** (214/218 = 98% coverage; remaining 4 are full-screen specials or re-export wrappers)
+- 18 module dashboard pages instead use custom gradient hero banners (no PageHero needed)
 
 ## Clock-In Kiosk
 

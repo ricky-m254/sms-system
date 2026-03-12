@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import BackButton from '../../components/BackButton'
+import PageHero from '../../components/PageHero'
 
 const pipelineStages = [
   'Inquiry',

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Shield, ChevronDown, ChevronRight, Check, AlertCircle, Users, Lock, Info } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type ModuleInfo = { key: string; name: string }
 type RoleData = { id: number; name: string; description: string; user_count: number; assigned_module_keys: string[]; editable: boolean }
@@ -175,6 +176,13 @@ export default function SettingsRolesPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="slate"
+        title="Roles & Permissions"
+        subtitle="User roles and granular access control"
+        icon="⚙️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Roles & Permissions</h1>
         <p className="mt-1 text-sm text-slate-400">Control what each role can access and perform across all modules and submodules. Changes apply immediately to all users with that role.</p>

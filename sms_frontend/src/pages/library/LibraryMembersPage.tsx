@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Search, UserPlus, BookOpen, AlertTriangle } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const MEMBERS = [
   { id: 1, name: 'Mary Wanjiku', type: 'Student', class: 'Form 3 East', memberId: 'LIB-S-001', joined: '2023-01-09', borrowed: 2, overdue: 0, fines: 0 },
@@ -55,6 +56,13 @@ export default function LibraryMembersPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="LIBRARY"
+        badgeColor="teal"
+        title="Library Members"
+        subtitle="Student and staff library memberships"
+        icon="📚"
+      />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Library Members</h1>

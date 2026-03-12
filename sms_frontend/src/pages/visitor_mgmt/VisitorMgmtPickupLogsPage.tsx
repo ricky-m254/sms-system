@@ -1,6 +1,14 @@
+import PageHero from '../../components/PageHero'
 export default function VisitorMgmtPickupLogsPage() {
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="VISITORS"
+        badgeColor="sky"
+        title="Pickup Logs"
+        subtitle="Recorded student pickup and release history"
+        icon="🪪"
+      />
       <header>
         <h1 className="text-2xl font-display font-bold text-white">Student Pickup Logs</h1>
         <p className="text-slate-400">History of student pickups and authorizations</p>

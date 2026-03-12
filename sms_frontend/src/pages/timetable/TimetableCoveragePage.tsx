@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type LessonCoverage = {
   id: number
@@ -77,6 +78,13 @@ export default function TimetableCoveragePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="TIMETABLE"
+        badgeColor="violet"
+        title="Timetable Coverage"
+        subtitle="Track lessons taught vs scheduled periods"
+        icon="📅"
+      />
       <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold">Lesson Coverage</h1>

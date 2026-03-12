@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Guardian = {
   id: number

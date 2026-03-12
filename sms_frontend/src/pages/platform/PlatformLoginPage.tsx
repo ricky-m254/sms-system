@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { publicApiClient } from '../../api/publicClient'
 import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type LoginResponse = {
   access: string
@@ -50,6 +51,13 @@ export default function PlatformLoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      <PageHero
+        badge="PLATFORM"
+        badgeColor="rose"
+        title="Platform Login"
+        subtitle="Manage platform login for this school"
+        icon="🛡️"
+      />
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-10 px-4 py-10 sm:px-6 sm:py-16 md:flex-row">
         <div className="flex-1 space-y-6">
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">SMS Platform</p>

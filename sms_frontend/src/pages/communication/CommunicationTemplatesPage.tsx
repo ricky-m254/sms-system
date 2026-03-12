@@ -165,14 +165,14 @@ export default function CommunicationTemplatesPage() {
 
   return (
     <div className="space-y-5 pb-8">
-      {/* Header */}
       <PageHero
         badge="COMMUNICATION"
         badgeColor="rose"
-        title="Template Library"
-        subtitle="Reusable message templates with merge field support"
-        icon="📄"
+        title="Message Templates"
+        subtitle="Reusable templates for common communications"
+        icon="📣"
       />
+      {/* Header */}
 
       {/* Alerts */}
       {error && (

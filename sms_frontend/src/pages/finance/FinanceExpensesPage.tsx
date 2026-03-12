@@ -18,6 +18,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import PageHero from '../../components/PageHero'
 
 type Expense = {
   id: number

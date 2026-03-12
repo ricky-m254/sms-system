@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { apiClient } from '../../api/client'
 import { Clock, Plus, Trash2, AlertCircle, Check } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 transition placeholder:text-slate-600'
 
@@ -38,6 +39,13 @@ export default function SettingsTimetableConfigPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
+      <PageHero
+        badge="SETTINGS"
+        badgeColor="slate"
+        title="Timetable Config"
+        subtitle="Periods, days and timetable structure"
+        icon="⚙️"
+      />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">Timetable Configuration</h1>
         <p className="mt-1 text-sm text-slate-400">Configure the school day structure, lesson duration, periods, and break times for the automated timetable generator.</p>

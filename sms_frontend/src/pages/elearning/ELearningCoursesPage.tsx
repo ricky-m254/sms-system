@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Search, Users, BookOpen, Clock, Star, Play, Filter, ChevronRight } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const SUBJECT_FILTERS = ['All', 'Mathematics', 'English', 'Kiswahili', 'Biology', 'Chemistry', 'Physics', 'History', 'Geography', 'Computer Studies', 'Business', 'Agriculture']
 
@@ -45,6 +46,13 @@ export default function ELearningCoursesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="E-LEARNING"
+        badgeColor="violet"
+        title="Course Library"
+        subtitle="Browse and manage CBC subject courses"
+        icon="🎓"
+      />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Courses</h1>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import PageHero from '../../components/PageHero'
 
 interface StoreItem { id: number; name: string; unit: string; }
 interface Transaction {
@@ -71,6 +72,13 @@ export default function StoreMovementsPage() {
 
   return (
     <div className="space-y-5">
+      <PageHero
+        badge="STORE"
+        badgeColor="orange"
+        title="Stock Movements"
+        subtitle="Goods received, issued and transferred records"
+        icon="📦"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">Stock Movements</h1>
         <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">

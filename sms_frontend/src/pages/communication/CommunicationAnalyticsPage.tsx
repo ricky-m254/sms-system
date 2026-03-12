@@ -84,14 +84,14 @@ export default function CommunicationAnalyticsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Header */}
       <PageHero
         badge="COMMUNICATION"
         badgeColor="rose"
-        title="Delivery Analytics"
-        subtitle="Channel performance, delivery rates, and volume breakdown"
-        icon="📊"
+        title="Communication Analytics"
+        subtitle="Message delivery rates and engagement metrics"
+        icon="📣"
       />
+      {/* Header */}
 
       {error && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">

@@ -4,6 +4,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
 import CBCReportCardModal from '../../components/CBCReportCardModal'
+import PageHero from '../../components/PageHero'
 import {
   FileText, Download, CheckCircle2, Share2, Zap,
   AlertTriangle, GraduationCap, Users, Eye,
@@ -142,6 +143,13 @@ export default function AcademicsReportCardsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <PageHero
+        badge="ACADEMICS"
+        badgeColor="emerald"
+        title="Report Cards"
+        subtitle="Generate and distribute CBC learner progress reports"
+        icon="📖"
+      />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

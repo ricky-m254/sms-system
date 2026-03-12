@@ -2,6 +2,7 @@ import { type ChangeEvent, useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { downloadBlob, downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type GatewayTx = {
   id: number

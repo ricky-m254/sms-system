@@ -129,14 +129,14 @@ export default function CommunicationNotificationsPage() {
 
   return (
     <div className="space-y-5 pb-8">
-      {/* Header */}
       <PageHero
         badge="COMMUNICATION"
         badgeColor="rose"
-        title="Notification Center"
-        subtitle="Manage push notifications and alerts"
-        icon="🔔"
+        title="Push Notifications"
+        subtitle="App and browser push notification management"
+        icon="📣"
       />
+      {/* Header */}
 
       {/* Alerts */}
       {error && (

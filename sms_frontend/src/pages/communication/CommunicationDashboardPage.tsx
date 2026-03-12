@@ -6,6 +6,7 @@ import {
   ArrowRight, RefreshCw,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Summary = {
   total_messages: number

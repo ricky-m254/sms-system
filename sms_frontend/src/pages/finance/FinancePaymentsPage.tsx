@@ -7,6 +7,7 @@ import { useAuthStore } from '../../store/auth'
 import { extractApiErrorMessage } from '../../utils/forms'
 import { downloadBlob } from '../../utils/download'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type Payment = {
   id: number

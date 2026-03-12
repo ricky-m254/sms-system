@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Enrollment = {
   id: number

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Video, Clock, Users, Calendar, Link2, Play, ChevronLeft, ChevronRight } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type TabId = 'upcoming' | 'live' | 'past'
 
@@ -91,6 +92,13 @@ export default function ELearningVirtualSessionsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="E-LEARNING"
+        badgeColor="violet"
+        title="Virtual Sessions"
+        subtitle="Live classes, recordings and upcoming schedules"
+        icon="🎓"
+      />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Virtual Sessions</h1>

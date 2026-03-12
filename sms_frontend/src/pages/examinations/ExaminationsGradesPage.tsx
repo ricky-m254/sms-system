@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Plus, Pencil, Trash2, Layers, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type GradeBoundary = { id: number; session: number; session_name?: string; grade: string; min_marks: number; max_marks: number; remarks: string }
 type Session = { id: number; name: string }
@@ -79,6 +80,13 @@ export default function ExaminationsGradesPage() {
 
   return (
     <div className="p-6 space-y-5">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Grade Processing"
+        subtitle="Mark entry, grading and result processing"
+        icon="📝"
+      />
 
       <div className="flex items-center justify-between gap-4">
         <div>

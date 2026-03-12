@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Plus, Pencil, Trash2, ClipboardList, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type Term = { id: number; name: string }
 type Session = { id: number; name: string; status: string; start_date: string; end_date: string; term: number | null; is_active: boolean; notes: string }
@@ -83,6 +84,13 @@ export default function ExaminationsSessionsPage() {
 
   return (
     <div className="p-6 space-y-5">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Exam Sessions"
+        subtitle="Schedule and manage examination sittings"
+        icon="📝"
+      />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-4">

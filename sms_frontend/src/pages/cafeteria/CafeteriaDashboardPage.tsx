@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cafeteriaApi } from '../../api/sports_cafeteria'
+import PageHero from '../../components/PageHero'
 import {
   Utensils, Users, ClipboardList, Wallet, ChevronRight,
   Coffee, Sun, Moon, Star, TrendingUp, CheckCircle2, Clock,
@@ -96,6 +97,13 @@ export default function CafeteriaDashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="CAFETERIA"
+        badgeColor="teal"
+        title="Cafeteria Dashboard"
+        subtitle="Meal plans, daily menus and student feeding overview"
+        icon="🍽️"
+      />
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-3xl px-6 py-9 md:px-10"

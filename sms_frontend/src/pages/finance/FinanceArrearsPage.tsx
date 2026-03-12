@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type ArrearRow = {
   invoice_id: number
@@ -141,6 +142,13 @@ export default function FinanceArrearsPage() {
           ← Back to Finance
         </button>
         <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Fee Arrears"
+        subtitle="Students with outstanding fee balances"
+        icon="💰"
+      />
           <div>
             <h1 className="text-2xl font-display font-bold text-white">Arrears Management</h1>
             <p className="mt-1 text-sm text-slate-400">Track outstanding balances and carry forwards between terms</p>

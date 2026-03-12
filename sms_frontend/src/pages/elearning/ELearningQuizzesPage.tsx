@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckCircle, Clock, Target, Trophy, BookOpen, ChevronRight, AlertCircle, BarChart2 } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const QUIZZES = [
   { id: 1, subject: 'Mathematics', title: 'Form 3 CAT: Quadratic Equations', questions: 20, timeLimit: 45, maxScore: 40, passPct: 50, attempts: 38, avgScore: 72, completed: true, myScore: 85, from: '#1d4ed8', to: '#3b82f6', dueDate: 'Submitted' },
@@ -51,6 +52,13 @@ export default function ELearningQuizzesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="E-LEARNING"
+        badgeColor="violet"
+        title="Quiz Bank"
+        subtitle="CBC-aligned quizzes and assessments per subject"
+        icon="🎓"
+      />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Quizzes & Assessments</h1>

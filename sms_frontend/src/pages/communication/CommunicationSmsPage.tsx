@@ -91,14 +91,14 @@ export default function CommunicationSmsPage() {
 
   return (
     <div className="space-y-5 pb-8">
-      {/* Header */}
       <PageHero
         badge="COMMUNICATION"
         badgeColor="rose"
-        title="SMS / WhatsApp"
-        subtitle="Send bulk messages via SMS or WhatsApp"
-        icon="📱"
+        title="SMS Campaigns"
+        subtitle="Send bulk SMS to students, parents and staff"
+        icon="📣"
       />
+      {/* Header */}
 
       {/* Gateway Status */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

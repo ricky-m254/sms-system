@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 import {
   Wrench, Clock, CheckCircle2, AlertTriangle, ChevronRight,
   Hammer, Zap, Droplets, Wind, Settings, ListChecks, TrendingUp,

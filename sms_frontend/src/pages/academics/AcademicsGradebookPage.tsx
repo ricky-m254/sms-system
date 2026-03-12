@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import PageHero from '../../components/PageHero'
 import {
   BookOpen, Layers, ClipboardList, BarChart3,
   CheckCircle2, AlertTriangle, Plus,
@@ -157,6 +158,13 @@ export default function AcademicsGradebookPage() {
 
   return (
     <div className="p-6 space-y-5">
+      <PageHero
+        badge="ACADEMICS"
+        badgeColor="emerald"
+        title="Gradebook"
+        subtitle="Record and manage student marks and grades"
+        icon="📖"
+      />
 
       {/* Header */}
       <div>

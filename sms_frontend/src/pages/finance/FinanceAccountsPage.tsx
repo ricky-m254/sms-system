@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { useAuthStore } from '../../store/auth'
+import PageHero from '../../components/PageHero'
 
 type AccountingAccount = {
   id: number

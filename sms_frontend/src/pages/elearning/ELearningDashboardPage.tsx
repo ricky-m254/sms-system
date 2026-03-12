@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, Play, Users, Monitor, ChevronRight, Clock, Star, TrendingUp, Award, Zap } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 const SUBJECTS = [
   { code: 'MTH', name: 'Mathematics', icon: '∑', from: '#1d4ed8', to: '#3b82f6', students: 156, courses: 8, progress: 72 },

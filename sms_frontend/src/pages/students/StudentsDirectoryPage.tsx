@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client'
 import { Link } from 'react-router-dom'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadBlob, extractFilename } from '../../utils/download'
+import PageHero from '../../components/PageHero'
 
 type Student = {
   id: number

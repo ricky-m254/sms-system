@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, ChevronDown, ChevronUp, Pill } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import PageHero from '../../components/PageHero'
 
 interface Student { id: number; first_name: string; last_name: string; admission_number: string; }
 interface Prescription {
@@ -116,6 +117,13 @@ export default function DispensaryVisitsPage() {
 
   return (
     <div className="space-y-5">
+      <PageHero
+        badge="DISPENSARY"
+        badgeColor="rose"
+        title="Sick Bay Visits"
+        subtitle="Student and staff medical visit records"
+        icon="💊"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">Patient Visits</h1>
         <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import PageHero from '../../components/PageHero'
 
 type Review = {
   id: number
@@ -118,9 +119,9 @@ export default function AdmissionsReviewsPage() {
     <div className="space-y-6">
       <PageHero
         badge="ADMISSIONS"
-        badgeColor="violet"
+        badgeColor="amber"
         title="Application Reviews"
-        subtitle="Application Reviews management and overview."
+        subtitle="Review and shortlist admission applications"
         icon="📋"
       />
 

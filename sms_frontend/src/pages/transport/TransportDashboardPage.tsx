@@ -5,6 +5,7 @@ import {
   RefreshCw, RadioTower, Fuel, CheckCircle2,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import PageHero from '../../components/PageHero'
 
 interface Stats {
   total_vehicles: number

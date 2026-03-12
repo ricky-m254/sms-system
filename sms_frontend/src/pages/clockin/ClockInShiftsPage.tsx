@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Shift = {
   id: number
@@ -76,6 +77,13 @@ export default function ClockInShiftsPage() {
 
   return (
     <div className="space-y-6 font-sans text-slate-100">
+      <PageHero
+        badge="CLOCK-IN"
+        badgeColor="emerald"
+        title="Shifts"
+        subtitle="Define work shifts and schedule templates"
+        icon="⏰"
+      />
       <header className="rounded-2xl glass-panel p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-display font-semibold">Shift Schedule</h1>

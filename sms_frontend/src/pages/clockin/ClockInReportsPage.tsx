@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type LogEntry = {
   id: number
@@ -46,6 +47,13 @@ export default function ClockInReportsPage() {
 
   return (
     <div className="space-y-6 font-sans text-slate-100">
+      <PageHero
+        badge="CLOCK-IN"
+        badgeColor="emerald"
+        title="Attendance Reports"
+        subtitle="Staff and student attendance analytics"
+        icon="⏰"
+      />
       <header className="rounded-2xl glass-panel p-6">
         <h1 className="text-xl font-display font-semibold">Attendance Logs & Reports</h1>
         <p className="mt-2 text-sm text-slate-400">Detailed biometric scan logs for audit and compliance.</p>

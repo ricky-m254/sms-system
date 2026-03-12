@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { buildPrintDocument, openPrintWindow, type TenantPrintMeta } from '../../utils/printTemplate'
 import { downloadBlob, extractFilename } from '../../utils/download'
+import PageHero from '../../components/PageHero'
 
 type StudentsSummary = {
   students_active?: number
@@ -318,6 +319,13 @@ export default function StudentsReportsPage() {
       const moduleReport = response.data
       const html = `
         <div class="grid">
+      <PageHero
+        badge="STUDENTS"
+        badgeColor="sky"
+        title="Student Reports"
+        subtitle="Comprehensive academic and behavioral reports"
+        icon="👩‍🎓"
+      />
           <div class="card">
             <h3>Totals</h3>
             <p>Active Students: ${moduleReport.students_active}</p>

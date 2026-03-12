@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type AcademicYear = { id: number; name: string; start_date: string; end_date: string }
 
@@ -641,6 +642,13 @@ export default function FinanceAuditReportsPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Audit Reports"
+        subtitle="IPSAS-compliant financial audit trail and reports"
+        icon="💰"
+      />
       <header className="col-span-12 rounded-2xl glass-panel p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Finance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Audit Reports</h1>

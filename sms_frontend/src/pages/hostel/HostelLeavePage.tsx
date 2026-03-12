@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { User, CheckCircle2, XCircle, Clock, Plus, Pencil, Trash2, X } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface Leave {
   id: number
@@ -114,6 +115,13 @@ export default function HostelLeavePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HOSTEL"
+        badgeColor="sky"
+        title="Hostel Leave"
+        subtitle="Student exeat and weekend leave management"
+        icon="🏠"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white tracking-tight">Hostel Leave Requests</h1>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
+import PageHero from '../../components/PageHero'
 
 type AcademicYear = {
   id: number
@@ -327,6 +328,13 @@ export default function AcademicsStructurePage() {
 
   return (
     <div className="grid grid-cols-12 gap-6">
+      <PageHero
+        badge="ACADEMICS"
+        badgeColor="emerald"
+        title="Academic Structure"
+        subtitle="Terms, years, and institutional hierarchy"
+        icon="📖"
+      />
       <header className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

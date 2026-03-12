@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Club = { id: number; name: string; club_type: string; description: string; meeting_day: string; meeting_time: string; is_active: boolean }
 

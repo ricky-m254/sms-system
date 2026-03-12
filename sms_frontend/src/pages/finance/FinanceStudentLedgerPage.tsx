@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type Student = { id: number; first_name: string; last_name: string; admission_number: string }
 
@@ -240,6 +241,13 @@ export default function FinanceStudentLedgerPage() {
           ← Back to Finance
         </button>
         <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Student Ledger"
+        subtitle="Per-student fee account and transaction history"
+        icon="💰"
+      />
           <div>
             <h1 className="text-2xl font-display font-bold text-white">Student Account Ledger</h1>
             <p className="mt-1 text-sm text-slate-400">Full financial statement — invoices, payments, adjustments, carry-forwards</p>

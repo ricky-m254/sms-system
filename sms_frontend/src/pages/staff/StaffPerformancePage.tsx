@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type ObservationRow = { id: number; staff_name: string; observation_date: string; overall_rating: string | null; status: string; strengths: string; areas_improvement: string; recommendations: string }
@@ -121,6 +122,13 @@ export default function StaffPerformancePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Performance"
+        subtitle="Annual appraisals and professional goals"
+        icon="👤"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Performance</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Observations and Appraisals</h1>

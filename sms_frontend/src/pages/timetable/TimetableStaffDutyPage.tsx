@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 
 type Employee = { id: number; first_name: string; last_name: string; employee_id: string }
 type StaffDutySlot = {
@@ -80,6 +81,13 @@ export default function TimetableStaffDutyPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="TIMETABLE"
+        badgeColor="violet"
+        title="Staff Duty Rota"
+        subtitle="Supervision, duty and extra-curricular rota"
+        icon="📅"
+      />
       <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold text-emerald-400">Staff Duties</h1>

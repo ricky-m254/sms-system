@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type VoteHead = {
   id: number
@@ -97,6 +98,13 @@ export default function FinanceVoteHeadsPage() {
 
   return (
     <section className="col-span-12 grid grid-cols-12 gap-6">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="Vote Heads"
+        subtitle="Budget categories and expenditure codes"
+        icon="💰"
+      />
       <header className="col-span-12 rounded-2xl glass-panel p-6">
         <button
           onClick={() => navigate('/modules/finance')}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type RegistryEntry = {
   id: number
@@ -119,6 +120,13 @@ export default function ClockInRegistryPage() {
 
   return (
     <div className="space-y-6 font-sans">
+      <PageHero
+        badge="CLOCK-IN"
+        badgeColor="emerald"
+        title="Registry"
+        subtitle="Full attendance log and time records"
+        icon="⏰"
+      />
       <header className="rounded-2xl glass-panel p-6 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-display font-semibold text-slate-100">Person Registry</h1>

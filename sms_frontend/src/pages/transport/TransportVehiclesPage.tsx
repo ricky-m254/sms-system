@@ -68,13 +68,10 @@ export default function TransportVehiclesPage() {
     <div className="space-y-6">
       <PageHero
         badge="TRANSPORT"
-        badgeColor="sky"
-        title="Vehicle Fleet"
-        subtitle="Manage school vehicles, maintenance schedules, and fleet assignments."
+        badgeColor="amber"
+        title="Vehicles"
+        subtitle="School vehicle fleet management"
         icon="🚌"
-        actions={
-          <button onClick={openCreate} className="rounded-xl bg-sky-500/20 border border-sky-500/40 px-4 py-2 text-sm font-semibold text-sky-200 hover:bg-sky-500/30 transition">+ Add Vehicle</button>
-        }
       />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}

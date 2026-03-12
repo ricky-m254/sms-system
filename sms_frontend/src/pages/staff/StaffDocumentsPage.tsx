@@ -3,6 +3,7 @@ import { apiClient } from '../../api/client'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type StaffRow = { id: number; full_name: string; staff_id: string }
 type DocumentRow = { id: number; staff: number; staff_name: string; title: string; document_type: string; verification_status: string; expiry_date: string | null; file: string; file_size: number; mime_type: string }
@@ -89,6 +90,13 @@ export default function StaffDocumentsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="STAFF"
+        badgeColor="blue"
+        title="Staff Documents"
+        subtitle="Contracts, certificates and official documents"
+        icon="👤"
+      />
       <section className="rounded-2xl glass-panel p-5">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Documents</p>
         <h1 className="mt-2 text-2xl font-display font-semibold">Upload, Verify, and Track Expiring Records</h1>

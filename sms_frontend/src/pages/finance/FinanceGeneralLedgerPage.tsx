@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { apiClient } from '../../api/client'
 import BackButton from '../../components/BackButton'
 import PrintButton from '../../components/PrintButton'
+import PageHero from '../../components/PageHero'
 
 type Transaction = {
   id: number
@@ -97,6 +98,13 @@ export default function FinanceGeneralLedgerPage() {
       <header className="col-span-12 rounded-2xl glass-panel p-6">
         <BackButton to="/modules/finance" label="Back to Finance" />
         <div className="flex flex-wrap items-start justify-between gap-4">
+      <PageHero
+        badge="FINANCE"
+        badgeColor="emerald"
+        title="General Ledger"
+        subtitle="Full double-entry accounting ledger"
+        icon="💰"
+      />
           <div>
             <h1 className="text-2xl font-display font-bold text-white">General Ledger</h1>
             <p className="mt-1 text-sm text-slate-400">Chronological view of all financial transactions</p>

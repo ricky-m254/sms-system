@@ -73,14 +73,9 @@ export default function CafeteriaMenuPage() {
       <PageHero
         badge="CAFETERIA"
         badgeColor="teal"
-        title="Weekly Menus"
-        subtitle="Plan and publish the weekly cafeteria schedule."
+        title="Cafeteria Menu"
+        subtitle="Daily and weekly meal menus"
         icon="🍽️"
-        actions={
-          <button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition">
-            {showForm ? 'Cancel' : '+ New Menu'}
-          </button>
-        }
       />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{notice}</div> : null}

@@ -5,6 +5,7 @@ import { normalizePaginatedResponse } from '../../api/pagination'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { extractApiErrorMessage } from '../../utils/forms'
 import { useCurrentAcademicContext } from '../../hooks/useCurrentAcademicContext'
+import PageHero from '../../components/PageHero'
 
 type FeeAssignment = {
   id: number

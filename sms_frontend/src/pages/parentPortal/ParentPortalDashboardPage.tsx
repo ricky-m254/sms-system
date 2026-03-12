@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import PageHero from '../../components/PageHero'
 import {
   GraduationCap, Activity, DollarSign, Calendar, Bell,
   CheckCircle2, AlertCircle, ChevronRight, Heart, BookOpen,

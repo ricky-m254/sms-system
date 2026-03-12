@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { publicApiClient } from '../../api/publicClient'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage } from '../../utils/forms'
+import PageHero from '../../components/PageHero'
 
 type Tenant = { id: number; name: string }
 type ImpersonationSession = {

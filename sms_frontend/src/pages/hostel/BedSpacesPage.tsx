@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import { Search, Plus, CheckCircle2, XCircle, Pencil, Trash2, X } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 interface BedSpace {
   id: number
@@ -100,6 +101,13 @@ export default function BedSpacesPage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="HOSTEL"
+        badgeColor="sky"
+        title="Bed Spaces"
+        subtitle="Manage dormitory rooms and bed allocations"
+        icon="🏠"
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-white tracking-tight">Bed Spaces</h1>

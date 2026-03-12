@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { apiClient } from '../../api/client'
 import PrintButton from '../../components/PrintButton'
 import { Plus, Pencil, Trash2, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import PageHero from '../../components/PageHero'
 
 type Session = { id: number; name: string }
 type Subject = { id: number; name: string }
@@ -93,6 +94,13 @@ export default function ExaminationsPapersPage() {
 
   return (
     <div className="p-6 space-y-5">
+      <PageHero
+        badge="EXAMINATIONS"
+        badgeColor="amber"
+        title="Exam Papers"
+        subtitle="Manage and track all examination papers"
+        icon="📝"
+      />
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>

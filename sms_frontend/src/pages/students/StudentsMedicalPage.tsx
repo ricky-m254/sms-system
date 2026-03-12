@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadBlob, extractFilename } from '../../utils/download'
+import PageHero from '../../components/PageHero'
 
 const tabs = ['Profiles', 'Immunizations', 'Clinic Visits']
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import PageHero from '../../components/PageHero'
 
 type Student = { id: number; full_name: string; admission_number: string }
 type Award = { id: number; student: number; student_name?: string; award_name: string; category: string; awarded_by: string; award_date: string; description: string }
@@ -65,10 +66,10 @@ export default function SportsAwardsPage() {
   return (
     <div className="space-y-6">
       <PageHero
-        badge="SPORTS & CO-CURRICULAR"
-        badgeColor="amber"
-        title="Student Awards"
-        subtitle="Record and track excellence in sports, academics, arts and leadership."
+        badge="SPORTS"
+        badgeColor="orange"
+        title="Awards & Honours"
+        subtitle="Trophies, certificates and sports recognition"
         icon="🏆"
       />
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}

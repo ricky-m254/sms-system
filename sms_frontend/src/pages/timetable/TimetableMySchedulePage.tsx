@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { useAuthStore } from '../../store/auth'
+import PageHero from '../../components/PageHero'
 
 type TimetableSlot = {
   id: number
@@ -63,6 +64,13 @@ export default function TimetableMySchedulePage() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        badge="TIMETABLE"
+        badgeColor="violet"
+        title="My Schedule"
+        subtitle="Personal teaching timetable and assignments"
+        icon="📅"
+      />
       <header className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-display font-semibold">My Schedule</h1>
