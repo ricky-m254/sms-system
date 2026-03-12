@@ -1001,17 +1001,6 @@ export default function StudentsAdmissionsPage() {
         </div>
       ) : null}
 
-      <ConfirmDialog
-        open={pendingDocumentDeleteId !== null}
-        title="Delete application document"
-        description="This document will be removed from the application. Continue?"
-        confirmLabel="Confirm delete"
-        isProcessing={isDeletingDocument}
-        error={null}
-        onConfirm={() => void confirmApplicationDocumentDelete()}
-        onCancel={() => setPendingDocumentDeleteId(null)}
-      />
-
       {selectedApplication ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
           <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-slate-950 p-6">
@@ -1239,6 +1228,17 @@ export default function StudentsAdmissionsPage() {
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={pendingDocumentDeleteId !== null}
+        title="Delete application document"
+        description="This document will be removed from the application. Continue?"
+        confirmLabel="Confirm delete"
+        isProcessing={isDeletingDocument}
+        error={null}
+        onConfirm={() => void confirmApplicationDocumentDelete()}
+        onCancel={() => setPendingDocumentDeleteId(null)}
+      />
     </div>
   )
 }

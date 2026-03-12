@@ -284,7 +284,18 @@ export default function StudentsDirectoryPage() {
                 <tr key={student.id} className="bg-slate-950/60">
                   <td className="px-4 py-3 font-semibold">{student.admission_number}</td>
                   <td className="px-4 py-3">
-                    {student.first_name} {student.last_name}
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/[0.07] bg-[#0d1421]">
+                        {student.photo ? (
+                          <img src={student.photo} alt={student.first_name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold text-slate-400">
+                            {(student.first_name?.[0] ?? '') + (student.last_name?.[0] ?? '')}
+                          </div>
+                        )}
+                      </div>
+                      <span>{student.first_name} {student.last_name}</span>
+                    </div>
                   </td>
                   <td className="px-4 py-3">{student.gender}</td>
                   <td className="px-4 py-3">{student.class_name ?? '--'}</td>
