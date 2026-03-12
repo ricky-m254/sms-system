@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2, Globe, BookOpen } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2, Globe, BookOpen, Library, ArrowRight, CheckCircle, Clock } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
 
-type TabId = 'all' | 'videos' | 'ebooks' | 'papers' | 'platforms'
+type TabId = 'all' | 'videos' | 'ebooks' | 'papers' | 'platforms' | 'library'
 
 interface Material {
   id: number
@@ -17,6 +18,48 @@ interface Material {
   is_active: boolean
   created_at: string
   course: number
+}
+
+interface LibraryBook {
+  id: number
+  title: string
+  subtitle: string
+  authors: string
+  publisher: string
+  publication_year: number | null
+  isbn: string
+  resource_type: string
+  subjects: string
+  language: string
+  category_name: string
+  total_copies: number
+  available_copies: number
+  is_active: boolean
+}
+
+const SUBJECT_COLORS: Record<string, { from: string; to: string; icon: string }> = {
+  'Mathematics':    { from: '#1d4ed8', to: '#3b82f6', icon: '📐' },
+  'Biology':        { from: '#166534', to: '#22c55e', icon: '🧬' },
+  'Chemistry':      { from: '#581c87', to: '#a855f7', icon: '⚗️' },
+  'Physics':        { from: '#0c4a6e', to: '#0ea5e9', icon: '⚡' },
+  'English':        { from: '#065f46', to: '#10b981', icon: '📖' },
+  'Kiswahili':      { from: '#92400e', to: '#f59e0b', icon: '🗣️' },
+  'History':        { from: '#7c2d12', to: '#f97316', icon: '🏛️' },
+  'Geography':      { from: '#14532d', to: '#84cc16', icon: '🌍' },
+  'Computer':       { from: '#1e1b4b', to: '#6366f1', icon: '💻' },
+  'Business':       { from: '#1e3a5f', to: '#64748b', icon: '💼' },
+  'Agriculture':    { from: '#052e16', to: '#16a34a', icon: '🌱' },
+  'Literature':     { from: '#065f46', to: '#10b981', icon: '📚' },
+  'Fiction':        { from: '#713f12', to: '#eab308', icon: '📕' },
+  'Science':        { from: '#0c4a6e', to: '#22d3ee', icon: '🔬' },
+}
+
+function getBookColors(book: LibraryBook) {
+  const text = `${book.subjects} ${book.resource_type} ${book.category_name}`.toLowerCase()
+  for (const [key, v] of Object.entries(SUBJECT_COLORS)) {
+    if (text.includes(key.toLowerCase())) return v
+  }
+  return { from: '#1e293b', to: '#475569', icon: '📖' }
 }
 
 const SUBJECTS = ['All Subjects', 'Mathematics', 'English', 'Kiswahili', 'Biology', 'Chemistry', 'Physics', 'History', 'Geography', 'Computer Studies', 'Business']
@@ -130,11 +173,16 @@ function VideoCard({ v }: { v: typeof VIDEOS[0] }) {
 }
 
 export default function ELearningMaterialsPage() {
+  const navigate = useNavigate()
   const [materials, setMaterials] = useState<Material[]>([])
   const [loadingMaterials, setLoadingMaterials] = useState(true)
+  const [libraryBooks, setLibraryBooks] = useState<LibraryBook[]>([])
+  const [loadingLibrary, setLoadingLibrary] = useState(true)
   const [tab, setTab] = useState<TabId>('all')
   const [subject, setSubject] = useState('All Subjects')
   const [search, setSearch] = useState('')
+  const [libSearch, setLibSearch] = useState('')
+  const [libFilter, setLibFilter] = useState<'all' | 'available'>('all')
 
   useEffect(() => {
     apiClient.get('elearning/materials/')
@@ -144,6 +192,14 @@ export default function ELearningMaterialsPage() {
       })
       .catch(() => setMaterials([]))
       .finally(() => setLoadingMaterials(false))
+
+    apiClient.get('library/resources/?limit=300')
+      .then(r => {
+        const data = r.data
+        setLibraryBooks(Array.isArray(data) ? data : data.results ?? [])
+      })
+      .catch(() => setLibraryBooks([]))
+      .finally(() => setLoadingLibrary(false))
   }, [])
 
   const matchesSearch = (title: string, subj: string) =>
@@ -155,6 +211,7 @@ export default function ELearningMaterialsPage() {
   const showPapers    = tab === 'all' || tab === 'papers'
   const showPlatforms = tab === 'all' || tab === 'platforms'
   const showSchoolDocs = tab === 'all'
+  const showLibrary   = tab === 'all' || tab === 'library'
 
   const filteredVideos = VIDEOS.filter(v => matchesSearch(v.title, v.subject))
   const filteredEbooks = EBOOKS.filter(b => matchesSearch(b.title, b.subject))
@@ -165,19 +222,30 @@ export default function ELearningMaterialsPage() {
     (search === '' || m.title.toLowerCase().includes(search.toLowerCase()) || m.course_name.toLowerCase().includes(search.toLowerCase()))
   )
 
+  const filteredLibrary = libraryBooks.filter(b =>
+    b.is_active &&
+    (libFilter === 'all' || b.available_copies > 0) &&
+    (libSearch === '' ||
+      b.title.toLowerCase().includes(libSearch.toLowerCase()) ||
+      (b.authors || '').toLowerCase().includes(libSearch.toLowerCase()) ||
+      (b.subjects || '').toLowerCase().includes(libSearch.toLowerCase()) ||
+      (b.category_name || '').toLowerCase().includes(libSearch.toLowerCase()))
+  )
+
   const openMaterial = (m: Material) => {
     const url = m.link_url || m.file_url || m.content
     if (url && url.startsWith('http')) window.open(url, '_blank', 'noopener,noreferrer')
   }
 
-  const totalCount = filteredVideos.length + filteredEbooks.length + filteredMaterials.length + filteredPapers.length + FREE_PLATFORMS.length
+  const totalCount = filteredVideos.length + filteredEbooks.length + filteredMaterials.length + filteredPapers.length + FREE_PLATFORMS.length + libraryBooks.length
 
   const TABS = [
-    { id: 'all' as TabId,       label: 'All',          count: totalCount },
-    { id: 'videos' as TabId,    label: 'Video Lessons', count: VIDEOS.length },
-    { id: 'ebooks' as TabId,    label: 'Free E-Books',  count: EBOOKS.length },
-    { id: 'papers' as TabId,    label: 'Past Papers',   count: PAPERS.length },
-    { id: 'platforms' as TabId, label: 'Platforms',     count: FREE_PLATFORMS.length },
+    { id: 'all' as TabId,       label: 'All',            count: totalCount },
+    { id: 'videos' as TabId,    label: 'Video Lessons',  count: VIDEOS.length },
+    { id: 'ebooks' as TabId,    label: 'Free E-Books',   count: EBOOKS.length },
+    { id: 'papers' as TabId,    label: 'Past Papers',    count: PAPERS.length },
+    { id: 'platforms' as TabId, label: 'Platforms',      count: FREE_PLATFORMS.length },
+    { id: 'library' as TabId,   label: 'Library Books',  count: libraryBooks.length },
   ]
 
   return (
@@ -433,6 +501,163 @@ export default function ELearningMaterialsPage() {
                 </div>
               </a>
             ))}
+          </div>
+        </section>
+      )}
+
+      {showLibrary && (
+        <section>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 flex-1">
+              <Library size={16} className="text-emerald-400" />
+              <h2 className="text-base font-bold text-white">Library Books</h2>
+              <span className="text-xs text-slate-500">
+                {loadingLibrary ? 'Loading...' : `(${filteredLibrary.length} of ${libraryBooks.length} books)`}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setLibFilter('all')}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={libFilter === 'all'
+                  ? { background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }
+                  : { background: 'rgba(255,255,255,0.04)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.06)' }}
+              >All Books</button>
+              <button
+                onClick={() => setLibFilter('available')}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={libFilter === 'available'
+                  ? { background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }
+                  : { background: 'rgba(255,255,255,0.04)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <CheckCircle size={11} className="inline mr-1" />Available Now
+              </button>
+              <button
+                onClick={() => navigate('/modules/library/catalog')}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all hover:bg-emerald-500/20"
+                style={{ background: 'rgba(255,255,255,0.04)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}
+              >
+                Full Catalog <ArrowRight size={11} />
+              </button>
+            </div>
+          </div>
+
+          {tab === 'library' && (
+            <div className="mb-4 relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                value={libSearch}
+                onChange={e => setLibSearch(e.target.value)}
+                placeholder="Search by title, author, subject or category…"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:ring-1 focus:ring-emerald-500/40"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              />
+            </div>
+          )}
+
+          {loadingLibrary ? (
+            <div className="flex items-center justify-center py-16 gap-3">
+              <Loader2 className="animate-spin text-emerald-400" size={22} />
+              <span className="text-sm text-slate-400">Fetching library catalog…</span>
+            </div>
+          ) : filteredLibrary.length === 0 ? (
+            <div className="rounded-2xl flex flex-col items-center justify-center py-14 gap-3"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <Library size={36} className="text-slate-600" />
+              <p className="text-sm text-slate-400">
+                {libraryBooks.length === 0 ? 'No library books found in the catalog' : 'No books match your search'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredLibrary.map(book => {
+                const colors = getBookColors(book)
+                const isAvailable = book.available_copies > 0
+                return (
+                  <div
+                    key={book.id}
+                    className="rounded-2xl flex flex-col overflow-hidden group transition-all hover:scale-[1.02]"
+                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+                  >
+                    <div
+                      className="h-28 flex items-center justify-center text-4xl relative"
+                      style={{ background: `linear-gradient(135deg, ${colors.from}, ${colors.to})` }}
+                    >
+                      <span className="drop-shadow-lg">{colors.icon}</span>
+                      <div className="absolute top-2 right-2">
+                        {isAvailable ? (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                            style={{ background: 'rgba(0,0,0,0.45)', color: '#34d399' }}>
+                            <CheckCircle size={9} /> {book.available_copies} avail.
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                            style={{ background: 'rgba(0,0,0,0.45)', color: '#fb923c' }}>
+                            <Clock size={9} /> Out
+                          </span>
+                        )}
+                      </div>
+                      {book.resource_type && book.resource_type !== 'Book' && (
+                        <div className="absolute bottom-2 left-2">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold"
+                            style={{ background: 'rgba(0,0,0,0.45)', color: '#e2e8f0' }}>
+                            {book.resource_type}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 flex flex-col gap-1.5 flex-1">
+                      <p className="text-sm font-bold text-white leading-snug line-clamp-2 group-hover:text-emerald-300 transition-colors">
+                        {book.title}
+                      </p>
+                      {book.authors && (
+                        <p className="text-xs text-slate-400 truncate">{book.authors}</p>
+                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                        {book.category_name && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                            style={{ background: `${colors.from}30`, color: colors.to }}>
+                            {book.category_name}
+                          </span>
+                        )}
+                        {book.publication_year && (
+                          <span className="text-[10px] text-slate-500">{book.publication_year}</span>
+                        )}
+                      </div>
+                      {book.subjects && (
+                        <p className="text-[10px] text-slate-500 truncate">{book.subjects}</p>
+                      )}
+                      <div className="mt-auto pt-2">
+                        <button
+                          onClick={() => navigate('/modules/library/catalog')}
+                          className="w-full py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
+                          style={isAvailable
+                            ? { background: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)' }
+                            : { background: 'rgba(255,255,255,0.04)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <Library size={11} />
+                          {isAvailable ? 'Borrow Book' : 'Reserve Book'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="mt-4 rounded-xl px-4 py-3 text-xs text-slate-400 flex items-center gap-2"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <Library size={12} className="text-emerald-400 flex-shrink-0" />
+            <span>
+              Showing live data from the <strong className="text-slate-300">school library catalog</strong>.
+              Click <strong className="text-slate-300">Borrow Book</strong> or{' '}
+              <button
+                onClick={() => navigate('/modules/library/catalog')}
+                className="text-emerald-400 underline hover:text-emerald-300 transition-colors"
+              >Full Catalog</button>{' '}
+              to issue or reserve a copy.
+            </span>
           </div>
         </section>
       )}
