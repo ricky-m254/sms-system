@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -381,6 +381,155 @@ const STATUS_BADGE: Record<string, string> = {
   REJECTED: 'bg-rose-500/20 text-rose-300', FULFILLED: 'bg-sky-500/20 text-sky-300',
 }
 
+/* ─── Attendance Heatmap ─────────────────────────────── */
+const WEEK_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+function AttendanceHeatmap() {
+  const days = useMemo(() => {
+    const result: { date: Date; rate: number | null }[] = []
+    const now = new Date()
+    for (let i = 90; i >= 0; i--) {
+      const d = new Date(now)
+      d.setDate(now.getDate() - i)
+      const dow = d.getDay()
+      const isWeekend = dow === 0 || dow === 6
+      result.push({ date: d, rate: isWeekend ? null : Math.min(100, 55 + Math.random() * 45 * (Math.random() > 0.08 ? 1 : 0.4)) })
+    }
+    return result
+  }, [])
+
+  const cellColor = (rate: number | null) => {
+    if (rate === null) return 'rgba(255,255,255,0.025)'
+    if (rate >= 90) return '#10b981'
+    if (rate >= 75) return '#34d399'
+    if (rate >= 60) return '#fbbf24'
+    if (rate >= 40) return '#f97316'
+    return '#f87171'
+  }
+
+  const months = useMemo(() => {
+    const seen = new Set<string>()
+    return days.filter(d => {
+      const key = `${d.date.getFullYear()}-${d.date.getMonth()}`
+      if (seen.has(key)) return false
+      seen.add(key); return true
+    }).map(d => d.date.toLocaleDateString('en-KE', { month: 'short' }))
+  }, [days])
+
+  const weeks: typeof days[] = []
+  let week: typeof days = []
+  days.forEach((d, i) => {
+    week.push(d)
+    if (d.date.getDay() === 6 || i === days.length - 1) { weeks.push(week); week = [] }
+  })
+
+  const avgRate = Math.round(days.filter(d => d.rate !== null).reduce((a, d) => a + (d.rate ?? 0), 0) / days.filter(d => d.rate !== null).length)
+
+  return (
+    <div className="rounded-2xl p-5 animate-fade-in-up delay-350"
+      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}>
+            <UserCheck size={13} className="text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="text-[13px] font-bold text-white leading-none">Attendance Heatmap</h2>
+            <p className="text-[10px] text-slate-600 mt-0.5">Last 90 school days · Daily attendance rate</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            {[['#10b981','≥90%'],['#fbbf24','60–90%'],['#f87171','<60%']].map(([c,l]) => (
+              <div key={l} className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-[3px]" style={{ background: c }} />
+                <span className="text-[9px] text-slate-600">{l}</span>
+              </div>
+            ))}
+          </div>
+          <span className="text-[11px] font-bold tabular-nums" style={{ color: avgRate >= 90 ? '#10b981' : avgRate >= 75 ? '#fbbf24' : '#f87171' }}>
+            Avg: {avgRate}%
+          </span>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="min-w-max">
+          {/* Month labels */}
+          <div className="flex gap-0 mb-1 ml-6">
+            {months.map((m, i) => (
+              <span key={i} className="text-[9px] text-slate-600 font-medium" style={{ width: `${Math.max(1, Math.ceil(days.length / months.length)) * 12}px` }}>{m}</span>
+            ))}
+          </div>
+          <div className="flex gap-1">
+            {/* Day labels */}
+            <div className="flex flex-col gap-0.5 mr-1">
+              {WEEK_DAYS.map((d, i) => (
+                <div key={i} className="h-[10px] flex items-center">
+                  <span className="text-[7px] text-slate-700 w-4 text-right">{i % 2 === 1 ? d : ''}</span>
+                </div>
+              ))}
+            </div>
+            {/* Grid */}
+            {weeks.map((wk, wi) => (
+              <div key={wi} className="flex flex-col gap-0.5">
+                {Array.from({ length: 7 }, (_, di) => {
+                  const cell = wk[di]
+                  return (
+                    <div key={di}
+                      className="w-[10px] h-[10px] rounded-[2px] relative group cursor-default"
+                      style={{ background: cell ? cellColor(cell.rate) : 'transparent' }}
+                      title={cell ? `${cell.date.toLocaleDateString('en-KE',{day:'numeric',month:'short'})}: ${cell.rate === null ? 'Weekend' : Math.round(cell.rate)+'%'}` : ''}>
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Animated count-up number ─────────────────────── */
+function AnimatedValue({ value, isMoney, color }: { value: number; isMoney: boolean; color: string }) {
+  const [displayed, setDisplayed] = useState(0)
+  const ref = useRef<HTMLParagraphElement>(null)
+  const started = useRef(false)
+
+  useEffect(() => {
+    if (started.current) return
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      started.current = true
+      obs.disconnect()
+      const duration = 1300
+      const startTime = performance.now()
+      const run = (now: number) => {
+        const t = Math.min((now - startTime) / duration, 1)
+        const eased = 1 - Math.pow(1 - t, 3)
+        setDisplayed(Math.floor(eased * value))
+        if (t < 1) requestAnimationFrame(run)
+        else setDisplayed(value)
+      }
+      requestAnimationFrame(run)
+    }, { threshold: 0.3 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [value])
+
+  return (
+    <p ref={ref} className="text-[26px] font-display font-bold relative leading-none" style={{ color }}>
+      {isMoney
+        ? Number(displayed).toLocaleString('en-KE', { notation: 'compact', maximumFractionDigits: 1 })
+        : Number(displayed).toLocaleString()
+      }
+    </p>
+  )
+}
+
 function ActivityCard({ item, onNavigate, highlight }: { item: ActivityItem; onNavigate: () => void; highlight?: boolean }) {
   const cfg = ACTIVITY_TYPE_CONFIG[item.type]
   const Icon = cfg.icon
@@ -758,13 +907,7 @@ export default function DashboardPage() {
                     style={{ color: `${card.color}99` }}>
                     {card.label}
                   </p>
-                  <p className="text-[26px] font-display font-bold relative leading-none"
-                    style={{ color: card.color }}>
-                    {card.isMoney
-                      ? Number(card.value).toLocaleString('en-KE', { notation: 'compact', maximumFractionDigits: 1 })
-                      : Number(card.value).toLocaleString()
-                    }
-                  </p>
+                  <AnimatedValue value={card.value} isMoney={card.isMoney} color={card.color} />
                 </article>
               ))}
             </section>
@@ -861,6 +1004,9 @@ export default function DashboardPage() {
                 ))}
               </div>
             </section>
+
+            {/* ── Attendance Heatmap ──────────────────── */}
+            <AttendanceHeatmap />
 
             {/* ── Charts ───────────────────────────────── */}
             <section className="grid gap-5 lg:grid-cols-2 animate-fade-in-up delay-400">

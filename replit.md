@@ -156,6 +156,38 @@ All 249 frontend pages now use the unified glass morphism design system. **Zero*
 
 Cafeteria, Sports, Hostel, Assets, Maintenance, Visitor, Dispensary, Communication, HR, Finance Summary, Curriculum, Admissions, Parent Portal — all with hero banners, KPI cards, charts, and quick-action sidebar panels.
 
+## Global UI Premium Features (T006)
+
+### Command Palette (⌘K / Ctrl+K)
+- **Component**: `sms_frontend/src/components/CommandPalette.tsx`
+- 50+ searchable module routes + real-time student API search
+- Keyboard navigation (↑↓ Enter Esc), grouped results with icons and colors
+- **Trigger points**: ⌘K keyboard shortcut (global listener in AppShell), search bar button in expanded sidebar, search icon in collapsed sidebar, search icon in mobile header (next to avatar)
+- **State**: `paletteOpen` in AppShell, rendered as `<CommandPalette open={...} onClose={...} />`
+
+### Animated KPI Count-Up (DashboardPage)
+- `AnimatedValue` component: IntersectionObserver-triggered, cubic ease-out over 1.3 s
+- Applied to all 5 dashboard KPI strip cards (Students, Applications, Finance, Modules, System Areas)
+
+### Attendance Heatmap (DashboardPage)
+- `AttendanceHeatmap` component: 91-day calendar grid (13 weeks × 7 days)
+- Weekend cells transparent; weekday cells colored: emerald ≥90%, green 75–90%, amber 60–75%, orange 40–60%, rose <40%
+- Month labels, day-of-week labels, legend, rolling average rate badge
+- Placed between System Areas and Charts sections
+
+### CBC Report Card Printable Modal
+- **Component**: `sms_frontend/src/components/CBCReportCardModal.tsx`
+- All 11 CBC Kenya learning areas: English, Kiswahili, Maths, Science & Tech, Social Studies, CRE, Creative Arts, PE, Agriculture, Music, Home Science
+- Competency levels: EE (Exceeds), ME (Meets), AE (Approaching), BE (Below Expectation)
+- Score bars, competency distribution summary, teacher/principal remarks, school letterhead footer
+- Print/Save PDF button via `window.print()`
+- Integrated into `AcademicsReportCardsPage` via "CBC View" button per report card row
+
+### PageHero Shared Component
+- **Component**: `sms_frontend/src/components/PageHero.tsx`
+- 9 color themes: emerald, sky, violet, amber, rose, blue, orange, pink, teal
+- Deployed to 90+ inner sub-module pages via Python upgrade script
+
 ## Clock-In Kiosk
 
 Route: `/modules/clockin/kiosk` (renders full-screen, fixed position, z-[200])

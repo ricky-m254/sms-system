@@ -3,13 +3,14 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { apiClient } from '../api/client'
 import DemoBanner from './DemoBanner'
+import CommandPalette from './CommandPalette'
 import {
   BookOpen, Building2, ChevronDown, ChevronRight,
   GraduationCap, LayoutDashboard, LogOut, MessageSquare,
   Settings, Shield, Users, Activity, Trophy,
   HeartPulse, Bus, UserCheck, DollarSign, BookMarked, Home,
   FlaskConical, CalendarDays, Microscope, Monitor, BarChart3, Zap,
-  PanelLeftClose, PanelLeftOpen, Menu, X, MoreHorizontal,
+  PanelLeftClose, PanelLeftOpen, Menu, X, MoreHorizontal, Search,
 } from 'lucide-react'
 
 interface NavGroup {
@@ -244,6 +245,7 @@ export default function AppShell() {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(['student', 'academic']))
   const [branding, setBranding] = useState<SchoolBranding | null>(null)
   const [cursor, setCursor] = useState({ x: -2000, y: -2000 })
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { username, role, logout } = useAuthStore(s => ({ username: s.username, role: s.role, logout: s.logout }))
@@ -256,6 +258,18 @@ export default function AppShell() {
 
   /* Close drawer on route change */
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
+
+  /* ⌘K / Ctrl+K — open command palette */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setPaletteOpen(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   /* Lock body scroll when drawer is open */
   useEffect(() => {
@@ -364,6 +378,11 @@ export default function AppShell() {
               className={`w-full flex justify-center items-center rounded-xl py-2.5 transition-all ${location.pathname === '/dashboard' ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'}`}>
               <LayoutDashboard size={15} className={location.pathname === '/dashboard' ? 'text-white' : 'text-slate-500'} />
             </button>
+            {/* Search / Command Palette trigger */}
+            <button onClick={() => setPaletteOpen(true)} title="Search (⌘K)"
+              className="w-full flex justify-center items-center rounded-xl py-2.5 transition-all hover:bg-white/[0.04]">
+              <Search size={15} className="text-slate-500" />
+            </button>
             <button onClick={() => navigate('/dashboard/approvals')} title="Approvals"
               className={`w-full flex justify-center items-center rounded-xl py-2.5 transition-all ${location.pathname === '/dashboard/approvals' ? 'bg-amber-500/20' : 'hover:bg-white/[0.04]'}`}>
               <Zap size={15} className={location.pathname === '/dashboard/approvals' ? 'text-amber-400' : 'text-slate-500'} />
@@ -383,13 +402,30 @@ export default function AppShell() {
             })}
           </nav>
         ) : (
-          <SidebarNav
-            primaryColor={primaryColor}
-            branding={branding}
-            openGroups={openGroups}
-            toggleGroup={toggleGroup}
-            location={location}
-          />
+          <>
+            {/* Search / Command Palette trigger button */}
+            <div className="px-3 pt-3 pb-1 flex-shrink-0">
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-left transition-all hover:bg-white/[0.06] group"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <Search size={12} className="text-slate-500 flex-shrink-0" />
+                <span className="text-[12px] text-slate-500 flex-1">Search anything…</span>
+                <kbd className="flex-shrink-0 flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono text-slate-600"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                  ⌘K
+                </kbd>
+              </button>
+            </div>
+            <SidebarNav
+              primaryColor={primaryColor}
+              branding={branding}
+              openGroups={openGroups}
+              toggleGroup={toggleGroup}
+              location={location}
+            />
+          </>
         )}
 
         {/* Bottom section */}
@@ -463,13 +499,20 @@ export default function AppShell() {
         {/* Centre logo */}
         <LogoBlock showText />
 
-        {/* User avatar */}
-        <button onClick={handleLogout}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-bold text-white ring-1 ring-white/10 transition hover:opacity-80"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}80, ${primaryColor}30)` }}
-          title="Log out">
-          {(username ?? 'U')[0].toUpperCase()}
-        </button>
+        {/* Right: search + avatar */}
+        <div className="flex items-center gap-1">
+          <button onClick={() => setPaletteOpen(true)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.08] transition"
+            title="Search (⌘K)">
+            <Search size={18} />
+          </button>
+          <button onClick={handleLogout}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-[11px] font-bold text-white ring-1 ring-white/10 transition hover:opacity-80"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}80, ${primaryColor}30)` }}
+            title="Log out">
+            {(username ?? 'U')[0].toUpperCase()}
+          </button>
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════
@@ -615,6 +658,9 @@ export default function AppShell() {
           })}
         </nav>
       </div>
+
+      {/* ⌘K Command Palette — global */}
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   )
 }

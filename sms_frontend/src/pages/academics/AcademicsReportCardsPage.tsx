@@ -3,9 +3,10 @@ import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadFromResponse } from '../../utils/download'
 import { extractApiErrorMessage } from '../../utils/forms'
+import CBCReportCardModal from '../../components/CBCReportCardModal'
 import {
   FileText, Download, CheckCircle2, Share2, Zap,
-  AlertTriangle, GraduationCap, Users,
+  AlertTriangle, GraduationCap, Users, Eye,
 } from 'lucide-react'
 
 type SchoolClass = { id: number; display_name?: string; name: string }
@@ -71,6 +72,7 @@ export default function AcademicsReportCardsPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [flash, setFlash] = useState<string | null>(null)
+  const [selectedCard, setSelectedCard] = useState<ReportCard | null>(null)
 
   const loadAll = async () => {
     setIsLoading(true); setError(null)
@@ -262,6 +264,11 @@ export default function AcademicsReportCardsPage() {
                             Publish
                           </button>
                         ) : null}
+                        <button onClick={() => setSelectedCard(item)}
+                          className="rounded-lg px-2 py-1 text-[10px] font-bold transition hover:opacity-80 flex items-center gap-1"
+                          style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>
+                          <Eye size={9} /> CBC View
+                        </button>
                         <button onClick={() => downloadPdf(item.id)}
                           className="rounded-lg px-2 py-1 text-[10px] font-bold transition hover:opacity-80 flex items-center gap-1"
                           style={{ background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)' }}>
@@ -276,6 +283,14 @@ export default function AcademicsReportCardsPage() {
           </table>
         </div>
       </div>
+
+      {/* CBC Report Card Modal */}
+      {selectedCard && (
+        <CBCReportCardModal
+          card={selectedCard}
+          onClose={() => setSelectedCard(null)}
+        />
+      )}
     </div>
   )
 }
