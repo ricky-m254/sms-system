@@ -4,7 +4,7 @@ import { AlertTriangle, RefreshCw, X, Timer } from 'lucide-react'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
 
-const DEMO_RESET_MINUTES = 60
+const DEMO_RESET_MINUTES = 360
 
 export default function DemoBanner() {
   const [visible, setVisible] = useState(true)
