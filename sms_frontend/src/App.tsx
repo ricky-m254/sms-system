@@ -257,7 +257,6 @@ const ELearningCoursesPage = lazy(() => import('./pages/elearning/ELearningCours
 const ELearningMaterialsPage = lazy(() => import('./pages/elearning/ELearningMaterialsPage'))
 const ELearningQuizzesPage = lazy(() => import('./pages/elearning/ELearningQuizzesPage'))
 const ELearningVirtualSessionsPage = lazy(() => import('./pages/elearning/ELearningVirtualSessionsPage'))
-const ELearningCBCMaterialsPage = lazy(() => import('./pages/elearning/ELearningCBCMaterialsPage'))
 
 const AnalyticsLayout = lazy(() => import('./pages/analytics/AnalyticsLayout'))
 const AnalyticsDashboardPage = lazy(() => import('./pages/analytics/AnalyticsDashboardPage'))
@@ -719,7 +718,6 @@ function App() {
           <Route path="dashboard" element={<ELearningDashboardPage />} />
           <Route path="courses" element={<ELearningCoursesPage />} />
           <Route path="materials" element={<ELearningMaterialsPage />} />
-          <Route path="cbc-materials" element={<ELearningCBCMaterialsPage />} />
           <Route path="quizzes" element={<ELearningQuizzesPage />} />
           <Route path="sessions" element={<ELearningVirtualSessionsPage />} />
         </Route>

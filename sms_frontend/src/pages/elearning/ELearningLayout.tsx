@@ -4,12 +4,11 @@ import { useAuthStore } from '../../store/auth'
 import ModuleToolbar from '../../components/ModuleToolbar'
 
 const navItems = [
-  { label: 'Dashboard',         to: '/modules/elearning/dashboard' },
-  { label: 'Courses',           to: '/modules/elearning/courses' },
-  { label: 'CBC Materials',     to: '/modules/elearning/cbc-materials' },
-  { label: 'All Resources',     to: '/modules/elearning/materials' },
-  { label: 'Quizzes',           to: '/modules/elearning/quizzes' },
-  { label: 'Virtual Sessions',  to: '/modules/elearning/sessions' },
+  { label: 'Dashboard',        to: '/modules/elearning/dashboard' },
+  { label: 'Courses',          to: '/modules/elearning/courses' },
+  { label: 'All Materials',    to: '/modules/elearning/materials' },
+  { label: 'Quizzes',          to: '/modules/elearning/quizzes' },
+  { label: 'Virtual Sessions', to: '/modules/elearning/sessions' },
 ]
 
 export default function ELearningLayout() {
