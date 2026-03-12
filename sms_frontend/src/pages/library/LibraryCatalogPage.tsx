@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Search, Grid3X3, List, BookOpen, Loader2, X, ExternalLink, Globe, CheckCircle, AlertCircle } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
+import { cachedGet } from '../../api/cache'
 
 interface LibraryResource {
   id: number
@@ -359,11 +360,12 @@ export default function LibraryCatalogPage() {
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
 
   useEffect(() => {
-    apiClient.get('library/resources/?limit=200')
-      .then(r => {
-        const data = r.data
-        setBooks(Array.isArray(data) ? data : data.results ?? [])
-      })
+    cachedGet<LibraryResource[] | { results?: LibraryResource[] }>(
+      'library/resources/200',
+      () => apiClient.get('library/resources/?limit=200').then(r => r.data as LibraryResource[] | { results?: LibraryResource[] }),
+      3 * 60_000
+    )
+      .then(data => setBooks(Array.isArray(data) ? data : data.results ?? []))
       .catch(() => setBooks([]))
       .finally(() => setLoading(false))
   }, [])

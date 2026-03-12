@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2, Globe, BookOpen, Library, ArrowRight, CheckCircle, Clock } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
+import { cachedGet } from '../../api/cache'
 
 type TabId = 'all' | 'videos' | 'ebooks' | 'papers' | 'platforms' | 'library'
 
@@ -185,19 +186,13 @@ export default function ELearningMaterialsPage() {
   const [libFilter, setLibFilter] = useState<'all' | 'available'>('all')
 
   useEffect(() => {
-    apiClient.get('elearning/materials/')
-      .then(r => {
-        const data = r.data
-        setMaterials(Array.isArray(data) ? data : data.results ?? [])
-      })
+    cachedGet<Material[] | { results?: Material[] }>('elearning/materials', () => apiClient.get('elearning/materials/').then(r => r.data as Material[] | { results?: Material[] }), 2 * 60_000)
+      .then(data => setMaterials(Array.isArray(data) ? data : data.results ?? []))
       .catch(() => setMaterials([]))
       .finally(() => setLoadingMaterials(false))
 
-    apiClient.get('library/resources/?limit=300')
-      .then(r => {
-        const data = r.data
-        setLibraryBooks(Array.isArray(data) ? data : data.results ?? [])
-      })
+    cachedGet<LibraryBook[] | { results?: LibraryBook[] }>('library/resources/300', () => apiClient.get('library/resources/?limit=300').then(r => r.data as LibraryBook[] | { results?: LibraryBook[] }), 3 * 60_000)
+      .then(data => setLibraryBooks(Array.isArray(data) ? data : data.results ?? []))
       .catch(() => setLibraryBooks([]))
       .finally(() => setLoadingLibrary(false))
   }, [])
