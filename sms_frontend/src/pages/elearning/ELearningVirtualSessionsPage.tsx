@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Video, Clock, Calendar, Link2, Play, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { Video, Clock, Calendar, Link2, Play, ChevronLeft, ChevronRight, Loader2, X, CheckCircle, AlertCircle } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
 
@@ -15,6 +15,12 @@ interface VirtualSession {
   notes: string
   created_at: string
   course: number
+}
+
+interface Course {
+  id: number
+  title: string
+  subject_name: string
 }
 
 type SessionStatus = 'live' | 'upcoming' | 'past'
@@ -44,13 +50,11 @@ function guessColors(title: string) {
 
 function getStatus(session: VirtualSession): SessionStatus {
   const today = new Date()
-  const sessionDate = new Date(session.session_date)
   const todayStr = today.toISOString().slice(0, 10)
 
   if (session.session_date < todayStr) return 'past'
   if (session.session_date > todayStr) return 'upcoming'
 
-  // Same day — check time
   const [h, m] = session.start_time.split(':').map(Number)
   const sessionStart = new Date()
   sessionStart.setHours(h, m, 0, 0)
@@ -126,7 +130,8 @@ function SessionCard({ s, status }: { s: VirtualSession; status: SessionStatus }
             </a>
           ) : (
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+              disabled
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold cursor-not-allowed"
               style={{ background: 'rgba(255,255,255,0.05)', color: '#64748b' }}
             >
               <Play size={13} /> Ended
@@ -138,27 +143,78 @@ function SessionCard({ s, status }: { s: VirtualSession; status: SessionStatus }
   )
 }
 
+const INPUT = 'w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400'
+
 export default function ELearningVirtualSessionsPage() {
   const [sessions, setSessions] = useState<VirtualSession[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<TabId>('upcoming')
   const [weekOffset, setWeekOffset] = useState(0)
+  const [showCreate, setShowCreate] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+  const [form, setForm] = useState({
+    course: '',
+    title: '',
+    session_date: '',
+    start_time: '',
+    end_time: '',
+    platform: 'Zoom',
+    meeting_link: '',
+    notes: '',
+  })
+
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   useEffect(() => {
-    apiClient.get('elearning/sessions/')
-      .then(r => {
-        const data = r.data
-        setSessions(Array.isArray(data) ? data : data.results ?? [])
-      })
-      .catch(() => setSessions([]))
-      .finally(() => setLoading(false))
+    Promise.all([
+      apiClient.get('elearning/sessions/'),
+      apiClient.get('elearning/courses/'),
+    ]).then(([sRes, cRes]) => {
+      const s = sRes.data
+      const c = cRes.data
+      setSessions(Array.isArray(s) ? s : s.results ?? [])
+      setCourses(Array.isArray(c) ? c : c.results ?? [])
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.course || !form.title || !form.session_date || !form.start_time) {
+      showToast('Please fill in all required fields', false)
+      return
+    }
+    setCreating(true)
+    try {
+      const res = await apiClient.post('elearning/sessions/', {
+        course: Number(form.course),
+        title: form.title,
+        session_date: form.session_date,
+        start_time: form.start_time,
+        end_time: form.end_time || form.start_time,
+        platform: form.platform,
+        meeting_link: form.meeting_link,
+        notes: form.notes,
+      })
+      setSessions(prev => [res.data, ...prev])
+      setShowCreate(false)
+      setForm({ course: '', title: '', session_date: '', start_time: '', end_time: '', platform: 'Zoom', meeting_link: '', notes: '' })
+      showToast('Session scheduled successfully')
+    } catch {
+      showToast('Failed to schedule session — check all fields and try again', false)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const categorized = sessions.map(s => ({ s, status: getStatus(s) }))
   const liveSessions = categorized.filter(x => x.status === 'live')
   const upcomingSessions = categorized.filter(x => x.status === 'upcoming')
   const pastSessions = categorized.filter(x => x.status === 'past')
-
   const shown = tab === 'live' ? liveSessions : tab === 'upcoming' ? upcomingSessions : pastSessions
 
   const today = new Date()
@@ -167,6 +223,81 @@ export default function ELearningVirtualSessionsPage() {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div
+          className="fixed top-5 right-5 z-[9999] flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-2xl"
+          style={toast.ok
+            ? { background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399' }
+            : { background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}
+        >
+          {toast.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Schedule Session Modal */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-lg rounded-3xl border p-6 space-y-4" style={{ background: '#0d1117', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-display font-bold text-white">Schedule a Session</h2>
+              <button onClick={() => setShowCreate(false)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all">
+                <X size={16} className="text-slate-400" />
+              </button>
+            </div>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Course *</label>
+                <select className={INPUT} value={form.course} onChange={e => setForm(f => ({ ...f, course: e.target.value }))} required>
+                  <option value="">Select a course</option>
+                  {courses.map(c => <option key={c.id} value={c.id}>{c.subject_name} — {c.title}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Session Title *</label>
+                <input className={INPUT} placeholder="e.g. Biology — Cell Division Live Review" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Date *</label>
+                  <input type="date" className={INPUT} value={form.session_date} onChange={e => setForm(f => ({ ...f, session_date: e.target.value }))} required />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Platform *</label>
+                  <select className={INPUT} value={form.platform} onChange={e => setForm(f => ({ ...f, platform: e.target.value }))}>
+                    {['Zoom', 'Google Meet', 'Microsoft Teams', 'Webex', 'Other'].map(p => <option key={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Start Time *</label>
+                  <input type="time" className={INPUT} value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} required />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">End Time</label>
+                  <input type="time" className={INPUT} value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Meeting Link</label>
+                <input className={INPUT} placeholder="https://zoom.us/j/..." value={form.meeting_link} onChange={e => setForm(f => ({ ...f, meeting_link: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Notes (optional)</label>
+                <textarea className={INPUT + ' resize-none'} rows={2} placeholder="Any notes for students..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl py-2.5 text-sm font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={creating} className="flex-1 rounded-xl py-2.5 text-sm font-bold disabled:opacity-60" style={{ background: '#10b981', color: '#fff' }}>
+                  {creating ? 'Scheduling...' : 'Schedule Session'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <PageHero
         badge="E-LEARNING"
         badgeColor="violet"
@@ -180,7 +311,8 @@ export default function ELearningVirtualSessionsPage() {
           <p className="text-slate-400 text-sm mt-1">Live and recorded online classes with your teachers</p>
         </div>
         <button
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold self-start"
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold self-start transition-all hover:opacity-90"
           style={{ background: '#10b981', color: '#fff' }}
         >
           <Video size={15} /> Schedule Session
@@ -283,7 +415,16 @@ export default function ELearningVirtualSessionsPage() {
             {shown.length === 0 ? (
               <GlassCard className="p-10 text-center">
                 <Video size={40} className="mx-auto text-slate-600 mb-3" />
-                <p className="text-slate-400">No {tab} sessions</p>
+                <p className="text-slate-400 mb-4">No {tab} sessions</p>
+                {tab === 'upcoming' && (
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="mx-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+                    style={{ background: '#10b981', color: '#fff' }}
+                  >
+                    <Video size={14} /> Schedule First Session
+                  </button>
+                )}
               </GlassCard>
             ) : shown.map(({ s, status }) => <SessionCard key={s.id} s={s} status={status} />)}
           </div>

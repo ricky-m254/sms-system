@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2 } from 'lucide-react'
+import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2, CheckCircle } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
 
@@ -119,6 +119,12 @@ export default function ELearningMaterialsPage() {
   const [tab, setTab] = useState<TabId>('all')
   const [subject, setSubject] = useState('All Subjects')
   const [search, setSearch] = useState('')
+  const [paperToast, setPaperToast] = useState<string | null>(null)
+
+  function showPaperToast(msg: string) {
+    setPaperToast(msg)
+    setTimeout(() => setPaperToast(null), 4000)
+  }
 
   useEffect(() => {
     apiClient.get('elearning/materials/')
@@ -167,6 +173,15 @@ export default function ELearningMaterialsPage() {
 
   return (
     <div className="space-y-6">
+      {paperToast && (
+        <div
+          className="fixed top-5 right-5 z-[9999] flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-2xl"
+          style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399' }}
+        >
+          <CheckCircle size={15} />
+          {paperToast}
+        </div>
+      )}
       <PageHero
         badge="E-LEARNING"
         badgeColor="violet"
@@ -357,10 +372,20 @@ export default function ELearningMaterialsPage() {
                     </div>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <button className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-amber-500/20 transition-all" style={{ background: 'rgba(245,158,11,0.1)' }}>
+                    <button
+                      title="View on KNEC portal"
+                      onClick={() => window.open('https://www.knec.ac.ke/index.php/component/content/article/past-papers', '_blank', 'noopener,noreferrer')}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-amber-500/20 transition-all"
+                      style={{ background: 'rgba(245,158,11,0.1)' }}
+                    >
                       <ExternalLink size={14} className="text-amber-400" />
                     </button>
-                    <button className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-emerald-500/20 transition-all" style={{ background: 'rgba(16,185,129,0.1)' }}>
+                    <button
+                      title="Download from KNEC portal"
+                      onClick={() => showPaperToast('Visit knec.ac.ke to download this past paper as an official PDF')}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-emerald-500/20 transition-all"
+                      style={{ background: 'rgba(16,185,129,0.1)' }}
+                    >
                       <Download size={14} className="text-emerald-400" />
                     </button>
                   </div>

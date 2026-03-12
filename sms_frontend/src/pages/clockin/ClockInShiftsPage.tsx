@@ -32,6 +32,41 @@ export default function ClockInShiftsPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  const [editShift, setEditShift] = useState<Shift | null>(null)
+  const [editForm, setEditForm] = useState({
+    name: '', person_type: 'ALL' as Shift['person_type'],
+    expected_arrival: '', grace_period_minutes: 15,
+    expected_departure: '', notes: '',
+  })
+  const [isSaving, setIsSaving] = useState(false)
+
+  function openEdit(shift: Shift) {
+    setEditShift(shift)
+    setEditForm({
+      name: shift.name,
+      person_type: shift.person_type,
+      expected_arrival: shift.expected_arrival,
+      grace_period_minutes: shift.grace_period_minutes,
+      expected_departure: shift.expected_departure ?? '',
+      notes: shift.notes ?? '',
+    })
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editShift) return
+    setIsSaving(true)
+    try {
+      const res = await apiClient.patch<Shift>(`/clockin/shifts/${editShift.id}/`, editForm)
+      setShifts(prev => prev.map(s => s.id === editShift.id ? res.data : s))
+      setEditShift(null)
+    } catch {
+      setError('Failed to save shift changes.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const fetchShifts = async () => {
     try {
       const res = await apiClient.get<Shift[]>('/clockin/shifts/')
@@ -75,8 +110,57 @@ export default function ClockInShiftsPage() {
     }
   }
 
+  const INPUT_CLS = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm focus:border-emerald-500 transition outline-none'
+
   return (
     <div className="space-y-6 font-sans text-slate-100">
+      {/* Edit Shift Modal */}
+      {editShift && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
+          <form onSubmit={handleEdit} className="w-full max-w-lg rounded-3xl border p-6 space-y-4" style={{ background: '#0d1117', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <h2 className="text-lg font-display font-bold text-white">Edit Shift: {editShift.name}</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Shift Name</label>
+                <input required className={INPUT_CLS} value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Applicable To</label>
+                <select className={INPUT_CLS} value={editForm.person_type} onChange={e => setEditForm(f => ({ ...f, person_type: e.target.value as Shift['person_type'] }))}>
+                  <option value="ALL">All Students & Staff</option>
+                  <option value="STUDENT">Students Only</option>
+                  <option value="STAFF">Staff Only</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Grace Period (min)</label>
+                <input type="number" min="0" max="120" className={INPUT_CLS} value={editForm.grace_period_minutes} onChange={e => setEditForm(f => ({ ...f, grace_period_minutes: parseInt(e.target.value) }))} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Expected Arrival</label>
+                <input type="time" className={INPUT_CLS} value={editForm.expected_arrival} onChange={e => setEditForm(f => ({ ...f, expected_arrival: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Expected Departure</label>
+                <input type="time" className={INPUT_CLS} value={editForm.expected_departure} onChange={e => setEditForm(f => ({ ...f, expected_departure: e.target.value }))} />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Notes</label>
+                <input className={INPUT_CLS} value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button type="button" onClick={() => setEditShift(null)} className="flex-1 rounded-xl py-2.5 text-sm font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
+                Cancel
+              </button>
+              <button type="submit" disabled={isSaving} className="flex-1 rounded-xl py-2.5 text-sm font-bold disabled:opacity-60" style={{ background: '#10b981', color: '#fff' }}>
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <PageHero
         badge="CLOCK-IN"
         badgeColor="emerald"
@@ -228,7 +312,7 @@ export default function ClockInShiftsPage() {
                   </p>
                 </div>
                 <div className="pt-2 opacity-0 group-hover:opacity-100 transition flex gap-4">
-                   <button className="text-xs font-bold text-sky-400 hover:text-sky-300 uppercase">Edit</button>
+                   <button onClick={() => openEdit(shift)} type="button" className="text-xs font-bold text-sky-400 hover:text-sky-300 uppercase">Edit</button>
                    <button 
                      onClick={() => setDeleteId(shift.id)}
                      className="text-xs font-bold text-rose-400 hover:text-rose-300 uppercase"

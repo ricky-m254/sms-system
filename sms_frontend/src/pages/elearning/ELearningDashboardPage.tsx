@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { BookOpen, Play, Users, Monitor, ChevronRight, Clock, Star, TrendingUp, Award, Zap, Loader2 } from 'lucide-react'
 import { apiClient } from '../../api/client'
 
@@ -74,6 +75,7 @@ function ProgressRing({ pct, color, size = 56 }: { pct: number; color: string; s
 }
 
 export default function ELearningDashboardPage() {
+  const navigate = useNavigate()
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
@@ -139,10 +141,10 @@ export default function ELearningDashboardPage() {
               Kenya CBC-aligned courses, KCSE revision materials, e-books, and live virtual sessions — all in one place.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90" style={{ background: '#10b981', color: '#fff' }}>
+              <button onClick={() => navigate('/modules/elearning/courses')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90" style={{ background: '#10b981', color: '#fff' }}>
                 <Play size={15} /> Start Learning
               </button>
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/20" style={{ background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.15)' }}>
+              <button onClick={() => navigate('/modules/elearning/sessions')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/20" style={{ background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.15)' }}>
                 <Monitor size={15} /> Join Live Class
               </button>
             </div>
@@ -193,7 +195,7 @@ export default function ELearningDashboardPage() {
             <h2 className="text-lg font-display font-bold text-white flex items-center gap-2">
               <TrendingUp size={18} className="text-emerald-400" /> Continue Learning
             </h2>
-            <button className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors">All Courses <ChevronRight size={14} /></button>
+            <button onClick={() => navigate('/modules/elearning/courses')} className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors">All Courses <ChevronRight size={14} /></button>
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-10">
@@ -204,7 +206,7 @@ export default function ELearningDashboardPage() {
               {featuredCourses.map(c => {
                 const { from, to } = subjectColor(c.subject_name)
                 return (
-                  <GlassCard key={c.id} className="hover:border-emerald-500/30 transition-all" onClick={() => {}}>
+                  <GlassCard key={c.id} className="hover:border-emerald-500/30 transition-all" onClick={() => navigate('/modules/elearning/materials')}>
                     <div className="flex items-center gap-4">
                       <div
                         className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold flex-shrink-0"

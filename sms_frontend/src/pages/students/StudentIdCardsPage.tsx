@@ -100,7 +100,7 @@ export default function StudentIdCardsPage() {
 
               {/* Print Overlay */}
               <div className="absolute inset-0 flex items-center justify-center bg-slate-950/0 opacity-0 transition hover:bg-slate-950/60 hover:opacity-100">
-                <button className="rounded-xl bg-emerald-500 px-6 py-2 text-sm font-bold text-white shadow-lg">Print Card</button>
+                <button onClick={() => window.print()} className="rounded-xl bg-emerald-500 px-6 py-2 text-sm font-bold text-white shadow-lg">Print Card</button>
               </div>
             </div>
           ))}
