@@ -110,7 +110,8 @@ export default function VisitorDashboardPage() {
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map(k => (
-          <div key={k.label} className="rounded-2xl p-5 relative overflow-hidden" style={GLASS}>
+          <div key={k.label} className="rounded-2xl p-5 relative overflow-hidden transition-all duration-200 hover:scale-[1.02]"
+            style={{ background: `${k.color}10`, border: `1px solid ${k.color}25` }}>
             <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: k.bg }}>
               <k.icon size={16} style={{ color: k.color }} />
             </div>

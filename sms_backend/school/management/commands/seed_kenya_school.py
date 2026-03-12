@@ -827,9 +827,32 @@ class Command(BaseCommand):
             ("Sports", Decimal("15000.00"), "Athletics meet registration fees & transport", 14),
             ("Printing", Decimal("9500.00"), "Term 1 timetables and circulars — printing", 7),
             ("Printing", Decimal("7200.00"), "Report card printing — Term 3 2024", 15),
+            # ── March 2025 ────────────────────────────────────────────────────
+            ("Salaries", Decimal("780000.00"), "Teaching staff payroll — March 2025", 3),
+            ("Salaries", Decimal("420000.00"), "Non-teaching staff payroll — March 2025", 10),
+            ("Utilities", Decimal("49100.00"), "Electricity bill — March 2025 (KPLC)", 8),
+            ("Utilities", Decimal("11800.00"), "Water bill — March 2025 (Nairobi Water)", 8),
+            ("Catering", Decimal("182000.00"), "Food supplies — March 2025 (Uchumi Wholesale)", 5),
+            ("Maintenance", Decimal("28000.00"), "Library roof waterproofing", 12),
+            ("Maintenance", Decimal("14500.00"), "Gate and perimeter wall repairs", 22),
+            ("Supplies", Decimal("21000.00"), "Mid-term stationery restocking", 10),
+            ("Transport", Decimal("34000.00"), "Bus fuel — March 2025", 5),
+            ("Transport", Decimal("28000.00"), "Driver salaries — March 2025", 10),
+            ("Security", Decimal("27000.00"), "Security services — March 2025 (KK Security)", 31),
+            ("ICT", Decimal("15500.00"), "Internet subscription — March 2025 (Safaricom Fibre)", 2),
+            ("Medical", Decimal("12000.00"), "Clinic restocking — anti-malarials & first aid", 8),
+            ("Sports", Decimal("45000.00"), "Football kit, nets & training equipment", 6),
+            ("Sports", Decimal("18000.00"), "Inter-school athletics transport & fees", 18),
+            ("Printing", Decimal("8500.00"), "Mid-term exam papers printing", 14),
+            ("Printing", Decimal("5500.00"), "School newsletter — Term 1 edition", 25),
         ]
         for cat, amt, desc, day in EXPENSES:
-            month = 2 if 'February' in desc else 1
+            if 'March' in desc:
+                month = 3
+            elif 'February' in desc:
+                month = 2
+            else:
+                month = 1
             try:
                 Expense.objects.create(
                     category=cat, amount=amt,

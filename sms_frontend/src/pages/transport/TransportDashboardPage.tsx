@@ -59,33 +59,69 @@ export default function TransportDashboardPage() {
   return (
     <div className="p-6 space-y-6">
 
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-white">Transport Control</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Live fleet tracking · St. Mary Nairobi High School</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-[11px] text-emerald-400/80">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Live · {lastRefresh.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+      {/* ── Hero Banner ── */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-9 md:px-10"
+        style={{ background: 'linear-gradient(135deg, #050f1a 0%, #0b1b2e 45%, #0a1520 100%)' }}>
+        <div className="absolute inset-0 opacity-25" style={{
+          backgroundImage: 'radial-gradient(ellipse at 80% 40%, rgba(56,189,248,0.5) 0%, transparent 55%), radial-gradient(ellipse at 15% 70%, rgba(16,185,129,0.35) 0%, transparent 50%)'
+        }} />
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-3 py-1 rounded-full text-xs font-bold"
+                style={{ background: 'rgba(56,189,248,0.18)', color: '#7dd3fc', border: '1px solid rgba(56,189,248,0.3)' }}>
+                TRANSPORT & FLEET
+              </span>
+              <span className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live · {lastRefresh.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-white leading-tight">
+              Fleet Control &amp;<br />
+              <span style={{ color: '#7dd3fc' }}>Live Tracking</span>
+            </h1>
+            <p className="mt-2 text-slate-300 max-w-md text-sm">
+              4 vehicles, 4 active Nairobi routes, real-time GPS tracking, and parent notification portal.
+            </p>
           </div>
-          <button onClick={refresh} className="rounded-xl p-2 text-slate-500 hover:text-slate-300 transition" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            <RefreshCw size={14} />
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:min-w-[220px]">
+              {[
+                { label: 'En Route', value: `${MOCK_BUSES.filter(b => b.status === 'EN_ROUTE').length}`, color: '#10b981' },
+                { label: 'Arrived', value: `${MOCK_BUSES.filter(b => b.status === 'ARRIVED').length}`, color: '#38bdf8' },
+                { label: 'Students', value: `${totalStudents}`, color: '#a78bfa' },
+                { label: 'Delayed', value: `${MOCK_BUSES.filter(b => b.status === 'DELAYED').length}`, color: '#f59e0b' },
+              ].map(item => (
+                <div key={item.label} className="rounded-2xl px-4 py-3 text-center"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                  <p className="text-xl font-bold" style={{ color: item.color }}>{item.value}</p>
+                  <p className="text-[10px] text-slate-400">{item.label}</p>
+                </div>
+              ))}
+            </div>
+            <button onClick={refresh} className="rounded-xl p-3 text-slate-400 hover:text-white transition-all hover:scale-105"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <RefreshCw size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map(k => (
-          <div key={k.label} className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div key={k.label}
+            className="rounded-2xl p-5 relative overflow-hidden transition-all duration-200 hover:scale-[1.02]"
+            style={{ background: `${k.color}10`, border: `1px solid ${k.color}25` }}>
+            <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-full opacity-15"
+              style={{ background: k.color, filter: 'blur(12px)' }} />
             <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: k.bg }}>
               <k.icon size={16} style={{ color: k.color }} />
             </div>
-            <p className="text-3xl font-bold text-white tabular-nums">{k.value}</p>
-            <p className="text-xs text-slate-400 mt-1 font-medium">{k.label}</p>
-            <p className="text-[10px] mt-1 font-medium" style={{ color: k.color }}>{k.sub}</p>
+            <p className="text-3xl font-bold text-white tabular-nums relative z-10">{k.value}</p>
+            <p className="text-xs text-slate-400 mt-1 font-medium relative z-10">{k.label}</p>
+            <p className="text-[10px] mt-1 font-medium relative z-10" style={{ color: k.color }}>{k.sub}</p>
           </div>
         ))}
       </div>

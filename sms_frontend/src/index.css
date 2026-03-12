@@ -117,6 +117,37 @@
   0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
   50%      { box-shadow: 0 0 20px 2px rgba(16,185,129,0.18); }
 }
+@keyframes aurora {
+  0%,100% { opacity: 0.55; transform: translate(0,0) scale(1); }
+  25%     { opacity: 0.80; transform: translate(18px,-12px) scale(1.07); }
+  50%     { opacity: 0.45; transform: translate(-12px,16px) scale(0.93); }
+  75%     { opacity: 0.70; transform: translate(-18px,-4px) scale(1.03); }
+}
+@keyframes floatBob {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-5px); }
+}
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sunRise {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes borderGlow {
+  0%,100% { border-color: rgba(16,185,129,0.25); }
+  50%     { border-color: rgba(16,185,129,0.6); }
+}
+@keyframes slideUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
 
 /* ─── Animation Classes ──────────────────────────────────── */
 .animate-fade-in-up     { animation: fadeInUp 0.35s ease-out both; }
@@ -125,6 +156,13 @@
 .animate-slide-in-left  { animation: slideInLeft 0.25s ease-out both; }
 .animate-scale-in       { animation: scaleIn 0.25s ease-out both; }
 .animate-glow-pulse     { animation: glowPulse 2s ease-in-out infinite; }
+.animate-aurora         { animation: aurora 9s ease-in-out infinite; }
+.animate-float          { animation: floatBob 3.5s ease-in-out infinite; }
+.animate-gradient-shift { background-size: 200% 200%; animation: gradientShift 5s ease infinite; }
+.animate-rise           { animation: rise 0.5s ease-out both; }
+.animate-sun-rise       { animation: sunRise 0.7s ease-out both; }
+.animate-border-glow    { animation: borderGlow 2.5s ease-in-out infinite; }
+.animate-slide-up       { animation: slideUp 0.3s ease-out both; }
 
 .delay-100 { animation-delay: 0.1s; }
 .delay-150 { animation-delay: 0.15s; }
@@ -264,3 +302,85 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
   background: rgba(16,185,129,0.12);
   border-color: rgba(16,185,129,0.25);
 }
+
+/* ─── Gradient Text ──────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #10b981 0%, #38bdf8 55%, #a78bfa 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gradient-text-sunrise {
+  background: linear-gradient(135deg, #f4b844 0%, #e88028 45%, #c75514 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gradient-text-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gradient-text-violet {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #4f46e5 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Aurora Sidebar Glow ────────────────────────────── */
+.aurora-blob-1 {
+  position: absolute; pointer-events: none;
+  top: -30px; left: -20px; width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(16,185,129,0.22) 0%, transparent 70%);
+  animation: aurora 10s ease-in-out infinite;
+}
+.aurora-blob-2 {
+  position: absolute; pointer-events: none;
+  top: 30px; right: -30px; width: 110px; height: 110px;
+  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+  animation: aurora 13s ease-in-out infinite reverse;
+}
+.aurora-blob-3 {
+  position: absolute; pointer-events: none;
+  top: 80px; left: 20px; width: 90px; height: 90px;
+  background: radial-gradient(circle, rgba(56,189,248,0.14) 0%, transparent 70%);
+  animation: aurora 15s ease-in-out infinite 3s;
+}
+
+/* ─── Nav Active Styling ─────────────────────────────── */
+.nav-active-glow {
+  background: linear-gradient(90deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.04) 100%);
+  border: 1px solid rgba(16,185,129,0.2);
+  box-shadow: inset 3px 0 0 #10b981;
+}
+
+/* ─── Hero Banner Gradients (time-of-day) ────────────── */
+.hero-morning {
+  background: linear-gradient(135deg,
+    #1c0906 0%, #3f0f08 18%, #7a2008 36%,
+    #c45010 55%, #e07820 72%, #f0a034 86%, #f8c050 100%);
+}
+.hero-afternoon {
+  background: linear-gradient(135deg,
+    #021d3c 0%, #064484 22%, #0a6bbb 44%,
+    #1488d0 62%, #3aabdf 80%, #7fcaea 100%);
+}
+.hero-evening {
+  background: linear-gradient(135deg,
+    #07041a 0%, #130838 20%, #22106a 42%,
+    #341880 60%, #4a20a0 78%, #6030c0 100%);
+}
+
+/* ─── KPI Card Glow Variants ─────────────────────────── */
+.kpi-sky    { background: linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%); border: 1px solid rgba(14,165,233,0.28); }
+.kpi-violet { background: linear-gradient(135deg, rgba(139,92,246,0.14) 0%, rgba(139,92,246,0.04) 100%); border: 1px solid rgba(139,92,246,0.28); }
+.kpi-rose   { background: linear-gradient(135deg, rgba(244,63,94,0.14) 0%, rgba(244,63,94,0.04) 100%);  border: 1px solid rgba(244,63,94,0.28); }
+.kpi-emerald{ background: linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%); border: 1px solid rgba(16,185,129,0.28); }
+.kpi-amber  { background: linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(245,158,11,0.04) 100%); border: 1px solid rgba(245,158,11,0.28); }
+
+/* ─── Mobile Touch Improvements ─────────────────────── */
+@media (hover: none) {
+  button, a { -webkit-tap-highlight-color: transparent; }
+  .hover\:scale-\[1\.02\]:hover { transform: none; }
+}
+
+/* ─── Capitalize Utility ─────────────────────────────── */
+.text-capitalize { text-transform: capitalize; }

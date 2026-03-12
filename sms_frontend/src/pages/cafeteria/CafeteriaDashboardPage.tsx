@@ -144,13 +144,17 @@ export default function CafeteriaDashboardPage() {
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map(k => (
-          <div key={k.label} className="rounded-2xl p-5 relative overflow-hidden" style={GLASS}>
+          <div key={k.label}
+            className="rounded-2xl p-5 relative overflow-hidden transition-all duration-200 hover:scale-[1.02]"
+            style={{ background: `${k.color}10`, border: `1px solid ${k.color}25` }}>
+            <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-full opacity-15"
+              style={{ background: k.color, filter: 'blur(12px)' }} />
             <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: k.bg }}>
               <k.icon size={16} style={{ color: k.color }} />
             </div>
-            <p className="text-2xl font-bold text-white tabular-nums">{k.value}</p>
-            <p className="text-xs text-slate-400 mt-1 font-medium">{k.label}</p>
-            <p className="text-[10px] mt-1 font-medium" style={{ color: k.color }}>{k.sub}</p>
+            <p className="text-2xl font-bold text-white tabular-nums relative z-10">{k.value}</p>
+            <p className="text-xs text-slate-400 mt-1 font-medium relative z-10">{k.label}</p>
+            <p className="text-[10px] mt-1 font-medium relative z-10" style={{ color: k.color }}>{k.sub}</p>
           </div>
         ))}
       </div>

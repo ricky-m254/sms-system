@@ -630,34 +630,80 @@ export default function DashboardPage() {
     <div className="min-h-screen text-white" style={{ background: '#070b12' }}>
       <main className="mx-auto max-w-6xl flex flex-col gap-6 px-5 py-7 sm:px-8">
 
-        {/* ── Greeting Header ─────────────────────────── */}
-        <header className="flex items-start justify-between gap-3 animate-fade-in-up">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div className="flex-shrink-0 scale-75 sm:scale-100 origin-left">
-              <GreetingOrb period={greeting.period} />
+        {/* ── Hero Banner ─────────────────────────────── */}
+        <header
+          className={`relative overflow-hidden rounded-3xl animate-sun-rise hero-${greeting.period}`}
+        >
+          {/* Ambient light overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: 'radial-gradient(ellipse at 25% 65%, rgba(255,255,255,0.18) 0%, transparent 55%), radial-gradient(ellipse at 82% 15%, rgba(255,255,255,0.10) 0%, transparent 50%)',
+          }} />
+          {/* Stars for evening */}
+          {greeting.period === 'evening' && (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {[{t:'8%',l:'14%'},{t:'5%',l:'72%'},{t:'15%',l:'88%'},{t:'22%',l:'42%'},{t:'10%',l:'55%'},{t:'18%',l:'25%'},{t:'3%',l:'38%'}].map((s,i) => (
+                <div key={i} className="absolute w-0.5 h-0.5 bg-white rounded-full opacity-70 animate-pulse"
+                  style={{ top: s.t, left: s.l, animationDelay: `${i * 0.4}s` }} />
+              ))}
             </div>
-            <div className="min-w-0">
-              <p className="hidden sm:block text-[11px] font-semibold uppercase tracking-[0.2em] mb-0.5"
-                style={{ color: 'rgba(16,185,129,0.7)' }}>
-                Rynaty School Management
-              </p>
-              <h1 className="text-xl sm:text-2xl font-display font-bold text-white leading-tight truncate">
-                {greeting.text}
-              </h1>
-              <p className="text-[11px] sm:text-[13px] mt-0.5 truncate" style={{ color: '#475569' }}>
-                {schoolName ?? tenantId ?? 'Dashboard'} · <span className="hidden sm:inline">{new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                <span className="sm:hidden">{new Date().toLocaleDateString('en-KE', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-              </p>
+          )}
+
+          <div className="relative z-10 px-6 py-7 sm:px-8 sm:py-9 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+            <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+              {/* Orb — now floating */}
+              <div className="flex-shrink-0 animate-float">
+                <GreetingOrb period={greeting.period} />
+              </div>
+              <div className="min-w-0">
+                {/* School chip */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-3 text-[11px] font-bold text-white"
+                  style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.28)', backdropFilter: 'blur(4px)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  <span className="capitalize">{(schoolName ?? tenantId ?? 'Rynatyschool').toUpperCase()}</span>
+                </div>
+                {/* Main greeting */}
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white leading-tight capitalize drop-shadow-md">
+                  {greeting.text.split(',')[0]},
+                  <span className="block sm:inline ml-0 sm:ml-2 text-white/80 capitalize">
+                    {greeting.text.split(',').slice(1).join(',').trim()}
+                  </span>
+                </h1>
+                {/* Date */}
+                <p className="mt-2 text-[13px] text-white/55 font-medium capitalize">
+                  <span className="hidden sm:inline">{new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  <span className="sm:hidden">{new Date().toLocaleDateString('en-KE', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Right: stats strip + refresh */}
+            <div className="flex flex-col items-start sm:items-end gap-3">
+              {/* Mini stat chips */}
+              {data && (
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'Students', value: data.summary.students?.active ?? 0 },
+                    { label: 'Modules', value: assignedModuleKeys.length },
+                    { label: 'Pending', value: activity.pendingItems.length },
+                  ].map(chip => (
+                    <div key={chip.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white"
+                      style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)' }}>
+                      <span className="text-[13px] font-bold capitalize">{chip.label}:</span>
+                      <span className="text-[13px] font-bold">{Number(chip.value).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button
+                onClick={() => void loadSummary()}
+                className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-semibold transition-all hover:scale-[1.03] active:scale-[0.98] capitalize"
+                style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.30)', color: 'white', backdropFilter: 'blur(4px)' }}
+              >
+                <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
+                Refresh Data
+              </button>
             </div>
           </div>
-          <button
-            onClick={() => void loadSummary()}
-            className="flex-shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-2 text-[12px] font-medium transition-all hover:opacity-80"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: '#94a3b8' }}
-          >
-            <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
-            Refresh
-          </button>
         </header>
 
         {/* ── Error ───────────────────────────────────── */}
@@ -684,34 +730,35 @@ export default function DashboardPage() {
               {KPI_CARDS.map((card, i) => (
                 <article
                   key={card.label}
-                  className="relative rounded-2xl p-4 overflow-hidden animate-scale-in cursor-default transition-transform duration-150 hover:scale-[1.02] hover:-translate-y-0.5"
+                  className="relative rounded-2xl p-4 overflow-hidden animate-scale-in cursor-default transition-all duration-200 hover:scale-[1.03] hover:-translate-y-1"
                   style={{
-                    background: 'rgba(255,255,255,0.025)',
-                    border: `1px solid rgba(255,255,255,0.07)`,
+                    background: `linear-gradient(135deg, ${card.color}1a 0%, ${card.color}07 100%)`,
+                    border: `1px solid ${card.color}32`,
                     animationDelay: `${i * 60}ms`,
-                    borderLeft: `3px solid ${card.color}55`,
+                    boxShadow: `0 4px 20px ${card.color}12, inset 0 1px 0 rgba(255,255,255,0.06)`,
                   }}
-                  onMouseMove={(e) => {
-                    const r = e.currentTarget.getBoundingClientRect()
-                    e.currentTarget.style.background = `radial-gradient(160px circle at ${e.clientX - r.left}px ${e.clientY - r.top}px, ${card.color}1a, rgba(255,255,255,0.018))`
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = `0 8px 30px ${card.color}28, inset 0 1px 0 rgba(255,255,255,0.08)`
+                    e.currentTarget.style.borderColor = `${card.color}55`
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.025)'
+                    e.currentTarget.style.boxShadow = `0 4px 20px ${card.color}12, inset 0 1px 0 rgba(255,255,255,0.06)`
+                    e.currentTarget.style.borderColor = `${card.color}32`
                   }}
                 >
                   {/* Corner icon orb */}
-                  <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center"
-                    style={{ background: `${card.color}18`, border: `1px solid ${card.color}28` }}>
-                    <card.Icon size={14} style={{ color: card.color }} />
+                  <div className="absolute top-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: `${card.color}22`, border: `1px solid ${card.color}35` }}>
+                    <card.Icon size={16} style={{ color: card.color }} />
                   </div>
-                  {/* Background glow blob */}
-                  <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full pointer-events-none blur-2xl opacity-20"
+                  {/* Glow blob */}
+                  <div className="absolute -bottom-3 -right-3 w-24 h-24 rounded-full pointer-events-none blur-3xl opacity-25"
                     style={{ background: card.color }} />
-                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-2.5 relative"
-                    style={{ color: 'rgba(148,163,184,0.65)' }}>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-2 relative capitalize"
+                    style={{ color: `${card.color}99` }}>
                     {card.label}
                   </p>
-                  <p className="text-[24px] font-display font-bold relative leading-none"
+                  <p className="text-[26px] font-display font-bold relative leading-none"
                     style={{ color: card.color }}>
                     {card.isMoney
                       ? Number(card.value).toLocaleString('en-KE', { notation: 'compact', maximumFractionDigits: 1 })

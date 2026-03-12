@@ -130,14 +130,16 @@ function SidebarNav({
         onClick={onNavigate}
         className={({ isActive }) =>
           `group flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all duration-150 relative overflow-hidden
-          ${isActive ? 'bg-white/[0.08] text-white font-semibold' : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.04]'}`
+          ${isActive ? 'nav-active-glow text-white font-semibold' : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.04]'}`
         }
       >
         {({ isActive }) => (
           <>
-            {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full" style={{ background: primaryColor }} />}
-            <LayoutDashboard size={15} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`} />
-            <span className="text-[13px] leading-none">Dashboard</span>
+            <LayoutDashboard size={15} className={`flex-shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+            <span className="text-[13px] leading-none capitalize">Dashboard</span>
+            {isActive && (
+              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            )}
           </>
         )}
       </NavLink>
@@ -149,18 +151,24 @@ function SidebarNav({
         onClick={onNavigate}
         className={({ isActive }) =>
           `group flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all duration-150 relative overflow-hidden
-          ${isActive ? 'bg-amber-500/[0.12] text-amber-300 font-semibold ring-1 ring-amber-500/25' : 'text-slate-400 hover:text-amber-300 hover:bg-amber-500/[0.06]'}`
+          ${isActive
+            ? 'text-amber-300 font-semibold'
+            : 'text-slate-400 hover:text-amber-300 hover:bg-amber-500/[0.06]'}`
         }
+        style={({ isActive }) => isActive ? {
+          background: 'linear-gradient(90deg, rgba(245,158,11,0.14) 0%, rgba(245,158,11,0.04) 100%)',
+          border: '1px solid rgba(245,158,11,0.28)',
+          boxShadow: 'inset 3px 0 0 #f59e0b',
+        } : {}}
       >
         {({ isActive }) => (
           <>
-            {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-amber-400" />}
             <Zap size={15} className={`flex-shrink-0 ${isActive ? 'text-amber-400' : 'text-slate-500 group-hover:text-amber-400'}`} />
-            <span className="text-[13px] leading-none">Approvals</span>
+            <span className="text-[13px] leading-none capitalize">Approvals</span>
             <span className="ml-auto">
-              <span className="relative flex h-1.5 w-1.5">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
               </span>
             </span>
           </>
@@ -179,18 +187,24 @@ function SidebarNav({
           <div key={group.key}>
             <button
               onClick={() => toggleGroup(group.key)}
-              className={`group w-full flex items-center gap-2 rounded-xl px-3 py-2 transition-all duration-150
-                ${isActive ? 'text-slate-200' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.03]'}`}
+              className={`group w-full flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150
+                ${isActive
+                  ? 'text-slate-100'
+                  : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'}`}
+              style={isActive ? { background: 'rgba(255,255,255,0.04)' } : {}}
             >
-              <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${group.dotColor} ${isActive ? 'opacity-100' : 'opacity-50'}`} />
-              <span className="flex-1 text-left text-[10px] font-bold uppercase tracking-[0.1em]">{group.label}</span>
-              {isOpen
-                ? <ChevronDown size={11} className="text-slate-700 group-hover:text-slate-500 flex-shrink-0" />
-                : <ChevronRight size={11} className="text-slate-700 group-hover:text-slate-500 flex-shrink-0" />
-              }
+              <Icon size={12} className={`flex-shrink-0 transition-colors ${isActive ? 'text-white opacity-80' : 'text-slate-600 group-hover:text-slate-400'}`} />
+              <span className="flex-1 text-left text-[11px] font-bold uppercase tracking-[0.09em] capitalize">{group.label}</span>
+              <div className="flex items-center gap-1.5">
+                {isActive && <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${group.dotColor}`} />}
+                {isOpen
+                  ? <ChevronDown size={10} className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
+                  : <ChevronRight size={10} className="text-slate-700 group-hover:text-slate-500 flex-shrink-0 transition-colors" />
+                }
+              </div>
             </button>
             {isOpen && (
-              <div className="mt-0.5 ml-3 pl-3 space-y-0.5" style={{ borderLeft: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="mt-0.5 ml-4 pl-2.5 space-y-0.5" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
                 {group.items.map(item => {
                   const itemActive = location.pathname.startsWith(item.route.replace(/\/dashboard$/, ''))
                   return (
@@ -198,11 +212,20 @@ function SidebarNav({
                       key={item.route}
                       to={item.route}
                       onClick={onNavigate}
-                      className={`flex items-center rounded-lg px-2.5 py-1.5 text-[12px] transition-all duration-100 relative
-                        ${itemActive ? 'text-white font-semibold bg-white/[0.07]' : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]'}`}
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] transition-all duration-100
+                        ${itemActive
+                          ? 'text-white font-semibold'
+                          : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.04]'}`}
+                      style={itemActive ? {
+                        background: `linear-gradient(90deg, ${primaryColor}18 0%, ${primaryColor}06 100%)`,
+                        borderLeft: `2px solid ${primaryColor}`,
+                        paddingLeft: '8px',
+                      } : {}}
                     >
-                      {itemActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full" style={{ background: primaryColor }} />}
-                      <span className="truncate">{item.label}</span>
+                      {itemActive && (
+                        <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: primaryColor }} />
+                      )}
+                      <span className="truncate capitalize">{item.label}</span>
                     </NavLink>
                   )
                 })}
@@ -317,11 +340,20 @@ export default function AppShell() {
         <div
           className={`relative flex items-center gap-3 border-b flex-shrink-0 overflow-hidden
             ${collapsed ? 'px-3 py-4 justify-center' : 'px-4 py-4'}`}
+
           style={{ borderColor: 'rgba(255,255,255,0.07)', minHeight: 64 }}
         >
           <div className="absolute inset-0 pointer-events-none opacity-20"
             style={{ background: `radial-gradient(ellipse at top left, ${primaryColor}40 0%, transparent 65%)` }} />
-          <LogoBlock showText={!collapsed} />
+          {/* Aurora blobs */}
+          {!collapsed && <>
+            <div className="aurora-blob-1 z-0" />
+            <div className="aurora-blob-2 z-0" />
+            <div className="aurora-blob-3 z-0" />
+          </>}
+          <div className="relative z-10">
+            <LogoBlock showText={!collapsed} />
+          </div>
         </div>
 
         {/* Nav */}
@@ -537,10 +569,10 @@ export default function AppShell() {
         ═══════════════════════════════════════════════════ */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
           style={{
-            background: 'rgba(10,15,26,0.97)',
-            borderTop: '1px solid rgba(255,255,255,0.09)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
+            background: 'rgba(7,11,18,0.97)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             paddingBottom: 'env(safe-area-inset-bottom)',
           }}>
           {MOBILE_NAV.map(({ icon: Icon, label, route, exact }) => {
@@ -554,17 +586,28 @@ export default function AppShell() {
                   if (route) { navigate(route) }
                   else { setMobileOpen(true) }
                 }}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition-all relative"
               >
-                <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isActive ? 'bg-emerald-500/20' : ''}`}>
+                {/* Active pill */}
+                {isActive && (
+                  <span className="absolute top-1 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full"
+                    style={{ background: primaryColor }} />
+                )}
+                <div className={`w-9 h-9 flex items-center justify-center rounded-2xl transition-all duration-200 ${
+                  isActive ? '' : 'bg-transparent'
+                }`}
+                  style={isActive ? {
+                    background: `linear-gradient(135deg, ${primaryColor}28, ${primaryColor}10)`,
+                    boxShadow: `0 0 12px ${primaryColor}30`,
+                  } : {}}>
                   <Icon
-                    size={18}
-                    className="transition-colors"
-                    style={{ color: isActive ? primaryColor : '#64748b' }}
+                    size={isActive ? 20 : 18}
+                    className="transition-all duration-200"
+                    style={{ color: isActive ? primaryColor : '#475569' }}
                   />
                 </div>
-                <span className="text-[10px] font-semibold leading-none"
-                  style={{ color: isActive ? primaryColor : '#64748b' }}>
+                <span className="text-[9px] font-bold leading-none capitalize mt-0.5"
+                  style={{ color: isActive ? primaryColor : '#475569' }}>
                   {label}
                 </span>
               </button>
