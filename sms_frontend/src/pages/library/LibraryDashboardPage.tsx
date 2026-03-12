@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Users, RotateCcw, AlertTriangle, Clock, TrendingUp, Star, ChevronRight, Loader2 } from 'lucide-react'
+import { BookOpen, Users, RotateCcw, AlertTriangle, Clock, TrendingUp, Star, ChevronRight, Loader2, Globe, ExternalLink } from 'lucide-react'
 import { apiClient } from '../../api/client'
+
+const FREE_DIGITAL_RESOURCES = [
+  { name: 'Kenya Education Cloud', url: 'https://kec.ac.ke/', icon: '🇰🇪', color: '#10b981', tag: 'Official CBC · Free', desc: 'KICD platform — CBC e-books, radio lessons, OER for all levels.' },
+  { name: 'KICD OER Portal', url: 'https://oer.kec.ac.ke/', icon: '📂', color: '#6366f1', tag: 'Open License', desc: 'Openly licensed CBC materials — free to use and redistribute.' },
+  { name: 'OpenStax Free Textbooks', url: 'https://openstax.org/', icon: '🔓', color: '#ef4444', tag: 'Free PDF Download', desc: 'Peer-reviewed Biology, Chemistry, Physics, Math PDFs — completely free.' },
+  { name: 'Khan Academy', url: 'https://www.khanacademy.org/', icon: '🌐', color: '#14b8a6', tag: 'Free Forever', desc: 'Math, science, computing — aligned with Form 1-4 KCSE curriculum.' },
+  { name: 'CK-12 Foundation', url: 'https://www.ck12.org/', icon: '📗', color: '#f59e0b', tag: 'Free Textbooks', desc: 'Free customisable textbooks and simulations for all secondary subjects.' },
+  { name: 'KNEC Past Papers', url: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', icon: '📝', color: '#f97316', tag: 'Official Papers', desc: 'Official KCSE past papers from Kenya National Examinations Council.' },
+]
 
 interface DashboardData {
   total_resources: number
@@ -216,6 +225,33 @@ export default function LibraryDashboardPage() {
               <p className="text-sm text-slate-500 text-center py-6">No recent activity</p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Free Digital Resources */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-display font-bold text-white flex items-center gap-2">
+            <Globe size={18} className="text-indigo-400" /> Free Digital Resources
+            <span className="text-xs text-slate-500">— Available to all schools on RSM</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {FREE_DIGITAL_RESOURCES.map(r => (
+            <a key={r.name} href={r.url} target="_blank" rel="noopener noreferrer"
+              className="rounded-2xl border p-4 flex items-start gap-3 hover:border-slate-500 transition-all group"
+              style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: `${r.color}20` }}>{r.icon}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">{r.name}</p>
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style={{ background: `${r.color}20`, color: r.color }}>{r.tag}</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">{r.desc}</p>
+              </div>
+              <ExternalLink size={13} className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 mt-0.5" />
+            </a>
+          ))}
         </div>
       </div>
 

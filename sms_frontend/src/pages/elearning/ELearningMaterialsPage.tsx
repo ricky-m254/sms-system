@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2, CheckCircle } from 'lucide-react'
+import { Search, Download, Play, Book, FileText, ExternalLink, Youtube, Loader2, Globe, BookOpen } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
 
-type TabId = 'all' | 'videos' | 'ebooks' | 'documents' | 'papers'
+type TabId = 'all' | 'videos' | 'ebooks' | 'papers' | 'platforms'
 
 interface Material {
   id: number
@@ -19,45 +19,62 @@ interface Material {
   course: number
 }
 
-const SUBJECTS = ['All Subjects', 'Mathematics', 'English', 'Kiswahili', 'Biology', 'Chemistry', 'Physics', 'History', 'Geography', 'Computer Studies']
+const SUBJECTS = ['All Subjects', 'Mathematics', 'English', 'Kiswahili', 'Biology', 'Chemistry', 'Physics', 'History', 'Geography', 'Computer Studies', 'Business']
 
 const VIDEOS = [
-  { id: 1,  title: 'KCSE Mathematics — Quadratic Equations Step By Step', subject: 'Mathematics', level: 'Form 3', duration: '42:15', views: 1840, from: '#1d4ed8', to: '#3b82f6', channel: 'Elimu Channel Kenya', youtubeId: 'xGXLkSCDZLg' },
-  { id: 2,  title: 'CBC Biology — Cell Division: Mitosis & Meiosis Explained', subject: 'Biology', level: 'Form 2', duration: '38:40', views: 2210, from: '#166534', to: '#22c55e', channel: 'Science Kenya', youtubeId: '2Lsg5iLM5fk' },
-  { id: 3,  title: 'Chemistry — Organic Compounds & Reactions Simplified', subject: 'Chemistry', level: 'Form 3', duration: '51:20', views: 1650, from: '#581c87', to: '#a855f7', channel: 'KLB Digital', youtubeId: 'VGHmQZXB1z4' },
-  { id: 4,  title: 'Physics — Electromagnetism & Faraday\'s Law', subject: 'Physics', level: 'Form 3', duration: '45:00', views: 1430, from: '#0c4a6e', to: '#0ea5e9', channel: 'Physics Kenya', youtubeId: 'hFAOXdXZ5TM' },
-  { id: 5,  title: 'English — Essay Writing: Structure & Technique', subject: 'English', level: 'Form 3', duration: '28:30', views: 980,  from: '#065f46', to: '#10b981', channel: 'KLB Digital', youtubeId: 'jNJyXj8KpyA' },
-  { id: 6,  title: 'Kiswahili — Fasihi: Uchambuzi wa Shairi', subject: 'Kiswahili', level: 'Form 3', duration: '35:10', views: 760,  from: '#92400e', to: '#f59e0b', channel: 'Kiswahili Mastery', youtubeId: 'FXe7ZeIg9sg' },
-  { id: 7,  title: 'Geography — Plate Tectonics & Earthquakes Kenya', subject: 'Geography', level: 'Form 3', duration: '40:00', views: 890,  from: '#14532d', to: '#84cc16', channel: 'Geo Kenya', youtubeId: 'mXaad0rsV38' },
-  { id: 8,  title: 'History — Colonial Kenya & The Freedom Struggle', subject: 'History', level: 'Form 2', duration: '55:20', views: 1120, from: '#7c2d12', to: '#f97316', channel: 'History Kenya', youtubeId: '8YVS_6sDCCE' },
-  { id: 9,  title: 'Computer Studies — Python Programming Basics', subject: 'Computer Studies', level: 'Form 2', duration: '62:40', views: 3200, from: '#1e1b4b', to: '#6366f1', channel: 'CodeKenya', youtubeId: 'kqtD5dpn9C8' },
-  { id: 10, title: 'Mathematics — Matrices & Transformations', subject: 'Mathematics', level: 'Form 4', duration: '48:00', views: 1340, from: '#1d4ed8', to: '#3b82f6', channel: 'Elimu Channel Kenya', youtubeId: 'rowWM-MijXU' },
+  { id: 1,  title: 'KCSE Mathematics — Quadratic Equations Step By Step', subject: 'Mathematics', level: 'Form 3', duration: '42 min', views: '1.8K', from: '#1d4ed8', to: '#3b82f6', channel: 'Elimu Channel Kenya', youtubeId: 'xGXLkSCDZLg', searchQ: 'KCSE Mathematics Quadratic Equations Kenya Form 3' },
+  { id: 2,  title: 'CBC Biology — Cell Division: Mitosis & Meiosis Explained', subject: 'Biology', level: 'Form 2', duration: '38 min', views: '2.2K', from: '#166534', to: '#22c55e', channel: 'Science Kenya', youtubeId: '2Lsg5iLM5fk', searchQ: 'CBC Biology Cell Division Mitosis Meiosis Kenya Form 2' },
+  { id: 3,  title: 'Chemistry — Organic Compounds & Reactions Simplified', subject: 'Chemistry', level: 'Form 3', duration: '51 min', views: '1.6K', from: '#581c87', to: '#a855f7', channel: 'KLB Digital', youtubeId: 'VGHmQZXB1z4', searchQ: 'KCSE Chemistry Organic Compounds Kenya Form 3' },
+  { id: 4,  title: 'Physics — Electromagnetism & Faraday\'s Law', subject: 'Physics', level: 'Form 3', duration: '45 min', views: '1.4K', from: '#0c4a6e', to: '#0ea5e9', channel: 'Physics Kenya', youtubeId: 'hFAOXdXZ5TM', searchQ: 'KCSE Physics Electromagnetism Faraday Law Kenya' },
+  { id: 5,  title: 'English — Essay Writing: Structure & Technique for KCSE', subject: 'English', level: 'Form 3', duration: '28 min', views: '980', from: '#065f46', to: '#10b981', channel: 'KLB Digital', youtubeId: 'jNJyXj8KpyA', searchQ: 'KCSE English Essay Writing Kenya Form 3' },
+  { id: 6,  title: 'Kiswahili — Fasihi: Uchambuzi wa Shairi la KCSE', subject: 'Kiswahili', level: 'Form 3', duration: '35 min', views: '760', from: '#92400e', to: '#f59e0b', channel: 'Kiswahili Mastery', youtubeId: 'FXe7ZeIg9sg', searchQ: 'KCSE Kiswahili Fasihi Uchambuzi Shairi' },
+  { id: 7,  title: 'Geography — Plate Tectonics & Earthquakes (Kenya)', subject: 'Geography', level: 'Form 3', duration: '40 min', views: '890', from: '#14532d', to: '#84cc16', channel: 'Geo Kenya', youtubeId: 'mXaad0rsV38', searchQ: 'KCSE Geography Plate Tectonics Kenya' },
+  { id: 8,  title: 'History — Colonial Kenya & The Freedom Struggle', subject: 'History', level: 'Form 2', duration: '55 min', views: '1.1K', from: '#7c2d12', to: '#f97316', channel: 'History Kenya', youtubeId: '8YVS_6sDCCE', searchQ: 'KCSE History Colonial Kenya Freedom Struggle Form 2' },
+  { id: 9,  title: 'Computer Studies — Python Programming Basics for Beginners', subject: 'Computer Studies', level: 'Form 2', duration: '62 min', views: '3.2K', from: '#1e1b4b', to: '#6366f1', channel: 'CodeKenya', youtubeId: 'rfscVS0vtbw', searchQ: 'Python Programming Basics Kenya Computer Studies KCSE' },
+  { id: 10, title: 'Mathematics — Matrices & Transformations KCSE', subject: 'Mathematics', level: 'Form 4', duration: '48 min', views: '1.3K', from: '#1d4ed8', to: '#3b82f6', channel: 'Elimu Channel Kenya', youtubeId: 'rowWM-MijXU', searchQ: 'KCSE Mathematics Matrices Transformations Kenya Form 4' },
+  { id: 11, title: 'Biology — Genetics & Heredity Explained (KCSE)', subject: 'Biology', level: 'Form 4', duration: '44 min', views: '1.5K', from: '#166534', to: '#22c55e', channel: 'Biology Kenya', youtubeId: 'v1fVGaqTFgM', searchQ: 'KCSE Biology Genetics Heredity Kenya Form 4' },
+  { id: 12, title: 'Business Studies — Financial Statements & Analysis', subject: 'Business', level: 'Form 4', duration: '38 min', views: '720', from: '#1e3a5f', to: '#64748b', channel: 'Business Kenya', youtubeId: '8cCn2TNQZM0', searchQ: 'KCSE Business Studies Financial Statements Kenya Form 4' },
 ]
 
 const EBOOKS = [
-  { id: 1, title: 'KLB Mathematics Form 3', author: 'Kenya Literature Bureau', subject: 'Mathematics', pages: 384, year: 2022, from: '#1d4ed8', to: '#3b82f6', icon: '📐', available: true },
-  { id: 2, title: 'KLB Biology Form 2 Textbook', author: 'Kenya Literature Bureau', subject: 'Biology', pages: 312, year: 2022, from: '#166534', to: '#22c55e', icon: '🧬', available: true },
-  { id: 3, title: 'KLB Chemistry Form 3', author: 'Kenya Literature Bureau', subject: 'Chemistry', pages: 368, year: 2023, from: '#581c87', to: '#a855f7', icon: '⚗️', available: true },
-  { id: 4, title: 'KLB Physics Form 3', author: 'Kenya Literature Bureau', subject: 'Physics', pages: 342, year: 2023, from: '#0c4a6e', to: '#0ea5e9', icon: '⚡', available: true },
-  { id: 5, title: 'Longman English Form 4', author: 'Longman Kenya', subject: 'English', pages: 280, year: 2022, from: '#065f46', to: '#10b981', icon: '📖', available: true },
-  { id: 6, title: 'Kiswahili Sanifu Form 3', author: 'Oxford University Press', subject: 'Kiswahili', pages: 260, year: 2021, from: '#92400e', to: '#f59e0b', icon: '📚', available: false },
-  { id: 7, title: 'Longman History & Govt Form 3', author: 'Longman Kenya', subject: 'History', pages: 298, year: 2022, from: '#7c2d12', to: '#f97316', icon: '🏛️', available: true },
-  { id: 8, title: 'Oxford Geography Form 3', author: 'Oxford Kenya', subject: 'Geography', pages: 310, year: 2022, from: '#14532d', to: '#84cc16', icon: '🌍', available: true },
-  { id: 9, title: 'Computer Studies for Secondary', author: 'KICD Kenya', subject: 'Computer Studies', pages: 224, year: 2023, from: '#1e1b4b', to: '#6366f1', icon: '💻', available: true },
-  { id: 10, title: 'Business Studies Form 4', author: 'Kenya Literature Bureau', subject: 'Business', pages: 350, year: 2022, from: '#1e3a5f', to: '#64748b', icon: '💼', available: true },
+  { id: 1,  title: 'KLB Mathematics Form 3', subject: 'Mathematics', pages: 384, year: 2022, icon: '📐', from: '#1d4ed8', to: '#3b82f6', source: 'OpenStax', url: 'https://openstax.org/books/college-algebra-2e/pages/1-introduction', badge: 'Free PDF' },
+  { id: 2,  title: 'KLB Biology Form 2 Textbook', subject: 'Biology', pages: 312, year: 2022, icon: '🧬', from: '#166534', to: '#22c55e', source: 'OpenStax', url: 'https://openstax.org/books/biology-2e/pages/1-introduction', badge: 'Free PDF' },
+  { id: 3,  title: 'KLB Chemistry Form 3', subject: 'Chemistry', pages: 368, year: 2023, icon: '⚗️', from: '#581c87', to: '#a855f7', source: 'OpenStax', url: 'https://openstax.org/books/chemistry-2e/pages/1-introduction', badge: 'Free PDF' },
+  { id: 4,  title: 'KLB Physics Form 3', subject: 'Physics', pages: 342, year: 2023, icon: '⚡', from: '#0c4a6e', to: '#0ea5e9', source: 'OpenStax', url: 'https://openstax.org/books/university-physics-volume-1/pages/1-introduction', badge: 'Free PDF' },
+  { id: 5,  title: 'Longman English Form 4', subject: 'English', pages: 280, year: 2022, icon: '📖', from: '#065f46', to: '#10b981', source: 'OpenStax', url: 'https://openstax.org/books/writing-guide/pages/1-unit-introduction', badge: 'Free PDF' },
+  { id: 6,  title: 'Kiswahili Sanifu Form 3', subject: 'Kiswahili', pages: 260, year: 2021, icon: '📚', from: '#92400e', to: '#f59e0b', source: 'KICD OER', url: 'https://oer.kec.ac.ke/', badge: 'Free' },
+  { id: 7,  title: 'Longman History & Govt Form 3', subject: 'History', pages: 298, year: 2022, icon: '🏛️', from: '#7c2d12', to: '#f97316', source: 'CK-12', url: 'https://www.ck12.org/browse/#c/social-studies', badge: 'Free' },
+  { id: 8,  title: 'Oxford Geography Form 3', subject: 'Geography', pages: 310, year: 2022, icon: '🌍', from: '#14532d', to: '#84cc16', source: 'CK-12', url: 'https://www.ck12.org/earth-science/', badge: 'Free' },
+  { id: 9,  title: 'Computer Studies for Secondary', subject: 'Computer Studies', pages: 224, year: 2023, icon: '💻', from: '#1e1b4b', to: '#6366f1', source: "CS50 Harvard", url: 'https://cs50.harvard.edu/x/2024/', badge: 'Free' },
+  { id: 10, title: 'Business Studies Form 4', subject: 'Business', pages: 350, year: 2022, icon: '💼', from: '#1e3a5f', to: '#64748b', source: 'OpenStax', url: 'https://openstax.org/books/principles-of-economics-3e/pages/1-introduction', badge: 'Free PDF' },
+  { id: 11, title: 'Pre-Primary Mathematics CBC', subject: 'Mathematics', pages: 180, year: 2023, icon: '🔢', from: '#1d4ed8', to: '#818cf8', source: 'Kenya Edu Cloud', url: 'https://kec.ac.ke/', badge: 'CBC Official' },
+  { id: 12, title: 'Agriculture Form 2 Kenya', subject: 'Agriculture', pages: 256, year: 2022, icon: '🌱', from: '#052e16', to: '#16a34a', source: 'CK-12', url: 'https://www.ck12.org/browse/', badge: 'Free' },
 ]
 
 const PAPERS = [
-  { id: 1, title: 'KCSE Mathematics 2024 Paper 1 & 2', subject: 'Mathematics', year: 2024, type: 'KCSE', size: '3.1 MB', markscheme: true },
-  { id: 2, title: 'KCSE Mathematics 2023 Paper 1 & 2', subject: 'Mathematics', year: 2023, type: 'KCSE', size: '2.9 MB', markscheme: true },
-  { id: 3, title: 'KCSE Biology 2024 Paper 1, 2 & 3', subject: 'Biology', year: 2024, type: 'KCSE', size: '4.2 MB', markscheme: true },
-  { id: 4, title: 'KCSE Chemistry 2024 Paper 1, 2 & 3', subject: 'Chemistry', year: 2024, type: 'KCSE', size: '3.8 MB', markscheme: true },
-  { id: 5, title: 'KCSE Physics 2024 Paper 1, 2 & 3', subject: 'Physics', year: 2024, type: 'KCSE', size: '3.6 MB', markscheme: true },
-  { id: 6, title: 'KCSE English 2024 Paper 1, 2 & 3', subject: 'English', year: 2024, type: 'KCSE', size: '2.4 MB', markscheme: true },
-  { id: 7, title: 'Form 3 End-Term Exam — Mathematics 2025', subject: 'Mathematics', year: 2025, type: 'School Exam', size: '0.9 MB', markscheme: false },
-  { id: 8, title: 'Form 2 Mid-Term — Biology 2025', subject: 'Biology', year: 2025, type: 'School Exam', size: '0.7 MB', markscheme: false },
-  { id: 9, title: 'Form 3 CAT 2 — Chemistry 2026', subject: 'Chemistry', year: 2026, type: 'School Exam', size: '0.6 MB', markscheme: false },
-  { id: 10, title: 'Form 4 Mocks — All Subjects 2025', subject: 'Mathematics', year: 2025, type: 'School Exam', size: '8.4 MB', markscheme: true },
+  { id: 1,  title: 'KCSE Mathematics 2023 Paper 1 & 2', subject: 'Mathematics', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 2,  title: 'KCSE Mathematics 2022 Paper 1 & 2', subject: 'Mathematics', year: 2022, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 3,  title: 'KCSE Biology 2023 Paper 1, 2 & 3', subject: 'Biology', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 4,  title: 'KCSE Chemistry 2023 Paper 1, 2 & 3', subject: 'Chemistry', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 5,  title: 'KCSE Physics 2023 Paper 1, 2 & 3', subject: 'Physics', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 6,  title: 'KCSE English 2023 Paper 1, 2 & 3', subject: 'English', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 7,  title: 'KCSE Kiswahili 2023 Paper 1 & 2', subject: 'Kiswahili', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 8,  title: 'KCSE History & Govt 2023 Paper 1 & 2', subject: 'History', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 9,  title: 'KCSE Geography 2023 Paper 1 & 2', subject: 'Geography', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 10, title: 'KCSE Computer Studies 2023 Paper 1 & 2', subject: 'Computer Studies', year: 2023, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 11, title: 'KCSE Mathematics 2021 Paper 1 & 2', subject: 'Mathematics', year: 2021, type: 'KCSE', markscheme: true, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+  { id: 12, title: 'KCSE Biology 2021 Paper 1, 2 & 3', subject: 'Biology', year: 2021, type: 'KCSE', markscheme: false, knecUrl: 'https://www.knec.ac.ke/index.php/component/content/article/past-papers', altUrl: 'https://learner.co.ke/past-papers/' },
+]
+
+const FREE_PLATFORMS = [
+  { name: 'Kenya Education Cloud', short: 'KEC', desc: 'Official KICD platform — CBC curriculum, radio lessons, e-books and OER for all levels.', url: 'https://kec.ac.ke/', icon: '🇰🇪', color: '#10b981', tag: 'Official · Free' },
+  { name: 'KICD OER Portal', short: 'OER', desc: 'Openly licensed CBC materials with no restrictions — integrate directly into school catalogs.', url: 'https://oer.kec.ac.ke/', icon: '📂', color: '#6366f1', tag: 'Open License' },
+  { name: 'Khan Academy', short: 'KA', desc: 'World-class free math, science, computing — aligns with Form 1-4 KCSE curriculum.', url: 'https://www.khanacademy.org/', icon: '🌐', color: '#14b8a6', tag: 'Free Forever' },
+  { name: 'CK-12 Foundation', short: 'CK12', desc: 'Free textbooks, simulations and practice for all secondary school subjects.', url: 'https://www.ck12.org/', icon: '📗', color: '#f59e0b', tag: 'Free Textbooks' },
+  { name: 'OpenStax', short: 'OS', desc: 'Peer-reviewed, free university-level textbooks in PDF — Biology, Chemistry, Physics, Math.', url: 'https://openstax.org/', icon: '🔓', color: '#ef4444', tag: 'Free PDF Download' },
+  { name: 'M-Shule', short: 'MS', desc: 'Mobile-first KCPE & KCSE learning platform built for Kenyan students with SMS access.', url: 'https://m-shule.com/', icon: '📱', color: '#8b5cf6', tag: 'Kenya · Mobile' },
+  { name: 'Elimuspace', short: 'ES', desc: 'Kenyan CBC resources, revision materials and videos curated for all forms.', url: 'https://elimuspace.co.ke/', icon: '🎓', color: '#0ea5e9', tag: 'Kenya Focused' },
+  { name: 'CS50 Harvard (Free)', short: 'CS50', desc: "Harvard's free Computer Science course — ideal for KCSE Computer Studies Form 2-4.", url: 'https://cs50.harvard.edu/x/', icon: '💻', color: '#64748b', tag: 'Free Certificate' },
 ]
 
 function GlassCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -74,11 +91,12 @@ function GlassCard({ children, className = '' }: { children: React.ReactNode; cl
 function VideoCard({ v }: { v: typeof VIDEOS[0] }) {
   const [thumbError, setThumbError] = useState(false)
   const thumbUrl = `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
-  const ytLink = `https://www.youtube.com/watch?v=${v.youtubeId}`
+  const ytSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(v.searchQ)}`
+  const ytDirectUrl = `https://www.youtube.com/watch?v=${v.youtubeId}`
 
   return (
     <GlassCard className="overflow-hidden hover:border-rose-500/30 cursor-pointer group">
-      <a href={ytLink} target="_blank" rel="noopener noreferrer">
+      <a href={thumbError ? ytSearchUrl : ytDirectUrl} target="_blank" rel="noopener noreferrer">
         <div className="h-36 relative flex items-center justify-center overflow-hidden">
           {!thumbError ? (
             <img
@@ -93,20 +111,18 @@ function VideoCard({ v }: { v: typeof VIDEOS[0] }) {
             <Play size={22} className="text-white ml-0.5" fill="white" />
           </div>
           <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-xs font-bold bg-black/70 text-white backdrop-blur-sm">{v.duration}</div>
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-black/70 text-white backdrop-blur-sm capitalize">{v.level}</div>
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-black/70 text-white backdrop-blur-sm">{v.level}</div>
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-red-600/90 text-white">
             <Youtube size={10} /> YouTube
           </div>
         </div>
         <div className="p-4">
-          <p className="text-sm font-bold text-white leading-snug group-hover:text-rose-300 transition-colors capitalize">{v.title}</p>
+          <p className="text-sm font-bold text-white leading-snug group-hover:text-rose-300 transition-colors line-clamp-2">{v.title}</p>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-slate-400 capitalize">{v.channel}</span>
-            <span className="text-xs text-slate-500">{v.views.toLocaleString()} views</span>
+            <span className="text-xs text-slate-400">{v.channel}</span>
+            <span className="text-xs text-slate-500">{v.views} views</span>
           </div>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="px-2 py-0.5 rounded-md text-xs font-semibold capitalize" style={{ background: 'rgba(239,68,68,0.15)', color: '#fca5a5' }}>{v.subject}</span>
-          </div>
+          <span className="mt-2 inline-block px-2 py-0.5 rounded-md text-xs font-semibold" style={{ background: 'rgba(239,68,68,0.15)', color: '#fca5a5' }}>{v.subject}</span>
         </div>
       </a>
     </GlassCard>
@@ -119,12 +135,6 @@ export default function ELearningMaterialsPage() {
   const [tab, setTab] = useState<TabId>('all')
   const [subject, setSubject] = useState('All Subjects')
   const [search, setSearch] = useState('')
-  const [paperToast, setPaperToast] = useState<string | null>(null)
-
-  function showPaperToast(msg: string) {
-    setPaperToast(msg)
-    setTimeout(() => setPaperToast(null), 4000)
-  }
 
   useEffect(() => {
     apiClient.get('elearning/materials/')
@@ -142,12 +152,13 @@ export default function ELearningMaterialsPage() {
 
   const showVideos    = tab === 'all' || tab === 'videos'
   const showEbooks    = tab === 'all' || tab === 'ebooks'
-  const showDocs      = tab === 'all' || tab === 'documents'
   const showPapers    = tab === 'all' || tab === 'papers'
+  const showPlatforms = tab === 'all' || tab === 'platforms'
+  const showSchoolDocs = tab === 'all'
 
-  const filteredVideos   = VIDEOS.filter(v => matchesSearch(v.title, v.subject))
-  const filteredEbooks   = EBOOKS.filter(b => matchesSearch(b.title, b.subject))
-  const filteredPapers   = PAPERS.filter(p => matchesSearch(p.title, p.subject))
+  const filteredVideos = VIDEOS.filter(v => matchesSearch(v.title, v.subject))
+  const filteredEbooks = EBOOKS.filter(b => matchesSearch(b.title, b.subject))
+  const filteredPapers = PAPERS.filter(p => matchesSearch(p.title, p.subject))
 
   const filteredMaterials = materials.filter(m =>
     m.is_active &&
@@ -156,243 +167,271 @@ export default function ELearningMaterialsPage() {
 
   const openMaterial = (m: Material) => {
     const url = m.link_url || m.file_url || m.content
-    if (url && url.startsWith('http')) {
-      window.open(url, '_blank', 'noopener,noreferrer')
-    }
+    if (url && url.startsWith('http')) window.open(url, '_blank', 'noopener,noreferrer')
   }
 
-  const totalCount = filteredVideos.length + filteredEbooks.length + filteredMaterials.length + filteredPapers.length
+  const totalCount = filteredVideos.length + filteredEbooks.length + filteredMaterials.length + filteredPapers.length + FREE_PLATFORMS.length
 
   const TABS = [
-    { id: 'all' as TabId,       label: 'All Materials', icon: FileText, count: totalCount },
-    { id: 'videos' as TabId,    label: 'Videos',        icon: Play,     count: VIDEOS.length },
-    { id: 'ebooks' as TabId,    label: 'E-Books',       icon: Book,     count: EBOOKS.length },
-    { id: 'documents' as TabId, label: 'Documents',     icon: FileText, count: materials.length },
-    { id: 'papers' as TabId,    label: 'Past Papers',   icon: FileText, count: PAPERS.length },
+    { id: 'all' as TabId,       label: 'All',          count: totalCount },
+    { id: 'videos' as TabId,    label: 'Video Lessons', count: VIDEOS.length },
+    { id: 'ebooks' as TabId,    label: 'Free E-Books',  count: EBOOKS.length },
+    { id: 'papers' as TabId,    label: 'Past Papers',   count: PAPERS.length },
+    { id: 'platforms' as TabId, label: 'Platforms',     count: FREE_PLATFORMS.length },
   ]
 
   return (
     <div className="space-y-6">
-      {paperToast && (
-        <div
-          className="fixed top-5 right-5 z-[9999] flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-2xl"
-          style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399' }}
-        >
-          <CheckCircle size={15} />
-          {paperToast}
-        </div>
-      )}
       <PageHero
-        badge="E-LEARNING"
+        badge="LEARNING HUB"
         badgeColor="violet"
-        title="Learning Materials"
-        subtitle="Textbooks, videos, and digital resources per subject"
-        icon="🎓"
+        title="Student Resource Centre"
+        subtitle="Free videos, textbooks, past papers and platforms — available to every school using this module"
+        icon="🌍"
       />
-      <div>
-        <h1 className="text-2xl font-display font-bold text-white capitalize">Learning Materials</h1>
-        <p className="text-slate-400 text-sm mt-1 capitalize">CBC Kenya videos, e-books, study notes, and KCSE past papers</p>
+
+      <div className="rounded-3xl px-6 py-5 flex flex-wrap gap-4 items-center justify-between"
+        style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.12) 0%,rgba(99,102,241,0.08) 100%)', border: '1px solid rgba(16,185,129,0.2)' }}>
+        <div>
+          <p className="text-sm font-bold text-emerald-300">Universal Access — No Login Required for Free Resources</p>
+          <p className="text-xs text-slate-400 mt-0.5">All {VIDEOS.length} videos · {EBOOKS.length} free textbooks · {PAPERS.length} past papers · {FREE_PLATFORMS.length} learning platforms available to every school on RSM.</p>
+        </div>
+        <div className="flex gap-3 text-center">
+          {[['📹', VIDEOS.length, 'Videos'], ['📚', EBOOKS.length, 'E-Books'], ['📝', PAPERS.length, 'Papers'], ['🌐', FREE_PLATFORMS.length, 'Platforms']].map(([icon, count, label]) => (
+            <div key={label as string} className="rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <p className="text-lg font-bold text-white">{icon} {count}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">{label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Tab Bar */}
-      <div className="flex flex-wrap gap-2">
-        {TABS.map(t => {
-          const Icon = t.icon
-          return (
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-wrap gap-2 flex-1">
+          {TABS.map(t => (
             <button
               key={t.id} onClick={() => setTab(t.id)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all capitalize"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
               style={tab === t.id
                 ? { background: '#10b981', color: '#fff' }
                 : { background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}
             >
-              <Icon size={14} /> {t.label}
+              {t.label}
               <span className="px-1.5 py-0.5 rounded-md text-xs" style={{ background: tab === t.id ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)' }}>
                 {t.count}
               </span>
             </button>
-          )
-        })}
-      </div>
-
-      {/* Search + Subject Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search materials…"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-          />
+          ))}
         </div>
-        <select
-          value={subject} onChange={e => setSubject(e.target.value)}
-          className="px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
-        >
-          {SUBJECTS.map(s => <option key={s} value={s} style={{ background: '#1e293b' }}>{s}</option>)}
-        </select>
+        <div className="flex gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="pl-9 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 w-48"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            />
+          </div>
+          <select
+            value={subject} onChange={e => setSubject(e.target.value)}
+            className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+          >
+            {SUBJECTS.map(s => <option key={s} value={s} style={{ background: '#1e293b' }}>{s}</option>)}
+          </select>
+        </div>
       </div>
 
-      {/* Videos — YouTube thumbnails */}
       {showVideos && filteredVideos.length > 0 && (
         <section>
-          <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-            <Youtube size={16} className="text-red-400" /> Video Lessons
-            <span className="text-xs text-slate-500">({filteredVideos.length})</span>
-            <span className="ml-auto text-xs text-slate-600 capitalize">Opens on YouTube</span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Youtube size={16} className="text-red-400" /> Video Lessons
+              <span className="text-xs text-slate-500">({filteredVideos.length}) — Opens on YouTube</span>
+            </h2>
+            <a href="https://www.youtube.com/results?search_query=KCSE+Kenya+CBC+lessons" target="_blank" rel="noopener noreferrer"
+              className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
+              More on YouTube <ExternalLink size={11} />
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredVideos.map(v => <VideoCard key={v.id} v={v} />)}
           </div>
         </section>
       )}
 
-      {/* E-Books */}
       {showEbooks && filteredEbooks.length > 0 && (
         <section>
-          <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-            <Book size={16} className="text-emerald-400" /> E-Books & Textbooks
-            <span className="text-xs text-slate-500">({filteredEbooks.length})</span>
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Book size={16} className="text-emerald-400" /> Free Textbooks & E-Books
+              <span className="text-xs text-slate-500">({filteredEbooks.length})</span>
+            </h2>
+            <a href="https://openstax.org/" target="_blank" rel="noopener noreferrer"
+              className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors">
+              OpenStax Library <ExternalLink size={11} />
+            </a>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredEbooks.map(b => (
-              <div
+              <a
                 key={b.id}
-                className="rounded-2xl border overflow-hidden hover:border-slate-600 cursor-pointer group p-0"
+                href={b.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl border overflow-hidden hover:border-emerald-500/40 cursor-pointer group block transition-all"
                 style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}
               >
-                <div className="h-40 flex flex-col items-center justify-center p-4 relative" style={{ background: `linear-gradient(160deg, ${b.from}, ${b.to})` }}>
+                <div className="h-36 flex flex-col items-center justify-center p-4 relative" style={{ background: `linear-gradient(160deg, ${b.from}, ${b.to})` }}>
                   <span className="text-4xl">{b.icon}</span>
-                  {!b.available && (
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-xs bg-black/50 text-amber-400 font-semibold">Out</div>
-                  )}
+                  <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-xs bg-black/60 text-emerald-300 font-bold">{b.badge}</div>
                 </div>
                 <div className="p-3">
-                  <p className="text-xs font-bold text-white leading-snug group-hover:text-emerald-300 transition-colors capitalize">{b.title}</p>
-                  <p className="text-xs text-slate-500 mt-1">{b.author}</p>
-                  <p className="text-xs text-slate-500">{b.pages} pg · {b.year}</p>
-                  <button
-                    onClick={() => b.available && window.open('https://www.klb.co.ke/e-resources', '_blank', 'noopener,noreferrer')}
-                    disabled={!b.available}
-                    className="mt-2 w-full py-1.5 rounded-lg text-xs font-semibold transition-all capitalize"
-                    style={b.available
-                      ? { background: 'rgba(16,185,129,0.15)', color: '#34d399' }
-                      : { background: 'rgba(255,255,255,0.05)', color: '#64748b', cursor: 'not-allowed' }}
-                  >
-                    {b.available ? 'Read Now' : 'Unavailable'}
-                  </button>
+                  <p className="text-xs font-bold text-white leading-snug group-hover:text-emerald-300 transition-colors">{b.title}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{b.source} · {b.pages} pg</p>
+                  <div className="mt-2 w-full py-1.5 rounded-lg text-xs font-semibold text-center"
+                    style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399' }}>
+                    Open Free
+                  </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </section>
       )}
 
-      {/* Study Notes & Documents from DB */}
-      {showDocs && (
+      {showSchoolDocs && (loadingMaterials || filteredMaterials.length > 0) && (
         <section>
           <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-            <FileText size={16} className="text-blue-400" /> Study Notes & Documents
-            <span className="text-xs text-slate-500">({filteredMaterials.length})</span>
+            <FileText size={16} className="text-blue-400" /> School Study Notes & Documents
+            <span className="text-xs text-slate-500">({filteredMaterials.length}) — School specific</span>
           </h2>
           {loadingMaterials ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 size={24} className="text-blue-400 animate-spin" />
-            </div>
+            <div className="flex items-center justify-center py-8"><Loader2 size={24} className="text-blue-400 animate-spin" /></div>
           ) : filteredMaterials.length === 0 ? (
-            <div
-              className="rounded-2xl border p-8 text-center"
-              style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}
-            >
-              <FileText size={32} className="mx-auto text-slate-600 mb-2" />
-              <p className="text-slate-400 text-sm">No documents found</p>
-            </div>
+            <GlassCard className="p-6 text-center text-slate-500 text-sm">No school documents uploaded yet</GlassCard>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {filteredMaterials.map(m => (
-                <div
-                  key={m.id}
-                  className="rounded-2xl border p-4 hover:border-slate-600 cursor-pointer"
-                  style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}
-                >
+                <GlassCard key={m.id} className="p-4 hover:border-slate-600 cursor-pointer" >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(59,130,246,0.15)' }}>
                       <FileText size={22} className="text-blue-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-white truncate capitalize">{m.title}</p>
-                      <p className="text-xs text-slate-400 capitalize">{m.course_name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{m.material_type} · Seq. {m.sequence}</p>
+                      <p className="text-sm font-bold text-white truncate">{m.title}</p>
+                      <p className="text-xs text-slate-400">{m.course_name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{m.material_type}</p>
                     </div>
                     <button
                       onClick={() => openMaterial(m)}
-                      title={m.link_url || m.file_url ? 'Open resource' : 'No URL available'}
+                      title={m.link_url || m.file_url ? 'Open resource' : 'No URL'}
                       className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:bg-blue-500/20"
                       style={{ background: 'rgba(59,130,246,0.1)', opacity: m.link_url || m.file_url ? 1 : 0.4 }}
                     >
                       <Download size={15} className="text-blue-400" />
                     </button>
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
           )}
         </section>
       )}
 
-      {/* Past Papers */}
       {showPapers && filteredPapers.length > 0 && (
         <section>
-          <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-            <FileText size={16} className="text-amber-400" /> Past Papers & Exams
-            <span className="text-xs text-slate-500">({filteredPapers.length})</span>
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <FileText size={16} className="text-amber-400" /> KCSE Past Papers
+              <span className="text-xs text-slate-500">({filteredPapers.length})</span>
+            </h2>
+            <a href="https://www.knec.ac.ke/index.php/component/content/article/past-papers" target="_blank" rel="noopener noreferrer"
+              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
+              KNEC Official Portal <ExternalLink size={11} />
+            </a>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredPapers.map(p => (
-              <div
-                key={p.id}
-                className="rounded-2xl border p-4 hover:border-slate-600 cursor-pointer"
-                style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}
-              >
+              <GlassCard key={p.id} className="p-4 hover:border-amber-500/20">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,158,11,0.15)' }}>
-                    <span className="text-xl">📝</span>
-                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
+                    style={{ background: 'rgba(245,158,11,0.15)' }}>📝</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate capitalize">{p.title}</p>
+                    <p className="text-sm font-bold text-white truncate">{p.title}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span
-                        className="px-2 py-0.5 rounded-md text-xs font-semibold capitalize"
-                        style={p.type === 'KCSE' ? { background: 'rgba(245,158,11,0.15)', color: '#fcd34d' } : { background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
-                      >
-                        {p.type} {p.year}
+                      <span className="px-2 py-0.5 rounded-md text-xs font-semibold"
+                        style={{ background: 'rgba(245,158,11,0.15)', color: '#fcd34d' }}>
+                        KCSE {p.year}
                       </span>
                       {p.markscheme && <span className="px-2 py-0.5 rounded-md text-xs" style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399' }}>Mark Scheme ✓</span>}
-                      <span className="text-xs text-slate-500">{p.size}</span>
                     </div>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      title="View on KNEC portal"
-                      onClick={() => window.open('https://www.knec.ac.ke/index.php/component/content/article/past-papers', '_blank', 'noopener,noreferrer')}
-                      className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-amber-500/20 transition-all"
+                    <a
+                      href={p.knecUrl}
+                      target="_blank" rel="noopener noreferrer"
+                      title="View on KNEC Official Portal"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-amber-500/20 transition-all"
                       style={{ background: 'rgba(245,158,11,0.1)' }}
                     >
                       <ExternalLink size={14} className="text-amber-400" />
-                    </button>
-                    <button
-                      title="Download from KNEC portal"
-                      onClick={() => showPaperToast('Visit knec.ac.ke to download this past paper as an official PDF')}
-                      className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-emerald-500/20 transition-all"
+                    </a>
+                    <a
+                      href={p.altUrl}
+                      target="_blank" rel="noopener noreferrer"
+                      title="Download Free PDF from Learner.co.ke"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-emerald-500/20 transition-all"
                       style={{ background: 'rgba(16,185,129,0.1)' }}
                     >
                       <Download size={14} className="text-emerald-400" />
-                    </button>
+                    </a>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
+            ))}
+          </div>
+          <div className="mt-3 rounded-xl px-4 py-3 text-xs text-slate-400 flex items-center gap-2"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <ExternalLink size={12} className="text-amber-400 flex-shrink-0" />
+            <span>Download button opens <strong className="text-slate-300">learner.co.ke</strong> — a free KCSE past paper repository.
+              Official link opens <strong className="text-slate-300">knec.ac.ke</strong> which is the authoritative source.</span>
+          </div>
+        </section>
+      )}
+
+      {showPlatforms && (
+        <section>
+          <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+            <Globe size={16} className="text-indigo-400" /> Free Learning Platforms
+            <span className="text-xs text-slate-500">({FREE_PLATFORMS.length}) — Available worldwide, no login required</span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {FREE_PLATFORMS.map(p => (
+              <a
+                key={p.name}
+                href={p.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl border p-5 flex flex-col gap-3 hover:border-slate-500 transition-all group"
+                style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                    style={{ background: `${p.color}20` }}>
+                    {p.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">{p.name}</p>
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style={{ background: `${p.color}20`, color: p.color }}>{p.tag}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed flex-1">{p.desc}</p>
+                <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: p.color }}>
+                  <BookOpen size={12} /> Open Platform <ExternalLink size={10} className="ml-auto" />
+                </div>
+              </a>
             ))}
           </div>
         </section>
@@ -400,3 +439,4 @@ export default function ELearningMaterialsPage() {
     </div>
   )
 }
+
