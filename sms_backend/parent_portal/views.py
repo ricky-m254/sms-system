@@ -775,3 +775,89 @@ class ParentLinkAdminDetailView(APIView):
         row.is_active = False
         row.save(update_fields=["is_active"])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ParentHealthView(APIView):
+    """Parent-facing health/medical data for linked student."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from school.models import MedicalRecord, ImmunizationRecord, ClinicVisit
+        child, children = _pick_child(request)
+        if not child:
+            return Response({"error": "No linked student found."}, status=404)
+
+        medical = MedicalRecord.objects.filter(student=child).values(
+            'id', 'blood_type', 'allergies', 'chronic_conditions',
+            'disability', 'emergency_contact_name', 'emergency_contact_phone',
+            'created_at', 'updated_at'
+        ).first()
+
+        immunizations = list(ImmunizationRecord.objects.filter(student=child).values(
+            'id', 'vaccine_name', 'date_administered', 'dose_number',
+            'administered_by', 'notes', 'next_due_date'
+        ).order_by('-date_administered')[:20])
+
+        clinic_visits = list(ClinicVisit.objects.filter(student=child).values(
+            'id', 'visit_date', 'complaint', 'diagnosis', 'treatment',
+            'referred_to_hospital', 'notes', 'created_at'
+        ).order_by('-visit_date')[:20])
+
+        return Response({
+            "child_id": child.id,
+            "child_name": child.full_name,
+            "medical_record": medical,
+            "immunizations": immunizations,
+            "clinic_visits": clinic_visits,
+            "children": [{"id": c.id, "name": c.full_name} for c in children],
+        })
+
+
+class ParentTransportView(APIView):
+    """Parent-facing transport data for linked student."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from transport.models import StudentTransport, Vehicle
+        child, children = _pick_child(request)
+        if not child:
+            return Response({"error": "No linked student found."}, status=404)
+
+        assignment = StudentTransport.objects.filter(student=child, is_active=True).select_related(
+            'route', 'route__vehicle', 'route__vehicle__driver',
+            'boarding_stop',
+        ).first()
+
+        if not assignment:
+            return Response({
+                "child_id": child.id,
+                "child_name": child.full_name,
+                "assignment": None,
+                "children": [{"id": c.id, "name": c.full_name} for c in children],
+            })
+
+        route = assignment.route
+        vehicle = route.vehicle if route else None
+        driver = vehicle.driver if vehicle else None
+
+        stops = list(route.stops.values('id', 'stop_name', 'sequence', 'estimated_time', 'landmark').order_by('sequence')) if route else []
+
+        return Response({
+            "child_id": child.id,
+            "child_name": child.full_name,
+            "assignment": {
+                "id": assignment.id,
+                "route_name": route.name if route else None,
+                "route_direction": route.direction if route else None,
+                "boarding_stop": assignment.boarding_stop.stop_name if assignment.boarding_stop else None,
+                "boarding_time": assignment.boarding_stop.estimated_time if assignment.boarding_stop else None,
+                "vehicle_registration": vehicle.registration if vehicle else None,
+                "vehicle_make": vehicle.make if vehicle else None,
+                "vehicle_model": vehicle.model if vehicle else None,
+                "vehicle_capacity": vehicle.capacity if vehicle else None,
+                "driver_name": f"{driver.first_name} {driver.last_name}".strip() if driver else None,
+                "driver_phone": driver.phone if driver else None,
+            },
+            "route_stops": stops,
+            "children": [{"id": c.id, "name": c.full_name} for c in children],
+        })

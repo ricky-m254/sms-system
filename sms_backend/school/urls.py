@@ -58,6 +58,7 @@ from .views import (
     StoreOrderRequestViewSet, StoreOrderReviewView, StoreDashboardView,
     DispensaryVisitViewSet, DispensaryPrescriptionViewSet, DispensaryStockViewSet, DispensaryDashboardView,
     DispensaryDeliveryNoteViewSet, DispensaryOutsideTreatmentViewSet,
+    StudentTransferViewSet,
     FinanceArrearsView,
     FinanceVoteHeadAllocationReportView,
     FinanceClassBalancesReportView,
@@ -130,6 +131,7 @@ router.register(r'dispensary/prescriptions', DispensaryPrescriptionViewSet, base
 router.register(r'dispensary/stock', DispensaryStockViewSet, basename='dispensary-stock')
 router.register(r'dispensary/delivery-notes', DispensaryDeliveryNoteViewSet, basename='dispensary-delivery-note')
 router.register(r'dispensary/outside-treatments', DispensaryOutsideTreatmentViewSet, basename='dispensary-outside-treatment')
+router.register(r'student-transfers', StudentTransferViewSet, basename='student-transfer')
 
 # ==========================================
 # URL PATTERNS

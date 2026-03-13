@@ -746,3 +746,31 @@ class TrainingEnrollmentSerializer(serializers.ModelSerializer):
 
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}".strip()
+
+
+class StaffTransferSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    from_department_name = serializers.SerializerMethodField()
+    to_department_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import StaffTransfer
+        model = StaffTransfer
+        fields = [
+            'id', 'employee', 'employee_name', 'transfer_type',
+            'from_department', 'from_department_name', 'from_position',
+            'to_department', 'to_department_name', 'to_position',
+            'destination_school', 'reason', 'effective_date', 'status',
+            'handover_completed', 'clearance_completed',
+            'notes', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'employee_name', 'from_department_name', 'to_department_name']
+
+    def get_employee_name(self, obj):
+        return f"{obj.employee.first_name} {obj.employee.last_name}".strip()
+
+    def get_from_department_name(self, obj):
+        return obj.from_department.name if obj.from_department else ''
+
+    def get_to_department_name(self, obj):
+        return obj.to_department.name if obj.to_department else ''

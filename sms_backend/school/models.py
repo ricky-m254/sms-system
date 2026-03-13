@@ -1743,3 +1743,38 @@ class DispensaryOutsideTreatment(models.Model):
 
     class Meta:
         ordering = ['-referral_date', '-created_at']
+
+
+class StudentTransfer(models.Model):
+    DIRECTION_CHOICES = [
+        ('OUT', 'Outgoing (Leaving this school)'),
+        ('IN', 'Incoming (Joining from another school)'),
+    ]
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='transfers')
+    direction = models.CharField(max_length=3, choices=DIRECTION_CHOICES, default='OUT')
+    other_school = models.CharField(max_length=255, help_text="Name of the destination or source school")
+    reason = models.TextField(blank=True)
+    effective_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    clearance_completed = models.BooleanField(default=False, help_text="Clearance form signed")
+    academic_records_issued = models.BooleanField(default=False, help_text="Transcripts/report cards issued")
+    transfer_letter_issued = models.BooleanField(default=False, help_text="Official transfer letter issued")
+    fee_balance_cleared = models.BooleanField(default=False, help_text="All outstanding fees cleared")
+    notes = models.TextField(blank=True)
+    processed_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.student} → {self.other_school} ({self.direction})"

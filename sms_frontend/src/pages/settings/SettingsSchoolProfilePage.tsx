@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { apiClient } from '../../api/client'
-import { Building2, Globe, Mail, MapPin, Phone, Upload, Check, AlertCircle } from 'lucide-react'
+import { Building2, Globe, Mail, MapPin, Phone, Upload, Check, AlertCircle, Palette } from 'lucide-react'
 import PageHero from '../../components/PageHero'
 
 interface ProfileData {
@@ -21,6 +21,9 @@ interface ProfileData {
   admission_number_mode: 'AUTO' | 'MANUAL'
   admission_number_prefix: string
   admission_number_padding: number
+  primary_color: string
+  secondary_color: string
+  font_family: string
 }
 
 const DEFAULTS: ProfileData = {
@@ -40,7 +43,19 @@ const DEFAULTS: ProfileData = {
   admission_number_mode: 'AUTO',
   admission_number_prefix: 'ADM-',
   admission_number_padding: 4,
+  primary_color: '#10b981',
+  secondary_color: '#0ea5e9',
+  font_family: 'Inter',
 }
+
+const FONT_OPTIONS = [
+  { value: 'Inter', label: 'Inter — Modern, clean' },
+  { value: 'Space Grotesk', label: 'Space Grotesk — Technical, strong' },
+  { value: 'Poppins', label: 'Poppins — Friendly, rounded' },
+  { value: 'Manrope', label: 'Manrope — Geometric, elegant' },
+  { value: 'DM Sans', label: 'DM Sans — Professional, balanced' },
+  { value: 'Outfit', label: 'Outfit — Contemporary, warm' },
+]
 
 const cls = 'w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-400 placeholder:text-slate-600 transition'
 
@@ -78,6 +93,9 @@ export default function SettingsSchoolProfilePage() {
           admission_number_mode: p.admission_number_mode ?? 'AUTO',
           admission_number_prefix: p.admission_number_prefix ?? 'ADM-',
           admission_number_padding: p.admission_number_padding ?? 4,
+          primary_color: p.primary_color ?? '#10b981',
+          secondary_color: p.secondary_color ?? '#0ea5e9',
+          font_family: p.font_family ?? 'Inter',
         })
         if (p.logo_url) setLogoPreview(p.logo_url)
       }
@@ -120,13 +138,13 @@ export default function SettingsSchoolProfilePage() {
       <PageHero
         badge="SETTINGS"
         badgeColor="slate"
-        title="School Profile"
-        subtitle="Branding, contact details and school identity"
+        title="School Profile & Branding"
+        subtitle="Identity, branding, contact details and school configuration"
         icon="⚙️"
       />
       <div>
         <h1 className="text-2xl font-display font-bold text-white">School Profile</h1>
-        <p className="mt-1 text-sm text-slate-400">Configure your school's identity, contact information, and financial settings. This information appears on all printed documents.</p>
+        <p className="mt-1 text-sm text-slate-400">Configure your school's identity, branding, contact information, and financial settings. This information appears on all printed documents.</p>
       </div>
 
       {error && (
@@ -174,6 +192,113 @@ export default function SettingsSchoolProfilePage() {
           <div className="sm:col-span-2">
             <label className="text-xs text-slate-400 mb-1 block font-semibold uppercase tracking-widest">School Motto / Tagline</label>
             <input value={form.motto} onChange={e => setF('motto', e.target.value)} placeholder="e.g. Excellence in Education" className={cls} />
+          </div>
+        </div>
+      </section>
+
+      {/* Branding */}
+      <section className="rounded-2xl glass-panel p-6 space-y-5">
+        <div className="flex items-center gap-2 mb-1">
+          <Palette className="h-4 w-4 text-violet-400" />
+          <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest">Branding & Theme</h2>
+        </div>
+        <p className="text-xs text-slate-500 -mt-2">Customize the visual identity of your school management system. Colors appear on documents, reports, and UI accents.</p>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* Primary Color */}
+          <div>
+            <label className="text-xs text-slate-400 mb-2 block font-semibold uppercase tracking-widest">Primary Accent Color</label>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <input type="color" value={form.primary_color}
+                  onChange={e => setF('primary_color', e.target.value)}
+                  className="h-10 w-16 cursor-pointer rounded-lg border border-white/[0.09] bg-slate-950 p-0.5" />
+              </div>
+              <input value={form.primary_color} onChange={e => setF('primary_color', e.target.value)}
+                placeholder="#10b981" maxLength={7}
+                className="flex-1 rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 font-mono outline-none focus:border-emerald-400 transition" />
+            </div>
+            <div className="mt-2 rounded-xl h-6 w-full" style={{ background: form.primary_color, opacity: 0.8 }} />
+          </div>
+
+          {/* Secondary Color */}
+          <div>
+            <label className="text-xs text-slate-400 mb-2 block font-semibold uppercase tracking-widest">Secondary Accent Color</label>
+            <div className="flex items-center gap-3">
+              <input type="color" value={form.secondary_color}
+                onChange={e => setF('secondary_color', e.target.value)}
+                className="h-10 w-16 cursor-pointer rounded-lg border border-white/[0.09] bg-slate-950 p-0.5" />
+              <input value={form.secondary_color} onChange={e => setF('secondary_color', e.target.value)}
+                placeholder="#0ea5e9" maxLength={7}
+                className="flex-1 rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2.5 text-sm text-slate-100 font-mono outline-none focus:border-emerald-400 transition" />
+            </div>
+            <div className="mt-2 rounded-xl h-6 w-full" style={{ background: form.secondary_color, opacity: 0.8 }} />
+          </div>
+        </div>
+
+        {/* Font Family */}
+        <div>
+          <label className="text-xs text-slate-400 mb-2 block font-semibold uppercase tracking-widest">System Font Family</label>
+          <select value={form.font_family} onChange={e => setF('font_family', e.target.value)} className={cls}>
+            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+        </div>
+
+        {/* Live Preview */}
+        <div className="rounded-2xl p-5 overflow-hidden relative"
+          style={{ border: `2px solid ${form.primary_color}40`, background: `${form.primary_color}08` }}>
+          <p className="text-[10px] uppercase tracking-widest font-semibold mb-3" style={{ color: form.primary_color }}>
+            LIVE PREVIEW
+          </p>
+          <div className="flex items-center gap-3 mb-4">
+            {logoPreview
+              ? <img src={logoPreview} alt="logo" className="w-10 h-10 rounded-xl object-contain bg-white/5" />
+              : <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                style={{ background: `${form.primary_color}20` }}>🏫</div>
+            }
+            <div>
+              <p className="font-bold text-white text-sm" style={{ fontFamily: form.font_family }}>
+                {form.school_name || 'Your School Name'}
+              </p>
+              <p className="text-xs" style={{ color: form.secondary_color }}>
+                {form.motto || 'School Motto Here'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button className="px-4 py-1.5 rounded-full text-xs font-bold text-white"
+              style={{ background: form.primary_color }}>
+              Primary Button
+            </button>
+            <button className="px-4 py-1.5 rounded-full text-xs font-bold text-white"
+              style={{ background: form.secondary_color }}>
+              Secondary Button
+            </button>
+          </div>
+        </div>
+
+        {/* Preset Themes */}
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Quick Theme Presets</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { name: 'Emerald', primary: '#10b981', secondary: '#0ea5e9' },
+              { name: 'Royal Blue', primary: '#3b82f6', secondary: '#8b5cf6' },
+              { name: 'Crimson', primary: '#ef4444', secondary: '#f59e0b' },
+              { name: 'Purple', primary: '#8b5cf6', secondary: '#ec4899' },
+              { name: 'Orange', primary: '#f97316', secondary: '#eab308' },
+              { name: 'Teal', primary: '#14b8a6', secondary: '#06b6d4' },
+            ].map(preset => (
+              <button key={preset.name}
+                onClick={() => { setF('primary_color', preset.primary); setF('secondary_color', preset.secondary) }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/[0.09] text-xs text-slate-300 hover:border-white/30 transition">
+                <span className="flex gap-1">
+                  <span className="w-3 h-3 rounded-full" style={{ background: preset.primary }} />
+                  <span className="w-3 h-3 rounded-full" style={{ background: preset.secondary }} />
+                </span>
+                {preset.name}
+              </button>
+            ))}
           </div>
         </div>
       </section>

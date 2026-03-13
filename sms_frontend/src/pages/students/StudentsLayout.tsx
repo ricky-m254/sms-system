@@ -11,6 +11,7 @@ const navItems = [
   { label: 'Behavior & Discipline', to: '/modules/students/behavior' },
   { label: 'Medical Records', to: '/modules/students/medical' },
   { label: 'Documents', to: '/modules/students/documents' },
+  { label: 'Transfers', to: '/modules/students/transfers' },
   { label: 'Reports', to: '/modules/students/reports' },
 ]
 

@@ -1053,3 +1053,22 @@ class DispensaryOutsideTreatmentSerializer(serializers.ModelSerializer):
         if obj.student:
             return obj.student.full_name
         return ''
+
+
+class StudentTransferSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import StudentTransfer
+        model = StudentTransfer
+        fields = [
+            'id', 'student', 'student_name', 'direction', 'other_school',
+            'reason', 'effective_date', 'status',
+            'clearance_completed', 'academic_records_issued',
+            'transfer_letter_issued', 'fee_balance_cleared',
+            'notes', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'student_name']
+
+    def get_student_name(self, obj):
+        return obj.student.full_name if obj.student else ''

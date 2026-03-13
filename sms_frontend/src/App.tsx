@@ -42,6 +42,7 @@ const StudentsBehaviorPage = lazy(() => import('./pages/students/StudentsBehavio
 const StudentsMedicalPage = lazy(() => import('./pages/students/StudentsMedicalPage'))
 const StudentsDocumentsPage = lazy(() => import('./pages/students/StudentsDocumentsPage'))
 const StudentsReportsPage = lazy(() => import('./pages/students/StudentsReportsPage'))
+const StudentsTransfersPage = lazy(() => import('./pages/students/StudentsTransfersPage'))
 const StudentProfilePage = lazy(() => import('./pages/students/StudentProfilePage'))
 const FinanceLayout = lazy(() => import('./pages/finance/FinanceLayout'))
 const FinanceSummaryPage = lazy(() => import('./pages/finance/FinanceSummaryPage'))
@@ -113,6 +114,7 @@ const HrOnboardingPage = lazy(() => import('./pages/hr/HrOnboardingPage'))
 const HrPerformancePage = lazy(() => import('./pages/hr/HrPerformancePage'))
 const HrTrainingPage = lazy(() => import('./pages/hr/HrTrainingPage'))
 const HrAnalyticsPage = lazy(() => import('./pages/hr/HrAnalyticsPage'))
+const HrTransfersPage = lazy(() => import('./pages/hr/HrTransfersPage'))
 const StaffLayout = lazy(() => import('./pages/staff/StaffLayout'))
 const StaffDashboardPage = lazy(() => import('./pages/staff/StaffDashboardPage'))
 const StaffDirectoryPage = lazy(() => import('./pages/staff/StaffDirectoryPage'))
@@ -141,6 +143,8 @@ const ParentPortalCommunicationPage = lazy(() => import('./pages/parentPortal/Pa
 const ParentPortalSchedulePage = lazy(() => import('./pages/parentPortal/ParentPortalSchedulePage'))
 const ParentPortalAssignmentsPage = lazy(() => import('./pages/parentPortal/ParentPortalAssignmentsPage'))
 const ParentPortalLibraryProfilePage = lazy(() => import('./pages/parentPortal/ParentPortalLibraryProfilePage'))
+const ParentPortalHealthPage = lazy(() => import('./pages/parentPortal/ParentPortalHealthPage'))
+const ParentPortalTransportPage = lazy(() => import('./pages/parentPortal/ParentPortalTransportPage'))
 const LibraryLayout = lazy(() => import('./pages/library/LibraryLayout'))
 const LibraryDashboardPage = lazy(() => import('./pages/library/LibraryDashboardPage'))
 const LibraryCatalogPage = lazy(() => import('./pages/library/LibraryCatalogPage'))
@@ -397,6 +401,7 @@ function App() {
           <Route path="behavior" element={<StudentsBehaviorPage />} />
           <Route path="medical" element={<StudentsMedicalPage />} />
           <Route path="documents" element={<StudentsDocumentsPage />} />
+          <Route path="transfers" element={<StudentsTransfersPage />} />
           <Route path="reports" element={<StudentsReportsPage />} />
           <Route path=":id" element={<StudentProfilePage />} />
         </Route>
@@ -494,6 +499,7 @@ function App() {
           <Route path="onboarding" element={<HrOnboardingPage />} />
           <Route path="performance" element={<HrPerformancePage />} />
           <Route path="training" element={<HrTrainingPage />} />
+          <Route path="transfers" element={<HrTransfersPage />} />
           <Route path="analytics" element={<HrAnalyticsPage />} />
         </Route>
         <Route
@@ -537,6 +543,8 @@ function App() {
           <Route path="communication" element={<ParentPortalCommunicationPage />} />
           <Route path="schedule" element={<ParentPortalSchedulePage />} />
           <Route path="assignments" element={<ParentPortalAssignmentsPage />} />
+          <Route path="health" element={<ParentPortalHealthPage />} />
+          <Route path="transport" element={<ParentPortalTransportPage />} />
           <Route path="library-profile" element={<ParentPortalLibraryProfilePage />} />
         </Route>
         <Route

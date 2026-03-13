@@ -593,3 +593,41 @@ class TrainingEnrollment(models.Model):
     class Meta:
         unique_together = ("program", "employee")
         ordering = ["-created_at", "-id"]
+
+
+class StaffTransfer(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+    TRANSFER_TYPE_CHOICES = [
+        ('Internal', 'Internal (Same School)'),
+        ('External', 'External (Different School/County)'),
+    ]
+
+    employee = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='transfers')
+    transfer_type = models.CharField(max_length=20, choices=TRANSFER_TYPE_CHOICES, default='Internal')
+    from_department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_out')
+    from_position = models.CharField(max_length=150, blank=True)
+    to_department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_in')
+    to_position = models.CharField(max_length=150, blank=True)
+    destination_school = models.CharField(max_length=255, blank=True, help_text="For External transfers")
+    reason = models.TextField(blank=True)
+    effective_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    handover_completed = models.BooleanField(default=False)
+    clearance_completed = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    requested_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_transfers_requested')
+    approved_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_transfers_approved')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.employee} ({self.transfer_type}) – {self.status}"

@@ -41,6 +41,8 @@ from .views import (
     ParentReportCardsView,
     ParentTimetableExportView,
     ParentTimetableView,
+    ParentHealthView,
+    ParentTransportView,
 )
 
 urlpatterns = [
@@ -84,4 +86,6 @@ urlpatterns = [
     path("admin/links/<int:link_id>/", ParentLinkAdminDetailView.as_view()),
     path("profile/", ParentProfileView.as_view()),
     path("profile/change-password/", ParentChangePasswordView.as_view()),
+    path("health/", ParentHealthView.as_view()),
+    path("transport/", ParentTransportView.as_view()),
 ]

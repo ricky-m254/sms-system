@@ -6229,3 +6229,23 @@ class DemoResetView(APIView):
             'schema': schema,
             'message': 'POST to this endpoint to reset demo data.',
         })
+
+
+class StudentTransferViewSet(viewsets.ModelViewSet):
+    def get_serializer_class(self):
+        from .serializers import StudentTransferSerializer
+        return StudentTransferSerializer
+
+    def get_queryset(self):
+        from .models import StudentTransfer
+        qs = StudentTransfer.objects.select_related('student', 'processed_by')
+        status_f = self.request.query_params.get('status')
+        direction_f = self.request.query_params.get('direction')
+        student_f = self.request.query_params.get('student')
+        if status_f:
+            qs = qs.filter(status=status_f)
+        if direction_f:
+            qs = qs.filter(direction=direction_f)
+        if student_f:
+            qs = qs.filter(student_id=student_f)
+        return qs

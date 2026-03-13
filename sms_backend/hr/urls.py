@@ -36,6 +36,7 @@ from .views import (
     TrainingEnrollmentViewSet,
     TrainingProgramViewSet,
     WorkScheduleViewSet,
+    StaffTransferViewSet,
 )
 
 router = DefaultRouter()
@@ -62,6 +63,7 @@ router.register(r"performance-goals", PerformanceGoalViewSet, basename="hr_perfo
 router.register(r"performance-reviews", PerformanceReviewViewSet, basename="hr_performance_review")
 router.register(r"training-programs", TrainingProgramViewSet, basename="hr_training_program")
 router.register(r"training-enrollments", TrainingEnrollmentViewSet, basename="hr_training_enrollment")
+router.register(r"transfers", StaffTransferViewSet, basename="hr_transfer")
 
 urlpatterns = [
     path("ref/staff/", StaffRefView.as_view(), name="hr_ref_staff"),

@@ -10,6 +10,8 @@ const navItems = [
   { label: 'Communication', to: '/modules/parent-portal/communication' },
   { label: 'Schedule', to: '/modules/parent-portal/schedule' },
   { label: 'Assignments', to: '/modules/parent-portal/assignments' },
+  { label: 'Health & Medical', to: '/modules/parent-portal/health' },
+  { label: 'Transport', to: '/modules/parent-portal/transport' },
   { label: 'Library & Profile', to: '/modules/parent-portal/library-profile' },
 ]
 

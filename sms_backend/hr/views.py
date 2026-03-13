@@ -1585,3 +1585,23 @@ class HrAnalyticsPayrollCostsView(HrModuleAccessMixin, APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class StaffTransferViewSet(HrModuleAccessMixin, viewsets.ModelViewSet):
+    def get_serializer_class(self):
+        from .serializers import StaffTransferSerializer
+        return StaffTransferSerializer
+
+    def get_queryset(self):
+        from .models import StaffTransfer
+        qs = StaffTransfer.objects.select_related('employee', 'from_department', 'to_department')
+        status_f = self.request.query_params.get('status')
+        transfer_type_f = self.request.query_params.get('transfer_type')
+        employee_f = self.request.query_params.get('employee')
+        if status_f:
+            qs = qs.filter(status=status_f)
+        if transfer_type_f:
+            qs = qs.filter(transfer_type=transfer_type_f)
+        if employee_f:
+            qs = qs.filter(employee_id=employee_f)
+        return qs

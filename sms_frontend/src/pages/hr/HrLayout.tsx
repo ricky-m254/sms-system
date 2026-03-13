@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Onboarding', to: '/modules/hr/onboarding' },
   { label: 'Performance', to: '/modules/hr/performance' },
   { label: 'Training', to: '/modules/hr/training' },
+  { label: 'Transfers', to: '/modules/hr/transfers' },
   { label: 'HR Analytics', to: '/modules/hr/analytics' },
 ]
 
