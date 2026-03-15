@@ -1,16 +1,22 @@
+import wordmark from '@/assets/brand/rynatyschool-wordmark.png'
+
 export default function Footer() {
   const year = new Date().getFullYear()
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800 bg-slate-950/95 backdrop-blur-sm">
+    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-[#070b12]/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
         <p className="text-[11px] text-slate-500">
           &copy; {year}{' '}
-          <span className="font-semibold text-slate-400">Rynatyspace Technologies</span>
-          . All rights reserved.
+          <span className="font-semibold text-slate-400">RynatySpace Technologies Ltd.</span>
+          {' '}All rights reserved.
         </p>
-        <p className="hidden text-[11px] text-slate-600 sm:block">
-          Rynaty School Management System &mdash; v1.0
-        </p>
+
+        <img
+          src={wordmark}
+          alt="RynatySchool SmartCampus"
+          className="h-8 w-auto opacity-90 transition-opacity duration-300 hover:opacity-100 sm:h-9"
+          style={{ filter: 'drop-shadow(0 0 8px rgba(16,185,129,0.25))' }}
+        />
       </div>
     </footer>
   )
