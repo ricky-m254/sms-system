@@ -55,7 +55,7 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["bash", "-c", "cd sms_backend && gunicorn --bind=0.0.0.0:3000 --workers=1 --timeout=300 --preload config.wsgi:application"]
+run = ["bash", "-c", "cd sms_backend && gunicorn --bind=0.0.0.0:5000 --workers=2 --timeout=300 --reuse-port --preload config.wsgi:application"]
 build = ["bash", "build.sh"]
 
 [userenv]
