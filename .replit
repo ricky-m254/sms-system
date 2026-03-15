@@ -46,12 +46,8 @@ task = "shell.exec"
 args = "cd sms_backend && python manage.py runserver localhost:8000"
 
 [[ports]]
-localPort = 3000
-externalPort = 80
-
-[[ports]]
 localPort = 5000
-externalPort = 5000
+externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"

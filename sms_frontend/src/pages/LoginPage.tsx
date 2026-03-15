@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/auth'
 import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Globe, Zap, Lock } from 'lucide-react'
 import wordmark from '@/assets/brand/rynatyschool-wordmark.png'
 import rynatyspaceLogo from '@/assets/brand/rynatyspace-logo.png'
+import phoenixLogo from '@/assets/brand/rynatyschool-phoenix-full.png'
 
 type LoginResponse  = { access: string; refresh: string }
 type RoutingResponse = { user: string; role: string | null; permissions?: string[] }
@@ -47,6 +48,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading]     = useState(false)
   const [showPass,  setShowPass]      = useState(false)
   const [mounted,   setMounted]       = useState(false)
+  const [phoenixHover, setPhoenixHover] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -109,14 +111,22 @@ export default function LoginPage() {
           style={{ background: 'linear-gradient(90deg, transparent, #10b981, #0ea5e9, transparent)' }} />
 
         {/* Brand content */}
-        <div className={`relative z-10 px-12 pt-14 pb-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+        <div className={`relative z-10 px-12 pt-8 pb-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
-          {/* Wordmark */}
-          <div className="mb-12">
+          {/* Phoenix Logo — Interactive & Prominent */}
+          <div
+            className="mb-10 cursor-pointer transition-all duration-500 hover:scale-105 active:scale-95 group"
+            onMouseEnter={() => setPhoenixHover(true)}
+            onMouseLeave={() => setPhoenixHover(false)}
+            style={{
+              filter: phoenixHover ? 'drop-shadow(0 0 24px rgba(16,185,129,0.4))' : 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
+              transform: phoenixHover ? 'scale(1.05)' : 'scale(1)',
+            }}
+          >
             <img
-              src={wordmark}
+              src={phoenixLogo}
               alt="RynatySchool SmartCampus"
-              className="h-14 w-auto object-contain object-left select-none"
+              className="w-full max-w-xs object-contain select-none"
               draggable={false}
             />
           </div>
