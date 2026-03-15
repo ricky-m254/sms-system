@@ -4,8 +4,7 @@ import { useAuthStore } from '../store/auth'
 import { apiClient } from '../api/client'
 import DemoBanner from './DemoBanner'
 import CommandPalette from './CommandPalette'
-import brandWordmark from '@/assets/brand/rynatyschool-wordmark.png'
-import brandIcon from '@/assets/brand/rynatyschool-icon.png'
+import brandLogo from '@/assets/brand/rynatyschool-logo.png'
 import {
   BookOpen, Building2, ChevronDown, ChevronRight,
   GraduationCap, LayoutDashboard, LogOut, MessageSquare,
@@ -325,7 +324,7 @@ export default function AppShell() {
             className="h-9 w-auto object-contain object-left flex-shrink-0 select-none"
             draggable={false} />
         ) : (
-          <img src={brandWordmark} alt="RynatySchool SmartCampus"
+          <img src={brandLogo} alt="RynatySchool SmartCampus"
             className="h-9 w-auto object-contain object-left flex-shrink-0 select-none"
             draggable={false} />
         )
@@ -335,7 +334,7 @@ export default function AppShell() {
             className="w-8 h-8 rounded-xl object-contain flex-shrink-0 ring-1 ring-white/10 select-none"
             draggable={false} />
         ) : (
-          <img src={brandIcon} alt="RynatySchool"
+          <img src={brandLogo} alt="RynatySchool"
             className="w-8 h-8 rounded-xl object-contain flex-shrink-0 select-none"
             draggable={false} />
         )

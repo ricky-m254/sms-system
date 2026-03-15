@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
 import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Globe, Zap, Lock } from 'lucide-react'
-import wordmark from '@/assets/brand/rynatyschool-wordmark.png'
-import rynatyspaceLogo from '@/assets/brand/rynatyspace-logo.png'
-import phoenixLogo from '@/assets/brand/rynatyschool-phoenix-v3.png'
+import brandLogo from '@/assets/brand/rynatyschool-logo.png'
 
 type LoginResponse  = { access: string; refresh: string }
 type RoutingResponse = { user: string; role: string | null; permissions?: string[] }
@@ -48,7 +46,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading]     = useState(false)
   const [showPass,  setShowPass]      = useState(false)
   const [mounted,   setMounted]       = useState(false)
-  const [phoenixHover, setPhoenixHover] = useState(false)
+
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -113,20 +111,12 @@ export default function LoginPage() {
         {/* Brand content */}
         <div className={`relative z-10 px-12 pt-8 pb-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
-          {/* Phoenix Logo — Interactive & Prominent */}
-          <div
-            className="mb-10 cursor-pointer transition-all duration-500 hover:scale-105 active:scale-95 group"
-            onMouseEnter={() => setPhoenixHover(true)}
-            onMouseLeave={() => setPhoenixHover(false)}
-            style={{
-              filter: phoenixHover ? 'drop-shadow(0 0 24px rgba(16,185,129,0.4))' : 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
-              transform: phoenixHover ? 'scale(1.05)' : 'scale(1)',
-            }}
-          >
+          {/* Brand Logo — top left */}
+          <div className="mb-10">
             <img
-              src={phoenixLogo}
+              src={brandLogo}
               alt="RynatySchool SmartCampus"
-              className="w-full max-w-xs object-contain select-none"
+              className="h-16 w-auto object-contain object-left select-none"
               draggable={false}
             />
           </div>
@@ -165,15 +155,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Bottom — RynatySpace branding */}
+        {/* Bottom — copyright */}
         <div className="relative z-10 px-12 pb-10">
           <div className="border-t border-white/[0.05] pt-6">
-            <img
-              src={rynatyspaceLogo}
-              alt="RynatySpace Technologies"
-              className="h-8 w-auto object-contain object-left opacity-70 select-none mb-3"
-              draggable={false}
-            />
             <p className="text-[11px] text-slate-700">
               © {new Date().getFullYear()} RynatySpace Technologies Ltd. All rights reserved.
             </p>
@@ -197,25 +181,9 @@ export default function LoginPage() {
 
         <div className={`relative w-full max-w-[390px] transition-all duration-600 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
-          {/* Mobile wordmark */}
-          <div className="flex flex-col items-start gap-3 mb-8 lg:hidden">
-            <img src={wordmark} alt="RynatySchool SmartCampus" className="h-11 w-auto object-contain select-none" draggable={false} />
-          </div>
-
-          {/* Logo above heading — desktop only (mobile shows wordmark above) */}
-          <div
-            className="hidden lg:flex items-center justify-center mb-7 rounded-2xl overflow-hidden"
-            style={{
-              boxShadow: '0 0 0 1px rgba(16,185,129,0.12), 0 8px 32px rgba(0,0,0,0.4)',
-              background: 'rgba(13,18,37,0.85)',
-            }}
-          >
-            <img
-              src={phoenixLogo}
-              alt="RynatySchool SmartCampus"
-              className="w-full object-contain select-none"
-              draggable={false}
-            />
+          {/* Mobile logo — top left, only shown when left panel is hidden */}
+          <div className="flex items-start mb-8 lg:hidden">
+            <img src={brandLogo} alt="RynatySchool SmartCampus" className="h-12 w-auto object-contain object-left select-none" draggable={false} />
           </div>
 
           {/* Heading */}
