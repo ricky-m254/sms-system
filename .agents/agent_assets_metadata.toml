@@ -48,3 +48,21 @@ id = "smVLmdd8XWK_baAMVP0ZT"
 uri = "file://attached_assets/generated_images/rynatyschool_v2_icon.png"
 type = "image"
 title = "RynatySchool — Icon Mark"
+
+[[outputs]]
+id = "J1jEXoozXCruIXJYxFHAl"
+uri = "file://attached_assets/generated_images/rynatyschool_brand_banner.png"
+type = "image"
+title = "RynatySchool — Brand Name Launch Banner"
+
+[[outputs]]
+id = "wby9L4L_apD2HGAoBoL2w"
+uri = "file://attached_assets/generated_images/rynatyschool_brand_wordmark.png"
+type = "image"
+title = "RynatySchool — Horizontal Wordmark (App / Web Use)"
+
+[[outputs]]
+id = "LaEGY-s86liVQVQVxDeaX"
+uri = "file://attached_assets/generated_images/rynatyschool_brand_icon.png"
+type = "image"
+title = "RynatySchool — RS Monogram Icon (Favicon / App Icon)"
