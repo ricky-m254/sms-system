@@ -49,6 +49,10 @@ args = "cd sms_backend && python manage.py runserver localhost:8000"
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 5001
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd sms_backend && gunicorn --bind=0.0.0.0:3000 --workers=1 --timeout=300 --preload config.wsgi:application"]

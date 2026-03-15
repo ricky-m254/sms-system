@@ -119,4 +119,36 @@ except Exception as exc:
     traceback.print_exc()
 PYEOF
 
+echo "==> [build] Patching gunicorn entry point to bind on port 5000..."
+GUNICORN_BIN="$(which gunicorn 2>/dev/null || echo '')"
+if [ -n "$GUNICORN_BIN" ] && [ -f "$GUNICORN_BIN" ]; then
+python3 - "$GUNICORN_BIN" << 'PYEOF'
+import sys, re
+
+path = sys.argv[1]
+with open(path, 'r') as f:
+    content = f.read()
+
+patch = '''
+# Replit deployment fix: intercept port 3000 -> 5000
+for _i, _arg in enumerate(sys.argv):
+    if '3000' in _arg and ('bind' in _arg or (_i > 0 and sys.argv[_i-1] in ('-b', '--bind'))):
+        sys.argv[_i] = _arg.replace('3000', '5000')
+'''
+
+marker = 'from gunicorn.app.wsgiapp import run'
+if marker in content and '3000' not in content:
+    content = content.replace(marker, patch + '\n' + marker)
+    with open(path, 'w') as f:
+        f.write(content)
+    print(f"[gunicorn-patch] Patched {path}")
+elif '3000' in content:
+    print(f"[gunicorn-patch] Already patched: {path}")
+else:
+    print(f"[gunicorn-patch] WARNING: Could not find patch point in {path}")
+PYEOF
+else
+  echo "[gunicorn-patch] WARNING: gunicorn not found in PATH"
+fi
+
 echo "==> [build] Done."
