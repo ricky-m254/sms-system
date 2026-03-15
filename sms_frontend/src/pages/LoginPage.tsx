@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/auth'
 import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Globe, Zap, Lock } from 'lucide-react'
 import wordmark from '@/assets/brand/rynatyschool-wordmark.png'
 import rynatyspaceLogo from '@/assets/brand/rynatyspace-logo.png'
-import phoenixLogo from '@/assets/brand/rynatyschool-phoenix-full.png'
+import phoenixLogo from '@/assets/brand/rynatyschool-phoenix-v2.png'
 
 type LoginResponse  = { access: string; refresh: string }
 type RoutingResponse = { user: string; role: string | null; permissions?: string[] }
