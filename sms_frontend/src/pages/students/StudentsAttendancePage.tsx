@@ -425,7 +425,7 @@ export default function StudentsAttendancePage() {
             </button>
           </div>
         </div>
-      </section>
+      </section>}
 
       {mainTab === 'rollcall' && (
         <section className="col-span-12 space-y-5">
