@@ -202,6 +202,22 @@ export default function LoginPage() {
             <img src={wordmark} alt="RynatySchool SmartCampus" className="h-11 w-auto object-contain select-none" draggable={false} />
           </div>
 
+          {/* Logo above heading — desktop only (mobile shows wordmark above) */}
+          <div
+            className="hidden lg:flex items-center justify-center mb-7 rounded-2xl overflow-hidden"
+            style={{
+              boxShadow: '0 0 0 1px rgba(16,185,129,0.12), 0 8px 32px rgba(0,0,0,0.4)',
+              background: 'rgba(13,18,37,0.85)',
+            }}
+          >
+            <img
+              src={phoenixLogo}
+              alt="RynatySchool SmartCampus"
+              className="w-full object-contain select-none"
+              draggable={false}
+            />
+          </div>
+
           {/* Heading */}
           <div className="mb-8">
             <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-2">Welcome back</h2>
