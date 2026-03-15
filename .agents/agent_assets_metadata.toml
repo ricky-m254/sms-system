@@ -66,3 +66,27 @@ id = "LaEGY-s86liVQVQVxDeaX"
 uri = "file://attached_assets/generated_images/rynatyschool_brand_icon.png"
 type = "image"
 title = "RynatySchool — RS Monogram Icon (Favicon / App Icon)"
+
+[[outputs]]
+id = "gADbgFxvh8JjMaHVsA3sO"
+uri = "file://attached_assets/generated_images/rynatyspace_company_logo.png"
+type = "image"
+title = "RynatySpace Technologies Ltd. — Company Logo | “From Africa to The World.”"
+
+[[outputs]]
+id = "TEe2dxoq70IVoHo54CB8m"
+uri = "file://attached_assets/generated_images/rynatyspace_company_icon.png"
+type = "image"
+title = "RynatySpace Technologies Ltd. — Company Emblem"
+
+[[outputs]]
+id = "UjaP0OfYAfNJW0Jwoytz-"
+uri = "file://attached_assets/generated_images/rynatyschool_smartcampus_logo.png"
+type = "image"
+title = "RynatySchool SmartCampus — Product Logo | “Powering Smart Schools”"
+
+[[outputs]]
+id = "rqHRTcNmR99FZ2m0uYDY5"
+uri = "file://attached_assets/generated_images/rynatyschool_smartcampus_icon.png"
+type = "image"
+title = "RynatySchool SmartCampus — App Icon"
