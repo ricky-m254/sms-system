@@ -4,6 +4,8 @@ import { useAuthStore } from '../store/auth'
 import { apiClient } from '../api/client'
 import DemoBanner from './DemoBanner'
 import CommandPalette from './CommandPalette'
+import brandWordmark from '@/assets/brand/rynatyschool-wordmark.png'
+import brandIcon from '@/assets/brand/rynatyschool-icon.png'
 import {
   BookOpen, Building2, ChevronDown, ChevronRight,
   GraduationCap, LayoutDashboard, LogOut, MessageSquare,
@@ -283,7 +285,7 @@ export default function AppShell() {
       const p = (resp.profile as Record<string, unknown> | null) ?? resp
       const primary = (p?.primary_color as string) || '#10b981'
       setBranding({
-        school_name: (p?.school_name as string) || 'RSM – Rynatyschool',
+        school_name: (p?.school_name as string) || 'RynatySchool SmartCampus',
         logo_url: (p?.logo_url as string) || null,
         primary_color: primary,
         secondary_color: (p?.secondary_color as string) || '#0ea5e9',
@@ -305,7 +307,7 @@ export default function AppShell() {
   const handleLogout = () => { logout(); navigate('/login') }
 
   const primaryColor = branding?.primary_color ?? '#10b981'
-  const schoolInitial = (branding?.school_name ?? 'RSM')[0].toUpperCase()
+
 
   const roleLabels: Record<string, string> = {
     TENANT_SUPER_ADMIN: 'Super Admin',
@@ -316,25 +318,27 @@ export default function AppShell() {
   const roleLabel = roleLabels[(role ?? '').toUpperCase()] ?? 'Staff'
 
   const LogoBlock = ({ showText }: { showText: boolean }) => (
-    <div className="flex items-center gap-3 overflow-hidden">
-      {branding?.logo_url ? (
-        <img src={branding.logo_url} alt="School logo"
-          className="w-8 h-8 rounded-xl object-contain flex-shrink-0 ring-1 ring-white/10" />
+    <div className="flex items-center gap-2.5 overflow-hidden">
+      {showText ? (
+        branding?.logo_url ? (
+          <img src={branding.logo_url} alt="School logo"
+            className="h-9 w-auto object-contain object-left flex-shrink-0 select-none"
+            draggable={false} />
+        ) : (
+          <img src={brandWordmark} alt="RynatySchool SmartCampus"
+            className="h-9 w-auto object-contain object-left flex-shrink-0 select-none"
+            draggable={false} />
+        )
       ) : (
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-lg ring-1 ring-white/10"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}99)` }}>
-          {schoolInitial}
-        </div>
-      )}
-      {showText && (
-        <div className="min-w-0">
-          <p className="text-[13px] font-bold text-white leading-tight truncate font-display">
-            {branding?.school_name ?? 'RSM – Rynatyschool'}
-          </p>
-          <p className="text-[10px] font-medium leading-tight mt-0.5" style={{ color: `${primaryColor}bb` }}>
-            School Management
-          </p>
-        </div>
+        branding?.logo_url ? (
+          <img src={branding.logo_url} alt="School logo"
+            className="w-8 h-8 rounded-xl object-contain flex-shrink-0 ring-1 ring-white/10 select-none"
+            draggable={false} />
+        ) : (
+          <img src={brandIcon} alt="RynatySchool"
+            className="w-8 h-8 rounded-xl object-contain flex-shrink-0 select-none"
+            draggable={false} />
+        )
       )}
     </div>
   )

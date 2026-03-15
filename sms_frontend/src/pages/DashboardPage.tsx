@@ -835,7 +835,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <span className="text-[9px] text-slate-500 font-semibold tracking-wider uppercase">RSM · v1.0</span>
+                  <span className="text-[9px] text-slate-500 font-semibold tracking-wider uppercase">RynatySchool SmartCampus · v2.0</span>
                 </div>
               </div>
               <button onClick={() => void loadSummary()}
