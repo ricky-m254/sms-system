@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { apiClient } from '../../api/client'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadBlob, extractFilename } from '../../utils/download'
@@ -58,6 +58,54 @@ export default function StudentsAttendancePage() {
     status: '',
     notes: '',
   })
+
+  // Roll Call tab state
+  const [mainTab, setMainTab] = useState<'records' | 'rollcall'>('records')
+  const [classes, setClasses] = useState<{id: number; name: string}[]>([])
+  const [selectedClass, setSelectedClass] = useState('')
+  const [rollDate, setRollDate] = useState(new Date().toISOString().slice(0, 10))
+  const [rollStudents, setRollStudents] = useState<{id: number; name: string; adm: string; status: string}[]>([])
+  const [loadingRoll, setLoadingRoll] = useState(false)
+  const [submittingRoll, setSubmittingRoll] = useState(false)
+  const [rollFlash, setRollFlash] = useState<{msg: string; ok: boolean} | null>(null)
+
+  useEffect(() => {
+    apiClient.get('school/classes/').then(r => {
+      setClasses(Array.isArray(r.data) ? r.data : [])
+    }).catch(() => {})
+  }, [])
+
+  const loadRollStudents = useCallback(async (classId: string) => {
+    if (!classId) { setRollStudents([]); return }
+    setLoadingRoll(true)
+    try {
+      const r = await apiClient.get('enrollments/', { params: { school_class_id: classId, is_active: true, page_size: 200 } })
+      const items: {student: number; student_name?: string; student_admission_number?: string}[] = Array.isArray(r.data) ? r.data : r.data.results ?? []
+      setRollStudents(items.map(e => ({
+        id: e.student,
+        name: e.student_name ?? String(e.student),
+        adm: e.student_admission_number ?? '',
+        status: 'Present',
+      })))
+    } catch { setRollStudents([]) }
+    finally { setLoadingRoll(false) }
+  }, [])
+
+  async function submitRoll() {
+    if (!rollStudents.length) return
+    setSubmittingRoll(true)
+    try {
+      const res = await apiClient.post('attendance/batch/', {
+        date: rollDate,
+        records: rollStudents.map(s => ({ student_id: s.id, status: s.status, notes: '' }))
+      })
+      setRollFlash({ msg: `Submitted ${(res.data as {count?: number}).count ?? rollStudents.length} attendance records`, ok: true })
+      setTimeout(() => setRollFlash(null), 4000)
+    } catch {
+      setRollFlash({ msg: 'Failed to submit attendance — try again', ok: false })
+      setTimeout(() => setRollFlash(null), 4000)
+    } finally { setSubmittingRoll(false) }
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -186,9 +234,21 @@ export default function StudentsAttendancePage() {
         badge="MODULE"
         badgeColor="emerald"
         title="Attendance"
-        subtitle="Daily attendance records from the backend."
+        subtitle="Daily attendance records and class roll call."
         icon="📋"
       />
+
+      <div className="col-span-12 flex gap-2">
+        {(['records', 'rollcall'] as const).map(t => (
+          <button key={t} onClick={() => setMainTab(t)}
+            className="px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-all"
+            style={mainTab === t
+              ? { background: '#10b981', color: '#fff' }
+              : { background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {t === 'records' ? 'Attendance Records' : 'Class Roll Call'}
+          </button>
+        ))}
+      </div>
 
       {isLoading ? (
         <div className="col-span-12 rounded-2xl glass-panel p-6">
@@ -214,16 +274,16 @@ export default function StudentsAttendancePage() {
         </div>
       ) : null}
 
-      <section className="col-span-12 grid gap-4 md:grid-cols-4">
+      {mainTab === 'records' && <section className="col-span-12 grid gap-4 md:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-2xl glass-panel p-5">
             <p className="text-xs uppercase text-slate-400">{stat.label}</p>
             <p className="mt-2 text-2xl font-semibold">{stat.value}</p>
           </div>
         ))}
-      </section>
+      </section>}
 
-      <section className="col-span-12 rounded-2xl glass-panel p-6">
+      {mainTab === 'records' && <section className="col-span-12 rounded-2xl glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-display font-semibold">Daily register</h2>
@@ -366,6 +426,116 @@ export default function StudentsAttendancePage() {
           </div>
         </div>
       </section>
+
+      {mainTab === 'rollcall' && (
+        <section className="col-span-12 space-y-5">
+          <div className="rounded-2xl border p-5 space-y-4" style={{ background: 'rgba(255,255,255,0.025)', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div>
+              <h2 className="text-lg font-display font-bold text-white">Class Roll Call</h2>
+              <p className="text-xs text-slate-400 mt-1">Select a class, choose a date, then mark each student. All students default to Present — change only the exceptions.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Class *</label>
+                <select
+                  className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+                  value={selectedClass}
+                  onChange={e => { setSelectedClass(e.target.value); loadRollStudents(e.target.value) }}
+                >
+                  <option value="">Select class…</option>
+                  {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Date *</label>
+                <input type="date"
+                  className="w-full rounded-xl border border-white/[0.07] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
+                  value={rollDate}
+                  onChange={e => setRollDate(e.target.value)}
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={submitRoll}
+                  disabled={submittingRoll || !rollStudents.length}
+                  className="w-full px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                  style={{ background: '#10b981', color: '#fff' }}>
+                  {submittingRoll ? 'Submitting…' : `Submit Roll (${rollStudents.length} students)`}
+                </button>
+              </div>
+            </div>
+
+            {rollFlash && (
+              <div className="rounded-xl px-4 py-2 text-sm font-semibold"
+                style={rollFlash.ok
+                  ? { background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399' }
+                  : { background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5' }}>
+                {rollFlash.msg}
+              </div>
+            )}
+          </div>
+
+          {loadingRoll && (
+            <div className="rounded-2xl border p-8 text-center text-sm text-slate-400"
+              style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
+              Loading students…
+            </div>
+          )}
+
+          {!loadingRoll && rollStudents.length > 0 && (
+            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+                <p className="text-sm font-bold text-white">{rollStudents.length} Students</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setRollStudents(p => p.map(s => ({ ...s, status: 'Present' })))}
+                    className="px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399' }}>
+                    All Present
+                  </button>
+                  <button onClick={() => setRollStudents(p => p.map(s => ({ ...s, status: 'Absent' })))}
+                    className="px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#fca5a5' }}>
+                    All Absent
+                  </button>
+                </div>
+              </div>
+              <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                {rollStudents.map((s, idx) => (
+                  <div key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition-all">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      style={{ background: 'rgba(255,255,255,0.08)', color: '#94a3b8' }}>
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white">{s.name}</p>
+                      {s.adm && <p className="text-xs text-slate-500">{s.adm}</p>}
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      {(['Present', 'Late', 'Absent', 'Excused'] as const).map(st => (
+                        <button key={st}
+                          onClick={() => setRollStudents(p => p.map((r, i) => i === idx ? { ...r, status: st } : r))}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
+                          style={s.status === st
+                            ? st === 'Present' ? { background: '#10b981', color: '#fff' }
+                            : st === 'Late' ? { background: '#f59e0b', color: '#000' }
+                            : st === 'Absent' ? { background: '#ef4444', color: '#fff' }
+                            : { background: '#6366f1', color: '#fff' }
+                            : { background: 'rgba(255,255,255,0.05)', color: '#64748b' }}>
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loadingRoll && selectedClass && rollStudents.length === 0 && (
+            <div className="rounded-2xl border p-8 text-center" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
+              <p className="text-sm text-slate-400">No active students found in this class.</p>
+            </div>
+          )}
+        </section>
+      )}
 
       {isFormOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">

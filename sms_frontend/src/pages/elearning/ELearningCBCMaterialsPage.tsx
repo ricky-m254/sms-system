@@ -3,7 +3,7 @@ import { ExternalLink, BookOpen, Search, ChevronRight, Download, Play, FileText,
 import PageHero from '../../components/PageHero'
 
 interface CBCResource {
-  type: 'video' | 'ebook' | 'past-paper' | 'platform' | 'curriculum'
+  type: 'video' | 'ebook' | 'assessment' | 'platform' | 'curriculum'
   title: string
   url: string
   alt?: string
@@ -24,175 +24,174 @@ interface SubjectMaterials {
 const CBC_SUBJECTS: SubjectMaterials[] = [
   {
     subject: 'Mathematics',
-    grade: 'Grade 7–9 / Form 1–4',
+    grade: 'Grade 7–9',
     icon: '📐',
     from: '#1d4ed8',
     to: '#3b82f6',
     strand: 'Numbers, Algebra, Geometry & Statistics',
     resources: [
-      { type: 'video',      title: 'Quadratic Equations — Step by Step',           url: 'https://www.youtube.com/results?search_query=KCSE+Mathematics+Quadratic+Equations+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Matrices & Transformations KCSE',              url: 'https://www.youtube.com/results?search_query=KCSE+Mathematics+Matrices+Transformations+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'KLB Mathematics — OpenStax College Algebra',   url: 'https://openstax.org/books/college-algebra-2e/pages/1-introduction', badge: 'Free PDF' },
-      { type: 'past-paper', title: 'KCSE 2023 Mathematics Paper 1 & 2',            url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'past-paper', title: 'KCSE 2022 Mathematics Paper 1 & 2',            url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'Khan Academy — Maths Practice',                url: 'https://www.khanacademy.org/math', badge: 'Free' },
-      { type: 'curriculum', title: 'KICD CBC Mathematics Curriculum Designs',      url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 7 Algebra — Expressions & Equations',      url: 'https://www.youtube.com/results?search_query=CBC+Grade+7+Mathematics+Algebra+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 Linear Relations & Graphs',               url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Mathematics+Linear+Relations+Graphs+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'KLB Mathematics — OpenStax College Algebra',          url: 'https://openstax.org/books/college-algebra-2e/pages/1-introduction', badge: 'Free PDF' },
+      { type: 'assessment', title: 'CBC Grade 7–9 Formative Assessment Samples',          url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'Khan Academy — Maths Practice',                       url: 'https://www.khanacademy.org/math', badge: 'Free' },
+      { type: 'curriculum', title: 'KICD CBC Mathematics Curriculum Designs',              url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
     subject: 'English',
-    grade: 'Grade 7–9 / Form 1–4',
+    grade: 'Grade 7–9',
     icon: '📖',
     from: '#065f46',
     to: '#10b981',
     strand: 'Language, Communication & Literature',
     resources: [
-      { type: 'video',      title: 'Essay Writing: Structure & Technique for KCSE', url: 'https://www.youtube.com/results?search_query=KCSE+English+Essay+Writing+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'KCSE Set Books — Analysis & Themes',            url: 'https://www.youtube.com/results?search_query=KCSE+English+Set+Books+Analysis', badge: 'Video' },
-      { type: 'ebook',      title: 'Longman English — OpenStax Writing Guide',       url: 'https://openstax.org/books/writing-guide/pages/1-unit-introduction', badge: 'Free PDF' },
-      { type: 'past-paper', title: 'KCSE 2023 English Paper 1, 2 & 3',             url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'British Council — Free English Resources',       url: 'https://learnenglish.britishcouncil.org/', badge: 'Free' },
-      { type: 'curriculum', title: 'KICD CBC English Curriculum Designs',            url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 8 English — Essay Writing Skills',           url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+English+Essay+Writing+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 Literature — Set Text Analysis',           url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+English+Literature+Set+Text+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'Longman English — OpenStax Writing Guide',             url: 'https://openstax.org/books/writing-guide/pages/1-unit-introduction', badge: 'Free PDF' },
+      { type: 'assessment', title: 'CBC English Portfolio & Assessment Tasks',             url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'British Council — Free English Resources',             url: 'https://learnenglish.britishcouncil.org/', badge: 'Free' },
+      { type: 'curriculum', title: 'KICD CBC English Curriculum Designs',                  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
     subject: 'Kiswahili',
-    grade: 'Grade 7–9 / Form 1–4',
+    grade: 'Grade 7–9',
     icon: '🗣️',
     from: '#92400e',
     to: '#f59e0b',
     strand: 'Lugha, Fasihi & Mawasiliano',
     resources: [
-      { type: 'video',      title: 'Fasihi: Uchambuzi wa Shairi la KCSE',    url: 'https://www.youtube.com/results?search_query=KCSE+Kiswahili+Fasihi+Uchambuzi+Shairi', badge: 'Video' },
-      { type: 'video',      title: 'Kiswahili Insha na Uandishi — Kidato 4', url: 'https://www.youtube.com/results?search_query=KCSE+Kiswahili+Insha+Uandishi', badge: 'Video' },
-      { type: 'ebook',      title: 'Kiswahili Sanifu — Kenya Education Cloud', url: 'https://kec.ac.ke/', badge: 'Free' },
-      { type: 'past-paper', title: 'KCSE 2023 Kiswahili Karatasi 1, 2 & 3',  url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'KICD OER — Kiswahili Resources',         url: 'https://oer.kec.ac.ke/', badge: 'Official' },
-      { type: 'curriculum', title: 'KICD CBC Kiswahili Curriculum Designs',   url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 7 Kiswahili — Fasihi na Lugha',              url: 'https://www.youtube.com/results?search_query=CBC+Grade+7+Kiswahili+Fasihi+Lugha+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 Kiswahili — Insha na Uandishi Bora',      url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Kiswahili+Insha+Uandishi+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'Kiswahili Sanifu — Kenya Education Cloud',            url: 'https://kec.ac.ke/', badge: 'Free' },
+      { type: 'assessment', title: 'CBC Kiswahili Portfolio & Summative Tasks',           url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'KICD OER — Kiswahili Resources',                     url: 'https://oer.kec.ac.ke/', badge: 'Official' },
+      { type: 'curriculum', title: 'KICD CBC Kiswahili Curriculum Designs',               url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
-    subject: 'Biology',
-    grade: 'Form 1–4',
+    subject: 'Integrated Science',
+    grade: 'Grade 7–9',
     icon: '🧬',
     from: '#166534',
     to: '#22c55e',
-    strand: 'Cell Biology, Genetics, Ecology & Health',
+    strand: 'Life, Physical & Earth Sciences',
     resources: [
-      { type: 'video',      title: 'Cell Division: Mitosis & Meiosis Explained',  url: 'https://www.youtube.com/results?search_query=KCSE+Biology+Cell+Division+Mitosis+Meiosis+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Genetics & Heredity Explained (KCSE)',         url: 'https://www.youtube.com/results?search_query=KCSE+Biology+Genetics+Heredity+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'KLB Biology — OpenStax Biology 2e',           url: 'https://openstax.org/books/biology-2e/pages/1-introduction', badge: 'Free PDF' },
-      { type: 'past-paper', title: 'KCSE 2023 Biology Paper 1, 2 & 3',            url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'Khan Academy — Biology',                       url: 'https://www.khanacademy.org/science/biology', badge: 'Free' },
-      { type: 'curriculum', title: 'KICD CBC Science & Technology Curriculum',     url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 8 Science — Living Things & Cells',         url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+Science+Technology+Living+Things+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 Biology — Genetics & Heredity Basics',    url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Science+Genetics+Kenya+Junior+Secondary', badge: 'Video' },
+      { type: 'ebook',      title: 'KLB Science — OpenStax Biology 2e',                   url: 'https://openstax.org/books/biology-2e/pages/1-introduction', badge: 'Free PDF' },
+      { type: 'assessment', title: 'CBC Science & Technology Assessment Portfolio',       url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'Khan Academy — Biology',                               url: 'https://www.khanacademy.org/science/biology', badge: 'Free' },
+      { type: 'curriculum', title: 'KICD CBC Science & Technology Curriculum',             url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
     subject: 'Chemistry',
-    grade: 'Form 1–4',
+    grade: 'Grade 7–9',
     icon: '⚗️',
     from: '#581c87',
     to: '#a855f7',
-    strand: 'Organic Chemistry, Electrochemistry & Reactions',
+    strand: 'Matter, Reactions & Chemical Processes',
     resources: [
-      { type: 'video',      title: 'Organic Compounds & Reactions Simplified',      url: 'https://www.youtube.com/results?search_query=KCSE+Chemistry+Organic+Compounds+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Electrochemistry & Electrolysis — KCSE',        url: 'https://www.youtube.com/results?search_query=KCSE+Chemistry+Electrochemistry+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'KLB Chemistry — OpenStax Chemistry 2e',         url: 'https://openstax.org/books/chemistry-2e/pages/1-introduction', badge: 'Free PDF' },
-      { type: 'past-paper', title: 'KCSE 2023 Chemistry Paper 1, 2 & 3',            url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'Khan Academy — Chemistry',                      url: 'https://www.khanacademy.org/science/chemistry', badge: 'Free' },
-      { type: 'curriculum', title: 'KICD CBC Science & Technology Curriculum',      url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 9 Chemistry — Acids, Bases & Salts',        url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Chemistry+Acids+Bases+Salts+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 8 Science — States of Matter',              url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+Science+States+Matter+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'KLB Chemistry — OpenStax Chemistry 2e',               url: 'https://openstax.org/books/chemistry-2e/pages/1-introduction', badge: 'Free PDF' },
+      { type: 'assessment', title: 'CBC Chemistry Practical Assessment Tasks',            url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'Khan Academy — Chemistry',                            url: 'https://www.khanacademy.org/science/chemistry', badge: 'Free' },
+      { type: 'curriculum', title: 'KICD CBC Science & Technology Curriculum',             url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
     subject: 'Physics',
-    grade: 'Form 1–4',
+    grade: 'Grade 7–9',
     icon: '⚡',
     from: '#0c4a6e',
     to: '#0ea5e9',
-    strand: 'Mechanics, Electromagnetism & Optics',
+    strand: 'Motion, Forces, Energy & Waves',
     resources: [
-      { type: 'video',      title: 'Electromagnetism & Faraday\'s Law',         url: 'https://www.youtube.com/results?search_query=KCSE+Physics+Electromagnetism+Faraday+Law+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Mechanics: Newton\'s Laws & Motion',        url: 'https://www.youtube.com/results?search_query=KCSE+Physics+Mechanics+Newtons+Laws+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'KLB Physics — OpenStax University Physics', url: 'https://openstax.org/books/university-physics-volume-1/pages/1-introduction', badge: 'Free PDF' },
-      { type: 'past-paper', title: 'KCSE 2023 Physics Paper 1, 2 & 3',         url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'Khan Academy — Physics',                    url: 'https://www.khanacademy.org/science/physics', badge: 'Free' },
-      { type: 'curriculum', title: 'KICD CBC Science & Technology Curriculum',  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 9 Physics — Forces & Newton Laws',          url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Physics+Forces+Newton+Laws+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 8 Science — Energy & its Transformation',   url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+Science+Energy+Transformation+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'KLB Physics — OpenStax University Physics',           url: 'https://openstax.org/books/university-physics-volume-1/pages/1-introduction', badge: 'Free PDF' },
+      { type: 'assessment', title: 'CBC Physics Practical & Project Assessment',          url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'Khan Academy — Physics',                              url: 'https://www.khanacademy.org/science/physics', badge: 'Free' },
+      { type: 'curriculum', title: 'KICD CBC Science & Technology Curriculum',            url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
-    subject: 'History & Government',
-    grade: 'Form 1–4',
+    subject: 'Social Studies',
+    grade: 'Grade 7–9',
     icon: '🏛️',
     from: '#7c2d12',
     to: '#f97316',
-    strand: 'African History, Government & Civics',
+    strand: 'History, Government, Geography & Civics',
     resources: [
-      { type: 'video',      title: 'Colonial Kenya & The Freedom Struggle',     url: 'https://www.youtube.com/results?search_query=KCSE+History+Colonial+Kenya+Freedom+Struggle', badge: 'Video' },
-      { type: 'video',      title: 'History of Kenya — Government & Politics',  url: 'https://www.youtube.com/results?search_query=KCSE+History+Government+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'Longman History — CK-12 Social Studies',   url: 'https://www.ck12.org/browse/#c/social-studies', badge: 'Free' },
-      { type: 'past-paper', title: 'KCSE 2023 History & Government Paper 1 & 2', url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'curriculum', title: 'KICD CBC Social Studies Curriculum',        url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 7 Social Studies — Kenya Physical Features', url: 'https://www.youtube.com/results?search_query=CBC+Grade+7+Social+Studies+Kenya+Physical+Features', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 History — Pre-Colonial Kenya Communities', url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+History+PreColonial+Kenya+Communities', badge: 'Video' },
+      { type: 'ebook',      title: 'Longman History — CK-12 Social Studies',              url: 'https://www.ck12.org/browse/#c/social-studies', badge: 'Free' },
+      { type: 'assessment', title: 'CBC Social Studies Project & Portfolio Tasks',        url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'curriculum', title: 'KICD CBC Social Studies Curriculum',                  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
-    subject: 'Geography',
-    grade: 'Form 1–4',
-    icon: '🌍',
-    from: '#14532d',
-    to: '#84cc16',
-    strand: 'Physical & Human Geography, Maps & Statistics',
-    resources: [
-      { type: 'video',      title: 'Plate Tectonics & Earthquakes (Kenya)',    url: 'https://www.youtube.com/results?search_query=KCSE+Geography+Plate+Tectonics+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Population & Settlement — Kenya KCSE',     url: 'https://www.youtube.com/results?search_query=KCSE+Geography+Population+Settlement+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'Oxford Geography — CK-12 Earth Science',  url: 'https://www.ck12.org/earth-science/', badge: 'Free' },
-      { type: 'past-paper', title: 'KCSE 2023 Geography Paper 1 & 2',         url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'curriculum', title: 'KICD CBC Social Studies Curriculum',       url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
-    ],
-  },
-  {
-    subject: 'Computer Studies',
-    grade: 'Form 1–4',
+    subject: 'Computer Science',
+    grade: 'Grade 7–9',
     icon: '💻',
     from: '#1e1b4b',
     to: '#6366f1',
-    strand: 'Programming, Hardware, Networks & Databases',
+    strand: 'Programming, Digital Literacy & ICT',
     resources: [
-      { type: 'video',      title: 'Python Programming Basics for Beginners', url: 'https://www.youtube.com/results?search_query=Python+Programming+Basics+Kenya+Computer+Studies', badge: 'Video' },
-      { type: 'video',      title: 'Database Design & SQL — KCSE Level',     url: 'https://www.youtube.com/results?search_query=KCSE+Computer+Studies+Database+SQL+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'CS50 Harvard — Free Full Course',        url: 'https://cs50.harvard.edu/x/2024/', badge: 'Free' },
-      { type: 'past-paper', title: 'KCSE 2023 Computer Studies Paper 1 & 2', url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'platform',   title: 'freeCodeCamp — Web & Programming',       url: 'https://www.freecodecamp.org/', badge: 'Free' },
-      { type: 'curriculum', title: 'KICD CBC ICT Curriculum Designs',        url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 8 Computer Science — Introduction to Coding', url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+Computer+Science+Coding+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 ICT — Database Design & Digital Tools',     url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+ICT+Database+Digital+Tools+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'CS50 Harvard — Free Full Course',                       url: 'https://cs50.harvard.edu/x/', badge: 'Free' },
+      { type: 'assessment', title: 'CBC ICT & Computer Science Portfolio Tasks',            url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'platform',   title: 'freeCodeCamp — Web & Programming',                     url: 'https://www.freecodecamp.org/', badge: 'Free' },
+      { type: 'curriculum', title: 'KICD CBC ICT Curriculum Designs',                       url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
     subject: 'Business Studies',
-    grade: 'Form 1–4',
+    grade: 'Grade 7–9',
     icon: '💼',
     from: '#1e3a5f',
     to: '#64748b',
-    strand: 'Commerce, Finance, Accounting & Management',
+    strand: 'Commerce, Finance, Entrepreneurship & Trade',
     resources: [
-      { type: 'video',      title: 'Financial Statements & Analysis',          url: 'https://www.youtube.com/results?search_query=KCSE+Business+Studies+Financial+Statements+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Business Organisations & Management',      url: 'https://www.youtube.com/results?search_query=KCSE+Business+Studies+Organisations+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'Business Studies — OpenStax Economics',   url: 'https://openstax.org/books/principles-of-economics-3e/pages/1-introduction', badge: 'Free PDF' },
-      { type: 'past-paper', title: 'KCSE 2023 Business Studies Paper 1 & 2', url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'curriculum', title: 'KICD CBC Business Curriculum Designs',   url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 9 Business — Entrepreneurship & Enterprise', url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Business+Studies+Entrepreneurship+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 8 Business — Trade & Commerce Basics',        url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+Business+Studies+Trade+Commerce+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'Business Studies — OpenStax Economics',                 url: 'https://openstax.org/books/principles-of-economics-3e/pages/1-introduction', badge: 'Free PDF' },
+      { type: 'assessment', title: 'CBC Business Studies Portfolio & Project Tasks',        url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'curriculum', title: 'KICD CBC Business Curriculum Designs',                  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
     subject: 'Agriculture',
-    grade: 'Form 1–4',
+    grade: 'Grade 7–9',
     icon: '🌱',
     from: '#052e16',
     to: '#16a34a',
     strand: 'Crop Production, Animal Husbandry & Agribusiness',
     resources: [
-      { type: 'video',      title: 'Crop Production & Soil Management Kenya',  url: 'https://www.youtube.com/results?search_query=KCSE+Agriculture+Crop+Production+Kenya', badge: 'Video' },
-      { type: 'video',      title: 'Animal Husbandry & Livestock — KCSE',      url: 'https://www.youtube.com/results?search_query=KCSE+Agriculture+Animal+Husbandry+Kenya', badge: 'Video' },
-      { type: 'ebook',      title: 'Agriculture & Nutrition — Kenya Edu Cloud', url: 'https://kec.ac.ke/', badge: 'Free' },
-      { type: 'past-paper', title: 'KCSE 2023 Agriculture Paper 1 & 2',        url: 'https://knec.ac.ke', alt: 'https://learner.co.ke/past-papers', badge: 'Past Paper' },
-      { type: 'curriculum', title: 'KICD CBC Agriculture Curriculum Designs',  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+      { type: 'video',      title: 'CBC Grade 7 Agriculture — Crop Production & Soils',   url: 'https://www.youtube.com/results?search_query=CBC+Grade+7+Agriculture+Crop+Production+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 Agriculture — Animal Husbandry Basics',   url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Agriculture+Animal+Husbandry+Kenya', badge: 'Video' },
+      { type: 'ebook',      title: 'Agriculture & Nutrition — Kenya Education Cloud',      url: 'https://kec.ac.ke/', badge: 'Free' },
+      { type: 'assessment', title: 'CBC Agriculture Farm Project Portfolio',               url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'curriculum', title: 'KICD CBC Agriculture Curriculum Designs',              url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
+    ],
+  },
+  {
+    subject: 'Creative Arts & Sports',
+    grade: 'Grade 7–9',
+    icon: '🎨',
+    from: '#4c1d95',
+    to: '#c084fc',
+    strand: 'Visual Art, Music, Drama & Physical Education',
+    resources: [
+      { type: 'video',      title: 'CBC Grade 8 Creative Arts — Drawing & Design',         url: 'https://www.youtube.com/results?search_query=CBC+Grade+8+Creative+Arts+Drawing+Design+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'CBC Grade 9 Music — Kenyan Music & Instruments',       url: 'https://www.youtube.com/results?search_query=CBC+Grade+9+Music+Kenya+Instruments', badge: 'Video' },
+      { type: 'platform',   title: 'Kenya Education Cloud — Arts Resources',               url: 'https://kec.ac.ke/', badge: 'Official' },
+      { type: 'assessment', title: 'CBC Creative Arts Portfolio Assessment Guide',         url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Assessment' },
+      { type: 'curriculum', title: 'KICD CBC Creative Arts Curriculum Designs',            url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
   },
   {
@@ -204,7 +203,7 @@ const CBC_SUBJECTS: SubjectMaterials[] = [
     strand: 'Language, Numeracy, Environmental, Psychomotor',
     resources: [
       { type: 'platform',   title: 'Kenya Education Cloud — Pre-Primary',     url: 'https://kec.ac.ke/', badge: 'Official' },
-      { type: 'video',      title: 'Pre-Primary Numeracy Activities CBC',      url: 'https://www.youtube.com/results?search_query=CBC+Pre+Primary+Numeracy+Activities+Kenya', badge: 'Video' },
+      { type: 'video',      title: 'Pre-Primary Numeracy Activities — CBC',    url: 'https://www.youtube.com/results?search_query=CBC+Pre+Primary+Numeracy+Activities+Kenya', badge: 'Video' },
       { type: 'ebook',      title: 'CBC Pre-Primary Curriculum Guide — KICD',  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
       { type: 'curriculum', title: 'KICD CBC Pre-Primary Curriculum Designs',  url: 'https://kicd.ac.ke/curriculum-designs/', badge: 'Official' },
     ],
@@ -229,14 +228,14 @@ const CBC_SUBJECTS: SubjectMaterials[] = [
 const TYPE_ICON: Record<CBCResource['type'], React.ReactNode> = {
   'video':      <Play size={11} className="text-rose-400" />,
   'ebook':      <BookOpen size={11} className="text-blue-400" />,
-  'past-paper': <FileText size={11} className="text-amber-400" />,
+  'assessment': <FileText size={11} className="text-amber-400" />,
   'platform':   <Globe size={11} className="text-emerald-400" />,
   'curriculum': <FileText size={11} className="text-violet-400" />,
 }
 const TYPE_BADGE_STYLE: Record<CBCResource['type'], { bg: string; color: string }> = {
   'video':      { bg: 'rgba(239,68,68,0.12)',  color: '#fca5a5' },
   'ebook':      { bg: 'rgba(59,130,246,0.12)', color: '#93c5fd' },
-  'past-paper': { bg: 'rgba(245,158,11,0.12)', color: '#fcd34d' },
+  'assessment': { bg: 'rgba(245,158,11,0.12)', color: '#fcd34d' },
   'platform':   { bg: 'rgba(16,185,129,0.12)', color: '#34d399' },
   'curriculum': { bg: 'rgba(167,139,250,0.12)',color: '#c4b5fd' },
 }
@@ -262,7 +261,7 @@ export default function ELearningCBCMaterialsPage() {
     { key: 'all',         label: 'All Types' },
     { key: 'video',       label: 'Videos' },
     { key: 'ebook',       label: 'E-Books' },
-    { key: 'past-paper',  label: 'Past Papers' },
+    { key: 'assessment',  label: 'Assessments' },
     { key: 'platform',    label: 'Platforms' },
     { key: 'curriculum',  label: 'Curriculum' },
   ]
@@ -376,7 +375,7 @@ export default function ELearningCBCMaterialsPage() {
                               className="flex-1 py-1.5 rounded-lg text-center text-[10px] font-bold flex items-center justify-center gap-1 transition-all hover:opacity-90"
                               style={{ background: `${subject.from}25`, color: subject.to, border: `1px solid ${subject.from}40` }}>
                               <ExternalLink size={9} />
-                              {r.type === 'video' ? 'Watch' : r.type === 'ebook' ? 'Read Free' : r.type === 'past-paper' ? 'KNEC Official' : 'Open'}
+                              {r.type === 'video' ? 'Watch' : r.type === 'ebook' ? 'Read Free' : r.type === 'assessment' ? 'View Guide' : 'Open'}
                             </a>
                             {r.alt && (
                               <a href={r.alt} target="_blank" rel="noopener noreferrer"
@@ -408,9 +407,10 @@ export default function ELearningCBCMaterialsPage() {
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <Globe size={12} className="text-emerald-400 flex-shrink-0" />
         <span>
-          All resources are <strong className="text-slate-300">100% free</strong> and available to every school on the RSM platform.
+          All resources are <strong className="text-slate-300">100% free</strong> and aligned with the{' '}
+          <strong className="text-slate-300">Competency Based Curriculum (CBC)</strong> as designed by KICD.
           Official curriculum guides link to <strong className="text-slate-300">KICD</strong> — Kenya Institute of Curriculum Development.
-          Past papers link to <strong className="text-slate-300">KNEC</strong> (official) and <strong className="text-slate-300">learner.co.ke</strong> (free PDF download).
+          Content covers PP1 through Grade 9. No KCSE or KCPE content is included.
         </span>
       </div>
     </div>

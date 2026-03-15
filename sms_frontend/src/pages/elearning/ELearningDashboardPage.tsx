@@ -138,7 +138,7 @@ export default function ELearningDashboardPage() {
               <span style={{ color: '#34d399' }}>Learning Platform</span>
             </h1>
             <p className="mt-2 text-slate-300 max-w-md text-sm md:text-base">
-              Kenya CBC-aligned courses, KCSE revision materials, e-books, and live virtual sessions — all in one place.
+              Kenya CBC-aligned courses, learning materials, e-books, and live virtual sessions — all in one place.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <button onClick={() => navigate('/modules/elearning/courses')} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90" style={{ background: '#10b981', color: '#fff' }}>

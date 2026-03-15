@@ -229,7 +229,7 @@ function VideoCard({ v }: { v: Video }) {
   const thumbUrl = `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
   const ytSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(v.searchQ)}`
   const ytDirectUrl = `https://www.youtube.com/watch?v=${v.youtubeId}`
-  const href = thumbError ? ytSearchUrl : ytDirectUrl
+  const href = ytSearchUrl
 
   return (
     <GlassCard className="overflow-hidden hover:border-rose-500/30 cursor-pointer group">

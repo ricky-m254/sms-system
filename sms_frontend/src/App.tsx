@@ -132,6 +132,7 @@ const CommunicationEmailPage = lazy(() => import('./pages/communication/Communic
 const CommunicationSmsPage = lazy(() => import('./pages/communication/CommunicationSmsPage'))
 const CommunicationTemplatesPage = lazy(() => import('./pages/communication/CommunicationTemplatesPage'))
 const CommunicationAnnouncementsPage = lazy(() => import('./pages/communication/CommunicationAnnouncementsPage'))
+const AlertsCenterPage = lazy(() => import('./pages/communication/AlertsCenterPage'))
 const CommunicationAnalyticsPage = lazy(() => import('./pages/communication/CommunicationAnalyticsPage'))
 const CommunicationParentPage = lazy(() => import('./pages/communication/CommunicationParentPage'))
 const ParentPortalLayout = lazy(() => import('./pages/parentPortal/ParentPortalLayout'))
@@ -528,6 +529,7 @@ function App() {
           <Route path="sms" element={<CommunicationSmsPage />} />
           <Route path="templates" element={<CommunicationTemplatesPage />} />
           <Route path="announcements" element={<CommunicationAnnouncementsPage />} />
+          <Route path="alerts-center" element={<AlertsCenterPage />} />
           <Route path="analytics" element={<CommunicationAnalyticsPage />} />
           <Route path="parent" element={<CommunicationParentPage />} />
         </Route>

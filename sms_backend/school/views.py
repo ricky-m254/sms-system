@@ -823,8 +823,21 @@ class PaymentViewSet(viewsets.ModelViewSet):
 class EnrollmentViewSet(viewsets.ModelViewSet):
     queryset = Enrollment.objects.filter(is_active=True)
     serializer_class = EnrollmentSerializer
-    permission_classes = [IsSchoolAdmin, HasModuleAccess]
+    permission_classes = [IsSchoolAdmin | IsTeacher, HasModuleAccess]
     module_key = "STUDENTS"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        class_id = self.request.query_params.get('school_class_id')
+        term_id = self.request.query_params.get('term_id')
+        student_id = self.request.query_params.get('student_id')
+        if class_id:
+            qs = qs.filter(school_class_id=class_id)
+        if term_id:
+            qs = qs.filter(term_id=term_id)
+        if student_id:
+            qs = qs.filter(student_id=student_id)
+        return qs.select_related('student', 'school_class', 'term')
 
     def perform_destroy(self, instance):
         instance.is_active = False
@@ -876,6 +889,37 @@ class AttendanceRecordViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(recorded_by=self.request.user)
+
+    @action(detail=False, methods=['post'], url_path='batch')
+    def batch_create(self, request):
+        date_str = request.data.get('date')
+        records = request.data.get('records', [])
+        if not date_str or not records:
+            return Response({'error': 'date and records are required'}, status=status.HTTP_400_BAD_REQUEST)
+        results = []
+        for rec in records:
+            try:
+                obj, created = AttendanceRecord.objects.update_or_create(
+                    student_id=rec['student_id'],
+                    date=date_str,
+                    defaults={
+                        'status': rec.get('status', 'Present'),
+                        'notes': rec.get('notes', ''),
+                        'recorded_by': request.user,
+                    }
+                )
+                results.append({'id': obj.id, 'student_id': obj.student_id, 'status': obj.status, 'created': created})
+            except Exception:
+                pass
+        return Response({'count': len(results), 'records': results}, status=status.HTTP_201_CREATED)
+
+class SchoolClassListView(APIView):
+    permission_classes = [IsSchoolAdmin | IsTeacher]
+
+    def get(self, request):
+        classes = SchoolClass.objects.filter(is_active=True).select_related('academic_year', 'grade_level')
+        data = [{'id': c.id, 'name': c.display_name, 'stream': c.stream, 'section': c.section_name} for c in classes]
+        return Response(data)
 
 class AttendanceSummaryView(APIView):
     permission_classes = [IsSchoolAdmin | IsTeacher, HasModuleAccess]

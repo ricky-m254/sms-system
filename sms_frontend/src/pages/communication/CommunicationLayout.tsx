@@ -11,6 +11,7 @@ const navItems = [
   { label: 'SMS / WhatsApp', to: '/modules/communication/sms' },
   { label: 'Templates', to: '/modules/communication/templates' },
   { label: 'Announcements', to: '/modules/communication/announcements' },
+  { label: 'Alerts Center', to: '/modules/communication/alerts-center' },
   { label: 'Analytics', to: '/modules/communication/analytics' },
   { label: 'Parent Comm', to: '/modules/communication/parent' },
 ]
