@@ -1,0 +1,26 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "3RRKCuaP4XkA3DSfkEwmS"
+uri = "file://attached_assets/generated_images/rynatyspace_tech_logo_full.png"
+type = "image"
+title = "RynatySpace Technologies — Full Wordmark Logo"
+
+[[outputs]]
+id = "B3INtXEQgA1b7rcjdjx4Y"
+uri = "file://attached_assets/generated_images/rynatyspace_tech_icon.png"
+type = "image"
+title = "RynatySpace Technologies — Icon Mark"
+
+[[outputs]]
+id = "naMg3GGNFN78QKGbAHGkw"
+uri = "file://attached_assets/generated_images/rynatyschool_logo_full.png"
+type = "image"
+title = "RynatySchool — Full Wordmark Logo"
+
+[[outputs]]
+id = "1b_CcibA1Kc1oWCd9_2UT"
+uri = "file://attached_assets/generated_images/rynatyschool_icon.png"
+type = "image"
+title = "RynatySchool — Icon Mark"
