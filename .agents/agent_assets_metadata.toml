@@ -24,3 +24,27 @@ id = "1b_CcibA1Kc1oWCd9_2UT"
 uri = "file://attached_assets/generated_images/rynatyschool_icon.png"
 type = "image"
 title = "RynatySchool — Icon Mark"
+
+[[outputs]]
+id = "u25kEmsx-NNNpkWiqMhoL"
+uri = "file://attached_assets/generated_images/rynatyspace_v2_full.png"
+type = "image"
+title = "RynatySpace Technologies — Full Logo + Motto: “Engineering Tomorrow. Today.”"
+
+[[outputs]]
+id = "yaqTJmGMGVzToJfWFgp-9"
+uri = "file://attached_assets/generated_images/rynatyspace_v2_icon.png"
+type = "image"
+title = "RynatySpace Technologies — Icon Mark"
+
+[[outputs]]
+id = "c3RBMNETlpXCM7u_LYDX0"
+uri = "file://attached_assets/generated_images/rynatyschool_v2_full.png"
+type = "image"
+title = "RynatySchool — Full Logo + Motto: “Empowering Every Mind. Every Future.”"
+
+[[outputs]]
+id = "smVLmdd8XWK_baAMVP0ZT"
+uri = "file://attached_assets/generated_images/rynatyschool_v2_icon.png"
+type = "image"
+title = "RynatySchool — Icon Mark"
