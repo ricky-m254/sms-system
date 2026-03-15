@@ -15,6 +15,11 @@ const navItems = [
   { to: '/platform/action-logs', label: 'Action Logs' },
   { to: '/platform/settings', label: 'Platform Settings' },
   { to: '/platform/admin-users', label: 'Admin Users' },
+  { to: '/platform/usage-metering', label: 'Usage Metering' },
+  { to: '/platform/feature-flags', label: 'Feature Flags' },
+  { to: '/platform/notifications', label: 'Notifications' },
+  { to: '/platform/api-integrations', label: 'API & Integrations' },
+  { to: '/platform/revenue-analytics', label: 'Revenue Analytics' },
 ]
 
 export default function PlatformLayout() {

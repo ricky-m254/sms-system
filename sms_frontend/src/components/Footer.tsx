@@ -1,4 +1,4 @@
-import phoenixFull from '@/assets/brand/rynatyschool-phoenix-full.png'
+import wordmark from '@/assets/brand/rynatyschool-wordmark.png'
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -12,7 +12,7 @@ export default function Footer() {
         </p>
 
         <img
-          src={phoenixFull}
+          src={wordmark}
           alt="RynatySchool SmartCampus"
           className="h-9 w-auto opacity-90 transition-opacity duration-300 hover:opacity-100 sm:h-11"
           style={{ filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.3))' }}

@@ -187,6 +187,11 @@ const PlatformSecurityCompliancePage = lazy(() => import('./pages/platform/Platf
 const PlatformActionLogsPage = lazy(() => import('./pages/platform/PlatformActionLogsPage'))
 const PlatformSettingsPage = lazy(() => import('./pages/platform/PlatformSettingsPage'))
 const PlatformAdminUsersPage = lazy(() => import('./pages/platform/PlatformAdminUsersPage'))
+const PlatformUsageMeteringPage = lazy(() => import('./pages/platform/PlatformUsageMeteringPage'))
+const PlatformFeatureFlagsPage = lazy(() => import('./pages/platform/PlatformFeatureFlagsPage'))
+const PlatformNotificationsPage = lazy(() => import('./pages/platform/PlatformNotificationsPage'))
+const PlatformApiIntegrationsPage = lazy(() => import('./pages/platform/PlatformApiIntegrationsPage'))
+const PlatformRevenueAnalyticsPage = lazy(() => import('./pages/platform/PlatformRevenueAnalyticsPage'))
 const StoreLayout = lazy(() => import('./pages/store/StoreLayout'))
 const StoreDashboardPage = lazy(() => import('./pages/store/StoreDashboardPage'))
 const StoreItemsPage = lazy(() => import('./pages/store/StoreItemsPage'))
@@ -386,6 +391,11 @@ function App() {
           <Route path="action-logs" element={<PlatformActionLogsPage />} />
           <Route path="settings" element={<PlatformSettingsPage />} />
           <Route path="admin-users" element={<PlatformAdminUsersPage />} />
+          <Route path="usage-metering" element={<PlatformUsageMeteringPage />} />
+          <Route path="feature-flags" element={<PlatformFeatureFlagsPage />} />
+          <Route path="notifications" element={<PlatformNotificationsPage />} />
+          <Route path="api-integrations" element={<PlatformApiIntegrationsPage />} />
+          <Route path="revenue-analytics" element={<PlatformRevenueAnalyticsPage />} />
         </Route>
         <Route
           path="/modules"
