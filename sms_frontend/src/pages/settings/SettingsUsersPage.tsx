@@ -79,12 +79,18 @@ export default function SettingsUsersPage() {
 
   const load = async () => {
     setLoading(true)
-    const [usersRes, rolesRes] = await Promise.all([
-      apiClient.get('/users/'),
-      apiClient.get('/users/roles/'),
-    ])
-    setUsers(usersRes.data.results ?? usersRes.data)
-    setRoles(rolesRes.data)
+    try {
+      const [usersRes, rolesRes] = await Promise.all([
+        apiClient.get('/users/'),
+        apiClient.get('/users/roles/'),
+      ])
+      setUsers(usersRes.data.results ?? usersRes.data)
+      const rolesData = Array.isArray(rolesRes.data) ? rolesRes.data : []
+      setRoles(rolesData)
+    } catch {
+      setUsers([])
+      setRoles([])
+    }
     setLoading(false)
   }
 

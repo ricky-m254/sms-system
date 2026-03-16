@@ -14,6 +14,10 @@ export default defineConfig({
     port: 5000,
     allowedHosts: true,
     strictPort: true,
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Pragma': 'no-cache',
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
