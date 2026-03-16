@@ -67,20 +67,17 @@ export default function PlatformDeploymentPage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [windowRes, releaseRes, flagRes] = await Promise.all([
-        publicApiClient.get('/platform/maintenance/windows/'),
-        publicApiClient.get('/platform/deployment/releases/'),
-        publicApiClient.get('/platform/deployment/feature-flags/'),
-      ])
-      setWindows(normalizePaginatedResponse<MaintenanceWindow>(windowRes.data).items)
-      setReleases(normalizePaginatedResponse<DeploymentRelease>(releaseRes.data).items)
-      setFlags(normalizePaginatedResponse<FeatureFlag>(flagRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load deployment workspace.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [windowResult, releaseResult, flagResult] = await Promise.allSettled([
+      publicApiClient.get('/platform/maintenance/windows/'),
+      publicApiClient.get('/platform/deployment/releases/'),
+      publicApiClient.get('/platform/deployment/feature-flags/'),
+    ])
+    if (windowResult.status === 'fulfilled') setWindows(normalizePaginatedResponse<MaintenanceWindow>(windowResult.value.data).items)
+    if (releaseResult.status === 'fulfilled') setReleases(normalizePaginatedResponse<DeploymentRelease>(releaseResult.value.data).items)
+    if (flagResult.status === 'fulfilled') setFlags(normalizePaginatedResponse<FeatureFlag>(flagResult.value.data).items)
+    const firstError = [windowResult, releaseResult, flagResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load deployment workspace.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

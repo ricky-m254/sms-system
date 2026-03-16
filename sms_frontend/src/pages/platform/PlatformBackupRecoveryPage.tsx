@@ -50,20 +50,17 @@ export default function PlatformBackupRecoveryPage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [tenantRes, backupRes, restoreRes] = await Promise.all([
-        publicApiClient.get('/platform/tenants/'),
-        publicApiClient.get('/platform/backup/jobs/'),
-        publicApiClient.get('/platform/backup/restores/'),
-      ])
-      setTenants(normalizePaginatedResponse<Tenant>(tenantRes.data).items)
-      setBackups(normalizePaginatedResponse<BackupJob>(backupRes.data).items)
-      setRestores(normalizePaginatedResponse<RestoreJob>(restoreRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load backup/recovery workspace.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [tenantResult, backupResult, restoreResult] = await Promise.allSettled([
+      publicApiClient.get('/platform/tenants/'),
+      publicApiClient.get('/platform/backup/jobs/'),
+      publicApiClient.get('/platform/backup/restores/'),
+    ])
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse<Tenant>(tenantResult.value.data).items)
+    if (backupResult.status === 'fulfilled') setBackups(normalizePaginatedResponse<BackupJob>(backupResult.value.data).items)
+    if (restoreResult.status === 'fulfilled') setRestores(normalizePaginatedResponse<RestoreJob>(restoreResult.value.data).items)
+    const firstError = [tenantResult, backupResult, restoreResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load backup/recovery workspace.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

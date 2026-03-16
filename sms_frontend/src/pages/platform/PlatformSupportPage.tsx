@@ -52,20 +52,17 @@ export default function PlatformSupportPage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [ticketRes, tenantRes, slaRes] = await Promise.all([
-        publicApiClient.get<SupportTicket[] | { results: SupportTicket[]; count: number }>('/platform/support-tickets/'),
-        publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
-        publicApiClient.get<SlaOverview>('/platform/support-tickets/sla-overview/'),
-      ])
-      setTickets(normalizePaginatedResponse(ticketRes.data).items)
-      setTenants(normalizePaginatedResponse(tenantRes.data).items)
-      setSlaOverview(slaRes.data)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load support tickets.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [ticketResult, tenantResult, slaResult] = await Promise.allSettled([
+      publicApiClient.get<SupportTicket[] | { results: SupportTicket[]; count: number }>('/platform/support-tickets/'),
+      publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
+      publicApiClient.get<SlaOverview>('/platform/support-tickets/sla-overview/'),
+    ])
+    if (ticketResult.status === 'fulfilled') setTickets(normalizePaginatedResponse(ticketResult.value.data).items)
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse(tenantResult.value.data).items)
+    if (slaResult.status === 'fulfilled') setSlaOverview(slaResult.value.data)
+    const firstError = [ticketResult, tenantResult, slaResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load support tickets.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

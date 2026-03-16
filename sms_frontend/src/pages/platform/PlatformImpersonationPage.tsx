@@ -37,20 +37,17 @@ export default function PlatformImpersonationPage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [tenantRes, sessionRes] = await Promise.all([
-        publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
-        publicApiClient.get<ImpersonationSession[] | { results: ImpersonationSession[]; count: number }>(
-          '/platform/impersonation-sessions/',
-        ),
-      ])
-      setTenants(normalizePaginatedResponse(tenantRes.data).items)
-      setSessions(normalizePaginatedResponse(sessionRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load impersonation sessions.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [tenantResult, sessionResult] = await Promise.allSettled([
+      publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
+      publicApiClient.get<ImpersonationSession[] | { results: ImpersonationSession[]; count: number }>(
+        '/platform/impersonation-sessions/',
+      ),
+    ])
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse(tenantResult.value.data).items)
+    if (sessionResult.status === 'fulfilled') setSessions(normalizePaginatedResponse(sessionResult.value.data).items)
+    const firstError = [tenantResult, sessionResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load impersonation sessions.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

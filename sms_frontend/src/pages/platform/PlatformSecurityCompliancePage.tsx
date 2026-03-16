@@ -48,20 +48,17 @@ export default function PlatformSecurityCompliancePage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [tenantRes, incidentRes, reportRes] = await Promise.all([
-        publicApiClient.get('/platform/tenants/'),
-        publicApiClient.get('/platform/security/incidents/'),
-        publicApiClient.get('/platform/security/compliance-reports/'),
-      ])
-      setTenants(normalizePaginatedResponse<Tenant>(tenantRes.data).items)
-      setIncidents(normalizePaginatedResponse<SecurityIncident>(incidentRes.data).items)
-      setReports(normalizePaginatedResponse<ComplianceReport>(reportRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load security/compliance workspace.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [tenantResult, incidentResult, reportResult] = await Promise.allSettled([
+      publicApiClient.get('/platform/tenants/'),
+      publicApiClient.get('/platform/security/incidents/'),
+      publicApiClient.get('/platform/security/compliance-reports/'),
+    ])
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse<Tenant>(tenantResult.value.data).items)
+    if (incidentResult.status === 'fulfilled') setIncidents(normalizePaginatedResponse<SecurityIncident>(incidentResult.value.data).items)
+    if (reportResult.status === 'fulfilled') setReports(normalizePaginatedResponse<ComplianceReport>(reportResult.value.data).items)
+    const firstError = [tenantResult, incidentResult, reportResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load security/compliance workspace.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

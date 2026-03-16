@@ -50,24 +50,21 @@ export default function PlatformMonitoringPage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [snapshotRes, alertRes, tenantRes, overviewRes, summaryRes] = await Promise.all([
-        publicApiClient.get<MonitoringSnapshot[] | { results: MonitoringSnapshot[]; count: number }>('/platform/monitoring/snapshots/'),
-        publicApiClient.get<MonitoringAlert[] | { results: MonitoringAlert[]; count: number }>('/platform/monitoring/alerts/'),
-        publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
-        publicApiClient.get('/platform/monitoring/snapshots/overview/'),
-        publicApiClient.get<AlertSummary>('/platform/monitoring/alerts/summary/'),
-      ])
-      setSnapshots(normalizePaginatedResponse(snapshotRes.data).items)
-      setAlerts(normalizePaginatedResponse(alertRes.data).items)
-      setTenants(normalizePaginatedResponse(tenantRes.data).items)
-      setOverview(overviewRes.data as { snapshot_metric_keys: string[]; open_alerts: number; critical_alerts: number })
-      setAlertSummary(summaryRes.data)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load monitoring data.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [snapshotResult, alertResult, tenantResult, overviewResult, summaryResult] = await Promise.allSettled([
+      publicApiClient.get<MonitoringSnapshot[] | { results: MonitoringSnapshot[]; count: number }>('/platform/monitoring/snapshots/'),
+      publicApiClient.get<MonitoringAlert[] | { results: MonitoringAlert[]; count: number }>('/platform/monitoring/alerts/'),
+      publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
+      publicApiClient.get('/platform/monitoring/snapshots/overview/'),
+      publicApiClient.get<AlertSummary>('/platform/monitoring/alerts/summary/'),
+    ])
+    if (snapshotResult.status === 'fulfilled') setSnapshots(normalizePaginatedResponse(snapshotResult.value.data).items)
+    if (alertResult.status === 'fulfilled') setAlerts(normalizePaginatedResponse(alertResult.value.data).items)
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse(tenantResult.value.data).items)
+    if (overviewResult.status === 'fulfilled') setOverview(overviewResult.value.data as { snapshot_metric_keys: string[]; open_alerts: number; critical_alerts: number })
+    if (summaryResult.status === 'fulfilled') setAlertSummary(summaryResult.value.data)
+    const firstError = [snapshotResult, alertResult, tenantResult, overviewResult, summaryResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load monitoring data.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

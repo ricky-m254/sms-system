@@ -44,25 +44,22 @@ export default function PlatformBillingPage() {
   const loadBilling = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [planRes, tenantRes, invoiceRes] = await Promise.all([
-        publicApiClient.get('/platform/plans/'),
-        publicApiClient.get('/platform/tenants/'),
-        publicApiClient.get('/platform/subscription-invoices/', {
-          params: {
-            tenant_id: filters.tenant || undefined,
-            status: filters.status || undefined,
-          },
-        }),
-      ])
-      setPlans(normalizePaginatedResponse<Plan>(planRes.data).items)
-      setTenants(normalizePaginatedResponse<Tenant>(tenantRes.data).items)
-      setInvoices(normalizePaginatedResponse<Invoice>(invoiceRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load billing module data.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [planResult, tenantResult, invoiceResult] = await Promise.allSettled([
+      publicApiClient.get('/platform/plans/'),
+      publicApiClient.get('/platform/tenants/'),
+      publicApiClient.get('/platform/subscription-invoices/', {
+        params: {
+          tenant_id: filters.tenant || undefined,
+          status: filters.status || undefined,
+        },
+      }),
+    ])
+    if (planResult.status === 'fulfilled') setPlans(normalizePaginatedResponse<Plan>(planResult.value.data).items)
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse<Tenant>(tenantResult.value.data).items)
+    if (invoiceResult.status === 'fulfilled') setInvoices(normalizePaginatedResponse<Invoice>(invoiceResult.value.data).items)
+    const firstError = [planResult, tenantResult, invoiceResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load some billing data.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

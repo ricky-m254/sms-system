@@ -99,22 +99,18 @@ export default function PlatformOverviewPage() {
     const load = async () => {
       setIsLoading(true)
       setError(null)
-      try {
-        const [overviewRes, kpiRes, storageRes] = await Promise.all([
-          publicApiClient.get<OverviewPayload>('/platform/analytics/overview/'),
-          publicApiClient.get<BusinessKpisPayload>('/platform/analytics/business-kpis/'),
-          publicApiClient.get<StorageUsagePayload>('/platform/analytics/storage-usage/'),
-        ])
-        if (mounted) {
-          setData(overviewRes.data)
-          setBusinessKpis(kpiRes.data)
-          setStorageUsage(storageRes.data)
-        }
-      } catch (err) {
-        if (mounted) setError(extractApiErrorMessage(err, 'Unable to load platform overview.'))
-      } finally {
-        if (mounted) setIsLoading(false)
-      }
+      const [overviewResult, kpiResult, storageResult] = await Promise.allSettled([
+        publicApiClient.get<OverviewPayload>('/platform/analytics/overview/'),
+        publicApiClient.get<BusinessKpisPayload>('/platform/analytics/business-kpis/'),
+        publicApiClient.get<StorageUsagePayload>('/platform/analytics/storage-usage/'),
+      ])
+      if (!mounted) return
+      if (overviewResult.status === 'fulfilled') setData(overviewResult.value.data)
+      if (kpiResult.status === 'fulfilled') setBusinessKpis(kpiResult.value.data)
+      if (storageResult.status === 'fulfilled') setStorageUsage(storageResult.value.data)
+      const firstError = [overviewResult, kpiResult, storageResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+      if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load platform overview.'))
+      setIsLoading(false)
     }
     void load()
     return () => {

@@ -34,26 +34,23 @@ export default function PlatformActionLogsPage() {
   const loadData = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [logRes, tenantRes] = await Promise.all([
-        publicApiClient.get<LogRow[] | { results: LogRow[]; count: number }>('/platform/action-logs/', {
-          params: {
-            tenant_id: filters.tenant_id || undefined,
-            action: filters.action || undefined,
-            model_name: filters.model_name || undefined,
-            date_from: filters.date_from || undefined,
-            date_to: filters.date_to || undefined,
-          },
-        }),
-        publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
-      ])
-      setLogs(normalizePaginatedResponse(logRes.data).items)
-      setTenants(normalizePaginatedResponse(tenantRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load platform action logs.'))
-    } finally {
-      setIsLoading(false)
-    }
+    const [logResult, tenantResult] = await Promise.allSettled([
+      publicApiClient.get<LogRow[] | { results: LogRow[]; count: number }>('/platform/action-logs/', {
+        params: {
+          tenant_id: filters.tenant_id || undefined,
+          action: filters.action || undefined,
+          model_name: filters.model_name || undefined,
+          date_from: filters.date_from || undefined,
+          date_to: filters.date_to || undefined,
+        },
+      }),
+      publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
+    ])
+    if (logResult.status === 'fulfilled') setLogs(normalizePaginatedResponse(logResult.value.data).items)
+    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse(tenantResult.value.data).items)
+    const firstError = [logResult, tenantResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load platform action logs.'))
+    setIsLoading(false)
   }
 
   useEffect(() => {

@@ -58,21 +58,18 @@ export default function PlatformRevenueAnalyticsPage() {
     const load = async () => {
       setIsLoading(true)
       setError(null)
-      try {
-        const [kpiRes, revRes, growthRes] = await Promise.all([
-          publicApiClient.get<BusinessKpis>('/platform/analytics/business-kpis/'),
-          publicApiClient.get<RevenuePayload>('/platform/analytics/revenue/'),
-          publicApiClient.get<TenantGrowth>('/platform/analytics/tenant-growth/'),
-        ])
-        if (!mounted) return
-        setKpis(kpiRes.data)
-        setRevenue(revRes.data)
-        setGrowth(growthRes.data)
-      } catch (err) {
-        if (mounted) setError(extractApiErrorMessage(err, 'Unable to load revenue analytics.'))
-      } finally {
-        if (mounted) setIsLoading(false)
-      }
+      const [kpiResult, revResult, growthResult] = await Promise.allSettled([
+        publicApiClient.get<BusinessKpis>('/platform/analytics/business-kpis/'),
+        publicApiClient.get<RevenuePayload>('/platform/analytics/revenue/'),
+        publicApiClient.get<TenantGrowth>('/platform/analytics/tenant-growth/'),
+      ])
+      if (!mounted) return
+      if (kpiResult.status === 'fulfilled') setKpis(kpiResult.value.data)
+      if (revResult.status === 'fulfilled') setRevenue(revResult.value.data)
+      if (growthResult.status === 'fulfilled') setGrowth(growthResult.value.data)
+      const firstError = [kpiResult, revResult, growthResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+      if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load revenue analytics.'))
+      if (mounted) setIsLoading(false)
     }
     void load()
     return () => { mounted = false }

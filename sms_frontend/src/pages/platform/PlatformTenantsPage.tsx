@@ -97,18 +97,19 @@ export default function PlatformTenantsPage() {
   const loadTenants = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const [tenantRes, planRes] = await Promise.all([
-        publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
-        publicApiClient.get<Plan[] | { results: Plan[]; count: number }>('/platform/plans/'),
-      ])
-      setTenants(normalizePaginatedResponse(tenantRes.data).items)
-      setPlans(normalizePaginatedResponse(planRes.data).items)
-    } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to load tenants.'))
-    } finally {
-      setIsLoading(false)
+    const [tenantResult, planResult] = await Promise.allSettled([
+      publicApiClient.get<Tenant[] | { results: Tenant[]; count: number }>('/platform/tenants/'),
+      publicApiClient.get<Plan[] | { results: Plan[]; count: number }>('/platform/plans/'),
+    ])
+    if (tenantResult.status === 'fulfilled') {
+      setTenants(normalizePaginatedResponse(tenantResult.value.data).items)
+    } else {
+      setError(extractApiErrorMessage(tenantResult.reason, 'Unable to load tenants.'))
     }
+    if (planResult.status === 'fulfilled') {
+      setPlans(normalizePaginatedResponse(planResult.value.data).items)
+    }
+    setIsLoading(false)
   }
 
   useEffect(() => {
