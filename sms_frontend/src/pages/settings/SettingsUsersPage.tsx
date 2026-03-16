@@ -34,6 +34,8 @@ const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'bg-blue-500/20 text-blue-300',
   ACCOUNTANT: 'bg-emerald-500/20 text-emerald-300',
   TEACHER: 'bg-amber-500/20 text-amber-300',
+  PARENT: 'bg-sky-500/20 text-sky-300',
+  STUDENT: 'bg-pink-500/20 text-pink-300',
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -41,6 +43,8 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrator',
   ACCOUNTANT: 'Finance Manager',
   TEACHER: 'Teaching Staff',
+  PARENT: 'Parent / Guardian',
+  STUDENT: 'Student',
 }
 
 const blank: FormState = { username: '', email: '', first_name: '', last_name: '', phone: '', password: '', role_id: '' }
@@ -276,6 +280,8 @@ export default function SettingsUsersPage() {
             { name: 'ADMIN', label: 'School Administrator', desc: 'Full access to all modules and reports. Cannot manage user accounts or system-level settings.' },
             { name: 'ACCOUNTANT', label: 'Finance Manager', desc: 'Access to Finance module only — invoices, payments, cashbook, vote heads, reports, and student accounts.' },
             { name: 'TEACHER', label: 'Teaching Staff', desc: 'Access to Academics, Students, and Attendance modules. Read-only access to class lists and grade entry.' },
+            { name: 'PARENT', label: 'Parent / Guardian', desc: 'Access to the Parent Portal only — view their child\'s grades, attendance, fees, assignments and timetable.' },
+            { name: 'STUDENT', label: 'Student', desc: 'Access to the Student Portal only — grades, timetable, assignments, e-learning materials, and attendance.' },
           ].map(r => (
             <div key={r.name} className="flex gap-3 rounded-xl border border-white/[0.07] bg-slate-950/60 p-4">
               <span className={`mt-0.5 h-fit rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.name]}`}>{r.label}</span>

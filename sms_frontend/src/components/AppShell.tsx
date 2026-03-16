@@ -317,25 +317,25 @@ export default function AppShell() {
   const roleLabel = roleLabels[(role ?? '').toUpperCase()] ?? 'Staff'
 
   const LogoBlock = ({ showText }: { showText: boolean }) => (
-    <div className="flex items-center gap-2.5 overflow-hidden">
+    <div className="flex items-center overflow-hidden w-full">
       {showText ? (
         branding?.logo_url ? (
           <img src={branding.logo_url} alt="School logo"
-            className="h-9 w-auto object-contain object-left flex-shrink-0 select-none"
+            className="w-full h-auto max-h-14 object-contain object-left flex-shrink-0 select-none"
             draggable={false} />
         ) : (
           <img src={brandLogo} alt="RynatySchool SmartCampus"
-            className="h-9 w-auto object-contain object-left flex-shrink-0 select-none"
+            className="w-full h-auto max-h-14 object-contain object-left flex-shrink-0 select-none"
             draggable={false} />
         )
       ) : (
         branding?.logo_url ? (
           <img src={branding.logo_url} alt="School logo"
-            className="w-8 h-8 rounded-xl object-contain flex-shrink-0 ring-1 ring-white/10 select-none"
+            className="w-9 h-9 rounded-xl object-cover object-center flex-shrink-0 ring-1 ring-white/10 select-none"
             draggable={false} />
         ) : (
           <img src={brandLogo} alt="RynatySchool"
-            className="w-8 h-8 rounded-xl object-contain flex-shrink-0 select-none"
+            className="w-9 h-9 rounded-xl object-cover object-left flex-shrink-0 select-none"
             draggable={false} />
         )
       )}
