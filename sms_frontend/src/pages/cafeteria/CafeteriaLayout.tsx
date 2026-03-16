@@ -8,6 +8,8 @@ const navItems = [
   { label: 'Weekly Menu', to: '/modules/cafeteria/menu' },
   { label: 'Enrollments', to: '/modules/cafeteria/enrollments' },
   { label: 'Daily Logs', to: '/modules/cafeteria/logs' },
+  { label: 'Dietary & Allergy', to: '/modules/cafeteria/dietary' },
+  { label: 'Payments / Wallet', to: '/modules/cafeteria/payments' },
 ]
 
 export default function CafeteriaLayout() {

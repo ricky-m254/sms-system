@@ -142,6 +142,14 @@ const StudentPortalTimetablePage = lazy(() => import('./pages/studentPortal/Stud
 const StudentPortalAssignmentsPage = lazy(() => import('./pages/studentPortal/StudentPortalAssignmentsPage'))
 const StudentPortalELearningPage = lazy(() => import('./pages/studentPortal/StudentPortalELearningPage'))
 const StudentPortalAttendancePage = lazy(() => import('./pages/studentPortal/StudentPortalAttendancePage'))
+const StudentPortalLibraryPage = lazy(() => import('./pages/studentPortal/StudentPortalLibraryPage'))
+const TeacherPortalLayout = lazy(() => import('./pages/teacherPortal/TeacherPortalLayout'))
+const TeacherPortalDashboardPage = lazy(() => import('./pages/teacherPortal/TeacherPortalDashboardPage'))
+const TeacherPortalClassesPage = lazy(() => import('./pages/teacherPortal/TeacherPortalClassesPage'))
+const TeacherPortalAttendancePage = lazy(() => import('./pages/teacherPortal/TeacherPortalAttendancePage'))
+const TeacherPortalGradebookPage = lazy(() => import('./pages/teacherPortal/TeacherPortalGradebookPage'))
+const TeacherPortalResourcesPage = lazy(() => import('./pages/teacherPortal/TeacherPortalResourcesPage'))
+const TeacherPortalTimetablePage = lazy(() => import('./pages/teacherPortal/TeacherPortalTimetablePage'))
 const ParentPortalLayout = lazy(() => import('./pages/parentPortal/ParentPortalLayout'))
 const ParentPortalDashboardPage = lazy(() => import('./pages/parentPortal/ParentPortalDashboardPage'))
 const ParentPortalAcademicsPage = lazy(() => import('./pages/parentPortal/ParentPortalAcademicsPage'))
@@ -283,6 +291,9 @@ const CafeteriaPlansPage = lazy(() => import('./pages/cafeteria/CafeteriaPlansPa
 const CafeteriaMenuPage = lazy(() => import('./pages/cafeteria/CafeteriaMenuPage'))
 const CafeteriaEnrollmentsPage = lazy(() => import('./pages/cafeteria/CafeteriaEnrollmentsPage'))
 const CafeteriaLogsPage = lazy(() => import('./pages/cafeteria/CafeteriaLogsPage'))
+const CafeteriaDietaryPage = lazy(() => import('./pages/cafeteria/CafeteriaDietaryPage'))
+const CafeteriaPaymentsPage = lazy(() => import('./pages/cafeteria/CafeteriaPaymentsPage'))
+const StoreSuppliersPage = lazy(() => import('./pages/store/StoreSuppliersPage'))
 
 const CurriculumLayout = lazy(() => import('./pages/academics/CurriculumLayout'))
 const CurriculumDashboardPage = lazy(() => import('./pages/academics/CurriculumDashboardPage'))
@@ -386,6 +397,19 @@ function App() {
           <Route path="assignments" element={<StudentPortalAssignmentsPage />} />
           <Route path="elearning" element={<StudentPortalELearningPage />} />
           <Route path="attendance" element={<StudentPortalAttendancePage />} />
+          <Route path="library" element={<StudentPortalLibraryPage />} />
+        </Route>
+        {/* Teacher Portal */}
+        <Route
+          path="/teacher-portal/*"
+          element={isTenantAuth ? <TeacherPortalLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/login'} replace />}
+        >
+          <Route index element={<TeacherPortalDashboardPage />} />
+          <Route path="classes" element={<TeacherPortalClassesPage />} />
+          <Route path="attendance" element={<TeacherPortalAttendancePage />} />
+          <Route path="gradebook" element={<TeacherPortalGradebookPage />} />
+          <Route path="resources" element={<TeacherPortalResourcesPage />} />
+          <Route path="timetable" element={<TeacherPortalTimetablePage />} />
         </Route>
         <Route
           path="/dashboard"
@@ -614,6 +638,7 @@ function App() {
           <Route path="movements" element={<StoreMovementsPage />} />
           <Route path="orders" element={<StoreOrdersPage />} />
           <Route path="low-stock" element={<StoreLowStockPage />} />
+          <Route path="suppliers" element={<StoreSuppliersPage />} />
         </Route>
         <Route
           path="/modules/dispensary/*"
@@ -759,6 +784,8 @@ function App() {
           <Route path="menu" element={<CafeteriaMenuPage />} />
           <Route path="enrollments" element={<CafeteriaEnrollmentsPage />} />
           <Route path="logs" element={<CafeteriaLogsPage />} />
+          <Route path="dietary" element={<CafeteriaDietaryPage />} />
+          <Route path="payments" element={<CafeteriaPaymentsPage />} />
         </Route>
         <Route
           path="/modules/curriculum/*"

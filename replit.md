@@ -205,6 +205,11 @@ API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
 
 ## Recent Updates
 
+- **Teacher Portal** (new module): Full portal at `/teacher-portal/*` — Layout, Dashboard (KPI cards, schedule, recent marks), Classes (subject/class assignments with student counts), Attendance (mark/save daily attendance), Gradebook (CBC 4-band: Exceeding/Meeting/Approaching/Below), Resources (upload/manage teaching materials), Timetable (weekly grid + daily agenda views). Accessible to all authenticated tenant users.
+- **Cafeteria expanded**: `CafeteriaDietaryPage` (dietary preferences, allergen tags, allergy reference table) and `CafeteriaPaymentsPage` (wallet top-ups, deductions, ledger) — routes `dietary` and `payments` under `/modules/cafeteria/*`.
+- **Store expanded**: `StoreSuppliersPage` (UI-only local state, supplier cards with add/edit/toggle-active) — route `suppliers` under `/modules/store/*`.
+- **Student Portal expanded**: `StudentPortalLibraryPage` (catalog search, borrowings tab, overdue alerts with due-date badge) — route `library` under `/student-portal/*`.
+- **Promise.allSettled**: All 10 platform pages converted from `Promise.all` to `Promise.allSettled` — partial API failures no longer crash multi-data loads.
 - **Alumni module**: `AlumniEventsPage.tsx` (full CRUD + attendee viewer modal) and `AlumniAttendeesPage.tsx` (event-filtered attendee list) — both lazy-loaded with routes `events` and `attendees` in App.tsx
 - **ChunkErrorBoundary**: Class component wrapping `<Suspense>` in `App.tsx`; catches chunk load failures (network/build errors) and shows retry UI
 - **CBC grade scale**: `ExaminationsDashboardPage.tsx` now uses CBC Competency Levels (EE/ME/AE/BE) instead of KNEC 0-100 grading

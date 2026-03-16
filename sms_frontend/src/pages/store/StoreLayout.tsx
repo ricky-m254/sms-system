@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/modules/store/movements', label: 'Stock Movements', icon: Truck },
   { to: '/modules/store/orders', label: 'Order Requests', icon: ShoppingCart },
   { to: '/modules/store/low-stock', label: 'Low Stock', icon: AlertTriangle },
+  { to: '/modules/store/suppliers', label: 'Suppliers', icon: Store },
 ]
 
 export default function StoreLayout() {
