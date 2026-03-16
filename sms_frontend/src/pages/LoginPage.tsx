@@ -6,7 +6,7 @@ import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Glo
 import brandLogo from '@/assets/brand/rynatyschool-logo.png'
 
 type LoginResponse  = { access: string; refresh: string }
-type RoutingResponse = { user: string; role: string | null; permissions?: string[] }
+type RoutingResponse = { user: string; role: string | null; permissions?: string[]; target?: string; target_module?: string | null }
 type LoginError    = { detail?: string }
 
 const FEATURES = [
@@ -69,7 +69,14 @@ export default function LoginPage() {
           role: routing.data.role, permissions: routing.data.permissions ?? [],
         }))
       } catch { /* ignore */ }
-      navigate('/dashboard')
+      const target = routing.data.target
+      if (target === 'PARENT_PORTAL') {
+        navigate('/modules/parent-portal/dashboard')
+      } else if (target === 'STUDENT_PORTAL') {
+        navigate('/student-portal')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (err) {
       const msg = (err as { response?: { data?: LoginError } })?.response?.data?.detail
       setError(msg ?? 'Invalid credentials. Please check your details.')
@@ -279,15 +286,35 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Role guidance */}
+          <div className="mt-6 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+            <p className="mb-2 text-[10px] uppercase tracking-widest text-slate-600 font-semibold">Who is this login for?</p>
+            <div className="space-y-2">
+              {[
+                { emoji: '🏫', label: 'School Staff / Admin', desc: 'Teachers, accountants, admin — use your school username' },
+                { emoji: '👨‍👩‍👧', label: 'Parents / Guardians', desc: 'Use the username given by your school to view your child' },
+                { emoji: '🎓', label: 'Students', desc: 'Use your admission number or student username to access your portal' },
+              ].map(r => (
+                <div key={r.label} className="flex items-start gap-2.5">
+                  <span className="text-base leading-none mt-0.5">{r.emoji}</span>
+                  <div>
+                    <p className="text-[11px] font-semibold text-slate-300">{r.label}</p>
+                    <p className="text-[10px] text-slate-600">{r.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Tagline */}
-          <div className="mt-8 pt-6 border-t border-white/[0.05] text-center">
+          <div className="mt-6 pt-5 border-t border-white/[0.05] text-center">
             <p className="text-[11px] text-slate-700 tracking-wide uppercase font-medium">
               Powering Smart Schools · From Africa to The World.
             </p>
           </div>
 
           {/* Platform admin link */}
-          <p className="mt-4 text-center text-[12px] text-slate-600">
+          <p className="mt-3 text-center text-[12px] text-slate-600">
             Platform administrator?{' '}
             <button
               type="button"

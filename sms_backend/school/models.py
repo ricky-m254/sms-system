@@ -69,6 +69,8 @@ class Role(models.Model):
         ('ADMIN', 'School Administrator'),
         ('ACCOUNTANT', 'Finance Manager'),
         ('TEACHER', 'Teaching Staff'),
+        ('PARENT', 'Parent / Guardian'),
+        ('STUDENT', 'Student'),
     ])
     description = models.TextField(blank=True)
 

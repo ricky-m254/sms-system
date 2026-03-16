@@ -4198,6 +4198,29 @@ class DashboardRoutingView(APIView):
         if hasattr(request.user, 'userprofile'):
             role_name = request.user.userprofile.role.name
 
+        # Parent and Student roles go directly to their dedicated portals
+        if role_name == 'PARENT':
+            return Response({
+                "user": request.user.username,
+                "role": role_name,
+                "permissions": ["parent-portal:access"],
+                "module_count": 1,
+                "modules": [{"key": "PARENTS", "name": "Parent Portal"}],
+                "target": "PARENT_PORTAL",
+                "target_module": "PARENTS",
+            })
+
+        if role_name == 'STUDENT':
+            return Response({
+                "user": request.user.username,
+                "role": role_name,
+                "permissions": ["student-portal:access"],
+                "module_count": 1,
+                "modules": [{"key": "STUDENT_PORTAL", "name": "Student Portal"}],
+                "target": "STUDENT_PORTAL",
+                "target_module": "STUDENT_PORTAL",
+            })
+
         if role_name in ['ADMIN', 'TENANT_SUPER_ADMIN']:
             modules = list(Module.objects.filter(is_active=True).order_by('key').values('key', 'name'))
         else:

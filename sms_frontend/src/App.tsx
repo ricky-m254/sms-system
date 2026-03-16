@@ -135,6 +135,13 @@ const CommunicationAnnouncementsPage = lazy(() => import('./pages/communication/
 const AlertsCenterPage = lazy(() => import('./pages/communication/AlertsCenterPage'))
 const CommunicationAnalyticsPage = lazy(() => import('./pages/communication/CommunicationAnalyticsPage'))
 const CommunicationParentPage = lazy(() => import('./pages/communication/CommunicationParentPage'))
+const StudentPortalLayout = lazy(() => import('./pages/studentPortal/StudentPortalLayout'))
+const StudentPortalDashboardPage = lazy(() => import('./pages/studentPortal/StudentPortalDashboardPage'))
+const StudentPortalGradesPage = lazy(() => import('./pages/studentPortal/StudentPortalGradesPage'))
+const StudentPortalTimetablePage = lazy(() => import('./pages/studentPortal/StudentPortalTimetablePage'))
+const StudentPortalAssignmentsPage = lazy(() => import('./pages/studentPortal/StudentPortalAssignmentsPage'))
+const StudentPortalELearningPage = lazy(() => import('./pages/studentPortal/StudentPortalELearningPage'))
+const StudentPortalAttendancePage = lazy(() => import('./pages/studentPortal/StudentPortalAttendancePage'))
 const ParentPortalLayout = lazy(() => import('./pages/parentPortal/ParentPortalLayout'))
 const ParentPortalDashboardPage = lazy(() => import('./pages/parentPortal/ParentPortalDashboardPage'))
 const ParentPortalAcademicsPage = lazy(() => import('./pages/parentPortal/ParentPortalAcademicsPage'))
@@ -368,6 +375,18 @@ function App() {
           path="/platform/login"
           element={isPlatformAuth ? <Navigate to="/platform" replace /> : isTenantAuth ? <Navigate to="/dashboard" replace /> : <PlatformLoginPage />}
         />
+        {/* Student Portal */}
+        <Route
+          path="/student-portal/*"
+          element={isTenantAuth ? <StudentPortalLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/login'} replace />}
+        >
+          <Route index element={<StudentPortalDashboardPage />} />
+          <Route path="grades" element={<StudentPortalGradesPage />} />
+          <Route path="timetable" element={<StudentPortalTimetablePage />} />
+          <Route path="assignments" element={<StudentPortalAssignmentsPage />} />
+          <Route path="elearning" element={<StudentPortalELearningPage />} />
+          <Route path="attendance" element={<StudentPortalAttendancePage />} />
+        </Route>
         <Route
           path="/dashboard"
           element={isTenantAuth ? <AppShell /> : <Navigate to={isPlatformAuth ? '/platform' : '/login'} replace />}
