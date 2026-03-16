@@ -17,6 +17,7 @@ type TenantUser = {
   role_id: number | null
   role_name: string | null
   phone: string
+  admission_number: string
 }
 
 type FormState = {
@@ -27,6 +28,7 @@ type FormState = {
   phone: string
   password: string
   role_id: string
+  admission_number: string
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -51,7 +53,9 @@ const ROLE_LABELS: Record<string, string> = {
   NURSE: 'School Nurse',
 }
 
-const blank: FormState = { username: '', email: '', first_name: '', last_name: '', phone: '', password: '', role_id: '' }
+const blank: FormState = { username: '', email: '', first_name: '', last_name: '', phone: '', password: '', role_id: '', admission_number: '' }
+
+const PORTAL_ROLES = new Set(['STUDENT', 'PARENT'])
 
 const extractApiError = (err: unknown, fallback: string) => {
   const data = (err as { response?: { data?: unknown } })?.response?.data
@@ -113,6 +117,7 @@ export default function SettingsUsersPage() {
       phone: u.phone,
       password: '',
       role_id: u.role_id ? String(u.role_id) : '',
+      admission_number: u.admission_number ?? '',
     })
     setSaveError('')
     setShowForm(true)
@@ -128,6 +133,7 @@ export default function SettingsUsersPage() {
           last_name: form.last_name,
           phone: form.phone,
           role_id: form.role_id,
+          admission_number: form.admission_number,
         }
         if (form.password) payload.password = form.password
         await apiClient.patch(`/users/${editing.id}/`, payload)
@@ -255,7 +261,14 @@ export default function SettingsUsersPage() {
                       </div>
                       {u.is_staff && <span className="text-xs text-slate-600">Staff</span>}
                     </td>
-                    <td className="py-3 pr-5 font-mono text-xs text-slate-400">{u.username}</td>
+                    <td className="py-3 pr-5">
+                      <div className="font-mono text-xs text-slate-400">{u.username}</div>
+                      {u.admission_number && (
+                        <div className="mt-0.5 font-mono text-xs text-sky-400" title="Admission number">
+                          {u.admission_number}
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 pr-5 text-slate-400">{u.email || <span className="text-slate-600">—</span>}</td>
                     <td className="py-3 pr-5 text-slate-400">{u.phone || <span className="text-slate-600">—</span>}</td>
                     <td className="py-3 pr-5">
@@ -353,6 +366,22 @@ export default function SettingsUsersPage() {
                   </p>
                 )}
               </div>
+              {PORTAL_ROLES.has(roles.find(r => String(r.id) === form.role_id)?.name ?? '') && (
+                <div className="col-span-full rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
+                  <label className="mb-1 block text-xs font-medium text-sky-300">
+                    Student Admission Number <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-400 font-mono"
+                    placeholder="e.g. ADM-0001"
+                    value={form.admission_number}
+                    onChange={e => setForm(f => ({ ...f, admission_number: e.target.value }))}
+                  />
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    This is the login identifier — the student or parent enters this as their username when signing in.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button onClick={() => setShowForm(false)} className="rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Cancel</button>

@@ -82,7 +82,11 @@ class UserProfile(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.PROTECT)
     phone = models.CharField(max_length=20, blank=True)
-    
+    admission_number = models.CharField(
+        max_length=50, blank=True, null=True, unique=True,
+        help_text="For STUDENT/PARENT accounts: student admission number used as login identifier."
+    )
+
     def __str__(self):
         return f"{self.user.username} - {self.role.name}"
 

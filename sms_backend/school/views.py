@@ -10,6 +10,7 @@ from django.db import models
 from django.db import connection
 from django.http import HttpResponse
 from django.utils import timezone
+from django.contrib.auth import authenticate
 from psycopg2 import sql as pgsql
 from datetime import datetime, timedelta
 import hashlib
@@ -18,6 +19,8 @@ import json
 import csv
 import os
 import re
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView as _BaseTokenView
 
 from .models import (
     Student, Guardian, Invoice, Payment, Enrollment, AdmissionApplication,
@@ -4187,6 +4190,52 @@ class SchoolDashboardView(APIView):
             "enrollments_this_year": Enrollment.objects.filter(is_active=True).count()
         })
 
+class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT login serializer.
+    Falls back to matching admission_number in UserProfile if the normal
+    username lookup fails — so students and parents can log in with
+    their student admission number instead of a Django username.
+    """
+
+    def validate(self, attrs):
+        username = attrs.get(self.username_field, '')
+        password = attrs.get('password', '')
+
+        # First: attempt normal Django username authentication.
+        try:
+            return super().validate(attrs)
+        except Exception:
+            pass
+
+        # Second: try to find a user via UserProfile.admission_number
+        try:
+            profile = (
+                UserProfile.objects
+                .select_related('user')
+                .get(admission_number=username, user__is_active=True)
+            )
+        except UserProfile.DoesNotExist:
+            # Re-raise the original error so SimpleJWT returns its standard message
+            raise
+
+        user = authenticate(
+            request=self.context.get('request'),
+            username=profile.user.username,
+            password=password,
+        )
+        if user is None:
+            raise ValidationError({'detail': 'No active account found with the given credentials.'})
+
+        # Build the token exactly as the parent class does
+        attrs[self.username_field] = profile.user.username
+        return super().validate(attrs)
+
+
+class SmartCampusTokenObtainPairView(_BaseTokenView):
+    serializer_class = SmartCampusTokenObtainPairSerializer
+
+
 class DashboardRoutingView(APIView):
     """
     Returns routing instructions based on module assignments.
@@ -5689,6 +5738,7 @@ class UserManagementListCreateView(APIView):
                 'role_id': role.id if role else None,
                 'role_name': role.name if role else None,
                 'phone': profile.phone if profile else '',
+                'admission_number': profile.admission_number if profile else '',
             })
         return Response({'results': data, 'count': len(data)})
 
@@ -5702,6 +5752,7 @@ class UserManagementListCreateView(APIView):
         last_name = data.get('last_name', '').strip()
         phone = data.get('phone', '').strip()
         role_id = data.get('role_id')
+        admission_number = data.get('admission_number', '').strip() or None
 
         if not username or not password:
             return Response({'detail': 'Username and password are required.'}, status=400)
@@ -5714,6 +5765,9 @@ class UserManagementListCreateView(APIView):
         except Role.DoesNotExist:
             return Response({'detail': 'Invalid role.'}, status=400)
 
+        if admission_number and UserProfile.objects.filter(admission_number=admission_number).exists():
+            return Response({'detail': f'Admission number "{admission_number}" is already linked to another account.'}, status=400)
+
         user = AuthUser.objects.create_user(
             username=username,
             password=password,
@@ -5721,7 +5775,7 @@ class UserManagementListCreateView(APIView):
             first_name=first_name,
             last_name=last_name,
         )
-        UserProfile.objects.create(user=user, role=role, phone=phone)
+        UserProfile.objects.create(user=user, role=role, phone=phone, admission_number=admission_number)
         return Response({
             'id': user.id,
             'username': user.username,
@@ -5755,6 +5809,7 @@ class UserManagementDetailView(APIView):
             'role_id': role.id if role else None,
             'role_name': role.name if role else None,
             'phone': profile.phone if profile else '',
+            'admission_number': profile.admission_number if profile else '',
         })
 
     def patch(self, request, user_id):
@@ -5773,6 +5828,8 @@ class UserManagementDetailView(APIView):
         u.save()
 
         profile = getattr(u, 'userprofile', None)
+        admission_number = data.get('admission_number', '').strip() or None
+
         if 'role_id' in data and data['role_id']:
             try:
                 role = Role.objects.get(id=data['role_id'])
@@ -5780,13 +5837,22 @@ class UserManagementDetailView(APIView):
                     profile.role = role
                     if 'phone' in data:
                         profile.phone = data.get('phone', '')
+                    if 'admission_number' in data:
+                        if admission_number and UserProfile.objects.filter(admission_number=admission_number).exclude(pk=profile.pk).exists():
+                            return Response({'detail': f'Admission number "{admission_number}" is already linked to another account.'}, status=400)
+                        profile.admission_number = admission_number
                     profile.save()
                 else:
-                    UserProfile.objects.create(user=u, role=role, phone=data.get('phone', ''))
+                    UserProfile.objects.create(user=u, role=role, phone=data.get('phone', ''), admission_number=admission_number)
             except Role.DoesNotExist:
                 return Response({'detail': 'Invalid role.'}, status=400)
-        elif profile and 'phone' in data:
-            profile.phone = data.get('phone', '')
+        elif profile:
+            if 'phone' in data:
+                profile.phone = data.get('phone', '')
+            if 'admission_number' in data:
+                if admission_number and UserProfile.objects.filter(admission_number=admission_number).exclude(pk=profile.pk).exists():
+                    return Response({'detail': f'Admission number "{admission_number}" is already linked to another account.'}, status=400)
+                profile.admission_number = admission_number
             profile.save()
 
         return Response({'detail': 'User updated.'})
