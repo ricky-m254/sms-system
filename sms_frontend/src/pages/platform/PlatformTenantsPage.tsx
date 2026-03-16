@@ -9,6 +9,11 @@ type Plan = {
   id: number
   code: string
   name: string
+  description: string
+  monthly_price: string
+  annual_price: string
+  max_students: number
+  max_storage_gb: number
 }
 
 type Tenant = {
@@ -333,7 +338,11 @@ export default function PlatformTenantsPage() {
           <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Contact email" type="email" value={createForm.contact_email} onChange={(e) => setCreateForm((p) => ({ ...p, contact_email: e.target.value }))} />
           <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={createForm.subscription_plan} onChange={(e) => setCreateForm((p) => ({ ...p, subscription_plan: e.target.value }))}>
             <option value="">Plan (optional)</option>
-            {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.code} - {plan.name}</option>)}
+            {plans.map((plan) => (
+              <option key={plan.id} value={plan.id}>
+                {plan.name} — ≤{plan.max_students === 9999 ? '500+' : plan.max_students} students · KES {Number(plan.annual_price).toLocaleString()}/yr
+              </option>
+            ))}
           </select>
           <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Trial days" type="number" min={1} value={createForm.trial_days} onChange={(e) => setCreateForm((p) => ({ ...p, trial_days: e.target.value }))} />
           <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" placeholder="Max students" type="number" min={1} value={createForm.max_students} onChange={(e) => setCreateForm((p) => ({ ...p, max_students: e.target.value }))} />
@@ -342,6 +351,36 @@ export default function PlatformTenantsPage() {
           <input className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm md:col-span-2" placeholder="School admin password (optional)" value={createForm.school_admin_password} onChange={(e) => setCreateForm((p) => ({ ...p, school_admin_password: e.target.value }))} />
           <button className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70" type="submit" disabled={isCreating}>{isCreating ? 'Creating...' : 'Create Tenant'}</button>
         </form>
+        {createForm.subscription_plan && (() => {
+          const p = plans.find(pl => String(pl.id) === createForm.subscription_plan)
+          if (!p) return null
+          return (
+            <div className="mt-3 flex flex-wrap items-start gap-4 rounded-lg border border-sky-500/20 bg-sky-500/5 p-4 text-xs">
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sky-300 text-sm">{p.name} Plan selected</p>
+                <p className="mt-0.5 text-slate-400">{p.description}</p>
+              </div>
+              <div className="flex flex-wrap gap-4 text-slate-300 shrink-0">
+                <div className="text-center">
+                  <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Annual Fee</p>
+                  <p className="font-bold text-white">KES {Number(p.annual_price).toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Monthly</p>
+                  <p className="font-bold text-white">KES {Number(p.monthly_price).toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Max Students</p>
+                  <p className="font-bold text-white">{p.max_students === 9999 ? '500+' : p.max_students}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Storage</p>
+                  <p className="font-bold text-white">{p.max_storage_gb} GB</p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
       </section>
 
       <section className="col-span-12 rounded-2xl glass-panel p-6">
@@ -414,8 +453,27 @@ export default function PlatformTenantsPage() {
               <div className="mt-3 grid gap-2">
                 <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignForm.plan_id} onChange={(e) => setAssignForm((p) => ({ ...p, plan_id: e.target.value }))}>
                   <option value="">Select plan</option>
-                  {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.code} - {plan.name}</option>)}
+                  {plans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name} — ≤{plan.max_students === 9999 ? '500+' : plan.max_students} students · KES {Number(plan.annual_price).toLocaleString()}/yr
+                    </option>
+                  ))}
                 </select>
+                {assignForm.plan_id && (() => {
+                  const p = plans.find(pl => String(pl.id) === assignForm.plan_id)
+                  if (!p) return null
+                  return (
+                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs space-y-1">
+                      <p className="font-semibold text-emerald-300">{p.name} Plan</p>
+                      <p className="text-slate-400">{p.description}</p>
+                      <div className="flex gap-4 mt-1 text-slate-300">
+                        <span>📅 KES {Number(p.annual_price).toLocaleString()}/yr</span>
+                        <span>👥 Up to {p.max_students === 9999 ? '500+' : p.max_students} students</span>
+                        <span>💾 {p.max_storage_gb} GB storage</span>
+                      </div>
+                    </div>
+                  )
+                })()}
                 <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={assignForm.billing_cycle} onChange={(e) => setAssignForm((p) => ({ ...p, billing_cycle: e.target.value }))}>
                   <option value="MONTHLY">MONTHLY</option>
                   <option value="ANNUAL">ANNUAL</option>

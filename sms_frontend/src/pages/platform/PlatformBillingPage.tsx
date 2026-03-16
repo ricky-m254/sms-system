@@ -113,18 +113,93 @@ export default function PlatformBillingPage() {
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
       <section className="col-span-12 rounded-2xl glass-panel p-6">
-        <h2 className="text-lg font-semibold">Active Plans</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {plans.map((plan) => (
-            <article key={plan.id} className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-4 text-sm">
-              <p className="text-xs uppercase tracking-wide text-slate-400">{plan.code}</p>
-              <p className="mt-1 font-semibold text-white">{plan.name}</p>
-              <p className="mt-2 text-slate-300">${plan.monthly_price}/month</p>
-              <p className="text-slate-400">${plan.annual_price}/year</p>
-              <p className="mt-2 text-xs text-slate-400">{plan.max_students} students | {plan.max_storage_gb}GB</p>
-            </article>
-          ))}
-          {!isLoading && plans.length === 0 ? <p className="text-sm text-slate-400">No plans found.</p> : null}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Subscription Plans</h2>
+            <p className="text-xs text-slate-400 mt-0.5">KES 300/student/year base pricing · M-Pesa Paybill 522522</p>
+          </div>
+        </div>
+        <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {plans.map((plan) => {
+            const TIER_EXTRAS: Record<string, { perStudent: number; freeSms: number; acctPrefix: string; color: string }> = {
+              STARTER:    { perStudent: 300, freeSms: 100,  acctPrefix: 'SUB-', color: 'border-slate-600/60' },
+              GROWTH:     { perStudent: 280, freeSms: 500,  acctPrefix: 'SUB-', color: 'border-sky-500/30' },
+              PRO:        { perStudent: 260, freeSms: 2000, acctPrefix: 'SUB-', color: 'border-violet-500/30' },
+              ENTERPRISE: { perStudent: 240, freeSms: 5000, acctPrefix: 'SUB-', color: 'border-amber-500/30' },
+            }
+            const extras = TIER_EXTRAS[plan.code] ?? { perStudent: 300, freeSms: 100, acctPrefix: 'SUB-', color: 'border-white/[0.07]' }
+            return (
+              <article key={plan.id} className={`rounded-xl border ${extras.color} bg-slate-950/60 p-4 text-sm`}>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500">{plan.code}</p>
+                    <p className="font-bold text-white text-base">{plan.name}</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">ACTIVE</span>
+                </div>
+                <p className="text-2xl font-bold text-emerald-400">
+                  KES {Number(plan.annual_price).toLocaleString()}
+                  <span className="text-sm font-normal text-slate-500">/yr</span>
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">KES {Number(plan.monthly_price).toLocaleString()}/month</p>
+                <div className="mt-3 space-y-1 text-xs text-slate-400 border-t border-white/[0.07] pt-3">
+                  <div className="flex justify-between">
+                    <span>Students</span>
+                    <span className="text-white">≤ {plan.max_students === 9999 ? '500+' : plan.max_students}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Per-student rate</span>
+                    <span className="text-white">KES {extras.perStudent}/yr</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Free SMS credits</span>
+                    <span className="text-white">{extras.freeSms.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Storage</span>
+                    <span className="text-white">{plan.max_storage_gb} GB</span>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+          {!isLoading && plans.length === 0 ? <p className="col-span-4 text-sm text-slate-400">No plans found.</p> : null}
+        </div>
+
+        {/* Pricing reference */}
+        <div className="mt-6 rounded-xl border border-white/[0.07] bg-slate-950/40 p-4">
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Pricing Reference · KES 300/student/year</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-slate-300">
+              <thead>
+                <tr className="border-b border-white/[0.07] text-slate-500 uppercase">
+                  <th className="pb-2 pr-4 text-left">Plan</th>
+                  <th className="pb-2 pr-4 text-left">Students</th>
+                  <th className="pb-2 pr-4 text-right">Annual Fee</th>
+                  <th className="pb-2 pr-4 text-right">Per-Student (Overage)</th>
+                  <th className="pb-2 pr-4 text-right">Free SMS</th>
+                  <th className="pb-2 text-left">Account Prefix</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {[
+                  { plan: 'Starter',    students: '1 – 50',   fee: 'KES 15,000',  rate: 'KES 300', sms: '100',    prefix: 'SUB-XXX' },
+                  { plan: 'Growth',     students: '51 – 200', fee: 'KES 60,000',  rate: 'KES 280', sms: '500',    prefix: 'SUB-XXX' },
+                  { plan: 'Pro',        students: '201 – 500',fee: 'KES 150,000', rate: 'KES 260', sms: '2,000',  prefix: 'SUB-XXX' },
+                  { plan: 'Enterprise', students: '500+',     fee: 'Custom',      rate: 'KES 240', sms: '5,000+', prefix: 'SUB-XXX' },
+                ].map(r => (
+                  <tr key={r.plan} className="hover:bg-white/[0.02]">
+                    <td className="py-2 pr-4 font-medium text-white">{r.plan}</td>
+                    <td className="py-2 pr-4 text-slate-400">{r.students}</td>
+                    <td className="py-2 pr-4 text-right text-emerald-400">{r.fee}</td>
+                    <td className="py-2 pr-4 text-right">{r.rate}</td>
+                    <td className="py-2 pr-4 text-right">{r.sms}</td>
+                    <td className="py-2 font-mono text-slate-500">{r.prefix}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -142,7 +217,7 @@ export default function PlatformBillingPage() {
             Refresh
           </button>
           <p className="ml-auto text-xs text-slate-400">
-            Invoices: {totals.count} | Paid: {totals.paidCount} | Total: ${totals.total}
+            Invoices: {totals.count} | Paid: {totals.paidCount} | Total: KES {Number(totals.total).toLocaleString()}
           </p>
         </div>
         <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
@@ -166,7 +241,7 @@ export default function PlatformBillingPage() {
                   <td className="px-3 py-2">{row.tenant_name}</td>
                   <td className="px-3 py-2">{row.billing_cycle}</td>
                   <td className="px-3 py-2">{row.status}</td>
-                  <td className="px-3 py-2">${row.total_amount}</td>
+                  <td className="px-3 py-2">KES {Number(row.total_amount).toLocaleString()}</td>
                   <td className="px-3 py-2">{row.due_date}</td>
                   <td className="px-3 py-2">
                     <button
