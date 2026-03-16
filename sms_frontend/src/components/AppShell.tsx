@@ -368,7 +368,7 @@ export default function AppShell() {
             <div className="aurora-blob-2 z-0" />
             <div className="aurora-blob-3 z-0" />
           </>}
-          <div className="relative z-10">
+          <div className="relative z-10 w-full min-w-0">
             <LogoBlock showText={!collapsed} />
           </div>
         </div>

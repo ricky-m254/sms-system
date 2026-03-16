@@ -119,11 +119,11 @@ export default function LoginPage() {
         <div className={`relative z-10 px-12 pt-8 pb-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
 
           {/* Brand Logo — top left */}
-          <div className="mb-10">
+          <div className="mb-10 w-full">
             <img
               src={brandLogo}
               alt="RynatySchool SmartCampus"
-              className="h-16 w-auto object-contain object-left select-none"
+              className="w-full h-auto max-h-20 object-contain object-left select-none"
               draggable={false}
             />
           </div>

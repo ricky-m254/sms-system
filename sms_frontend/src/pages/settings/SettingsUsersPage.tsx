@@ -36,6 +36,8 @@ const ROLE_COLORS: Record<string, string> = {
   TEACHER: 'bg-amber-500/20 text-amber-300',
   PARENT: 'bg-sky-500/20 text-sky-300',
   STUDENT: 'bg-pink-500/20 text-pink-300',
+  LIBRARIAN: 'bg-teal-500/20 text-teal-300',
+  NURSE: 'bg-rose-500/20 text-rose-300',
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -45,6 +47,8 @@ const ROLE_LABELS: Record<string, string> = {
   TEACHER: 'Teaching Staff',
   PARENT: 'Parent / Guardian',
   STUDENT: 'Student',
+  LIBRARIAN: 'Librarian',
+  NURSE: 'School Nurse',
 }
 
 const blank: FormState = { username: '', email: '', first_name: '', last_name: '', phone: '', password: '', role_id: '' }
