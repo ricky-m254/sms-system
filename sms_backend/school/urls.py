@@ -4,6 +4,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .views import SmartCampusTokenObtainPairView
 from .views import (
+    StudentSearchForUserCreateView, StudentsByClassForUserCreateView,
+    BulkCreateStudentUsersView, VoteHeadBudgetReportView,
+)
+from .views import (
     EnrollmentViewSet, ExpenseViewSet, FeeStructureViewSet, MessageViewSet, 
     StaffViewSet, StudentViewSet, InvoiceViewSet, PaymentViewSet, 
     DepartmentViewSet,
@@ -205,6 +209,7 @@ urlpatterns = [
     path('finance/reports/class-balances/', FinanceClassBalancesReportView.as_view(), name='finance_class_balances_report'),
     path('finance/reports/arrears-by-term/', FinanceArrearsByTermReportView.as_view(), name='finance_arrears_by_term_report'),
     path('finance/reports/budget-variance/', FinanceBudgetVarianceReportView.as_view(), name='finance_budget_variance_report'),
+    path('finance/reports/vote-head-budget/', VoteHeadBudgetReportView.as_view(), name='finance_vote_head_budget_report'),
     path('finance/payments/<int:pk>/receipt/pdf/', FinanceReceiptPdfView.as_view(), name='finance_receipt_pdf'),
     path('finance/students/<int:student_id>/ledger/', FinanceStudentLedgerView.as_view(), name='finance_student_ledger'),
 
@@ -219,6 +224,9 @@ urlpatterns = [
     path('users/roles/', RoleListView.as_view(), name='user_roles'),
     path('users/role-modules/', RoleModuleAccessView.as_view(), name='role_module_access'),
     path('users/submodule-permissions/', SubmodulePermissionView.as_view(), name='submodule_permissions'),
+    path('users/student-search/', StudentSearchForUserCreateView.as_view(), name='user_student_search'),
+    path('users/students-by-class/', StudentsByClassForUserCreateView.as_view(), name='user_students_by_class'),
+    path('users/bulk-create-students/', BulkCreateStudentUsersView.as_view(), name='user_bulk_create_students'),
     path('users/', UserManagementListCreateView.as_view(), name='user_list_create'),
     path('users/<int:user_id>/', UserManagementDetailView.as_view(), name='user_detail'),
 

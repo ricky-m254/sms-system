@@ -959,7 +959,7 @@ export default function ApprovalsHubPage() {
       ? cat.approvePayload(notes)
       : action === 'reject'
         ? cat.rejectPayload(notes)
-        : { clarification_notes: notes, status: 'PENDING_CLARIFICATION' }
+        : cat.rejectPayload(notes ? `[Clarification Requested] ${notes}` : '[Clarification Requested]')
     try {
       if (ep.method === 'post') await apiClient.post(ep.url, payload)
       else await apiClient.patch(ep.url, payload)

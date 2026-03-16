@@ -6364,6 +6364,178 @@ class DemoResetView(APIView):
         })
 
 
+class StudentSearchForUserCreateView(APIView):
+    """Lightweight student search for user-account creation (admin only)."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        q = (request.query_params.get('q') or '').strip()
+        if not q or len(q) < 2:
+            return Response({'results': []})
+        students = Student.objects.filter(
+            Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(admission_number__icontains=q),
+            is_active=True,
+        ).order_by('first_name', 'last_name')[:20]
+        existing = set(UserProfile.objects.filter(
+            admission_number__in=[s.admission_number for s in students]
+        ).values_list('admission_number', flat=True))
+        return Response({'results': [
+            {
+                'id': s.id,
+                'first_name': s.first_name,
+                'last_name': s.last_name,
+                'admission_number': s.admission_number,
+                'full_name': f"{s.first_name} {s.last_name}".strip(),
+                'has_account': s.admission_number in existing,
+            }
+            for s in students
+        ]})
+
+
+class StudentsByClassForUserCreateView(APIView):
+    """Return all active students enrolled in a class for bulk user creation."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        class_id = request.query_params.get('class_id')
+        if not class_id:
+            return Response({'results': []})
+        enrollments = Enrollment.objects.filter(
+            school_class_id=class_id, is_active=True
+        ).select_related('student')
+        students = [e.student for e in enrollments if e.student.is_active]
+        existing = set(UserProfile.objects.filter(
+            admission_number__in=[s.admission_number for s in students]
+        ).values_list('admission_number', flat=True))
+        return Response({'results': [
+            {
+                'id': s.id,
+                'first_name': s.first_name,
+                'last_name': s.last_name,
+                'admission_number': s.admission_number,
+                'full_name': f"{s.first_name} {s.last_name}".strip(),
+                'has_account': s.admission_number in existing,
+            }
+            for s in students
+        ]})
+
+
+class BulkCreateStudentUsersView(APIView):
+    """Create login accounts for multiple students in one request."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from django.contrib.auth.models import User as AuthUser
+        student_ids = request.data.get('student_ids', [])
+        role_name = request.data.get('role', 'STUDENT')
+        try:
+            role = Role.objects.get(name=role_name)
+        except Role.DoesNotExist:
+            return Response({'detail': f'Role "{role_name}" not found.'}, status=400)
+
+        students = Student.objects.filter(id__in=student_ids, is_active=True)
+        created, skipped = [], []
+
+        for student in students:
+            adm = student.admission_number
+            if UserProfile.objects.filter(admission_number=adm).exists():
+                skipped.append({'admission_number': adm, 'name': f"{student.first_name} {student.last_name}", 'reason': 'Account already exists'})
+                continue
+            if AuthUser.objects.filter(username=adm).exists():
+                skipped.append({'admission_number': adm, 'name': f"{student.first_name} {student.last_name}", 'reason': f'Username "{adm}" taken'})
+                continue
+            user = AuthUser.objects.create_user(
+                username=adm,
+                password=adm,
+                first_name=student.first_name,
+                last_name=student.last_name,
+            )
+            UserProfile.objects.create(user=user, role=role, admission_number=adm)
+            created.append({'username': adm, 'admission_number': adm, 'name': f"{student.first_name} {student.last_name}"})
+
+        return Response({
+            'created_count': len(created),
+            'skipped_count': len(skipped),
+            'created': created,
+            'skipped': skipped,
+        }, status=201)
+
+
+class VoteHeadBudgetReportView(APIView):
+    """Vote head budget vs actual allocation report."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+
+        total_annual_budget = float(
+            Budget.objects.filter(is_active=True).aggregate(total=Sum('annual_budget'))['total'] or 0
+        )
+
+        alloc_qs = VoteHeadPaymentAllocation.objects.select_related('vote_head')
+        if date_from:
+            alloc_qs = alloc_qs.filter(payment__payment_date__date__gte=date_from)
+        if date_to:
+            alloc_qs = alloc_qs.filter(payment__payment_date__date__lte=date_to)
+
+        totals = alloc_qs.values(
+            'vote_head__id', 'vote_head__name', 'vote_head__allocation_percentage', 'vote_head__order'
+        ).annotate(actual_collected=Sum('amount')).order_by('vote_head__order', 'vote_head__name')
+
+        all_vote_heads = {vh.id: vh for vh in VoteHead.objects.filter(is_active=True)}
+        rows = []
+        seen_ids = set()
+
+        for r in totals:
+            vh_id = r['vote_head__id']
+            seen_ids.add(vh_id)
+            pct = float(r['vote_head__allocation_percentage'] or 0)
+            budgeted = round(total_annual_budget * pct / 100, 2)
+            actual = round(float(r['actual_collected'] or 0), 2)
+            variance = round(actual - budgeted, 2)
+            rows.append({
+                'vote_head_id': vh_id,
+                'vote_head_name': r['vote_head__name'],
+                'allocation_percentage': pct,
+                'budgeted_amount': budgeted,
+                'actual_collected': actual,
+                'variance': variance,
+                'utilization_pct': round(actual / budgeted * 100, 2) if budgeted > 0 else None,
+                'status': 'OVER' if actual > budgeted else 'UNDER',
+            })
+
+        for vh_id, vh in all_vote_heads.items():
+            if vh_id not in seen_ids:
+                pct = float(vh.allocation_percentage or 0)
+                budgeted = round(total_annual_budget * pct / 100, 2)
+                rows.append({
+                    'vote_head_id': vh.id,
+                    'vote_head_name': vh.name,
+                    'allocation_percentage': pct,
+                    'budgeted_amount': budgeted,
+                    'actual_collected': 0.0,
+                    'variance': round(-budgeted, 2),
+                    'utilization_pct': 0.0 if budgeted > 0 else None,
+                    'status': 'UNDER',
+                })
+
+        rows.sort(key=lambda x: x['allocation_percentage'], reverse=True)
+        total_budgeted = sum(r['budgeted_amount'] for r in rows)
+        total_actual = sum(r['actual_collected'] for r in rows)
+
+        return Response({
+            'date_from': date_from,
+            'date_to': date_to,
+            'total_annual_budget': total_annual_budget,
+            'total_budgeted_via_allocation': round(total_budgeted, 2),
+            'total_actual_collected': round(total_actual, 2),
+            'overall_variance': round(total_actual - total_budgeted, 2),
+            'overall_utilization_pct': round(total_actual / total_budgeted * 100, 2) if total_budgeted > 0 else None,
+            'rows': rows,
+        })
+
+
 class StudentTransferViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         from .serializers import StudentTransferSerializer
