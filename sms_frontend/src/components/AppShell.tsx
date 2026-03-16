@@ -317,25 +317,25 @@ export default function AppShell() {
   const roleLabel = roleLabels[(role ?? '').toUpperCase()] ?? 'Staff'
 
   const LogoBlock = ({ showText }: { showText: boolean }) => (
-    <div className="flex items-center overflow-hidden w-full">
+    <div className="flex items-center w-full h-full overflow-hidden">
       {showText ? (
         branding?.logo_url ? (
           <img src={branding.logo_url} alt="School logo"
-            className="w-full h-auto max-h-14 object-contain object-left flex-shrink-0 select-none"
+            className="w-full h-full object-contain object-left select-none"
             draggable={false} />
         ) : (
           <img src={brandLogo} alt="RynatySchool SmartCampus"
-            className="w-full h-auto max-h-14 object-contain object-left flex-shrink-0 select-none"
+            className="w-full h-full object-contain object-left select-none"
             draggable={false} />
         )
       ) : (
         branding?.logo_url ? (
           <img src={branding.logo_url} alt="School logo"
-            className="w-9 h-9 rounded-xl object-cover object-center flex-shrink-0 ring-1 ring-white/10 select-none"
+            className="w-10 h-10 rounded-xl object-cover object-center flex-shrink-0 ring-1 ring-white/10 select-none"
             draggable={false} />
         ) : (
           <img src={brandLogo} alt="RynatySchool"
-            className="w-9 h-9 rounded-xl object-cover object-left flex-shrink-0 select-none"
+            className="w-10 h-10 rounded-xl object-cover object-left flex-shrink-0 select-none"
             draggable={false} />
         )
       )}
@@ -355,20 +355,18 @@ export default function AppShell() {
       >
         {/* Logo */}
         <div
-          className={`relative flex items-center gap-3 border-b flex-shrink-0 overflow-hidden
-            ${collapsed ? 'px-3 py-4 justify-center' : 'px-4 py-4'}`}
-
-          style={{ borderColor: 'rgba(255,255,255,0.07)', minHeight: 64 }}
+          className={`relative flex items-center border-b flex-shrink-0 overflow-hidden
+            ${collapsed ? 'justify-center px-2' : 'px-3'}`}
+          style={{ borderColor: 'rgba(255,255,255,0.07)', height: 64 }}
         >
           <div className="absolute inset-0 pointer-events-none opacity-20"
             style={{ background: `radial-gradient(ellipse at top left, ${primaryColor}40 0%, transparent 65%)` }} />
-          {/* Aurora blobs */}
           {!collapsed && <>
             <div className="aurora-blob-1 z-0" />
             <div className="aurora-blob-2 z-0" />
             <div className="aurora-blob-3 z-0" />
           </>}
-          <div className="relative z-10 w-full min-w-0">
+          <div className="relative z-10 w-full min-w-0 flex items-center" style={{ height: 44 }}>
             <LogoBlock showText={!collapsed} />
           </div>
         </div>
@@ -500,7 +498,9 @@ export default function AppShell() {
         </button>
 
         {/* Centre logo */}
-        <LogoBlock showText />
+        <div className="flex-1 flex justify-center px-2 min-w-0" style={{ height: 40 }}>
+          <LogoBlock showText />
+        </div>
 
         {/* Right: search + avatar */}
         <div className="flex items-center gap-1">
@@ -538,9 +538,11 @@ export default function AppShell() {
             }}
           >
             {/* Drawer header */}
-            <div className="flex items-center justify-between px-4 py-4 border-b flex-shrink-0"
-              style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-              <LogoBlock showText />
+            <div className="flex items-center justify-between px-3 border-b flex-shrink-0"
+              style={{ borderColor: 'rgba(255,255,255,0.07)', height: 64 }}>
+              <div className="flex-1 min-w-0 mr-2" style={{ height: 44 }}>
+                <LogoBlock showText />
+              </div>
               <button onClick={() => setMobileOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-white hover:bg-white/[0.08] transition"
                 aria-label="Close menu">
