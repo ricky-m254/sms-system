@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import SmartCampusTokenObtainPairView
 from .views import (
     StudentSearchForUserCreateView, StudentsByClassForUserCreateView,
@@ -144,6 +145,7 @@ router.register(r'student-transfers', StudentTransferViewSet, basename='student-
 urlpatterns = [
     # 1. Authentication (JWT)
     path('auth/login/', SmartCampusTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', CurrentUserView.as_view(), name='current_user'),
 
     # 2. Summary Endpoints (must come before router to avoid /students/{pk} collisions)

@@ -1,7 +1,7 @@
 from django.urls import include, path, re_path
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.conf import settings
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 def ping_view(request):
@@ -27,8 +27,9 @@ urlpatterns = [
     path("health/", ping_view),
     path("health", ping_view),
 
-    # 2. Authentication (Login)
+    # 2. Authentication (Login + Refresh)
     path("api/auth/login/", TokenObtainPairView.as_view()),
+    path("api/auth/refresh/", TokenRefreshView.as_view()),
 
     # 3. Platform (Super Tenant) APIs
     path("api/platform/", include("clients.platform_urls")),
