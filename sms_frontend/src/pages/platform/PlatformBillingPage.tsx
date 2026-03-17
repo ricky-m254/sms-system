@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import axios from 'axios'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { publicApiClient } from '../../api/publicClient'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage } from '../../utils/forms'
+import { resolveApiBaseUrl } from '../../api/baseUrl'
 import PageHero from '../../components/PageHero'
 
 type Tenant = { id: number; name: string; schema_name: string }
@@ -60,6 +62,14 @@ const STATUS_BADGE: Record<string, string> = {
   CANCELLED: 'bg-rose-500/20 text-rose-300',
 }
 
+const DEFAULT_PLANS = [
+  { code: 'STARTER',    name: 'Starter',    description: 'For small schools with up to 50 students. KES 300/student/year. Includes 100 free SMS credits.',                       monthly_price: '1250.00',  annual_price: '15000.00',  max_students: 50,     max_storage_gb: 5,   enabled_modules: ['CORE','STUDENTS','ACADEMICS','FINANCE'], is_active: true },
+  { code: 'GROWTH',     name: 'Growth',     description: 'For growing schools with 51-200 students. KES 280/student/year. Includes 500 free SMS credits.',                      monthly_price: '5000.00',  annual_price: '60000.00',  max_students: 200,    max_storage_gb: 20,  enabled_modules: [], is_active: true },
+  { code: 'PRO',        name: 'Pro',        description: 'For established schools with 201-500 students. KES 260/student/year. Includes 2,000 free SMS credits.',              monthly_price: '12500.00', annual_price: '150000.00', max_students: 500,    max_storage_gb: 50,  enabled_modules: [], is_active: true },
+  { code: 'ENTERPRISE', name: 'Enterprise', description: 'For large schools with 500+ students. KES 240/student/year. Includes 5,000+ free SMS credits. Custom pricing.',      monthly_price: '12500.00', annual_price: '150000.00', max_students: 9999,   max_storage_gb: 200, enabled_modules: [], is_active: true },
+  { code: 'UNLIMITED',  name: 'Unlimited',  description: 'Unlimited students with high storage and white-label options.',                                                        monthly_price: '0.00',     annual_price: '0.00',      max_students: 999999, max_storage_gb: 500, enabled_modules: [], is_active: true },
+]
+
 const TIER: Record<string, { rate: number; sms: number; color: string }> = {
   STARTER:      { rate: 300, sms: 100,    color: 'border-slate-600/60' },
   GROWTH:       { rate: 280, sms: 500,    color: 'border-sky-500/30' },
@@ -92,28 +102,33 @@ export default function PlatformBillingPage() {
   const [isSavingPaybill, setIsSavingPaybill] = useState(false)
   const [paybillMsg, setPaybillMsg] = useState<string | null>(null)
 
-  const hasMountedPlans = useRef(false)
-
   const loadPlansAndTenants = useCallback(async () => {
     setPlansLoading(true)
     setPlansError(null)
     try {
+      const base = resolveApiBaseUrl().replace(/\/$/, '')
+
       const [planRes, tenantRes, settingRes] = await Promise.allSettled([
-        publicApiClient.get<Plan[]>('/platform/plans/'),
+        axios.get<Plan[]>(`${base}/api/platform/plans/`),
         publicApiClient.get('/platform/tenants/'),
         publicApiClient.get('/platform/settings/'),
       ])
 
       if (planRes.status === 'fulfilled') {
-        const items = normalizePaginatedResponse<Plan>(planRes.value.data).items
+        const raw = planRes.value.data as unknown
+        const items = normalizePaginatedResponse<Plan>(raw as Plan[]).items
+        console.info('[Billing] Plans loaded:', items.length, items)
         setPlans(items)
         if (items.length === 0) setPlansError('No active subscription plans found in the database.')
       } else {
+        console.error('[Billing] Plans error:', planRes.reason)
         setPlansError(extractApiErrorMessage(planRes.reason, 'Unable to load subscription plans.'))
       }
 
       if (tenantRes.status === 'fulfilled') {
         setTenants(normalizePaginatedResponse<Tenant>(tenantRes.value.data).items)
+      } else {
+        console.error('[Billing] Tenants error:', tenantRes.reason)
       }
 
       if (settingRes.status === 'fulfilled') {
@@ -121,6 +136,8 @@ export default function PlatformBillingPage() {
         const paybill = settings.find((s) => s.key === 'MPESA_PAYBILL') ?? null
         setPaybillSetting(paybill)
         if (paybill?.value?.number) setPaybillInput(String(paybill.value.number))
+      } else {
+        console.error('[Billing] Settings error:', settingRes.reason)
       }
     } finally {
       setPlansLoading(false)
@@ -155,8 +172,6 @@ export default function PlatformBillingPage() {
   }, [invoiceFilters.tenant, invoiceFilters.status, subFilters.tenant, subFilters.plan, subFilters.status])
 
   useEffect(() => {
-    if (hasMountedPlans.current) return
-    hasMountedPlans.current = true
     void loadPlansAndTenants()
   }, [loadPlansAndTenants])
 
@@ -215,6 +230,24 @@ export default function PlatformBillingPage() {
       setDataError(extractApiErrorMessage(err, 'Unable to create subscription.'))
     } finally {
       setIsCreatingSub(false)
+    }
+  }
+
+  const [isSeeding, setIsSeeding] = useState(false)
+
+  const seedDefaultPlans = async () => {
+    setIsSeeding(true)
+    setPlansError(null)
+    try {
+      for (const plan of DEFAULT_PLANS) {
+        await publicApiClient.post('/platform/plans/', { ...plan, is_active: true })
+      }
+      setMessage('Default plans seeded successfully.')
+      void loadPlansAndTenants()
+    } catch (err) {
+      setPlansError(extractApiErrorMessage(err, 'Unable to seed default plans.'))
+    } finally {
+      setIsSeeding(false)
     }
   }
 
@@ -318,8 +351,16 @@ export default function PlatformBillingPage() {
         </div>
 
         {plansError ? (
-          <div className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300">
-            {plansError}
+          <div className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 flex flex-wrap items-center gap-3 text-sm text-rose-300">
+            <span className="flex-1">{plansError}</span>
+            <button
+              type="button"
+              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 shrink-0 disabled:opacity-70"
+              onClick={() => void seedDefaultPlans()}
+              disabled={isSeeding}
+            >
+              {isSeeding ? 'Creating...' : 'Seed Default Plans'}
+            </button>
           </div>
         ) : null}
 

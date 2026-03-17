@@ -23,7 +23,7 @@ from django_tenants.utils import schema_context
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from clients.models import (
@@ -535,10 +535,20 @@ def _tenant_stats(tenant: Tenant):
     return stats
 
 
-class PlatformSubscriptionPlanViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class PlatformSubscriptionPlanViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = SubscriptionPlan.objects.filter(is_active=True).order_by("code")
     serializer_class = SubscriptionPlanSerializer
-    permission_classes = [IsAuthenticated, IsGlobalSuperAdmin]
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        return [IsAuthenticated(), IsGlobalSuperAdmin()]
 
 
 class PlatformTenantViewSet(viewsets.ModelViewSet):
