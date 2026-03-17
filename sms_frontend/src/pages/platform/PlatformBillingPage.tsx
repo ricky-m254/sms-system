@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { publicApiClient } from '../../api/publicClient'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { extractApiErrorMessage } from '../../utils/forms'
 import PageHero from '../../components/PageHero'
 
-type Tenant = {
-  id: number
-  name: string
-  schema_name: string
-}
+type Tenant = { id: number; name: string; schema_name: string }
 
 type Plan = {
   id: number
@@ -46,15 +42,31 @@ type Invoice = {
   due_date: string
 }
 
-const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
+type PlatformSetting = {
+  id: number | null
+  key: string
+  value: Record<string, unknown>
+  description: string
+}
 
-const SELECT_CLS = 'rounded-lg border border-white/[0.09] bg-slate-950 text-white px-3 py-2 text-sm'
+const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
+const SEL = 'rounded-lg border border-white/[0.09] bg-slate-950 text-white px-3 py-2 text-sm'
+const INP = 'rounded-lg border border-white/[0.09] bg-slate-950 text-white px-3 py-2 text-sm'
 
 const STATUS_BADGE: Record<string, string> = {
-  ACTIVE:    'bg-emerald-500/20 text-emerald-300',
-  TRIAL:     'bg-sky-500/20 text-sky-300',
+  ACTIVE: 'bg-emerald-500/20 text-emerald-300',
+  TRIAL: 'bg-sky-500/20 text-sky-300',
   SUSPENDED: 'bg-amber-500/20 text-amber-300',
   CANCELLED: 'bg-rose-500/20 text-rose-300',
+}
+
+const TIER: Record<string, { rate: number; sms: number; color: string }> = {
+  STARTER:      { rate: 300, sms: 100,    color: 'border-slate-600/60' },
+  GROWTH:       { rate: 280, sms: 500,    color: 'border-sky-500/30' },
+  PRO:          { rate: 260, sms: 2000,   color: 'border-violet-500/30' },
+  PROFESSIONAL: { rate: 260, sms: 2000,   color: 'border-violet-500/30' },
+  ENTERPRISE:   { rate: 240, sms: 5000,   color: 'border-amber-500/30' },
+  UNLIMITED:    { rate: 220, sms: 10000,  color: 'border-emerald-500/30' },
 }
 
 export default function PlatformBillingPage() {
@@ -62,22 +74,63 @@ export default function PlatformBillingPage() {
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
+  const [plansLoading, setPlansLoading] = useState(true)
+  const [plansError, setPlansError] = useState<string | null>(null)
+  const [dataLoading, setDataLoading] = useState(true)
+  const [dataError, setDataError] = useState<string | null>(null)
+
   const [message, setMessage] = useState<string | null>(null)
   const [invoiceFilters, setInvoiceFilters] = useState({ tenant: '', status: '' })
   const [subFilters, setSubFilters] = useState({ tenant: '', plan: '', status: '' })
   const [payingId, setPayingId] = useState<number | null>(null)
-
   const [subForm, setSubForm] = useState({ tenant: '', plan: '', billing_cycle: 'ANNUAL' })
   const [isCreatingSub, setIsCreatingSub] = useState(false)
 
-  const loadBilling = async () => {
-    setIsLoading(true)
-    setError(null)
-    const [planResult, tenantResult, invoiceResult, subResult] = await Promise.allSettled([
-      publicApiClient.get('/platform/plans/'),
-      publicApiClient.get('/platform/tenants/'),
+  const [paybillSetting, setPaybillSetting] = useState<PlatformSetting | null>(null)
+  const [paybillInput, setPaybillInput] = useState('522522')
+  const [isSavingPaybill, setIsSavingPaybill] = useState(false)
+  const [paybillMsg, setPaybillMsg] = useState<string | null>(null)
+
+  const hasMountedPlans = useRef(false)
+
+  const loadPlansAndTenants = useCallback(async () => {
+    setPlansLoading(true)
+    setPlansError(null)
+    try {
+      const [planRes, tenantRes, settingRes] = await Promise.allSettled([
+        publicApiClient.get<Plan[]>('/platform/plans/'),
+        publicApiClient.get('/platform/tenants/'),
+        publicApiClient.get('/platform/settings/'),
+      ])
+
+      if (planRes.status === 'fulfilled') {
+        const items = normalizePaginatedResponse<Plan>(planRes.value.data).items
+        setPlans(items)
+        if (items.length === 0) setPlansError('No active subscription plans found in the database.')
+      } else {
+        setPlansError(extractApiErrorMessage(planRes.reason, 'Unable to load subscription plans.'))
+      }
+
+      if (tenantRes.status === 'fulfilled') {
+        setTenants(normalizePaginatedResponse<Tenant>(tenantRes.value.data).items)
+      }
+
+      if (settingRes.status === 'fulfilled') {
+        const settings = normalizePaginatedResponse<PlatformSetting>(settingRes.value.data).items
+        const paybill = settings.find((s) => s.key === 'MPESA_PAYBILL') ?? null
+        setPaybillSetting(paybill)
+        if (paybill?.value?.number) setPaybillInput(String(paybill.value.number))
+      }
+    } finally {
+      setPlansLoading(false)
+    }
+  }, [])
+
+  const loadFilteredData = useCallback(async () => {
+    setDataLoading(true)
+    setDataError(null)
+    const [invoiceRes, subRes] = await Promise.allSettled([
       publicApiClient.get('/platform/subscription-invoices/', {
         params: {
           tenant_id: invoiceFilters.tenant || undefined,
@@ -92,21 +145,24 @@ export default function PlatformBillingPage() {
         },
       }),
     ])
-    if (planResult.status === 'fulfilled') setPlans(normalizePaginatedResponse<Plan>(planResult.value.data).items)
-    if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse<Tenant>(tenantResult.value.data).items)
-    if (invoiceResult.status === 'fulfilled') setInvoices(normalizePaginatedResponse<Invoice>(invoiceResult.value.data).items)
-    if (subResult.status === 'fulfilled') setSubscriptions(normalizePaginatedResponse<Subscription>(subResult.value.data).items)
-    const firstError = [planResult, tenantResult, invoiceResult, subResult].find(
-      (r): r is PromiseRejectedResult => r.status === 'rejected'
-    )
-    if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load some billing data.'))
-    setIsLoading(false)
-  }
+    if (invoiceRes.status === 'fulfilled')
+      setInvoices(normalizePaginatedResponse<Invoice>(invoiceRes.value.data).items)
+    if (subRes.status === 'fulfilled')
+      setSubscriptions(normalizePaginatedResponse<Subscription>(subRes.value.data).items)
+    const firstFail = [invoiceRes, subRes].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (firstFail) setDataError(extractApiErrorMessage(firstFail.reason, 'Unable to load billing records.'))
+    setDataLoading(false)
+  }, [invoiceFilters.tenant, invoiceFilters.status, subFilters.tenant, subFilters.plan, subFilters.status])
 
   useEffect(() => {
-    void loadBilling()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [invoiceFilters.tenant, invoiceFilters.status, subFilters.tenant, subFilters.plan, subFilters.status])
+    if (hasMountedPlans.current) return
+    hasMountedPlans.current = true
+    void loadPlansAndTenants()
+  }, [loadPlansAndTenants])
+
+  useEffect(() => {
+    void loadFilteredData()
+  }, [loadFilteredData])
 
   const totals = useMemo(() => {
     let total = 0
@@ -122,7 +178,6 @@ export default function PlatformBillingPage() {
     const amount = window.prompt(`Record payment amount for ${invoice.invoice_number}`, invoice.total_amount)
     if (!amount) return
     setPayingId(invoice.id)
-    setError(null)
     setMessage(null)
     try {
       await publicApiClient.post(`/platform/subscription-invoices/${invoice.id}/record-payment/`, {
@@ -130,9 +185,9 @@ export default function PlatformBillingPage() {
         method: 'MANUAL',
       })
       setMessage(`Payment recorded for invoice ${invoice.invoice_number}.`)
-      await loadBilling()
+      void loadFilteredData()
     } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to record invoice payment.'))
+      setDataError(extractApiErrorMessage(err, 'Unable to record invoice payment.'))
     } finally {
       setPayingId(null)
     }
@@ -141,11 +196,11 @@ export default function PlatformBillingPage() {
   const createSubscription = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!subForm.tenant || !subForm.plan) {
-      setError('Please select both a tenant and a plan.')
+      setDataError('Please select both a tenant and a plan.')
       return
     }
     setIsCreatingSub(true)
-    setError(null)
+    setDataError(null)
     setMessage(null)
     try {
       await publicApiClient.post('/platform/subscriptions/', {
@@ -155,11 +210,37 @@ export default function PlatformBillingPage() {
       })
       setMessage('Subscription created successfully.')
       setSubForm({ tenant: '', plan: '', billing_cycle: 'ANNUAL' })
-      await loadBilling()
+      void loadFilteredData()
     } catch (err) {
-      setError(extractApiErrorMessage(err, 'Unable to create subscription.'))
+      setDataError(extractApiErrorMessage(err, 'Unable to create subscription.'))
     } finally {
       setIsCreatingSub(false)
+    }
+  }
+
+  const savePaybill = async () => {
+    const num = paybillInput.trim()
+    if (!num) return
+    setIsSavingPaybill(true)
+    setPaybillMsg(null)
+    try {
+      if (paybillSetting?.id) {
+        await publicApiClient.patch(`/platform/settings/${paybillSetting.id}/`, {
+          value: { number: num },
+        })
+      } else {
+        const res = await publicApiClient.post('/platform/settings/', {
+          key: 'MPESA_PAYBILL',
+          value: { number: num },
+          description: 'M-Pesa Paybill number displayed on billing page and invoices.',
+        })
+        setPaybillSetting(res.data as PlatformSetting)
+      }
+      setPaybillMsg(`Paybill number saved as ${num}.`)
+    } catch (err) {
+      setPaybillMsg(extractApiErrorMessage(err, 'Unable to save paybill number.'))
+    } finally {
+      setIsSavingPaybill(false)
     }
   }
 
@@ -174,68 +255,130 @@ export default function PlatformBillingPage() {
         subtitle="Plans, subscriptions, billing cycles, invoice tracking, and payment capture."
         icon="📋"
       />
-      {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
-      {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
-      {/* ── Subscription Plans (cards) ─────────────────────────────────────── */}
+      {message ? (
+        <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">
+          {message}
+        </div>
+      ) : null}
+      {dataError ? (
+        <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+          {dataError}
+        </div>
+      ) : null}
+
+      {/* ── Payment Settings ───────────────────────────────────────────── */}
+      <section className="col-span-12 rounded-2xl p-5" style={GLASS}>
+        <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-3">Payment Settings</h2>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-slate-400">M-Pesa Paybill Number</label>
+            <input
+              className={INP}
+              value={paybillInput}
+              onChange={(e) => setPaybillInput(e.target.value)}
+              placeholder="e.g. 522522"
+              maxLength={10}
+            />
+          </div>
+          <button
+            type="button"
+            className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
+            onClick={() => void savePaybill()}
+            disabled={isSavingPaybill}
+          >
+            {isSavingPaybill ? 'Saving...' : 'Save Paybill'}
+          </button>
+          {paybillMsg ? (
+            <span className={`text-xs ${paybillMsg.startsWith('Unable') ? 'text-rose-300' : 'text-emerald-300'}`}>
+              {paybillMsg}
+            </span>
+          ) : null}
+        </div>
+      </section>
+
+      {/* ── Subscription Plans (cards) ─────────────────────────────────── */}
       <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Subscription Plans</h2>
-            <p className="text-xs text-slate-400 mt-0.5">KES 300/student/year base pricing · M-Pesa Paybill 522522</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              KES 300/student/year base pricing · M-Pesa Paybill{' '}
+              <span className="font-mono text-emerald-300">{paybillInput || '—'}</span>
+            </p>
           </div>
+          <button
+            type="button"
+            className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300"
+            onClick={() => void loadPlansAndTenants()}
+            disabled={plansLoading}
+          >
+            {plansLoading ? 'Loading...' : 'Reload Plans'}
+          </button>
         </div>
-        <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {plans.map((plan) => {
-            const TIER_EXTRAS: Record<string, { perStudent: number; freeSms: number; color: string }> = {
-              STARTER:    { perStudent: 300, freeSms: 100,  color: 'border-slate-600/60' },
-              GROWTH:     { perStudent: 280, freeSms: 500,  color: 'border-sky-500/30' },
-              PRO:        { perStudent: 260, freeSms: 2000, color: 'border-violet-500/30' },
-              PROFESSIONAL: { perStudent: 260, freeSms: 2000, color: 'border-violet-500/30' },
-              ENTERPRISE: { perStudent: 240, freeSms: 5000, color: 'border-amber-500/30' },
-              UNLIMITED:  { perStudent: 220, freeSms: 10000, color: 'border-emerald-500/30' },
-            }
-            const extras = TIER_EXTRAS[plan.code] ?? { perStudent: 300, freeSms: 100, color: 'border-white/[0.07]' }
-            return (
-              <article key={plan.id} className={`rounded-xl border ${extras.color} bg-slate-950/60 p-4 text-sm`}>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-500">{plan.code}</p>
-                    <p className="font-bold text-white text-base">{plan.name}</p>
+
+        {plansError ? (
+          <div className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300">
+            {plansError}
+          </div>
+        ) : null}
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {plansLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/[0.05] bg-slate-950/60 p-4 animate-pulse h-44" />
+            ))
+          ) : plans.length === 0 ? null : (
+            plans.map((plan) => {
+              const t = TIER[plan.code] ?? { rate: 300, sms: 100, color: 'border-white/[0.07]' }
+              return (
+                <article key={plan.id} className={`rounded-xl border ${t.color} bg-slate-950/60 p-4 text-sm`}>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-slate-500">{plan.code}</p>
+                      <p className="font-bold text-white text-base">{plan.name}</p>
+                    </div>
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                      ACTIVE
+                    </span>
                   </div>
-                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">ACTIVE</span>
-                </div>
-                <p className="text-2xl font-bold text-emerald-400">
-                  KES {Number(plan.annual_price).toLocaleString()}
-                  <span className="text-sm font-normal text-slate-500">/yr</span>
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">KES {Number(plan.monthly_price).toLocaleString()}/month</p>
-                <div className="mt-3 space-y-1 text-xs text-slate-400 border-t border-white/[0.07] pt-3">
-                  <div className="flex justify-between">
-                    <span>Students</span>
-                    <span className="text-white">≤ {plan.max_students === 9999 ? '500+' : plan.max_students}</span>
+                  <p className="text-2xl font-bold text-emerald-400">
+                    KES {Number(plan.annual_price).toLocaleString()}
+                    <span className="text-sm font-normal text-slate-500">/yr</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    KES {Number(plan.monthly_price).toLocaleString()}/month
+                  </p>
+                  <div className="mt-3 space-y-1 text-xs text-slate-400 border-t border-white/[0.07] pt-3">
+                    <div className="flex justify-between">
+                      <span>Students</span>
+                      <span className="text-white">
+                        ≤ {plan.max_students >= 9999 ? '500+' : plan.max_students}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Per-student rate</span>
+                      <span className="text-white">KES {t.rate}/yr</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Free SMS credits</span>
+                      <span className="text-white">{t.sms.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Storage</span>
+                      <span className="text-white">{plan.max_storage_gb} GB</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Per-student rate</span>
-                    <span className="text-white">KES {extras.perStudent}/yr</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Free SMS credits</span>
-                    <span className="text-white">{extras.freeSms.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Storage</span>
-                    <span className="text-white">{plan.max_storage_gb} GB</span>
-                  </div>
-                </div>
-              </article>
-            )
-          })}
-          {!isLoading && plans.length === 0 ? <p className="col-span-4 text-sm text-slate-400">No plans found.</p> : null}
+                </article>
+              )
+            })
+          )}
         </div>
 
         <div className="mt-6 rounded-xl border border-white/[0.07] bg-slate-950/40 p-4">
-          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Pricing Reference · KES 300/student/year</h3>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Pricing Reference · KES 300/student/year
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-slate-300">
               <thead>
@@ -243,23 +386,23 @@ export default function PlatformBillingPage() {
                   <th className="pb-2 pr-4 text-left">Plan</th>
                   <th className="pb-2 pr-4 text-left">Students</th>
                   <th className="pb-2 pr-4 text-right">Annual Fee</th>
-                  <th className="pb-2 pr-4 text-right">Per-Student (Overage)</th>
-                  <th className="pb-2 pr-4 text-right">Free SMS</th>
+                  <th className="pb-2 pr-4 text-right">Per-Student</th>
+                  <th className="pb-2 text-right">Free SMS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {[
-                  { plan: 'Starter',    students: '1 – 50',    fee: 'KES 15,000',  rate: 'KES 300', sms: '100'    },
-                  { plan: 'Growth',     students: '51 – 200',  fee: 'KES 60,000',  rate: 'KES 280', sms: '500'    },
-                  { plan: 'Pro',        students: '201 – 500', fee: 'KES 150,000', rate: 'KES 260', sms: '2,000'  },
-                  { plan: 'Enterprise', students: '500+',      fee: 'Custom',      rate: 'KES 240', sms: '5,000+' },
-                ].map(r => (
-                  <tr key={r.plan} className="hover:bg-white/[0.02]">
-                    <td className="py-2 pr-4 font-medium text-white">{r.plan}</td>
-                    <td className="py-2 pr-4 text-slate-400">{r.students}</td>
+                  { p: 'Starter', s: '1 – 50', fee: 'KES 15,000', rate: 'KES 300', sms: '100' },
+                  { p: 'Growth', s: '51 – 200', fee: 'KES 60,000', rate: 'KES 280', sms: '500' },
+                  { p: 'Pro', s: '201 – 500', fee: 'KES 150,000', rate: 'KES 260', sms: '2,000' },
+                  { p: 'Enterprise', s: '500+', fee: 'Custom', rate: 'KES 240', sms: '5,000+' },
+                ].map((r) => (
+                  <tr key={r.p} className="hover:bg-white/[0.02]">
+                    <td className="py-2 pr-4 font-medium text-white">{r.p}</td>
+                    <td className="py-2 pr-4 text-slate-400">{r.s}</td>
                     <td className="py-2 pr-4 text-right text-emerald-400">{r.fee}</td>
                     <td className="py-2 pr-4 text-right">{r.rate}</td>
-                    <td className="py-2 pr-4 text-right">{r.sms}</td>
+                    <td className="py-2 text-right">{r.sms}</td>
                   </tr>
                 ))}
               </tbody>
@@ -268,25 +411,29 @@ export default function PlatformBillingPage() {
         </div>
       </section>
 
-      {/* ── Create Subscription ────────────────────────────────────────────── */}
+      {/* ── Assign / Create Subscription ──────────────────────────────── */}
       <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
         <h2 className="text-lg font-semibold">Assign / Create Subscription</h2>
-        <p className="mt-0.5 text-xs text-slate-400">Select a tenant and a billing plan to activate or update their subscription.</p>
+        <p className="mt-0.5 text-xs text-slate-400">
+          Select a tenant and a billing plan to activate or update their subscription.
+        </p>
         <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={(e) => void createSubscription(e)}>
           <select
-            className={SELECT_CLS}
+            className={SEL}
             value={subForm.tenant}
             onChange={(e) => setSubForm((p) => ({ ...p, tenant: e.target.value }))}
             required
           >
             <option value="">Select tenant</option>
             {tenants.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
 
           <select
-            className={SELECT_CLS}
+            className={SEL}
             value={subForm.plan}
             onChange={(e) => setSubForm((p) => ({ ...p, plan: e.target.value }))}
             required
@@ -294,13 +441,14 @@ export default function PlatformBillingPage() {
             <option value="">Select billing plan</option>
             {plans.map((plan) => (
               <option key={plan.id} value={plan.id}>
-                {plan.name} — ≤{plan.max_students === 9999 ? '500+' : plan.max_students} students · KES {Number(plan.annual_price).toLocaleString()}/yr
+                {plan.name} — ≤{plan.max_students >= 9999 ? '500+' : plan.max_students} students · KES{' '}
+                {Number(plan.annual_price).toLocaleString()}/yr
               </option>
             ))}
           </select>
 
           <select
-            className={SELECT_CLS}
+            className={SEL}
             value={subForm.billing_cycle}
             onChange={(e) => setSubForm((p) => ({ ...p, billing_cycle: e.target.value }))}
           >
@@ -311,7 +459,7 @@ export default function PlatformBillingPage() {
           <button
             type="submit"
             className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
-            disabled={isCreatingSub}
+            disabled={isCreatingSub || plansLoading}
           >
             {isCreatingSub ? 'Creating...' : 'Create Subscription'}
           </button>
@@ -321,49 +469,51 @@ export default function PlatformBillingPage() {
           <div className="mt-3 flex flex-wrap items-start gap-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs">
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-emerald-300 text-sm">{selectedPlan.name} Plan selected</p>
-              {selectedPlan.description ? <p className="mt-0.5 text-slate-400">{selectedPlan.description}</p> : null}
+              {selectedPlan.description ? (
+                <p className="mt-0.5 text-slate-400">{selectedPlan.description}</p>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-4 text-slate-300 shrink-0">
-              <div className="text-center">
-                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Annual Fee</p>
-                <p className="font-bold text-white">KES {Number(selectedPlan.annual_price).toLocaleString()}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Monthly</p>
-                <p className="font-bold text-white">KES {Number(selectedPlan.monthly_price).toLocaleString()}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Max Students</p>
-                <p className="font-bold text-white">{selectedPlan.max_students === 9999 ? '500+' : selectedPlan.max_students}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Storage</p>
-                <p className="font-bold text-white">{selectedPlan.max_storage_gb} GB</p>
-              </div>
+              {[
+                ['Annual Fee', `KES ${Number(selectedPlan.annual_price).toLocaleString()}`],
+                ['Monthly', `KES ${Number(selectedPlan.monthly_price).toLocaleString()}`],
+                ['Max Students', selectedPlan.max_students >= 9999 ? '500+' : String(selectedPlan.max_students)],
+                ['Storage', `${selectedPlan.max_storage_gb} GB`],
+              ].map(([label, val]) => (
+                <div key={label} className="text-center">
+                  <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>
+                    {label}
+                  </p>
+                  <p className="font-bold text-white">{val}</p>
+                </div>
+              ))}
             </div>
           </div>
         ) : null}
       </section>
 
-      {/* ── Active Subscriptions ───────────────────────────────────────────── */}
+      {/* ── Active Subscriptions ───────────────────────────────────────── */}
       <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <h2 className="text-lg font-semibold mr-2">Active Subscriptions</h2>
-          <select className={SELECT_CLS} value={subFilters.tenant} onChange={(e) => setSubFilters((p) => ({ ...p, tenant: e.target.value }))}>
+          <select className={SEL} value={subFilters.tenant} onChange={(e) => setSubFilters((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">All tenants</option>
-            {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            {tenants.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
           </select>
-          <select className={SELECT_CLS} value={subFilters.plan} onChange={(e) => setSubFilters((p) => ({ ...p, plan: e.target.value }))}>
+          <select className={SEL} value={subFilters.plan} onChange={(e) => setSubFilters((p) => ({ ...p, plan: e.target.value }))}>
             <option value="">All plans</option>
-            {plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
           </select>
-          <select className={SELECT_CLS} value={subFilters.status} onChange={(e) => setSubFilters((p) => ({ ...p, status: e.target.value }))}>
+          <select className={SEL} value={subFilters.status} onChange={(e) => setSubFilters((p) => ({ ...p, status: e.target.value }))}>
             <option value="">All statuses</option>
-            {['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELLED'].map((s) => <option key={s} value={s}>{s}</option>)}
+            {['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELLED'].map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
-          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-white" onClick={() => void loadBilling()}>
-            Refresh
-          </button>
         </div>
         <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
           <table className="min-w-[860px] w-full text-left text-sm">
@@ -379,49 +529,74 @@ export default function PlatformBillingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {isLoading ? <tr><td className="px-3 py-3 text-slate-400" colSpan={7}>Loading subscriptions...</td></tr> : null}
+              {dataLoading ? (
+                <tr>
+                  <td className="px-3 py-3 text-slate-400" colSpan={7}>
+                    Loading subscriptions...
+                  </td>
+                </tr>
+              ) : null}
               {subscriptions.map((row) => (
                 <tr key={row.id} className="bg-slate-950/50">
                   <td className="px-3 py-2 font-medium text-white">{row.tenant_name}</td>
                   <td className="px-3 py-2">{row.plan_detail?.name ?? row.plan}</td>
                   <td className="px-3 py-2">{row.billing_cycle}</td>
                   <td className="px-3 py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_BADGE[row.status] ?? 'bg-white/[0.06] text-slate-300'}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_BADGE[row.status] ?? 'bg-white/[0.06] text-slate-300'}`}
+                    >
                       {row.status}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-slate-400">{row.starts_on ?? '—'}</td>
                   <td className="px-3 py-2 text-slate-400">{row.ends_on ?? '—'}</td>
                   <td className="px-3 py-2">
-                    {row.is_current ? <span className="text-emerald-400 text-xs">✓ Current</span> : <span className="text-slate-600 text-xs">—</span>}
+                    {row.is_current ? (
+                      <span className="text-emerald-400 text-xs">✓ Current</span>
+                    ) : (
+                      <span className="text-slate-600 text-xs">—</span>
+                    )}
                   </td>
                 </tr>
               ))}
-              {!isLoading && subscriptions.length === 0 ? (
-                <tr><td className="px-3 py-4 text-slate-400" colSpan={7}>No subscriptions found.</td></tr>
+              {!dataLoading && subscriptions.length === 0 ? (
+                <tr>
+                  <td className="px-3 py-4 text-slate-400" colSpan={7}>
+                    No subscriptions found.
+                  </td>
+                </tr>
               ) : null}
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* ── Invoice Management ─────────────────────────────────────────────── */}
+      {/* ── Invoice Management ─────────────────────────────────────────── */}
       <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold mr-2">Invoice Management</h2>
-          <select className={SELECT_CLS} value={invoiceFilters.tenant} onChange={(e) => setInvoiceFilters((p) => ({ ...p, tenant: e.target.value }))}>
+          <select className={SEL} value={invoiceFilters.tenant} onChange={(e) => setInvoiceFilters((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">All tenants</option>
-            {tenants.map((tenant) => <option key={tenant.id} value={tenant.id}>{tenant.name}</option>)}
+            {tenants.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
           </select>
-          <select className={SELECT_CLS} value={invoiceFilters.status} onChange={(e) => setInvoiceFilters((p) => ({ ...p, status: e.target.value }))}>
+          <select className={SEL} value={invoiceFilters.status} onChange={(e) => setInvoiceFilters((p) => ({ ...p, status: e.target.value }))}>
             <option value="">All statuses</option>
-            {['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].map((item) => <option key={item} value={item}>{item}</option>)}
+            {['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
-          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-white" onClick={() => void loadBilling()}>
+          <button
+            type="button"
+            className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-white"
+            onClick={() => void loadFilteredData()}
+          >
             Refresh
           </button>
           <p className="ml-auto text-xs text-slate-400">
-            Invoices: {totals.count} | Paid: {totals.paidCount} | Total: KES {Number(totals.total).toLocaleString()}
+            Invoices: {totals.count} | Paid: {totals.paidCount} | Total: KES{' '}
+            {Number(totals.total).toLocaleString()}
           </p>
         </div>
         <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.07]">
@@ -438,7 +613,13 @@ export default function PlatformBillingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {isLoading ? <tr><td className="px-3 py-3 text-slate-400" colSpan={7}>Loading billing records...</td></tr> : null}
+              {dataLoading ? (
+                <tr>
+                  <td className="px-3 py-3 text-slate-400" colSpan={7}>
+                    Loading billing records...
+                  </td>
+                </tr>
+              ) : null}
               {invoices.map((row) => (
                 <tr key={row.id} className="bg-slate-950/50">
                   <td className="px-3 py-2">{row.invoice_number}</td>
@@ -459,7 +640,13 @@ export default function PlatformBillingPage() {
                   </td>
                 </tr>
               ))}
-              {!isLoading && invoices.length === 0 ? <tr><td className="px-3 py-4 text-slate-400" colSpan={7}>No invoices found.</td></tr> : null}
+              {!dataLoading && invoices.length === 0 ? (
+                <tr>
+                  <td className="px-3 py-4 text-slate-400" colSpan={7}>
+                    No invoices found.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
