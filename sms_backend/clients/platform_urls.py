@@ -19,12 +19,14 @@ from clients.platform_views import (
     PlatformSubscriptionInvoiceViewSet,
     PlatformSubscriptionPlanViewSet,
     PlatformSupportTicketViewSet,
+    PlatformTenantSubscriptionViewSet,
     PlatformTenantViewSet,
 )
 
 router = DefaultRouter()
 router.register(r"tenants", PlatformTenantViewSet, basename="platform-tenant")
 router.register(r"plans", PlatformSubscriptionPlanViewSet, basename="platform-plan")
+router.register(r"subscriptions", PlatformTenantSubscriptionViewSet, basename="platform-subscription")
 router.register(r"subscription-invoices", PlatformSubscriptionInvoiceViewSet, basename="platform-subscription-invoice")
 router.register(r"analytics", PlatformAnalyticsViewSet, basename="platform-analytics")
 router.register(r"support-tickets", PlatformSupportTicketViewSet, basename="platform-support-ticket")

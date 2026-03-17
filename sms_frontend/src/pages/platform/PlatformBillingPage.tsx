@@ -14,10 +14,25 @@ type Plan = {
   id: number
   code: string
   name: string
+  description?: string
   monthly_price: string
   annual_price: string
   max_students: number
   max_storage_gb: number
+}
+
+type Subscription = {
+  id: number
+  tenant: number
+  tenant_name: string
+  plan: number
+  plan_detail: Plan | null
+  billing_cycle: string
+  status: string
+  starts_on: string | null
+  ends_on: string | null
+  is_current: boolean
+  created_at: string
 }
 
 type Invoice = {
@@ -31,33 +46,59 @@ type Invoice = {
   due_date: string
 }
 
+const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
+
+const SELECT_CLS = 'rounded-lg border border-white/[0.09] bg-slate-950 text-white px-3 py-2 text-sm'
+
+const STATUS_BADGE: Record<string, string> = {
+  ACTIVE:    'bg-emerald-500/20 text-emerald-300',
+  TRIAL:     'bg-sky-500/20 text-sky-300',
+  SUSPENDED: 'bg-amber-500/20 text-amber-300',
+  CANCELLED: 'bg-rose-500/20 text-rose-300',
+}
+
 export default function PlatformBillingPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [tenants, setTenants] = useState<Tenant[]>([])
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
-  const [filters, setFilters] = useState({ tenant: '', status: '' })
+  const [invoiceFilters, setInvoiceFilters] = useState({ tenant: '', status: '' })
+  const [subFilters, setSubFilters] = useState({ tenant: '', plan: '', status: '' })
   const [payingId, setPayingId] = useState<number | null>(null)
+
+  const [subForm, setSubForm] = useState({ tenant: '', plan: '', billing_cycle: 'ANNUAL' })
+  const [isCreatingSub, setIsCreatingSub] = useState(false)
 
   const loadBilling = async () => {
     setIsLoading(true)
     setError(null)
-    const [planResult, tenantResult, invoiceResult] = await Promise.allSettled([
+    const [planResult, tenantResult, invoiceResult, subResult] = await Promise.allSettled([
       publicApiClient.get('/platform/plans/'),
       publicApiClient.get('/platform/tenants/'),
       publicApiClient.get('/platform/subscription-invoices/', {
         params: {
-          tenant_id: filters.tenant || undefined,
-          status: filters.status || undefined,
+          tenant_id: invoiceFilters.tenant || undefined,
+          status: invoiceFilters.status || undefined,
+        },
+      }),
+      publicApiClient.get('/platform/subscriptions/', {
+        params: {
+          tenant_id: subFilters.tenant || undefined,
+          plan_id: subFilters.plan || undefined,
+          status: subFilters.status || undefined,
         },
       }),
     ])
     if (planResult.status === 'fulfilled') setPlans(normalizePaginatedResponse<Plan>(planResult.value.data).items)
     if (tenantResult.status === 'fulfilled') setTenants(normalizePaginatedResponse<Tenant>(tenantResult.value.data).items)
     if (invoiceResult.status === 'fulfilled') setInvoices(normalizePaginatedResponse<Invoice>(invoiceResult.value.data).items)
-    const firstError = [planResult, tenantResult, invoiceResult].find((r): r is PromiseRejectedResult => r.status === 'rejected')
+    if (subResult.status === 'fulfilled') setSubscriptions(normalizePaginatedResponse<Subscription>(subResult.value.data).items)
+    const firstError = [planResult, tenantResult, invoiceResult, subResult].find(
+      (r): r is PromiseRejectedResult => r.status === 'rejected'
+    )
     if (firstError) setError(extractApiErrorMessage(firstError.reason, 'Unable to load some billing data.'))
     setIsLoading(false)
   }
@@ -65,7 +106,7 @@ export default function PlatformBillingPage() {
   useEffect(() => {
     void loadBilling()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.tenant, filters.status])
+  }, [invoiceFilters.tenant, invoiceFilters.status, subFilters.tenant, subFilters.plan, subFilters.status])
 
   const totals = useMemo(() => {
     let total = 0
@@ -97,19 +138,47 @@ export default function PlatformBillingPage() {
     }
   }
 
+  const createSubscription = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!subForm.tenant || !subForm.plan) {
+      setError('Please select both a tenant and a plan.')
+      return
+    }
+    setIsCreatingSub(true)
+    setError(null)
+    setMessage(null)
+    try {
+      await publicApiClient.post('/platform/subscriptions/', {
+        tenant: Number(subForm.tenant),
+        plan: Number(subForm.plan),
+        billing_cycle: subForm.billing_cycle,
+      })
+      setMessage('Subscription created successfully.')
+      setSubForm({ tenant: '', plan: '', billing_cycle: 'ANNUAL' })
+      await loadBilling()
+    } catch (err) {
+      setError(extractApiErrorMessage(err, 'Unable to create subscription.'))
+    } finally {
+      setIsCreatingSub(false)
+    }
+  }
+
+  const selectedPlan = plans.find((p) => String(p.id) === subForm.plan)
+
   return (
     <div className="grid grid-cols-12 gap-6">
       <PageHero
         badge="MODULE"
         badgeColor="emerald"
         title="Subscription & Billing"
-        subtitle="Plans, billing cycles, invoice tracking, and manual payment capture."
+        subtitle="Plans, subscriptions, billing cycles, invoice tracking, and payment capture."
         icon="📋"
       />
       {error ? <div className="col-span-12 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {message ? <div className="col-span-12 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{message}</div> : null}
 
-      <section className="col-span-12 rounded-2xl glass-panel p-6">
+      {/* ── Subscription Plans (cards) ─────────────────────────────────────── */}
+      <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Subscription Plans</h2>
@@ -118,13 +187,15 @@ export default function PlatformBillingPage() {
         </div>
         <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {plans.map((plan) => {
-            const TIER_EXTRAS: Record<string, { perStudent: number; freeSms: number; acctPrefix: string; color: string }> = {
-              STARTER:    { perStudent: 300, freeSms: 100,  acctPrefix: 'SUB-', color: 'border-slate-600/60' },
-              GROWTH:     { perStudent: 280, freeSms: 500,  acctPrefix: 'SUB-', color: 'border-sky-500/30' },
-              PRO:        { perStudent: 260, freeSms: 2000, acctPrefix: 'SUB-', color: 'border-violet-500/30' },
-              ENTERPRISE: { perStudent: 240, freeSms: 5000, acctPrefix: 'SUB-', color: 'border-amber-500/30' },
+            const TIER_EXTRAS: Record<string, { perStudent: number; freeSms: number; color: string }> = {
+              STARTER:    { perStudent: 300, freeSms: 100,  color: 'border-slate-600/60' },
+              GROWTH:     { perStudent: 280, freeSms: 500,  color: 'border-sky-500/30' },
+              PRO:        { perStudent: 260, freeSms: 2000, color: 'border-violet-500/30' },
+              PROFESSIONAL: { perStudent: 260, freeSms: 2000, color: 'border-violet-500/30' },
+              ENTERPRISE: { perStudent: 240, freeSms: 5000, color: 'border-amber-500/30' },
+              UNLIMITED:  { perStudent: 220, freeSms: 10000, color: 'border-emerald-500/30' },
             }
-            const extras = TIER_EXTRAS[plan.code] ?? { perStudent: 300, freeSms: 100, acctPrefix: 'SUB-', color: 'border-white/[0.07]' }
+            const extras = TIER_EXTRAS[plan.code] ?? { perStudent: 300, freeSms: 100, color: 'border-white/[0.07]' }
             return (
               <article key={plan.id} className={`rounded-xl border ${extras.color} bg-slate-950/60 p-4 text-sm`}>
                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -163,7 +234,6 @@ export default function PlatformBillingPage() {
           {!isLoading && plans.length === 0 ? <p className="col-span-4 text-sm text-slate-400">No plans found.</p> : null}
         </div>
 
-        {/* Pricing reference */}
         <div className="mt-6 rounded-xl border border-white/[0.07] bg-slate-950/40 p-4">
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Pricing Reference · KES 300/student/year</h3>
           <div className="overflow-x-auto">
@@ -175,15 +245,14 @@ export default function PlatformBillingPage() {
                   <th className="pb-2 pr-4 text-right">Annual Fee</th>
                   <th className="pb-2 pr-4 text-right">Per-Student (Overage)</th>
                   <th className="pb-2 pr-4 text-right">Free SMS</th>
-                  <th className="pb-2 text-left">Account Prefix</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {[
-                  { plan: 'Starter',    students: '1 – 50',   fee: 'KES 15,000',  rate: 'KES 300', sms: '100',    prefix: 'SUB-XXX' },
-                  { plan: 'Growth',     students: '51 – 200', fee: 'KES 60,000',  rate: 'KES 280', sms: '500',    prefix: 'SUB-XXX' },
-                  { plan: 'Pro',        students: '201 – 500',fee: 'KES 150,000', rate: 'KES 260', sms: '2,000',  prefix: 'SUB-XXX' },
-                  { plan: 'Enterprise', students: '500+',     fee: 'Custom',      rate: 'KES 240', sms: '5,000+', prefix: 'SUB-XXX' },
+                  { plan: 'Starter',    students: '1 – 50',    fee: 'KES 15,000',  rate: 'KES 300', sms: '100'    },
+                  { plan: 'Growth',     students: '51 – 200',  fee: 'KES 60,000',  rate: 'KES 280', sms: '500'    },
+                  { plan: 'Pro',        students: '201 – 500', fee: 'KES 150,000', rate: 'KES 260', sms: '2,000'  },
+                  { plan: 'Enterprise', students: '500+',      fee: 'Custom',      rate: 'KES 240', sms: '5,000+' },
                 ].map(r => (
                   <tr key={r.plan} className="hover:bg-white/[0.02]">
                     <td className="py-2 pr-4 font-medium text-white">{r.plan}</td>
@@ -191,7 +260,6 @@ export default function PlatformBillingPage() {
                     <td className="py-2 pr-4 text-right text-emerald-400">{r.fee}</td>
                     <td className="py-2 pr-4 text-right">{r.rate}</td>
                     <td className="py-2 pr-4 text-right">{r.sms}</td>
-                    <td className="py-2 font-mono text-slate-500">{r.prefix}</td>
                   </tr>
                 ))}
               </tbody>
@@ -200,17 +268,156 @@ export default function PlatformBillingPage() {
         </div>
       </section>
 
-      <section className="col-span-12 rounded-2xl glass-panel p-6">
+      {/* ── Create Subscription ────────────────────────────────────────────── */}
+      <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
+        <h2 className="text-lg font-semibold">Assign / Create Subscription</h2>
+        <p className="mt-0.5 text-xs text-slate-400">Select a tenant and a billing plan to activate or update their subscription.</p>
+        <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={(e) => void createSubscription(e)}>
+          <select
+            className={SELECT_CLS}
+            value={subForm.tenant}
+            onChange={(e) => setSubForm((p) => ({ ...p, tenant: e.target.value }))}
+            required
+          >
+            <option value="">Select tenant</option>
+            {tenants.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+
+          <select
+            className={SELECT_CLS}
+            value={subForm.plan}
+            onChange={(e) => setSubForm((p) => ({ ...p, plan: e.target.value }))}
+            required
+          >
+            <option value="">Select billing plan</option>
+            {plans.map((plan) => (
+              <option key={plan.id} value={plan.id}>
+                {plan.name} — ≤{plan.max_students === 9999 ? '500+' : plan.max_students} students · KES {Number(plan.annual_price).toLocaleString()}/yr
+              </option>
+            ))}
+          </select>
+
+          <select
+            className={SELECT_CLS}
+            value={subForm.billing_cycle}
+            onChange={(e) => setSubForm((p) => ({ ...p, billing_cycle: e.target.value }))}
+          >
+            <option value="ANNUAL">Annual (recommended)</option>
+            <option value="MONTHLY">Monthly</option>
+          </select>
+
+          <button
+            type="submit"
+            className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70"
+            disabled={isCreatingSub}
+          >
+            {isCreatingSub ? 'Creating...' : 'Create Subscription'}
+          </button>
+        </form>
+
+        {selectedPlan ? (
+          <div className="mt-3 flex flex-wrap items-start gap-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-emerald-300 text-sm">{selectedPlan.name} Plan selected</p>
+              {selectedPlan.description ? <p className="mt-0.5 text-slate-400">{selectedPlan.description}</p> : null}
+            </div>
+            <div className="flex flex-wrap gap-4 text-slate-300 shrink-0">
+              <div className="text-center">
+                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Annual Fee</p>
+                <p className="font-bold text-white">KES {Number(selectedPlan.annual_price).toLocaleString()}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Monthly</p>
+                <p className="font-bold text-white">KES {Number(selectedPlan.monthly_price).toLocaleString()}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Max Students</p>
+                <p className="font-bold text-white">{selectedPlan.max_students === 9999 ? '500+' : selectedPlan.max_students}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-slate-500 uppercase tracking-wide" style={{ fontSize: '10px' }}>Storage</p>
+                <p className="font-bold text-white">{selectedPlan.max_storage_gb} GB</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      {/* ── Active Subscriptions ───────────────────────────────────────────── */}
+      <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <h2 className="text-lg font-semibold mr-2">Active Subscriptions</h2>
+          <select className={SELECT_CLS} value={subFilters.tenant} onChange={(e) => setSubFilters((p) => ({ ...p, tenant: e.target.value }))}>
+            <option value="">All tenants</option>
+            {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+          <select className={SELECT_CLS} value={subFilters.plan} onChange={(e) => setSubFilters((p) => ({ ...p, plan: e.target.value }))}>
+            <option value="">All plans</option>
+            {plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <select className={SELECT_CLS} value={subFilters.status} onChange={(e) => setSubFilters((p) => ({ ...p, status: e.target.value }))}>
+            <option value="">All statuses</option>
+            {['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELLED'].map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-white" onClick={() => void loadBilling()}>
+            Refresh
+          </button>
+        </div>
+        <div className="overflow-x-auto rounded-xl border border-white/[0.07]">
+          <table className="min-w-[860px] w-full text-left text-sm">
+            <thead className="bg-white/[0.03] text-xs uppercase tracking-wide text-slate-400">
+              <tr>
+                <th className="px-3 py-2">Tenant</th>
+                <th className="px-3 py-2">Plan</th>
+                <th className="px-3 py-2">Cycle</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Starts</th>
+                <th className="px-3 py-2">Ends</th>
+                <th className="px-3 py-2">Current</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {isLoading ? <tr><td className="px-3 py-3 text-slate-400" colSpan={7}>Loading subscriptions...</td></tr> : null}
+              {subscriptions.map((row) => (
+                <tr key={row.id} className="bg-slate-950/50">
+                  <td className="px-3 py-2 font-medium text-white">{row.tenant_name}</td>
+                  <td className="px-3 py-2">{row.plan_detail?.name ?? row.plan}</td>
+                  <td className="px-3 py-2">{row.billing_cycle}</td>
+                  <td className="px-3 py-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_BADGE[row.status] ?? 'bg-white/[0.06] text-slate-300'}`}>
+                      {row.status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-slate-400">{row.starts_on ?? '—'}</td>
+                  <td className="px-3 py-2 text-slate-400">{row.ends_on ?? '—'}</td>
+                  <td className="px-3 py-2">
+                    {row.is_current ? <span className="text-emerald-400 text-xs">✓ Current</span> : <span className="text-slate-600 text-xs">—</span>}
+                  </td>
+                </tr>
+              ))}
+              {!isLoading && subscriptions.length === 0 ? (
+                <tr><td className="px-3 py-4 text-slate-400" colSpan={7}>No subscriptions found.</td></tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── Invoice Management ─────────────────────────────────────────────── */}
+      <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
         <div className="flex flex-wrap items-center gap-2">
-          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.tenant} onChange={(e) => setFilters((p) => ({ ...p, tenant: e.target.value }))}>
+          <h2 className="text-lg font-semibold mr-2">Invoice Management</h2>
+          <select className={SELECT_CLS} value={invoiceFilters.tenant} onChange={(e) => setInvoiceFilters((p) => ({ ...p, tenant: e.target.value }))}>
             <option value="">All tenants</option>
             {tenants.map((tenant) => <option key={tenant.id} value={tenant.id}>{tenant.name}</option>)}
           </select>
-          <select className="rounded-lg border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm" value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}>
+          <select className={SELECT_CLS} value={invoiceFilters.status} onChange={(e) => setInvoiceFilters((p) => ({ ...p, status: e.target.value }))}>
             <option value="">All statuses</option>
             {['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm" onClick={() => void loadBilling()}>
+          <button type="button" className="rounded-lg border border-white/[0.09] px-3 py-2 text-sm text-white" onClick={() => void loadBilling()}>
             Refresh
           </button>
           <p className="ml-auto text-xs text-slate-400">
@@ -260,4 +467,3 @@ export default function PlatformBillingPage() {
     </div>
   )
 }
-

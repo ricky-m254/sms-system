@@ -134,12 +134,14 @@ class TenantAdminCredentialSerializer(serializers.Serializer):
 
 class TenantSubscriptionSerializer(serializers.ModelSerializer):
     plan_detail = SubscriptionPlanSerializer(source="plan", read_only=True)
+    tenant_name = serializers.CharField(source="tenant.name", read_only=True)
 
     class Meta:
         model = TenantSubscription
         fields = [
             "id",
             "tenant",
+            "tenant_name",
             "plan",
             "plan_detail",
             "billing_cycle",
@@ -153,7 +155,7 @@ class TenantSubscriptionSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "plan_detail"]
+        read_only_fields = ["id", "created_at", "updated_at", "plan_detail", "tenant_name"]
 
 
 class SubscriptionInvoiceSerializer(serializers.ModelSerializer):

@@ -881,6 +881,56 @@ class PlatformTenantViewSet(viewsets.ModelViewSet):
         )
 
 
+class PlatformTenantSubscriptionViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = TenantSubscription.objects.select_related("tenant", "plan").order_by("-created_at")
+    serializer_class = TenantSubscriptionSerializer
+    permission_classes = [IsAuthenticated, IsGlobalSuperAdmin]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        tenant_id = self.request.query_params.get("tenant_id")
+        if tenant_id:
+            qs = qs.filter(tenant_id=tenant_id)
+        plan_id = self.request.query_params.get("plan_id")
+        if plan_id:
+            qs = qs.filter(plan_id=plan_id)
+        sub_status = self.request.query_params.get("status")
+        if sub_status:
+            qs = qs.filter(status=sub_status)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        today = timezone.now().date()
+        data = request.data.copy() if hasattr(request.data, "copy") else dict(request.data)
+        if not data.get("starts_on"):
+            data["starts_on"] = today.isoformat()
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        today = timezone.now().date()
+        cycle = serializer.validated_data.get("billing_cycle", TenantSubscription.BILLING_MONTHLY)
+        days = 365 if cycle == TenantSubscription.BILLING_ANNUAL else 30
+        starts_on = serializer.validated_data.get("starts_on", today)
+        ends_on = starts_on + timedelta(days=days)
+        TenantSubscription.objects.filter(
+            tenant=serializer.validated_data["tenant"], is_current=True
+        ).update(is_current=False)
+        serializer.save(
+            ends_on=ends_on,
+            status=TenantSubscription.STATUS_ACTIVE,
+            is_current=True,
+        )
+
+
 class PlatformSubscriptionInvoiceViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = SubscriptionInvoice.objects.select_related("tenant", "subscription").order_by("-issued_at")
     serializer_class = SubscriptionInvoiceSerializer
