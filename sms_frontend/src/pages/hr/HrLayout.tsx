@@ -16,6 +16,7 @@ const navItems = [
   { label: 'Training', to: '/modules/hr/training' },
   { label: 'Transfers', to: '/modules/hr/transfers' },
   { label: 'HR Analytics', to: '/modules/hr/analytics' },
+  { label: 'Compliance & Audit', to: '/modules/hr/compliance' },
 ]
 
 export default function HrLayout() {

@@ -10,6 +10,7 @@ const navItems = [
   { label: 'Devices', to: '/modules/clockin/devices' },
   { label: 'Shifts', to: '/modules/clockin/shifts' },
   { label: 'Reports', to: '/modules/clockin/reports' },
+  { label: 'Alerts', to: '/modules/clockin/alerts' },
 ]
 
 export default function ClockInLayout() {

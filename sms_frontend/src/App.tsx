@@ -115,6 +115,7 @@ const HrPerformancePage = lazy(() => import('./pages/hr/HrPerformancePage'))
 const HrTrainingPage = lazy(() => import('./pages/hr/HrTrainingPage'))
 const HrAnalyticsPage = lazy(() => import('./pages/hr/HrAnalyticsPage'))
 const HrTransfersPage = lazy(() => import('./pages/hr/HrTransfersPage'))
+const HrCompliancePage = lazy(() => import('./pages/hr/HrCompliancePage'))
 const StaffLayout = lazy(() => import('./pages/staff/StaffLayout'))
 const StaffDashboardPage = lazy(() => import('./pages/staff/StaffDashboardPage'))
 const StaffDirectoryPage = lazy(() => import('./pages/staff/StaffDirectoryPage'))
@@ -227,6 +228,7 @@ const ClockInRegistryPage = lazy(() => import('./pages/clockin/ClockInRegistryPa
 const ClockInDevicesPage = lazy(() => import('./pages/clockin/ClockInDevicesPage'))
 const ClockInShiftsPage = lazy(() => import('./pages/clockin/ClockInShiftsPage'))
 const ClockInReportsPage = lazy(() => import('./pages/clockin/ClockInReportsPage'))
+const ClockInAlertsPage = lazy(() => import('./pages/clockin/ClockInAlertsPage'))
 
 const TimetableLayout = lazy(() => import('./pages/timetable/TimetableLayout'))
 const TimetableGridPage = lazy(() => import('./pages/timetable/TimetableGridPage'))
@@ -293,7 +295,15 @@ const CafeteriaEnrollmentsPage = lazy(() => import('./pages/cafeteria/CafeteriaE
 const CafeteriaLogsPage = lazy(() => import('./pages/cafeteria/CafeteriaLogsPage'))
 const CafeteriaDietaryPage = lazy(() => import('./pages/cafeteria/CafeteriaDietaryPage'))
 const CafeteriaPaymentsPage = lazy(() => import('./pages/cafeteria/CafeteriaPaymentsPage'))
+const CafeteriaAccountsPage = lazy(() => import('./pages/cafeteria/CafeteriaAccountsPage'))
+const CafeteriaPreOrdersPage = lazy(() => import('./pages/cafeteria/CafeteriaPreOrdersPage'))
+const CafeteriaKitchenPage = lazy(() => import('./pages/cafeteria/CafeteriaKitchenPage'))
+const CafeteriaReportsPage = lazy(() => import('./pages/cafeteria/CafeteriaReportsPage'))
 const StoreSuppliersPage = lazy(() => import('./pages/store/StoreSuppliersPage'))
+const StoreCategoriesPage = lazy(() => import('./pages/store/StoreCategoriesPage'))
+const StoreRequestsPage = lazy(() => import('./pages/store/StoreRequestsPage'))
+const StoreAllocationPage = lazy(() => import('./pages/store/StoreAllocationPage'))
+const StoreReportsPage = lazy(() => import('./pages/store/StoreReportsPage'))
 
 const CurriculumLayout = lazy(() => import('./pages/academics/CurriculumLayout'))
 const CurriculumDashboardPage = lazy(() => import('./pages/academics/CurriculumDashboardPage'))
@@ -555,6 +565,7 @@ function App() {
           <Route path="training" element={<HrTrainingPage />} />
           <Route path="transfers" element={<HrTransfersPage />} />
           <Route path="analytics" element={<HrAnalyticsPage />} />
+          <Route path="compliance" element={<HrCompliancePage />} />
         </Route>
         <Route
           path="/modules/staff/*"
@@ -635,10 +646,14 @@ function App() {
         >
           <Route index element={<StoreDashboardPage />} />
           <Route path="items" element={<StoreItemsPage />} />
+          <Route path="categories" element={<StoreCategoriesPage />} />
+          <Route path="requests" element={<StoreRequestsPage />} />
           <Route path="movements" element={<StoreMovementsPage />} />
           <Route path="orders" element={<StoreOrdersPage />} />
-          <Route path="low-stock" element={<StoreLowStockPage />} />
           <Route path="suppliers" element={<StoreSuppliersPage />} />
+          <Route path="allocation" element={<StoreAllocationPage />} />
+          <Route path="low-stock" element={<StoreLowStockPage />} />
+          <Route path="reports" element={<StoreReportsPage />} />
         </Route>
         <Route
           path="/modules/dispensary/*"
@@ -684,6 +699,7 @@ function App() {
           <Route path="devices" element={<ClockInDevicesPage />} />
           <Route path="shifts" element={<ClockInShiftsPage />} />
           <Route path="reports" element={<ClockInReportsPage />} />
+          <Route path="alerts" element={<ClockInAlertsPage />} />
         </Route>
         <Route
           path="/modules/timetable/*"
@@ -784,8 +800,12 @@ function App() {
           <Route path="menu" element={<CafeteriaMenuPage />} />
           <Route path="enrollments" element={<CafeteriaEnrollmentsPage />} />
           <Route path="logs" element={<CafeteriaLogsPage />} />
+          <Route path="accounts" element={<CafeteriaAccountsPage />} />
+          <Route path="preorders" element={<CafeteriaPreOrdersPage />} />
           <Route path="dietary" element={<CafeteriaDietaryPage />} />
           <Route path="payments" element={<CafeteriaPaymentsPage />} />
+          <Route path="kitchen" element={<CafeteriaKitchenPage />} />
+          <Route path="reports" element={<CafeteriaReportsPage />} />
         </Route>
         <Route
           path="/modules/curriculum/*"

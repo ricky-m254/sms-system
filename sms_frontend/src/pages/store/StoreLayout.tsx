@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Truck, ShoppingCart, AlertTriangle,
-  Store, UtensilsCrossed, Briefcase
+  Store, UtensilsCrossed, Briefcase, Tag, ClipboardList, Users, BarChart3
 } from 'lucide-react'
 import ModuleToolbar from '../../components/ModuleToolbar'
 import { useAuthStore } from '../../store/auth'
@@ -12,10 +12,14 @@ const NAV_ITEMS = [
   { to: '/modules/store/items', label: 'All Items', icon: Package },
   { to: '/modules/store/items?type=FOOD', label: 'Food Store', icon: UtensilsCrossed },
   { to: '/modules/store/items?type=OFFICE', label: 'Office Store', icon: Briefcase },
+  { to: '/modules/store/categories', label: 'Categories', icon: Tag },
+  { to: '/modules/store/requests', label: 'Stock Requests', icon: ClipboardList },
   { to: '/modules/store/movements', label: 'Stock Movements', icon: Truck },
-  { to: '/modules/store/orders', label: 'Order Requests', icon: ShoppingCart },
-  { to: '/modules/store/low-stock', label: 'Low Stock', icon: AlertTriangle },
+  { to: '/modules/store/orders', label: 'Purchase Orders', icon: ShoppingCart },
   { to: '/modules/store/suppliers', label: 'Suppliers', icon: Store },
+  { to: '/modules/store/allocation', label: 'Dept. Allocation', icon: Users },
+  { to: '/modules/store/low-stock', label: 'Low Stock Alerts', icon: AlertTriangle },
+  { to: '/modules/store/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 export default function StoreLayout() {
