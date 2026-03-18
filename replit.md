@@ -203,6 +203,17 @@ API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
 - Fleet status chips overlay map with ETA and status
 - Parent portal CTA linking to parent-portal module
 
+## Recent Bug-Fix Session (T001–T012)
+
+- **T004 Platform Billing CRUD**: `PlatformBillingPage.tsx` — plan cards now have Edit/Delete buttons; "+ Add Plan" button opens a modal form (code, name, description, monthly_price, annual_price, max_students, max_storage_gb); plan create/edit/delete uses `publicApiClient` POST/PATCH/DELETE; delete confirmation dialog added
+- **T005 AppShell Role Filtering**: `AppShell.tsx` — each nav item now carries a `moduleKey`; after login the shell fetches `/users/submodule-permissions/` and hides items where no `can_view` permission exists for the current role; admins/super-admins see everything; fails open (shows all) when no permissions configured
+- **T006 Analytics Dashboard**: rewritten to match real flat backend response (`total_students`, `staff_clocked_in_today`, `revenue_this_month`, etc.)
+- **T011 Alumni Auto-Enroll**: `sms_backend/alumni/signals.py` — `post_save` signal on `Enrollment` model; when `status` becomes `Completed`, creates `AlumniProfile` (idempotent, inside `transaction.on_commit`); signal registered via `AlumniConfig.ready()`
+- **T012 Visitor Management CRUD**: All three stub pages fully implemented — `VisitorMgmtVisitorsPage.tsx` (sign-in/sign-out/delete), `VisitorMgmtAuthorizedPickupsPage.tsx` (create/edit/delete with student dropdown), `VisitorMgmtPickupLogsPage.tsx` (record/delete with authorized-pickup dropdown)
+- **T002 Visitor Dashboard fix**: API path corrected (`/visitor_mgmt/` → `/visitor-mgmt/`), `visitors_in`/`visitors_out` response fields mapped correctly, all quick-action routes updated to `/modules/visitors/`
+- **T008 Media URLs**: `StudentProfilePage.tsx` — `resolveMediaUrl()` helper prefixes relative `/media/...` URLs with the server origin; applied to `student.photo` and `doc.url` links
+- **T010 Parent Portal errors**: `ParentPortalTransportPage.tsx` and `ParentPortalHealthPage.tsx` now extract the server error message (`data.error` / `data.detail`) from 404 responses; displays "No linked student found." instead of a generic error message
+
 ## Recent Updates
 
 - **Teacher Portal** (new module): Full portal at `/teacher-portal/*` — Layout, Dashboard (KPI cards, schedule, recent marks), Classes (subject/class assignments with student counts), Attendance (mark/save daily attendance), Gradebook (CBC 4-band: Exceeding/Meeting/Approaching/Below), Resources (upload/manage teaching materials), Timetable (weekly grid + daily agenda views). Accessible to all authenticated tenant users.

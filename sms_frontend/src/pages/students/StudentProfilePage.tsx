@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import { resolveApiBaseUrl } from '../../api/baseUrl'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { buildPrintDocument, openPrintWindow, type TenantPrintMeta } from '../../utils/printTemplate'
 import { downloadBlob, extractFilename } from '../../utils/download'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PageHero from '../../components/PageHero'
+
+const resolveMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  const base = resolveApiBaseUrl().replace(/\/$/, '').replace(/\/api$/, '')
+  return `${base}${url.startsWith('/') ? '' : '/'}${url}`
+}
 
 const tabs = [
   'Personal',
@@ -563,7 +571,7 @@ export default function StudentProfilePage() {
         badge="MODULE"
         badgeColor="emerald"
         title="Student Profile"
-        subtitle="Profile ID: {id ?? '--'}"
+        subtitle={`Profile ID: ${id ?? '--'}`}
         icon="📋"
       />
 
@@ -627,7 +635,7 @@ export default function StudentProfilePage() {
             </button>
             <div className="h-20 w-20 overflow-hidden rounded-2xl border border-white/[0.07] bg-slate-950">
               {student?.photo ? (
-                <img src={student.photo} alt="Student" className="h-full w-full object-cover" />
+                <img src={resolveMediaUrl(student.photo)} alt="Student" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-[11px] text-slate-500">
                   No photo
@@ -925,7 +933,7 @@ export default function StudentProfilePage() {
                         <div className="mt-2 flex items-center gap-2">
                           <a
                             className="text-xs text-emerald-200 underline"
-                            href={doc.url}
+                            href={resolveMediaUrl(doc.url)}
                             target="_blank"
                             rel="noreferrer"
                           >

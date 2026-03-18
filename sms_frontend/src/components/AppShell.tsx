@@ -14,81 +14,82 @@ import {
   PanelLeftClose, PanelLeftOpen, Menu, X, MoreHorizontal, Search,
 } from 'lucide-react'
 
+interface NavItem { label: string; route: string; moduleKey?: string }
 interface NavGroup {
   key: string
   label: string
   icon: React.ElementType
   dotColor: string
-  items: { label: string; route: string }[]
+  items: NavItem[]
 }
 
 const NAV_GROUPS: NavGroup[] = [
   {
     key: 'student', label: 'Students', icon: Users, dotColor: 'bg-sky-400',
     items: [
-      { label: 'Students', route: '/modules/students' },
-      { label: 'Admissions', route: '/modules/admissions/dashboard' },
-      { label: 'Alumni', route: '/modules/alumni/dashboard' },
-      { label: 'Parent Portal', route: '/modules/parent-portal/dashboard' },
+      { label: 'Students', route: '/modules/students', moduleKey: 'STUDENTS' },
+      { label: 'Admissions', route: '/modules/admissions/dashboard', moduleKey: 'ADMISSIONS' },
+      { label: 'Alumni', route: '/modules/alumni/dashboard', moduleKey: 'ALUMNI' },
+      { label: 'Parent Portal', route: '/modules/parent-portal/dashboard', moduleKey: 'PARENT_PORTAL' },
     ],
   },
   {
     key: 'academic', label: 'Academics', icon: GraduationCap, dotColor: 'bg-violet-400',
     items: [
-      { label: 'Academics', route: '/modules/academics/dashboard' },
-      { label: 'Curriculum', route: '/modules/curriculum/dashboard' },
-      { label: 'Timetable', route: '/modules/timetable/grid' },
-      { label: 'Examinations', route: '/modules/examinations' },
-      { label: 'E-Learning', route: '/modules/elearning/dashboard' },
-      { label: 'Parent-Teacher Meetings', route: '/modules/ptm/dashboard' },
+      { label: 'Academics', route: '/modules/academics/dashboard', moduleKey: 'ACADEMICS' },
+      { label: 'Curriculum', route: '/modules/curriculum/dashboard', moduleKey: 'CURRICULUM' },
+      { label: 'Timetable', route: '/modules/timetable/grid', moduleKey: 'TIMETABLE' },
+      { label: 'Examinations', route: '/modules/examinations', moduleKey: 'EXAMINATIONS' },
+      { label: 'E-Learning', route: '/modules/elearning/dashboard', moduleKey: 'ELEARNING' },
+      { label: 'Parent-Teacher Meetings', route: '/modules/ptm/dashboard', moduleKey: 'PTM' },
     ],
   },
   {
     key: 'finance', label: 'Finance', icon: DollarSign, dotColor: 'bg-emerald-400',
     items: [
-      { label: 'Finance', route: '/modules/finance' },
-      { label: 'Cafeteria', route: '/modules/cafeteria/dashboard' },
-      { label: 'Store & Inventory', route: '/modules/store' },
-      { label: 'Assets', route: '/modules/assets/dashboard' },
+      { label: 'Finance', route: '/modules/finance', moduleKey: 'FINANCE' },
+      { label: 'Cafeteria', route: '/modules/cafeteria/dashboard', moduleKey: 'CAFETERIA' },
+      { label: 'Store & Inventory', route: '/modules/store', moduleKey: 'STORE' },
+      { label: 'Assets', route: '/modules/assets/dashboard', moduleKey: 'ASSETS' },
     ],
   },
   {
     key: 'staff', label: 'Staff & HR', icon: UserCheck, dotColor: 'bg-amber-400',
     items: [
-      { label: 'Staff Directory', route: '/modules/staff/dashboard' },
-      { label: 'HR & Payroll', route: '/modules/hr/dashboard' },
-      { label: 'Clock In / Out', route: '/modules/clockin/dashboard' },
+      { label: 'Staff Directory', route: '/modules/staff/dashboard', moduleKey: 'STAFF' },
+      { label: 'HR & Payroll', route: '/modules/hr/dashboard', moduleKey: 'HR' },
+      { label: 'Clock In / Out', route: '/modules/clockin/dashboard', moduleKey: 'CLOCKIN' },
     ],
   },
   {
     key: 'operations', label: 'Operations', icon: Building2, dotColor: 'bg-rose-400',
     items: [
-      { label: 'Library', route: '/modules/library/dashboard' },
-      { label: 'Transport', route: '/modules/transport/dashboard' },
-      { label: 'Hostel / Boarding', route: '/modules/hostel/dashboard' },
-      { label: 'Visitor Management', route: '/modules/visitors/dashboard' },
-      { label: 'Dispensary', route: '/modules/dispensary' },
-      { label: 'Maintenance', route: '/modules/maintenance/dashboard' },
+      { label: 'Library', route: '/modules/library/dashboard', moduleKey: 'LIBRARY' },
+      { label: 'Transport', route: '/modules/transport/dashboard', moduleKey: 'TRANSPORT' },
+      { label: 'Hostel / Boarding', route: '/modules/hostel/dashboard', moduleKey: 'HOSTEL' },
+      { label: 'Visitor Management', route: '/modules/visitors/dashboard', moduleKey: 'VISITOR_MGMT' },
+      { label: 'Dispensary', route: '/modules/dispensary', moduleKey: 'DISPENSARY' },
+      { label: 'Maintenance', route: '/modules/maintenance/dashboard', moduleKey: 'MAINTENANCE' },
     ],
   },
   {
     key: 'student-life', label: 'Student Life', icon: Trophy, dotColor: 'bg-orange-400',
     items: [
-      { label: 'Sports & Clubs', route: '/modules/sports/dashboard' },
-      { label: 'Cafeteria', route: '/modules/cafeteria/dashboard' },
+      { label: 'Sports & Clubs', route: '/modules/sports/dashboard', moduleKey: 'SPORTS' },
+      { label: 'Cafeteria', route: '/modules/cafeteria/dashboard', moduleKey: 'CAFETERIA' },
     ],
   },
   {
     key: 'communication', label: 'Communication', icon: MessageSquare, dotColor: 'bg-cyan-400',
     items: [
-      { label: 'Communication', route: '/modules/communication/dashboard' },
+      { label: 'Communication', route: '/modules/communication/dashboard', moduleKey: 'COMMUNICATION' },
     ],
   },
   {
     key: 'intelligence', label: 'Analytics', icon: BarChart3, dotColor: 'bg-pink-400',
     items: [
-      { label: 'Analytics Dashboard', route: '/modules/analytics/dashboard' },
-      { label: 'Financial Reports', route: '/modules/finance/audit-reports' },
+      { label: 'Analytics Dashboard', route: '/modules/analytics/dashboard', moduleKey: 'ANALYTICS' },
+      { label: 'Financial Reports', route: '/modules/finance/audit-reports', moduleKey: 'FINANCE' },
     ],
   },
 ]
@@ -111,7 +112,7 @@ interface SchoolBranding {
 
 /* ── Sidebar nav content (shared between desktop sidebar + mobile drawer) ── */
 function SidebarNav({
-  primaryColor, branding, openGroups, toggleGroup, location, onNavigate,
+  primaryColor, branding, openGroups, toggleGroup, location, onNavigate, groups,
 }: {
   primaryColor: string
   branding: SchoolBranding | null
@@ -119,6 +120,7 @@ function SidebarNav({
   toggleGroup: (key: string) => void
   location: { pathname: string }
   onNavigate?: () => void
+  groups: NavGroup[]
 }) {
   const isActiveGroup = (group: NavGroup) =>
     group.items.some(i => location.pathname.startsWith(i.route.replace(/\/dashboard$/, '')))
@@ -181,7 +183,7 @@ function SidebarNav({
       <div className="my-2 mx-2 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
       {/* Module Groups */}
-      {NAV_GROUPS.map(group => {
+      {groups.map(group => {
         const Icon = group.icon
         const isActive = isActiveGroup(group)
         const isOpen = openGroups.has(group.key)
@@ -250,6 +252,7 @@ export default function AppShell() {
   const location = useLocation()
   const navigate = useNavigate()
   const { username, role, logout } = useAuthStore(s => ({ username: s.username, role: s.role, logout: s.logout }))
+  const [allowedModules, setAllowedModules] = useState<Set<string> | null>(null)
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => setCursor({ x: e.clientX, y: e.clientY })
@@ -294,6 +297,36 @@ export default function AppShell() {
       root.style.setProperty('--brand-secondary', (p?.secondary_color as string) || '#0ea5e9')
     }).catch(() => {})
   }, [])
+
+  /* Fetch role-based module permissions — fail-open (show all if no perms configured) */
+  useEffect(() => {
+    const upperRole = (role ?? '').toUpperCase()
+    if (upperRole === 'ADMIN' || upperRole === 'TENANT_SUPER_ADMIN') {
+      setAllowedModules(null) // admins see everything
+      return
+    }
+    apiClient.get<{ permissions?: Array<{ module_key: string; can_view: boolean }> }>('/users/submodule-permissions/').then(r => {
+      const perms = r.data?.permissions ?? []
+      if (perms.length === 0) {
+        setAllowedModules(null) // no perms configured → show all
+        return
+      }
+      const allowed = new Set(
+        perms.filter(p => p.can_view).map(p => p.module_key)
+      )
+      setAllowedModules(allowed.size > 0 ? allowed : null)
+    }).catch(() => {
+      setAllowedModules(null) // on error, show all
+    })
+  }, [role])
+
+  /* Compute filtered groups based on allowed modules */
+  const filteredGroups: NavGroup[] = allowedModules
+    ? NAV_GROUPS.map(g => ({
+        ...g,
+        items: g.items.filter(item => !item.moduleKey || allowedModules.has(item.moduleKey)),
+      })).filter(g => g.items.length > 0)
+    : NAV_GROUPS
 
   const toggleGroup = useCallback((key: string) => {
     setOpenGroups(prev => {
@@ -389,7 +422,7 @@ export default function AppShell() {
               <Zap size={15} className={location.pathname === '/dashboard/approvals' ? 'text-amber-400' : 'text-slate-500'} />
             </button>
             <div className="my-1 h-px mx-2" style={{ background: 'rgba(255,255,255,0.06)' }} />
-            {NAV_GROUPS.map(group => {
+            {filteredGroups.map(group => {
               const Icon = group.icon
               const isActive = group.items.some(i => location.pathname.startsWith(i.route.replace(/\/dashboard$/, '')))
               return (
@@ -425,6 +458,7 @@ export default function AppShell() {
               openGroups={openGroups}
               toggleGroup={toggleGroup}
               location={location}
+              groups={filteredGroups}
             />
           </>
         )}
@@ -558,6 +592,7 @@ export default function AppShell() {
               toggleGroup={toggleGroup}
               location={location}
               onNavigate={() => setMobileOpen(false)}
+              groups={filteredGroups}
             />
 
             {/* Drawer footer */}

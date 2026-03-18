@@ -54,8 +54,10 @@ export default function ParentPortalTransportPage() {
       const params = childId ? { child_id: childId } : {}
       const res = await apiClient.get<TransportData>('/parent-portal/transport/', { params })
       setData(res.data)
-    } catch {
-      setError('Unable to load transport information.')
+    } catch (err) {
+      const apiErr = err as { response?: { data?: { error?: string; detail?: string } } }
+      const msg = apiErr?.response?.data?.error ?? apiErr?.response?.data?.detail ?? null
+      setError(msg ?? 'Unable to load transport information.')
     } finally {
       setLoading(false)
     }

@@ -45,8 +45,14 @@ export default function VisitorDashboardPage() {
   const [stats, setStats] = useState<Stats>({ today_visitors_in: 2, today_visitors_out: 10 })
 
   useEffect(() => {
-    apiClient.get('/visitor_mgmt/dashboard/')
-      .then(res => setStats(res.data))
+    apiClient.get('/visitor-mgmt/dashboard/')
+      .then(res => {
+        const d = res.data as Record<string, unknown>
+        setStats({
+          today_visitors_in: (d.visitors_in ?? d.today_visitors_in ?? 0) as number,
+          today_visitors_out: (d.visitors_out ?? d.today_visitors_out ?? 0) as number,
+        })
+      })
       .catch(() => {})
   }, [])
 
@@ -132,7 +138,7 @@ export default function VisitorDashboardPage() {
             <p className="text-sm font-bold text-white flex items-center gap-2">
               <Eye size={13} className="text-emerald-400" /> Today's Visitor Log — 12 March 2025
             </p>
-            <button onClick={() => navigate('/modules/visitor-management/visitors')}
+            <button onClick={() => navigate('/modules/visitors/visitors')}
               className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium transition">
               Full log →
             </button>
@@ -250,10 +256,10 @@ export default function VisitorDashboardPage() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Quick Actions</p>
             <div className="space-y-2">
               {[
-                { label: 'Sign In Visitor', route: '/modules/visitor-management/visitors', icon: UserCheck },
-                { label: 'Pickup Logs', route: '/modules/visitor-management/pickup-logs', icon: Car },
-                { label: 'Authorized Pickups', route: '/modules/visitor-management/authorized-pickups', icon: BadgeCheck },
-                { label: 'All Visitor Logs', route: '/modules/visitor-management/visitors', icon: ClipboardList },
+                { label: 'Sign In Visitor', route: '/modules/visitors/visitors', icon: UserCheck },
+                { label: 'Pickup Logs', route: '/modules/visitors/pickup-logs', icon: Car },
+                { label: 'Authorized Pickups', route: '/modules/visitors/authorized-pickups', icon: BadgeCheck },
+                { label: 'All Visitor Logs', route: '/modules/visitors/visitors', icon: ClipboardList },
               ].map(item => (
                 <button key={item.label} onClick={() => navigate(item.route)}
                   className="w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium text-slate-300 hover:text-white transition group"

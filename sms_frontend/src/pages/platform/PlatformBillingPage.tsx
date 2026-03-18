@@ -235,6 +235,77 @@ export default function PlatformBillingPage() {
 
   const [isSeeding, setIsSeeding] = useState(false)
 
+  type PlanForm = {
+    code: string; name: string; description: string
+    monthly_price: string; annual_price: string
+    max_students: string; max_storage_gb: string; is_active: boolean
+  }
+  const EMPTY_PLAN_FORM: PlanForm = { code: '', name: '', description: '', monthly_price: '', annual_price: '', max_students: '', max_storage_gb: '', is_active: true }
+  const [planModal, setPlanModal] = useState<null | { mode: 'create' | 'edit'; id?: number }>(null)
+  const [planForm, setPlanForm] = useState<PlanForm>(EMPTY_PLAN_FORM)
+  const [isPlanSaving, setIsPlanSaving] = useState(false)
+  const [planModalError, setPlanModalError] = useState<string | null>(null)
+  const [deletePlanId, setDeletePlanId] = useState<number | null>(null)
+  const [isDeletingPlan, setIsDeletingPlan] = useState(false)
+
+  const openEditPlan = (plan: Plan) => {
+    setPlanForm({
+      code: plan.code, name: plan.name, description: plan.description ?? '',
+      monthly_price: plan.monthly_price, annual_price: plan.annual_price,
+      max_students: String(plan.max_students), max_storage_gb: String(plan.max_storage_gb),
+      is_active: true,
+    })
+    setPlanModalError(null)
+    setPlanModal({ mode: 'edit', id: plan.id })
+  }
+
+  const savePlan = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsPlanSaving(true)
+    setPlanModalError(null)
+    const payload = {
+      code: planForm.code.toUpperCase(),
+      name: planForm.name,
+      description: planForm.description,
+      monthly_price: planForm.monthly_price,
+      annual_price: planForm.annual_price,
+      max_students: Number(planForm.max_students),
+      max_storage_gb: Number(planForm.max_storage_gb),
+      is_active: planForm.is_active,
+    }
+    try {
+      if (planModal?.mode === 'edit' && planModal.id) {
+        await publicApiClient.patch(`/platform/plans/${planModal.id}/`, payload)
+        setMessage('Plan updated successfully.')
+      } else {
+        await publicApiClient.post('/platform/plans/', payload)
+        setMessage('Plan created successfully.')
+      }
+      setPlanModal(null)
+      void loadPlansAndTenants()
+    } catch (err) {
+      setPlanModalError(extractApiErrorMessage(err, 'Unable to save plan.'))
+    } finally {
+      setIsPlanSaving(false)
+    }
+  }
+
+  const confirmDeletePlan = async () => {
+    if (!deletePlanId) return
+    setIsDeletingPlan(true)
+    try {
+      await publicApiClient.delete(`/platform/plans/${deletePlanId}/`)
+      setMessage('Plan deleted.')
+      setDeletePlanId(null)
+      void loadPlansAndTenants()
+    } catch (err) {
+      setDataError(extractApiErrorMessage(err, 'Unable to delete plan.'))
+      setDeletePlanId(null)
+    } finally {
+      setIsDeletingPlan(false)
+    }
+  }
+
   const seedDefaultPlans = async () => {
     setIsSeeding(true)
     setPlansError(null)
@@ -332,7 +403,7 @@ export default function PlatformBillingPage() {
 
       {/* ── Subscription Plans (cards) ─────────────────────────────────── */}
       <section className="col-span-12 rounded-2xl p-6" style={GLASS}>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold">Subscription Plans</h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -340,14 +411,23 @@ export default function PlatformBillingPage() {
               <span className="font-mono text-emerald-300">{paybillInput || '—'}</span>
             </p>
           </div>
-          <button
-            type="button"
-            className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300"
-            onClick={() => void loadPlansAndTenants()}
-            disabled={plansLoading}
-          >
-            {plansLoading ? 'Loading...' : 'Reload Plans'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-lg border border-white/[0.09] px-3 py-1.5 text-xs text-slate-300"
+              onClick={() => void loadPlansAndTenants()}
+              disabled={plansLoading}
+            >
+              {plansLoading ? 'Loading...' : 'Reload'}
+            </button>
+            <button
+              type="button"
+              className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-900"
+              onClick={() => { setPlanForm(EMPTY_PLAN_FORM); setPlanModalError(null); setPlanModal({ mode: 'create' }) }}
+            >
+              + Add Plan
+            </button>
+          </div>
         </div>
 
         {plansError ? (
@@ -409,6 +489,22 @@ export default function PlatformBillingPage() {
                       <span>Storage</span>
                       <span className="text-white">{plan.max_storage_gb} GB</span>
                     </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-white/[0.07] flex gap-2">
+                    <button
+                      type="button"
+                      className="flex-1 rounded-lg border border-white/[0.09] px-2 py-1 text-xs text-slate-300 hover:bg-white/[0.05]"
+                      onClick={() => openEditPlan(plan)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-lg border border-rose-500/30 px-2 py-1 text-xs text-rose-300 hover:bg-rose-500/10"
+                      onClick={() => setDeletePlanId(plan.id)}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </article>
               )
@@ -692,6 +788,93 @@ export default function PlatformBillingPage() {
           </table>
         </div>
       </section>
+
+      {/* ── Plan Create/Edit Modal ─────────────────────────────────────── */}
+      {planModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full max-w-lg rounded-2xl p-6 text-white" style={GLASS}>
+            <h2 className="text-lg font-semibold mb-4">
+              {planModal.mode === 'create' ? 'Create New Plan' : 'Edit Plan'}
+            </h2>
+            <form className="space-y-3" onSubmit={(e) => void savePlan(e)}>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Code</label>
+                  <input className={INP} value={planForm.code} onChange={e => setPlanForm(p => ({ ...p, code: e.target.value }))} placeholder="e.g. STARTER" required />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Name</label>
+                  <input className={INP} value={planForm.name} onChange={e => setPlanForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Starter" required />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Description</label>
+                <textarea className={`${INP} w-full`} rows={2} value={planForm.description} onChange={e => setPlanForm(p => ({ ...p, description: e.target.value }))} placeholder="Short description" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Monthly Price (KES)</label>
+                  <input className={INP} type="number" step="0.01" value={planForm.monthly_price} onChange={e => setPlanForm(p => ({ ...p, monthly_price: e.target.value }))} required />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Annual Price (KES)</label>
+                  <input className={INP} type="number" step="0.01" value={planForm.annual_price} onChange={e => setPlanForm(p => ({ ...p, annual_price: e.target.value }))} required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Max Students</label>
+                  <input className={INP} type="number" value={planForm.max_students} onChange={e => setPlanForm(p => ({ ...p, max_students: e.target.value }))} required />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Storage (GB)</label>
+                  <input className={INP} type="number" value={planForm.max_storage_gb} onChange={e => setPlanForm(p => ({ ...p, max_storage_gb: e.target.value }))} required />
+                </div>
+              </div>
+              {planModalError && (
+                <p className="text-xs text-rose-300">{planModalError}</p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button type="submit" className="flex-1 rounded-lg bg-emerald-500 py-2 text-sm font-semibold text-slate-900 disabled:opacity-70" disabled={isPlanSaving}>
+                  {isPlanSaving ? 'Saving...' : planModal.mode === 'create' ? 'Create Plan' : 'Save Changes'}
+                </button>
+                <button type="button" className="rounded-lg border border-white/[0.09] px-4 py-2 text-sm text-slate-300" onClick={() => setPlanModal(null)}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Plan Confirmation ───────────────────────────────────── */}
+      {deletePlanId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+          <div className="w-full max-w-sm rounded-2xl p-6 text-white" style={GLASS}>
+            <h2 className="text-lg font-semibold">Delete Plan?</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              This will permanently remove the plan. Existing subscriptions won't be affected.
+            </p>
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                className="flex-1 rounded-lg bg-rose-500 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                disabled={isDeletingPlan}
+                onClick={() => void confirmDeletePlan()}
+              >
+                {isDeletingPlan ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+              <button
+                type="button"
+                className="rounded-lg border border-white/[0.09] px-4 py-2 text-sm text-slate-300"
+                onClick={() => setDeletePlanId(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

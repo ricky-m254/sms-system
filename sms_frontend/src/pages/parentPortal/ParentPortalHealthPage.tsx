@@ -57,8 +57,10 @@ export default function ParentPortalHealthPage() {
       const params = childId ? { child_id: childId } : {}
       const res = await apiClient.get<HealthData>('/parent-portal/health/', { params })
       setData(res.data)
-    } catch {
-      setError('Unable to load health information.')
+    } catch (err) {
+      const apiErr = err as { response?: { data?: { error?: string; detail?: string } } }
+      const msg = apiErr?.response?.data?.error ?? apiErr?.response?.data?.detail ?? null
+      setError(msg ?? 'Unable to load health information.')
     } finally {
       setLoading(false)
     }

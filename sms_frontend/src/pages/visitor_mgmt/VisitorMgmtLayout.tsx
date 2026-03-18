@@ -4,10 +4,10 @@ import { useAuthStore } from '../../store/auth'
 import ModuleToolbar from '../../components/ModuleToolbar'
 
 const navItems = [
-  { label: 'Dashboard', to: '/modules/visitor-mgmt/dashboard' },
-  { label: 'Visitors', to: '/modules/visitor-mgmt/visitors' },
-  { label: 'Authorized Pickups', to: '/modules/visitor-mgmt/authorized-pickups' },
-  { label: 'Pickup Logs', to: '/modules/visitor-mgmt/pickup-logs' },
+  { label: 'Dashboard', to: '/modules/visitors/dashboard' },
+  { label: 'Visitors', to: '/modules/visitors/visitors' },
+  { label: 'Authorized Pickups', to: '/modules/visitors/authorized-pickups' },
+  { label: 'Pickup Logs', to: '/modules/visitors/pickup-logs' },
 ]
 
 export default function VisitorMgmtLayout() {
