@@ -79,6 +79,7 @@ from .views import (
     DemoResetView,
     CurrentUserView,
     SchoolClassListView,
+    ModuleSeedView,
 )
 
 # ==========================================
@@ -166,6 +167,7 @@ urlpatterns = [
     path('students/dashboard/', StudentsDashboardView.as_view(), name='students_dashboard'),
     path('school/profile/', SchoolProfileView.as_view(), name='school_profile'),
     path('school/demo/reset/', DemoResetView.as_view(), name='demo_reset'),
+    path('school/seed/', ModuleSeedView.as_view(), name='module_seed'),
     path('students/reports/summary/', StudentsModuleReportView.as_view(), name='students_reports_summary'),
     path('students/export/csv/', StudentsDirectoryCsvExportView.as_view(), name='students_directory_csv'),
     path('students/export/pdf/', StudentsDirectoryPdfExportView.as_view(), name='students_directory_pdf'),

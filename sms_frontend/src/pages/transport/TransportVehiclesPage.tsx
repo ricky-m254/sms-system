@@ -76,6 +76,16 @@ export default function TransportVehiclesPage() {
       {error ? <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div> : null}
       {notice ? <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
+      <div className="flex justify-end">
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
+          style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+        >
+          <span className="text-base leading-none">+</span> Add Vehicle
+        </button>
+      </div>
+
       <section className="rounded-2xl glass-panel overflow-hidden">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-white/[0.07] bg-slate-950/60 text-xs uppercase text-slate-400">

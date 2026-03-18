@@ -88,6 +88,7 @@ const SettingsLibraryConfigPage = lazy(() => import('./pages/settings/SettingsLi
 const SettingsTransportConfigPage = lazy(() => import('./pages/settings/SettingsTransportConfigPage'))
 const SettingsHostelConfigPage = lazy(() => import('./pages/settings/SettingsHostelConfigPage'))
 const SettingsSecurityPage = lazy(() => import('./pages/settings/SettingsSecurityPage'))
+const SettingsSeedPage = lazy(() => import('./pages/settings/SettingsSeedPage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
 const ParentsDirectoryPage = lazy(() => import('./pages/parents/ParentsDirectoryPage'))
@@ -680,6 +681,7 @@ function App() {
           <Route path="transport" element={<SettingsTransportConfigPage />} />
           <Route path="hostel" element={<SettingsHostelConfigPage />} />
           <Route path="security" element={<SettingsSecurityPage />} />
+          <Route path="seed-data" element={<SettingsSeedPage />} />
           <Route path="users" element={<SettingsUsersPage />} />
           <Route path="roles" element={<SettingsRolesPage />} />
           <Route path=":module" element={<ModuleSettingsPage />} />

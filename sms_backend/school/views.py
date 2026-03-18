@@ -6364,6 +6364,44 @@ class DemoResetView(APIView):
         })
 
 
+class ModuleSeedView(APIView):
+    """
+    POST /seed/ — seed the current tenant with comprehensive sample data.
+    Runs the seed_kenya_school management command for the current tenant schema.
+    Admin only.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        if not _is_school_admin(request.user):
+            return Response(
+                {'detail': 'Admin access required to seed data.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        tenant = getattr(request, 'tenant', None)
+        schema = getattr(tenant, 'schema_name', None)
+        if not schema:
+            return Response({'detail': 'Could not determine tenant schema.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            from django.core.management import call_command
+            import io
+            out = io.StringIO()
+            call_command('seed_kenya_school', f'--schema_name={schema}', stdout=out)
+            return Response({
+                'detail': 'Sample data seeded successfully.',
+                'schema': schema,
+                'output': out.getvalue()[-500:] if out.getvalue() else '',
+            }, status=status.HTTP_201_CREATED)
+        except Exception as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get(self, request):
+        return Response({
+            'detail': 'POST to this endpoint to seed sample data for the current tenant.',
+            'warning': 'This will add sample students, teachers, fees, and other data.',
+        })
+
+
 class StudentSearchForUserCreateView(APIView):
     """Lightweight student search for user-account creation (admin only)."""
     permission_classes = [permissions.IsAuthenticated]

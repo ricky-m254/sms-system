@@ -223,6 +223,12 @@ export default function StudentProfilePage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState({ first_name: '', last_name: '', date_of_birth: '', gender: '' })
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null)
+
   useEffect(() => {
     if (!id) return
     let isMounted = true
@@ -450,6 +456,43 @@ export default function StudentProfilePage() {
       setPrintError(`Unable to download ${area} ${format.toUpperCase()} report.`)
     } finally {
       setIsDownloading(false)
+    }
+  }
+
+  const openEditProfile = () => {
+    if (!student) return
+    setProfileForm({
+      first_name:    student.first_name    ?? '',
+      last_name:     student.last_name     ?? '',
+      date_of_birth: student.date_of_birth ?? '',
+      gender:        student.gender        ?? '',
+    })
+    setProfileError(null)
+    setProfileSuccess(null)
+    setEditingProfile(true)
+  }
+
+  const handleSaveProfile = async () => {
+    if (!id) return
+    setSavingProfile(true)
+    setProfileError(null)
+    setProfileSuccess(null)
+    try {
+      const res = await apiClient.patch<StudentDetail>(`/students/${id}/`, {
+        first_name:    profileForm.first_name.trim(),
+        last_name:     profileForm.last_name.trim(),
+        date_of_birth: profileForm.date_of_birth || undefined,
+        gender:        profileForm.gender || undefined,
+      })
+      setStudent(prev => prev ? { ...prev, ...res.data } : res.data)
+      setProfileSuccess('Profile updated successfully.')
+      setEditingProfile(false)
+    } catch (err) {
+      const data = (err as { response?: { data?: Record<string, string[]> } })?.response?.data
+      const msg = data ? Object.values(data).flat().join(' ') : 'Unable to save profile.'
+      setProfileError(msg)
+    } finally {
+      setSavingProfile(false)
     }
   }
 
@@ -684,18 +727,62 @@ export default function StudentProfilePage() {
           ))}
         </div>
 
+        {profileSuccess && (
+          <div className="mt-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2.5 text-xs text-emerald-200">
+            {profileSuccess}
+          </div>
+        )}
+
         <div className="mt-6 rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4 text-sm text-slate-300">
-          <p className="text-xs uppercase text-slate-400">{activeTab}</p>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs uppercase text-slate-400">{activeTab}</p>
+            {activeTab === 'Personal' && student && (
+              <button
+                onClick={openEditProfile}
+                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
+                style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
             {activeTab === 'Personal' ? (
               <>
                 <div>
-                  <p className="text-[11px] uppercase text-slate-400">Admission #</p>
-                  <p>{student?.admission_number ?? '--'}</p>
+                  <p className="text-[11px] uppercase text-slate-400">First Name</p>
+                  <p className="font-medium text-white">{student?.first_name ?? '--'}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase text-slate-400">Class</p>
+                  <p className="text-[11px] uppercase text-slate-400">Last Name</p>
+                  <p className="font-medium text-white">{student?.last_name ?? '--'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Admission #</p>
+                  <p className="font-mono">{student?.admission_number ?? '--'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Gender</p>
+                  <p>{student?.gender === 'M' ? 'Male' : student?.gender === 'F' ? 'Female' : student?.gender ?? '--'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Date of Birth</p>
+                  <p>{student?.date_of_birth ?? '--'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Status</p>
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${student?.is_active ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${student?.is_active ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                    {student?.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Current Class</p>
                   <p>{activeEnrollment?.class_name ?? '--'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Current Term</p>
+                  <p>{activeEnrollment?.term_name ?? '--'}</p>
                 </div>
               </>
             ) : null}
@@ -958,6 +1045,86 @@ export default function StudentProfilePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Edit Profile Modal ── */}
+      {editingProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.07] bg-slate-950 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-display font-semibold text-white">Edit Student Profile</h2>
+              <button
+                onClick={() => setEditingProfile(false)}
+                className="text-slate-500 hover:text-slate-300 transition text-xl leading-none"
+              >×</button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-1">
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">First Name</label>
+                <input
+                  value={profileForm.first_name}
+                  onChange={e => setProfileForm(f => ({ ...f, first_name: e.target.value }))}
+                  className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+                  placeholder="First name"
+                />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">Last Name</label>
+                <input
+                  value={profileForm.last_name}
+                  onChange={e => setProfileForm(f => ({ ...f, last_name: e.target.value }))}
+                  className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+                  placeholder="Last name"
+                />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">Date of Birth</label>
+                <input
+                  type="date"
+                  value={profileForm.date_of_birth}
+                  onChange={e => setProfileForm(f => ({ ...f, date_of_birth: e.target.value }))}
+                  className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+                />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">Gender</label>
+                <select
+                  value={profileForm.gender}
+                  onChange={e => setProfileForm(f => ({ ...f, gender: e.target.value }))}
+                  className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+                >
+                  <option value="">Select…</option>
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                </select>
+              </div>
+            </div>
+
+            {profileError && (
+              <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+                {profileError}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => void handleSaveProfile()}
+                disabled={savingProfile || !profileForm.first_name.trim() || !profileForm.last_name.trim()}
+                className="flex-1 rounded-xl py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+              >
+                {savingProfile ? 'Saving…' : 'Save Changes'}
+              </button>
+              <button
+                onClick={() => setEditingProfile(false)}
+                className="flex-1 rounded-xl border border-white/[0.09] py-2 text-sm text-slate-300 hover:text-white transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={deleteDocTarget !== null}

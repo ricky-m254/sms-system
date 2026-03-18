@@ -81,6 +81,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     color: 'text-slate-400',
     items: [
       { key: 'global', label: 'Global & Theme', route: '/settings/global' },
+      { key: 'seed-data', label: 'Seed Sample Data', route: '/settings/seed-data' },
       { key: 'integrations', label: 'Integrations', route: '/settings/integrations', tag: 'soon' },
       { key: 'audit-logs', label: 'Audit Logs', route: '/settings/audit-logs', tag: 'soon' },
     ],

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../api/client'
 import { useAuthStore } from '../store/auth'
-import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Globe, Zap, Lock } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield, BarChart3, Globe, Zap, Lock, Users, BookOpen } from 'lucide-react'
 import brandLogo from '@/assets/brand/rynatyschool-logo.png'
 
 type LoginResponse  = { access: string; refresh: string }
 type RoutingResponse = { user: string; role: string | null; permissions?: string[]; target?: string; target_module?: string | null }
 type LoginError    = { detail?: string }
+
+type LoginMode = 'staff' | 'parent' | 'student'
 
 const FEATURES = [
   { icon: GraduationCap, label: '28 Integrated Modules',    sub: 'Admissions to alumni — all in one place'   },
@@ -16,6 +18,33 @@ const FEATURES = [
   { icon: Globe,         label: 'Multi-tenant Architecture',sub: 'Scale across a network of schools'          },
   { icon: Zap,           label: 'CBC Kenya Aligned',        sub: 'PP1 through Grade 9 curriculum-ready'       },
   { icon: Lock,          label: 'Enterprise-grade Security',sub: 'Role-based access & encrypted data'         },
+]
+
+const MODES: { key: LoginMode; label: string; icon: typeof Shield; hint: string; userLabel: string; userPlaceholder: string }[] = [
+  {
+    key: 'staff',
+    label: 'Staff / Admin',
+    icon: Shield,
+    hint: 'Teachers, accountants, administrators and school management staff.',
+    userLabel: 'Username',
+    userPlaceholder: 'admin',
+  },
+  {
+    key: 'parent',
+    label: 'Parent / Guardian',
+    icon: Users,
+    hint: 'Use the username or email address given to you at parent registration.',
+    userLabel: 'Username or Email',
+    userPlaceholder: 'parent.wanjiku',
+  },
+  {
+    key: 'student',
+    label: 'Student',
+    icon: BookOpen,
+    hint: 'Use your admission number (e.g. ADM-0001) or the student username assigned by your school.',
+    userLabel: 'Admission No. / Username',
+    userPlaceholder: 'ADM-0001',
+  },
 ]
 
 function FloatingOrb({ size, color, top, left, delay }: {
@@ -39,6 +68,7 @@ export default function LoginPage() {
   const setPermissions = useAuthStore(s => s.setPermissions)
   const storedTenant   = useAuthStore(s => s.tenantId)
 
+  const [mode,      setMode]          = useState<LoginMode>('staff')
   const [username,  setUsernameInput] = useState('')
   const [password,  setPassword]      = useState('')
   const [tenantId,  setTenantId]      = useState(storedTenant ?? 'demo_school')
@@ -47,8 +77,9 @@ export default function LoginPage() {
   const [showPass,  setShowPass]      = useState(false)
   const [mounted,   setMounted]       = useState(false)
 
-
   useEffect(() => { setMounted(true) }, [])
+
+  const activeMode = MODES.find(m => m.key === mode)!
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -96,13 +127,11 @@ export default function LoginPage() {
           borderRight: '1px solid rgba(255,255,255,0.06)',
         }}
       >
-        {/* Animated ambient orbs */}
         <FloatingOrb size={500} color="radial-gradient(circle, #10b98135, transparent)" top="-15%"  left="-25%" delay={0} />
         <FloatingOrb size={350} color="radial-gradient(circle, #0ea5e928, transparent)" top="55%"  left="55%"  delay={2.5} />
         <FloatingOrb size={280} color="radial-gradient(circle, #8b5cf618, transparent)" top="75%"  left="-8%"  delay={1.2} />
         <FloatingOrb size={200} color="radial-gradient(circle, #10b98120, transparent)" top="30%"  left="70%"  delay={3.5} />
 
-        {/* Fine grid overlay */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.035]"
           style={{
@@ -111,14 +140,10 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Emerald accent line top */}
         <div className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: 'linear-gradient(90deg, transparent, #10b981, #0ea5e9, transparent)' }} />
 
-        {/* Brand content */}
         <div className={`relative z-10 px-12 pt-8 pb-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-
-          {/* Brand Logo — top left */}
           <div className="mb-10 w-full">
             <img
               src={brandLogo}
@@ -128,7 +153,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Hero text */}
           <h1 className="text-[38px] xl:text-[44px] font-display font-bold text-white leading-[1.12] mb-5 tracking-tight">
             Powering Smart Schools,<br />
             <span style={{
@@ -141,7 +165,6 @@ export default function LoginPage() {
             The most advanced school management platform built for Africa's educators — CBC-aligned, IPSAS-compliant, and enterprise-ready.
           </p>
 
-          {/* Feature list */}
           <div className="space-y-3.5">
             {FEATURES.map((f, i) => (
               <div
@@ -162,7 +185,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Bottom — copyright */}
         <div className="relative z-10 px-12 pb-10">
           <div className="border-t border-white/[0.05] pt-6">
             <p className="text-[11px] text-slate-700">
@@ -177,7 +199,6 @@ export default function LoginPage() {
 
       {/* ── Right form panel ────────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 sm:px-8 sm:py-12 relative overflow-hidden min-h-screen lg:min-h-0">
-        {/* Ambient glow */}
         <div className="absolute pointer-events-none"
           style={{
             width: 600, height: 600,
@@ -186,17 +207,43 @@ export default function LoginPage() {
           }}
         />
 
-        <div className={`relative w-full max-w-[390px] transition-all duration-600 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`relative w-full max-w-[420px] transition-all duration-600 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
-          {/* Mobile logo — top left, only shown when left panel is hidden */}
           <div className="flex items-start mb-8 lg:hidden">
             <img src={brandLogo} alt="RynatySchool SmartCampus" className="h-12 w-auto object-contain object-left select-none" draggable={false} />
           </div>
 
-          {/* Heading */}
-          <div className="mb-8">
-            <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-2">Welcome back</h2>
-            <p className="text-slate-500 text-[13px]">Sign in to your SmartCampus command centre.</p>
+          <div className="mb-6">
+            <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-1">Welcome back</h2>
+            <p className="text-slate-500 text-[13px]">Sign in to your SmartCampus account.</p>
+          </div>
+
+          {/* ── Login type tabs ── */}
+          <div className="flex rounded-xl p-1 mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            {MODES.map(m => (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => { setMode(m.key); setError(null) }}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-semibold transition-all duration-200"
+                style={
+                  mode === m.key
+                    ? { background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }
+                    : { color: '#64748b', border: '1px solid transparent' }
+                }
+              >
+                <m.icon size={12} />
+                <span className="hidden sm:inline">{m.label}</span>
+                <span className="sm:hidden">{m.label.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Hint banner for current mode */}
+          <div className="mb-5 rounded-xl px-3.5 py-2.5 flex items-start gap-2.5"
+            style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
+            <activeMode.icon size={13} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400 leading-relaxed">{activeMode.hint}</p>
           </div>
 
           {/* Form */}
@@ -218,15 +265,15 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Username */}
+            {/* Username / Admission No */}
             <div>
               <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-[0.12em]">
-                Username
+                {activeMode.userLabel}
               </label>
               <input
                 value={username}
                 onChange={e => setUsernameInput(e.target.value)}
-                placeholder="admin"
+                placeholder={activeMode.userPlaceholder}
                 autoComplete="username"
                 className="w-full rounded-xl px-4 py-3 text-[13px] text-white placeholder-slate-600 outline-none transition-all duration-200"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}
@@ -286,25 +333,21 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Role guidance */}
-          <div className="mt-6 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
-            <p className="mb-2 text-[10px] uppercase tracking-widest text-slate-600 font-semibold">Who is this login for?</p>
-            <div className="space-y-2">
-              {[
-                { emoji: '🏫', label: 'School Staff / Admin', desc: 'Teachers, accountants, admin — use your school username' },
-                { emoji: '👨‍👩‍👧', label: 'Parents / Guardians', desc: 'Use the username given by your school to view your child' },
-                { emoji: '🎓', label: 'Students', desc: 'Use your admission number or student username to access your portal' },
-              ].map(r => (
-                <div key={r.label} className="flex items-start gap-2.5">
-                  <span className="text-base leading-none mt-0.5">{r.emoji}</span>
-                  <div>
-                    <p className="text-[11px] font-semibold text-slate-300">{r.label}</p>
-                    <p className="text-[10px] text-slate-600">{r.desc}</p>
-                  </div>
-                </div>
-              ))}
+          {/* Student special note */}
+          {mode === 'student' && (
+            <div className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/05 px-4 py-3">
+              <p className="text-[11px] text-violet-300 font-semibold mb-0.5">Student Portal Access</p>
+              <p className="text-[10px] text-slate-500">After signing in, you will be redirected to your personal student portal where you can view results, attendance, and notices.</p>
             </div>
-          </div>
+          )}
+
+          {/* Parent special note */}
+          {mode === 'parent' && (
+            <div className="mt-4 rounded-xl border border-sky-500/20 bg-sky-500/05 px-4 py-3">
+              <p className="text-[11px] text-sky-300 font-semibold mb-0.5">Parent Portal Access</p>
+              <p className="text-[10px] text-slate-500">You will see your child's academic progress, fee balance, transport tracking, and school communications in the parent portal.</p>
+            </div>
+          )}
 
           {/* Tagline */}
           <div className="mt-6 pt-5 border-t border-white/[0.05] text-center">
