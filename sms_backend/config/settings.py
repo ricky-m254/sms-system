@@ -161,6 +161,7 @@ TENANT_APPS = [
     "maintenance",
     "elearning",
     "analytics",
+    "rest_framework_simplejwt.token_blacklist",
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",

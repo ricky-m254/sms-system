@@ -4193,22 +4193,24 @@ class SchoolDashboardView(APIView):
 class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Custom JWT login serializer.
-    Falls back to matching admission_number in UserProfile if the normal
-    username lookup fails — so students and parents can log in with
-    their student admission number instead of a Django username.
+    Three-stage fallback:
+      1. Normal Django username auth
+      2. UserProfile.admission_number lookup  (students & parents with user accounts)
+      3. Student.admission_number lookup      (students whose username == admission_number)
     """
 
     def validate(self, attrs):
         username = attrs.get(self.username_field, '')
         password = attrs.get('password', '')
 
-        # First: attempt normal Django username authentication.
+        # Stage 1: normal Django username auth
         try:
             return super().validate(attrs)
         except Exception:
             pass
 
-        # Second: try to find a user via UserProfile.admission_number
+        # Stage 2: UserProfile.admission_number lookup
+        profile = None
         try:
             profile = (
                 UserProfile.objects
@@ -4216,20 +4218,31 @@ class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
                 .get(admission_number=username, user__is_active=True)
             )
         except UserProfile.DoesNotExist:
-            # Re-raise the original error so SimpleJWT returns its standard message
-            raise
+            pass
 
-        user = authenticate(
-            request=self.context.get('request'),
-            username=profile.user.username,
-            password=password,
-        )
-        if user is None:
-            raise ValidationError({'detail': 'No active account found with the given credentials.'})
+        if profile is not None:
+            user = authenticate(
+                request=self.context.get('request'),
+                username=profile.user.username,
+                password=password,
+            )
+            if user is not None:
+                attrs[self.username_field] = profile.user.username
+                return super().validate(attrs)
 
-        # Build the token exactly as the parent class does
-        attrs[self.username_field] = profile.user.username
-        return super().validate(attrs)
+        # Stage 3: Student.admission_number → username == admission_number
+        try:
+            student = Student.objects.get(admission_number=username, is_active=True)
+            attrs[self.username_field] = student.admission_number
+            try:
+                return super().validate(attrs)
+            except Exception:
+                pass
+        except Student.DoesNotExist:
+            pass
+
+        # All stages failed — raise standard error
+        raise ValidationError({'detail': 'No active account found with the given credentials.'})
 
 
 class SmartCampusTokenObtainPairView(_BaseTokenView):
@@ -6387,13 +6400,86 @@ class ModuleSeedView(APIView):
             import io
             out = io.StringIO()
             call_command('seed_kenya_school', f'--schema_name={schema}', stdout=out)
+
+            # Create portal login accounts for all seeded students and guardians
+            counts = self._create_portal_accounts()
+
             return Response({
                 'detail': 'Sample data seeded successfully.',
                 'schema': schema,
+                'student_accounts_created': counts['students'],
+                'parent_accounts_created': counts['parents'],
                 'output': out.getvalue()[-500:] if out.getvalue() else '',
             }, status=status.HTTP_201_CREATED)
         except Exception as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _create_portal_accounts(self):
+        """Create Django user accounts for all students and guardians so they can log in."""
+        from django.contrib.auth.models import User as DjangoUser
+        student_role = Role.objects.filter(name='STUDENT').first()
+        parent_role = Role.objects.filter(name='PARENT').first()
+        student_count = 0
+        parent_count = 0
+
+        for student in Student.objects.filter(is_active=True):
+            adm = student.admission_number
+            username = adm  # username = admission number (e.g. STM2025001)
+            user, created = DjangoUser.objects.get_or_create(
+                username=username,
+                defaults={
+                    'first_name': student.first_name,
+                    'last_name': student.last_name,
+                    'is_active': True,
+                },
+            )
+            if created:
+                user.set_password('student123')
+                user.save()
+                student_count += 1
+            if student_role:
+                profile, _ = UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={'role': student_role, 'admission_number': adm},
+                )
+                if profile.admission_number != adm:
+                    profile.admission_number = adm
+                    profile.save()
+
+        for guardian in Guardian.objects.filter(is_active=True):
+            # Derive a unique username from email or name
+            if guardian.email:
+                base = guardian.email.split('@')[0].lower().replace('.', '_').replace('+', '_')
+            else:
+                base = (guardian.name or 'parent').lower().replace(' ', '_').replace('.', '')
+            username = base[:30]
+            # Ensure uniqueness
+            suffix = 0
+            candidate = username
+            while DjangoUser.objects.filter(username=candidate).exists():
+                suffix += 1
+                candidate = f'{username}{suffix}'
+            username = candidate
+
+            user, created = DjangoUser.objects.get_or_create(
+                username=username,
+                defaults={
+                    'first_name': (guardian.name or '').split()[0] if guardian.name else '',
+                    'email': guardian.email or '',
+                    'is_active': True,
+                },
+            )
+            if created:
+                user.set_password('parent123')
+                user.save()
+                parent_count += 1
+            if parent_role:
+                UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={'role': parent_role},
+                )
+
+        return {'students': student_count, 'parents': parent_count}
 
     def get(self, request):
         return Response({

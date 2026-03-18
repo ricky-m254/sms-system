@@ -114,6 +114,18 @@ export default function DormitoriesPage() {
       {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
       {notice && <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</div>}
 
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-400">{dorms.length} dormitor{dorms.length === 1 ? 'y' : 'ies'} configured</p>
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+        >
+          <Plus className="h-4 w-4" />
+          Add Dormitory
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <div className="col-span-full py-12 text-center text-slate-400">Loading dormitories...</div>
