@@ -214,6 +214,43 @@ API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
 - **T008 Media URLs**: `StudentProfilePage.tsx` — `resolveMediaUrl()` helper prefixes relative `/media/...` URLs with the server origin; applied to `student.photo` and `doc.url` links
 - **T010 Parent Portal errors**: `ParentPortalTransportPage.tsx` and `ParentPortalHealthPage.tsx` now extract the server error message (`data.error` / `data.detail`) from 404 responses; displays "No linked student found." instead of a generic error message
 
+## Biometric Device Discovery
+
+- **Auto-detect panel**: `ClockInDevicesPage.tsx` — "📡 Auto-detect" with WebHID USB scan + 128-thread TCP subnet scan
+- **Dahua SADP broadcast** (UDP port 37020): Phase 1 identifies devices with model/serial/MAC
+- **HTTP CGI identification**: Phase 2 probes TCP 80/37777/37778 to confirm Dahua ASI6214S
+- **ip_prefix auto-strip bug fix**: Backend (`clockin/views.py`) and frontend both auto-extract first 3 octets if user pastes a full IP like "192.168.1.108" → "192.168.1"
+- **Primary device**: Dahua ASI6214S (default 192.168.1.108, ports 37777/37778/80)
+- **Additional device brands**: ZKTeco (4370), Anviz (5010/6000), FingerTec (4008), Suprema (9922)
+
+## Finance IPSAS Audit Reports (Kenya Format)
+
+`FinanceAuditReportsPage.tsx` completely rewritten to match Kenya Ministry of Education / TSC annual financial audit report format.
+
+**Report Groups:**
+- **Management Reports** (dark theme, operational): Income Statement, Fee Collection, Expense Summary, Budget vs Actual, Arrears, Vote Head Allocation, Class Balances
+- **Kenya IPSAS Audit Package** (blue/white professional theme, matching MoE format):
+  - Statement I: Management Responsibility (boilerplate + signature lines for Principal + BOM Chair)
+  - Statement V: Receipts & Payments (Term 1/2/3 columns, cash-basis, Notes 1-13)
+  - Statement VI: Financial Assets & Liabilities (Bank + Cash + Receivables + Payables → Net Position)
+  - Statement VII: Cash Flows (IPSAS 2 — Operating/Investing/Financing)
+  - Statement VIII: Budgeted vs Actual (IPSAS 24 — all accounts)
+  - Section IX: Significant Accounting Policies (10 comprehensive notes)
+  - Section X: Notes to Financial Statements (Note 3: Parents contributions by term; Note 5/6: Ops/Tuition expenditure by term; Note 9: Infrastructure; Note 10: Bank accounts; Note 11: Cash in hand; Note 12a/b: Receivables + aging; Note 13a/b: Payables + aging)
+  - Section XI: IPSAS 17 PPE schedule
+
+**UI Enhancements:**
+- School information panel (name, county, reg no, principal name, BOM chair)
+- Bank accounts panel (4 accounts: Tuition/Operations/School Fund/Infrastructure — bank, account no, balance)
+- Opening cash balance input
+- PDF generated with dark navy cover page + light professional audit pages
+- Expenses auto-classified into Tuition/Operations/Boarding/Infrastructure by category name
+- Payments split into terms by date: Term 1 (Jan–Apr), Term 2 (May–Aug), Term 3 (Sep–Dec)
+
+**Additional API data fetched:**
+- `/finance/reports/vote-head-allocation/` — vote head allocation totals
+- `/finance/reports/arrears-by-term/` — arrears by academic term
+
 ## Recent Updates
 
 - **Teacher Portal** (new module): Full portal at `/teacher-portal/*` — Layout, Dashboard (KPI cards, schedule, recent marks), Classes (subject/class assignments with student counts), Attendance (mark/save daily attendance), Gradebook (CBC 4-band: Exceeding/Meeting/Approaching/Below), Resources (upload/manage teaching materials), Timetable (weekly grid + daily agenda views). Accessible to all authenticated tenant users.

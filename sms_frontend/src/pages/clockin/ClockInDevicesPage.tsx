@@ -330,7 +330,14 @@ export default function ClockInDevicesPage() {
                 className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm font-mono outline-none focus:border-emerald-500 transition w-44"
                 placeholder="192.168.1"
                 value={ipPrefix}
-                onChange={e => setIpPrefix(e.target.value)}
+                onChange={e => {
+                  let val = e.target.value
+                  const parts = val.split('.')
+                  if (parts.length === 4 && parts.every(p => /^\d+$/.test(p) && Number(p) <= 255)) {
+                    val = parts.slice(0, 3).join('.')
+                  }
+                  setIpPrefix(val)
+                }}
                 disabled={isScanning}
               />
               <p className="text-[10px] text-slate-600">Dahua ASI6214S default: <span className="font-mono text-emerald-600">192.168.1</span>.108</p>

@@ -396,9 +396,13 @@ class DeviceDiscoverView(APIView):
         sadp_timeout = min(max(float(request.data.get('sadp_timeout', 3.0)), 1.0), 10.0)
 
         parts = ip_prefix.split('.')
+        # Auto-strip: if user pasted a full IP like "192.168.1.108", take first 3 octets
+        if len(parts) == 4 and all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
+            parts = parts[:3]
+            ip_prefix = '.'.join(parts)
         if len(parts) != 3 or not all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
             return Response(
-                {'detail': 'ip_prefix must be like "192.168.1"'},
+                {'detail': 'ip_prefix must be like "192.168.1" (first 3 octets). You can also paste a full IP like "192.168.1.108" and the last octet will be stripped automatically.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
