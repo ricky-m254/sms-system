@@ -4,6 +4,7 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import PrintButton from '../../components/PrintButton'
 import { CheckCircle2, Clock, FileText, Printer, Upload, X, XCircle } from 'lucide-react'
 import PageHero from '../../components/PageHero'
+import { resolveFileUrl } from '../../api/baseUrl'
 
 interface Session { id: number; name: string }
 interface Subject { id: number; name: string }
@@ -320,7 +321,7 @@ export default function ExaminationsPaperUploadsPage() {
                     </td>
                     <td className="px-4 py-3">
                       {u.file_url
-                        ? <a href={u.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300">
+                        ? <a href={resolveFileUrl(u.file_url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300">
                             <FileText className="h-3.5 w-3.5" /> {u.filename_original || 'Download'}
                           </a>
                         : <span className="text-slate-600 text-xs">No file</span>}
@@ -355,7 +356,7 @@ export default function ExaminationsPaperUploadsPage() {
               <p>Session: {reviewTarget.session_name}</p>
               <p>Uploaded by: {reviewTarget.uploaded_by_name} · Copies: {reviewTarget.print_copies}</p>
               {reviewTarget.file_url && (
-                <a href={reviewTarget.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sky-400 mt-1">
+                <a href={resolveFileUrl(reviewTarget.file_url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sky-400 mt-1">
                   <FileText className="h-3 w-3" /> View File
                 </a>
               )}

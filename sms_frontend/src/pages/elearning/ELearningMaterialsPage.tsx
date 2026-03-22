@@ -9,6 +9,7 @@ import {
 import PageHero from '../../components/PageHero'
 import { apiClient } from '../../api/client'
 import { cachedGet } from '../../api/cache'
+import { resolveFileUrl } from '../../api/baseUrl'
 
 type TabId = 'all' | 'videos' | 'books' | 'activities' | 'platforms' | 'library'
 
@@ -325,8 +326,10 @@ export default function ELearningMaterialsPage() {
   )
 
   const openMaterial = (m: Material) => {
-    const url = m.link_url || m.file_url || m.content
-    if (url && url.startsWith('http')) window.open(url, '_blank', 'noopener,noreferrer')
+    const raw = m.link_url || m.file_url || m.content
+    if (!raw) return
+    const url = resolveFileUrl(raw)
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   const totalCount = filteredVideos.length + filteredBooks.length + filteredMaterials.length + filteredActivities.length + FREE_PLATFORMS.length + libraryBooks.length

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { BookOpen, FileText, Video, Link2, Download } from 'lucide-react'
+import { resolveFileUrl } from '../../api/baseUrl'
 
 const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
 
@@ -61,8 +62,9 @@ export default function StudentPortalELearningPage() {
   })
 
   const handleOpen = (m: Material) => {
-    const url = m.external_url || m.file_url
-    if (url) window.open(url, '_blank')
+    const raw = m.external_url || m.file_url
+    if (!raw) return
+    window.open(resolveFileUrl(raw), '_blank', 'noopener,noreferrer')
   }
 
   return (

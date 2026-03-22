@@ -1,3 +1,21 @@
+/**
+ * Resolve a potentially relative file/media URL to an absolute URL.
+ * Django backend serves uploaded files at /media/... — in development
+ * these must be prefixed with the backend origin so the browser fetches
+ * them correctly (the Vite proxy forwards /media/* to localhost:8000).
+ * External http/https URLs are returned unchanged.
+ */
+export function resolveFileUrl(url: string | null | undefined): string {
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  // Relative path (e.g. /media/uploads/file.pdf) → prepend origin
+  const origin =
+    typeof window !== 'undefined'
+      ? `${window.location.protocol}//${window.location.host}`
+      : ''
+  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
 export function resolveApiBaseUrl(): string {
   const forcedBase = import.meta.env.VITE_FORCE_API_BASE_URL?.trim()
   if (forcedBase) {
