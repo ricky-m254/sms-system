@@ -19,23 +19,26 @@ from communication.models import Notification
 from django.db.models import Q
 
 # Ports associated with known biometric device brands.
-# ASI6214S (ZKTeco) is the PRIMARY target — listed first and probed first.
+# PRIMARY: Dahua ASI6214S — probed first on its default ports.
 BIOMETRIC_PROBE_PORTS = [
-    # ── PRIMARY: ZKTeco ASI6214S ──────────────────────────────
-    (4370, 'ZKTeco ASI6214S',        'Fingerprint / RFID'),  # ZKPCP protocol (default)
-    (4000, 'ZKTeco ASI6214S (alt)',  'Fingerprint / RFID'),  # Some ASI variants
-    # ── Other ZKTeco series ───────────────────────────────────
-    (5005, 'ZKTeco (other model)',   'Fingerprint / RFID'),
+    # ── PRIMARY: Dahua ASI6214S ───────────────────────────────
+    (37777, 'Dahua ASI6214S',         'Fingerprint / RFID'),  # Dahua SDK (primary)
+    (37778, 'Dahua ASI6214S (RTSP)',  'Fingerprint / RFID'),  # Dahua stream port
+    (80,    'Dahua ASI6214S (Web)',   'Web / HTTP'),           # Dahua web interface
+    # ── Other Dahua access control series ─────────────────────
+    (8000,  'Dahua (alt port)',       'Fingerprint / RFID'),
+    # ── ZKTeco series ────────────────────────────────────────
+    (4370,  'ZKTeco',                'Fingerprint / RFID'),   # ZKPCP protocol
+    (5005,  'ZKTeco (alt port)',     'Fingerprint / RFID'),
     # ── Anviz series ─────────────────────────────────────────
-    (5010, 'Anviz',                  'Fingerprint / RFID'),
-    (6000, 'Anviz (alt port)',       'Fingerprint / RFID'),
+    (5010,  'Anviz',                 'Fingerprint / RFID'),
+    (6000,  'Anviz (alt port)',      'Fingerprint / RFID'),
     # ── FingerTec ────────────────────────────────────────────
-    (4008, 'FingerTec',              'Fingerprint'),
+    (4008,  'FingerTec',             'Fingerprint'),
     # ── Suprema ──────────────────────────────────────────────
-    (9922, 'Suprema BioStar',        'Fingerprint'),
+    (9922,  'Suprema BioStar',       'Fingerprint'),
     # ── Generic HTTP terminals ────────────────────────────────
-    (8080, 'HTTP Biometric Terminal', 'Web-based'),
-    (80,   'HTTP Biometric Terminal', 'Web-based'),
+    (8080,  'HTTP Biometric Terminal', 'Web-based'),
 ]
 
 def _tcp_probe(ip: str, port: int, timeout: float) -> bool:
