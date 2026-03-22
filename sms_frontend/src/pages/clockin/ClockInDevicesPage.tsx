@@ -335,25 +335,63 @@ export default function ClockInDevicesPage() {
       />
 
       {/* ── Header bar ── */}
-      <header className="rounded-2xl p-5 flex flex-wrap gap-3 justify-between items-center" style={GLASS}>
-        <div>
-          <h1 className="text-xl font-display font-semibold">Biometric Devices</h1>
-          <p className="mt-1 text-sm text-slate-400">Fingerprint scanners, RFID terminals and network endpoints.</p>
-          {error && <p className="mt-1 text-xs text-rose-300">{error}</p>}
+      <header className="rounded-2xl p-5 space-y-4" style={GLASS}>
+        <div className="flex flex-wrap gap-3 justify-between items-start">
+          <div>
+            <h1 className="text-xl font-display font-semibold">Biometric Devices</h1>
+            <p className="mt-1 text-sm text-slate-400">Fingerprint scanners, RFID terminals and network endpoints.</p>
+            {error && <p className="mt-1 text-xs text-rose-300">{error}</p>}
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={() => { setShowDetect(v => !v); setShowForm(false) }}
+              className="flex items-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition"
+            >
+              <span>📡</span> Auto-detect
+            </button>
+            <button
+              onClick={() => { setShowForm(v => !v); setShowDetect(false) }}
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
+            >
+              {showForm ? 'Cancel' : '+ Register Device'}
+            </button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => { setShowDetect(v => !v); setShowForm(false) }}
-            className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20 transition"
-          >
-            <span>📡</span> Auto-detect
-          </button>
-          <button
-            onClick={() => { setShowForm(v => !v); setShowDetect(false) }}
-            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
-          >
-            {showForm ? 'Cancel' : '+ Register Device'}
-          </button>
+
+        {/* Quick-add shortcuts */}
+        <div className="flex flex-wrap gap-2 pt-1 border-t border-white/[0.05]">
+          <p className="w-full text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Quick add known device:</p>
+          {[
+            { label: '⚡ Dahua ASI6214S',  ip: '192.168.1.108', port: 37777, http: 80, rtsp: 37778, brand: 'Dahua',    model: 'ASI6214S', user: 'admin', pass: 'admin123' },
+            { label: 'ZKTeco',             ip: '192.168.1.201', port: 4370,  http: 80, rtsp: 0,     brand: 'ZKTeco',   model: '',         user: 'admin', pass: '12345' },
+            { label: 'Anviz',              ip: '192.168.1.100', port: 5010,  http: 80, rtsp: 0,     brand: 'Anviz',    model: '',         user: 'admin', pass: '12345' },
+            { label: 'FingerTec',          ip: '192.168.1.200', port: 4008,  http: 80, rtsp: 0,     brand: 'FingerTec',model: '',         user: 'admin', pass: '' },
+          ].map(d => (
+            <button
+              key={d.label}
+              onClick={() => {
+                setFormData({
+                  device_id: `${d.ip}:${d.port}`, name: `${d.brand}${d.model ? ' ' + d.model : ''} — Main Entrance`,
+                  location: 'Main Entrance', device_type: 'BOTH',
+                  notes: `${d.brand}${d.model ? ' ' + d.model : ''} — add using factory defaults\nChange IP if your device is not on ${d.ip}`,
+                  ip_address: d.ip, port: d.port, http_port: d.http, rtsp_port: d.rtsp || 0, channel: 1,
+                  username: d.user, password: d.pass,
+                  brand: d.brand, model: d.model, serial_number: '', mac_address: '',
+                  firmware_version: '', discovery_method: 'Manual — Factory Defaults',
+                })
+                setShowDetect(false)
+                setShowForm(true)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                d.label.startsWith('⚡')
+                  ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30'
+                  : 'border border-white/[0.07] text-slate-400 hover:text-slate-200 hover:border-white/20'
+              }`}
+            >
+              {d.label}
+            </button>
+          ))}
         </div>
       </header>
 
@@ -375,6 +413,54 @@ export default function ClockInDevicesPage() {
               </p>
             </div>
             <button onClick={() => { setShowDetect(false); resetDetect() }} className="shrink-0 text-slate-500 hover:text-slate-300 text-xs mt-0.5">✕ Close</button>
+          </div>
+
+          {/* ⚠ Cloud-hosting notice */}
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/8 p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">⚠️</span>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-amber-300">Network scan cannot reach your local LAN from the cloud</p>
+                <p className="text-xs text-amber-200/70">
+                  This app's server runs on the internet — it cannot scan local IP addresses like <span className="font-mono">192.168.1.x</span>.
+                  The network scan only works if the backend server is running on the <strong>same LAN</strong> as your Dahua device.
+                </p>
+              </div>
+            </div>
+            <div className="border-t border-amber-500/20 pt-3 space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-amber-400">What to do instead:</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  onClick={() => {
+                    setFormData({
+                      device_id: '192.168.1.108:37777', name: 'Dahua ASI6214S — Main Entrance',
+                      location: 'Main Entrance', device_type: 'BOTH',
+                      notes: 'Dahua ASI6214S fingerprint + RFID terminal\nFactory default IP: 192.168.1.108\nSDK port: 37777 | HTTP port: 80',
+                      ip_address: '192.168.1.108', port: 37777, http_port: 80, rtsp_port: 37778, channel: 1,
+                      username: 'admin', password: 'admin123',
+                      brand: 'Dahua', model: 'ASI6214S', serial_number: '', mac_address: '',
+                      firmware_version: '', discovery_method: 'Manual — Factory Defaults',
+                    })
+                    setShowDetect(false)
+                    setShowForm(true)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
+                >
+                  <span>⚡</span> Quick Add Dahua ASI6214S (factory defaults)
+                </button>
+                <button
+                  onClick={() => window.open('http://192.168.1.108', '_blank', 'noopener,noreferrer')}
+                  className="flex items-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-sm font-semibold text-slate-300 hover:text-white hover:border-white/20 transition"
+                >
+                  <span>🌐</span> Open device web UI (192.168.1.108)
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                After clicking Quick Add, update the IP address if your device is not on 192.168.1.108, then click Confirm Registration.
+                You can find the device IP in its web interface or by checking your router's DHCP table.
+              </p>
+            </div>
           </div>
 
           {/* Config row */}
@@ -550,27 +636,62 @@ export default function ClockInDevicesPage() {
           )}
 
           {scanPhase === 'done' && discovered.length === 0 && (
-            <div className="rounded-xl bg-slate-900 border border-white/[0.07] p-6 space-y-4">
-              <p className="text-slate-300 text-sm font-semibold">No biometric devices found on this subnet.</p>
-              <div className="space-y-2 text-xs text-slate-500">
-                <p>Ensure the device is powered on and on the same LAN as this server.</p>
-                <div className="rounded-lg bg-slate-950 border border-white/[0.06] p-3 space-y-1.5 font-mono">
-                  <p className="text-slate-400 font-sans font-bold text-[10px] uppercase tracking-widest mb-2">Known factory defaults</p>
-                  <p><span className="text-emerald-400 font-bold">Dahua ASI6214S</span> → <span className="text-sky-400">192.168.1.108</span> · ports <span className="text-sky-400">37777 / 80</span></p>
-                  <p><span className="text-slate-400">Dahua (other)</span>     → <span className="text-slate-500">192.168.1.108</span> · port <span className="text-slate-500">37777</span></p>
-                  <p><span className="text-slate-400">ZKTeco</span>            → <span className="text-slate-500">192.168.1.201</span> · port <span className="text-slate-500">4370</span></p>
-                  <p><span className="text-slate-400">Anviz</span>             → <span className="text-slate-500">192.168.1.100</span> · port <span className="text-slate-500">5010</span></p>
-                  <p><span className="text-slate-400">FingerTec</span>         → <span className="text-slate-500">192.168.1.200</span> · port <span className="text-slate-500">4008</span></p>
-                  <p><span className="text-slate-400">Suprema BioStar</span>   → <span className="text-slate-500">192.168.1.x</span>   · port <span className="text-slate-500">9922</span></p>
+            <div className="rounded-xl bg-slate-900 border border-white/[0.07] p-6 space-y-5">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🔍</span>
+                <div>
+                  <p className="text-slate-200 text-sm font-semibold">No biometric devices found on this subnet.</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    This happens when the app server is cloud-hosted and cannot reach your local network (192.168.x.x).
+                    Add your device manually using the factory defaults below.
+                  </p>
                 </div>
-                <p>If the Dahua ASI6214S is on a different subnet, update the network prefix above and scan again.</p>
               </div>
-              <button
-                onClick={() => { setShowForm(true); setShowDetect(false) }}
-                className="rounded-xl border border-white/[0.09] px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition"
-              >
-                Register manually instead →
-              </button>
+
+              {/* Immediate action */}
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Add your Dahua ASI6214S right now</p>
+                <div className="flex flex-wrap gap-3 items-center">
+                  <button
+                    onClick={() => {
+                      setFormData({
+                        device_id: '192.168.1.108:37777', name: 'Dahua ASI6214S — Main Entrance',
+                        location: 'Main Entrance', device_type: 'BOTH',
+                        notes: 'Dahua ASI6214S fingerprint + RFID terminal\nFactory default IP: 192.168.1.108\nSDK port: 37777 | HTTP port: 80 | RTSP port: 37778',
+                        ip_address: '192.168.1.108', port: 37777, http_port: 80, rtsp_port: 37778, channel: 1,
+                        username: 'admin', password: 'admin123',
+                        brand: 'Dahua', model: 'ASI6214S', serial_number: '', mac_address: '',
+                        firmware_version: '', discovery_method: 'Manual — Factory Defaults',
+                      })
+                      setShowDetect(false)
+                      setShowForm(true)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
+                  >
+                    ⚡ Quick Add Dahua ASI6214S (factory defaults)
+                  </button>
+                  <button
+                    onClick={() => window.open('http://192.168.1.108', '_blank', 'noopener,noreferrer')}
+                    className="rounded-xl border border-white/[0.09] px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition"
+                  >
+                    🌐 Open device web UI
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500">
+                  After clicking Quick Add, confirm or update the IP address to match your device, then click <strong>Confirm Registration</strong>.
+                  To find your device's IP: check your router's DHCP table, or connect to it via <span className="font-mono">192.168.1.108</span> (factory default).
+                </p>
+              </div>
+
+              {/* Factory defaults reference */}
+              <div className="rounded-lg bg-slate-950 border border-white/[0.06] p-4 space-y-1.5 font-mono text-xs">
+                <p className="text-slate-400 font-sans font-bold text-[10px] uppercase tracking-widest mb-2">Factory defaults — other brands</p>
+                <p><span className="text-slate-400">ZKTeco</span>          → <span className="text-slate-300">192.168.1.201</span> · port <span className="text-sky-400">4370</span> · user <span className="text-slate-400">admin</span> / <span className="text-slate-400">12345</span></p>
+                <p><span className="text-slate-400">Anviz</span>           → <span className="text-slate-300">192.168.1.100</span> · port <span className="text-sky-400">5010</span> · user <span className="text-slate-400">admin</span> / <span className="text-slate-400">12345</span></p>
+                <p><span className="text-slate-400">FingerTec</span>       → <span className="text-slate-300">192.168.1.200</span> · port <span className="text-sky-400">4008</span></p>
+                <p><span className="text-slate-400">Suprema BioStar</span> → <span className="text-slate-300">192.168.1.x</span>   · port <span className="text-sky-400">9922</span></p>
+              </div>
             </div>
           )}
 
@@ -766,8 +887,37 @@ export default function ClockInDevicesPage() {
         {isLoading ? (
           <div className="p-12 text-center text-slate-400">Loading devices…</div>
         ) : devices.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 italic rounded-2xl border border-white/[0.07] bg-white/[0.02]">
-            No devices registered yet. Use <span className="text-emerald-400 not-italic font-semibold">Auto-detect</span> to find devices on your network.
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-10 flex flex-col items-center gap-5 text-center">
+            <div className="text-4xl">🖥️</div>
+            <div>
+              <p className="text-slate-300 font-semibold">No devices registered yet</p>
+              <p className="text-sm text-slate-500 mt-1 max-w-md">
+                Register your Dahua ASI6214S using factory defaults — just click the button below, then confirm the IP address matches your device.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setFormData({
+                  device_id: '192.168.1.108:37777', name: 'Dahua ASI6214S — Main Entrance',
+                  location: 'Main Entrance', device_type: 'BOTH',
+                  notes: 'Dahua ASI6214S fingerprint + RFID terminal\nFactory default IP: 192.168.1.108\nSDK port: 37777 | HTTP port: 80 | RTSP port: 37778',
+                  ip_address: '192.168.1.108', port: 37777, http_port: 80, rtsp_port: 37778, channel: 1,
+                  username: 'admin', password: 'admin123',
+                  brand: 'Dahua', model: 'ASI6214S', serial_number: '', mac_address: '',
+                  firmware_version: '', discovery_method: 'Manual — Factory Defaults',
+                })
+                setShowForm(true)
+                setShowDetect(false)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
+            >
+              ⚡ Quick Add Dahua ASI6214S (factory defaults)
+            </button>
+            <p className="text-xs text-slate-600">
+              After opening the form, update the IP address if your device is not on 192.168.1.108,
+              give it a name and location, then click Confirm Registration.
+            </p>
           </div>
         ) : (
           devices.map(device => (
