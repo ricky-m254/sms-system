@@ -1,18 +1,23 @@
 import re
+import base64
+import json
 import socket
 import time
 import urllib.request
+import urllib.error
 import concurrent.futures
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from datetime import date, datetime, timedelta
 from .models import BiometricDevice, SchoolShift, PersonRegistry, ClockEvent
 from .serializers import (
-    BiometricDeviceSerializer, 
-    SchoolShiftSerializer, 
-    PersonRegistrySerializer, 
+    BiometricDeviceSerializer,
+    SchoolShiftSerializer,
+    PersonRegistrySerializer,
     ClockEventSerializer
 )
 from school.permissions import HasModuleAccess
@@ -356,7 +361,6 @@ class DashboardView(ClockInModuleMixin, APIView):
 class RealtimeView(ClockInModuleMixin, APIView):
     def get(self, request):
         today = date.today()
-        # Find all persons who have scanned today
         scanned_today = PersonRegistry.objects.filter(events__date=today).distinct()
         results = []
         for person in scanned_today:
@@ -369,6 +373,494 @@ class RealtimeView(ClockInModuleMixin, APIView):
                     "time_in": last_event.timestamp
                 })
         return Response(results)
+
+
+# ── Shared helper: process one scan event ─────────────────────────────────────
+def _process_scan_event(person, device, event_timestamp, direction='auto'):
+    """
+    Create a ClockEvent for a person, determine IN/OUT, late status,
+    update attendance records and send admin notifications.
+
+    direction:  'in' | 'out' | 'auto'  (Dahua Direction 0=in, 1=out)
+    Returns the created ClockEvent.
+    """
+    event_date = event_timestamp.date()
+
+    # Determine IN / OUT
+    if direction == 'in':
+        event_type = 'IN'
+    elif direction == 'out':
+        event_type = 'OUT'
+    else:
+        last_event = ClockEvent.objects.filter(person=person, date=event_date).order_by('-timestamp').first()
+        event_type = 'OUT' if last_event and last_event.event_type == 'IN' else 'IN'
+
+    # Late check (only for IN events)
+    is_late = False
+    if event_type == 'IN':
+        shift = SchoolShift.objects.filter(
+            Q(person_type='ALL') | Q(person_type=person.person_type),
+            is_active=True
+        ).first()
+        if shift:
+            limit_dt = datetime.combine(event_date, shift.expected_arrival) + timedelta(minutes=shift.grace_period_minutes)
+            aware_limit = timezone.make_aware(limit_dt) if timezone.is_naive(limit_dt) else limit_dt
+            cmp_ts = event_timestamp if timezone.is_aware(event_timestamp) else timezone.make_aware(event_timestamp)
+            if cmp_ts > aware_limit:
+                is_late = True
+
+    event = ClockEvent.objects.create(
+        person=person,
+        device=device,
+        event_type=event_type,
+        timestamp=event_timestamp,
+        date=event_date,
+        is_late=is_late,
+    )
+
+    # Late notifications + timetable flagging
+    if is_late:
+        shift = SchoolShift.objects.filter(
+            Q(person_type='ALL') | Q(person_type=person.person_type),
+            is_active=True
+        ).first()
+        minutes_late = 0
+        if shift:
+            arrival = datetime.combine(event_date, shift.expected_arrival)
+            if timezone.is_aware(event_timestamp):
+                arrival = timezone.make_aware(arrival)
+            minutes_late = max(0, int((event_timestamp - arrival).total_seconds() / 60) - shift.grace_period_minutes)
+        event_time_str = event_timestamp.strftime("%H:%M")
+        _notify_admins(
+            title=f"Late Arrival: {person.display_name}",
+            message=f"{person.display_name} ({person.get_person_type_display()}) clocked in at {event_time_str} — {minutes_late} min(s) late.",
+            priority='Important',
+            action_url='/modules/clockin/dashboard',
+        )
+        if person.person_type == 'TEACHER' and person.employee and person.employee.user:
+            try:
+                from timetable.models import TimetableSlot, LessonCoverage
+                today_weekday = event_date.isoweekday()
+                if 1 <= today_weekday <= 5:
+                    affected_slots = TimetableSlot.objects.filter(
+                        day_of_week=today_weekday,
+                        teacher=person.employee.user,
+                        start_time__lte=event_timestamp.time(),
+                        is_active=True
+                    )
+                    for slot in affected_slots:
+                        LessonCoverage.objects.get_or_create(
+                            slot=slot, date=event_date,
+                            defaults={
+                                'original_teacher': person.employee.user,
+                                'status': 'Uncovered', 'auto_flagged': True,
+                                'notes': f'Auto-flagged due to late arrival at {event_time_str}'
+                            }
+                        )
+            except Exception:
+                pass
+
+    # Attendance record update
+    try:
+        attendance_updated = False
+        if person.person_type == 'STUDENT' and person.student:
+            if event_type == 'IN':
+                status_val = 'Late' if is_late else 'Present'
+                StudentAttendanceRecord.objects.update_or_create(
+                    student=person.student, date=event_date,
+                    defaults={'status': status_val, 'notes': f'Clock-in event at {event_timestamp.time()}'}
+                )
+                attendance_updated = True
+        elif person.person_type in ['TEACHER', 'STAFF'] and person.employee:
+            if event_type == 'IN':
+                status_val = 'Late' if is_late else 'Present'
+                EmployeeAttendanceRecord.objects.update_or_create(
+                    employee=person.employee, date=event_date,
+                    defaults={'clock_in': event_timestamp.time(), 'status': status_val, 'notes': 'Clock-in event'}
+                )
+                attendance_updated = True
+            elif event_type == 'OUT':
+                att_rec = EmployeeAttendanceRecord.objects.filter(employee=person.employee, date=event_date).first()
+                if att_rec:
+                    att_rec.clock_out = event_timestamp.time()
+                    if att_rec.clock_in:
+                        start_dt = datetime.combine(event_date, att_rec.clock_in)
+                        end_dt = datetime.combine(event_date, att_rec.clock_out)
+                        att_rec.hours_worked = round((end_dt - start_dt).total_seconds() / 3600.0, 2)
+                    att_rec.save()
+                    attendance_updated = True
+        if attendance_updated:
+            event.attendance_updated = True
+            event.save(update_fields=['attendance_updated'])
+    except Exception as e:
+        print(f"Attendance update failed: {e}")
+
+    return event
+
+
+def _lookup_person(card_no=None, user_id=None, fingerprint_id=None):
+    """
+    Find a PersonRegistry record using Dahua's card/user fields.
+    Priority: card_no → dahua_user_id → fingerprint_id (direct match)
+    """
+    if card_no:
+        p = PersonRegistry.objects.filter(card_no=card_no, is_active=True).first()
+        if p:
+            return p
+    if user_id:
+        p = (PersonRegistry.objects.filter(dahua_user_id=user_id, is_active=True).first() or
+             PersonRegistry.objects.filter(fingerprint_id=user_id, is_active=True).first())
+        if p:
+            return p
+    if fingerprint_id:
+        return PersonRegistry.objects.filter(fingerprint_id=fingerprint_id, is_active=True).first()
+    return None
+
+
+def _parse_dahua_time(time_str):
+    """Parse Dahua time strings: '2026-03-22 12:00:00' or ISO format."""
+    if not time_str:
+        return timezone.now()
+    for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%SZ'):
+        try:
+            dt = datetime.strptime(time_str.strip(), fmt)
+            return timezone.make_aware(dt) if timezone.is_naive(dt) else dt
+        except ValueError:
+            continue
+    return timezone.now()
+
+
+# ── Dahua ASI6214S HTTP Upload webhook ────────────────────────────────────────
+@method_decorator(csrf_exempt, name='dispatch')
+class DahuaEventView(APIView):
+    """
+    POST /clockin/dahua/event/
+
+    Receives HTTP Upload events from a Dahua ASI6214S (or any Dahua access
+    control device that supports HTTP Upload / Alarm Output push).
+
+    Authentication (any one of these, checked in order):
+      1. Query param:   ?key=<api_key>
+      2. Header:        X-Device-Key: <api_key>
+      3. Basic Auth:    Authorization: Basic base64(admin:<api_key>)
+      4. IP match:      The device's ip_address must match REMOTE_ADDR
+
+    Supported Dahua event formats
+    ─────────────────────────────
+    Format A — AccessControl / AttendanceRecord (JSON body):
+      { "Events": [{ "Code": "AccessControl", "Data": { "CardNo": "...",
+        "UserID": "...", "Direction": 0, "Time": "2026-03-22 12:00:00" }}] }
+
+    Format B — Records push:
+      { "Records": [{ "CardNo": "...", "EmployeeNoString": "...",
+        "Punch": 0, "Time": "2026-03-22 12:00:00" }] }
+
+    Format C — Heartbeat (device keep-alive):
+      {}  →  returns HTTP 200 immediately.
+
+    Device configuration (Dahua web UI):
+      Setup → Network → Integration Protocol → HTTP Subscription
+        URL:    https://<your-server>/api/clockin/dahua/event/?key=<api_key>
+        Method: POST
+        Format: JSON
+
+    The device's API key is the one shown in the Devices page (Webhook Config section).
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def _authenticate_device(self, request):
+        """Return (BiometricDevice, error_response) — one of them is None."""
+        # 1. Query param
+        key = request.query_params.get('key') or request.query_params.get('api_key')
+        # 2. Header
+        if not key:
+            key = request.headers.get('X-Device-Key')
+        # 3. Basic Auth
+        if not key:
+            auth = request.headers.get('Authorization', '')
+            if auth.lower().startswith('basic '):
+                try:
+                    decoded = base64.b64decode(auth[6:]).decode('utf-8')
+                    _, _, pw = decoded.partition(':')
+                    key = pw
+                except Exception:
+                    pass
+
+        if key:
+            device = BiometricDevice.objects.filter(api_key=key, is_active=True).first()
+            if device:
+                return device, None
+            return None, Response({'error': 'Invalid API key.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # 4. IP address fallback
+        remote_ip = (
+            request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or
+            request.META.get('REMOTE_ADDR', '')
+        )
+        if remote_ip:
+            device = BiometricDevice.objects.filter(ip_address=remote_ip, is_active=True).first()
+            if device:
+                return device, None
+
+        return None, Response({'error': 'Authentication required. Add ?key=<api_key> to the URL.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def post(self, request):
+        # ── Heartbeat / keep-alive (empty body) ──
+        body = request.data
+        if not body:
+            return Response({'ok': True, 'message': 'Heartbeat received.'})
+
+        # ── Authenticate ──
+        device, err = self._authenticate_device(request)
+        if err:
+            return err
+
+        device.last_seen = timezone.now()
+        device.save(update_fields=['last_seen'])
+
+        processed = []
+        errors = []
+
+        # ── Parse Format A: Events array (AccessControl / AttendanceRecord) ──
+        events = body.get('Events') or body.get('events') or []
+        for ev in events:
+            ev_code = ev.get('Code', '')
+            if ev_code not in ('AccessControl', 'AttendanceRecord', 'AlarmLocal', ''):
+                continue
+            data = ev.get('Data') or ev.get('data') or ev
+            try:
+                result = self._handle_event_data(data, device)
+                if result:
+                    processed.append(result)
+            except Exception as e:
+                errors.append(str(e))
+
+        # ── Parse Format B: Records array ──
+        records = body.get('Records') or body.get('records') or []
+        for rec in records:
+            try:
+                result = self._handle_record_data(rec, device)
+                if result:
+                    processed.append(result)
+            except Exception as e:
+                errors.append(str(e))
+
+        # ── Single event in root body (some Dahua firmware versions) ──
+        if not events and not records and body:
+            # Try root-level event data
+            try:
+                result = self._handle_event_data(body, device)
+                if result:
+                    processed.append(result)
+            except Exception:
+                pass
+
+        return Response({
+            'ok': True,
+            'processed': len(processed),
+            'errors': errors,
+            'events': [{'person': e['person'], 'event_type': e['event_type']} for e in processed],
+        })
+
+    def _handle_event_data(self, data, device):
+        """Parse Dahua AccessControl event data dict."""
+        card_no   = str(data.get('CardNo') or data.get('cardNo') or '').strip()
+        user_id   = str(data.get('UserID') or data.get('userId') or
+                        data.get('EmployeeNoString') or data.get('employeeNoString') or '').strip()
+        time_str  = data.get('Time') or data.get('time') or data.get('Timestamp') or ''
+        direction_val = data.get('Direction', data.get('direction', -1))
+
+        if not card_no and not user_id:
+            return None  # No identity info — skip (could be a door open event)
+
+        person = _lookup_person(card_no=card_no or None, user_id=user_id or None)
+        if not person:
+            # Auto-create stub if we have a name (optional — disabled by default)
+            return None
+
+        direction = 'in' if direction_val == 0 else ('out' if direction_val == 1 else 'auto')
+        event_timestamp = _parse_dahua_time(time_str)
+        event = _process_scan_event(person, device, event_timestamp, direction=direction)
+        return {
+            'person': person.display_name,
+            'event_type': event.event_type,
+            'is_late': event.is_late,
+        }
+
+    def _handle_record_data(self, rec, device):
+        """Parse Dahua Records push format."""
+        card_no   = str(rec.get('CardNo') or rec.get('cardNo') or '').strip()
+        user_id   = str(rec.get('EmployeeNoString') or rec.get('employeeNoString') or
+                        rec.get('UserID') or '').strip()
+        time_str  = rec.get('Time') or rec.get('time') or ''
+        punch     = rec.get('Punch', rec.get('punch', -1))  # 0=IN, 1=OUT
+
+        if not card_no and not user_id:
+            return None
+
+        person = _lookup_person(card_no=card_no or None, user_id=user_id or None)
+        if not person:
+            return None
+
+        direction = 'in' if punch == 0 else ('out' if punch == 1 else 'auto')
+        event_timestamp = _parse_dahua_time(time_str)
+        event = _process_scan_event(person, device, event_timestamp, direction=direction)
+        return {
+            'person': person.display_name,
+            'event_type': event.event_type,
+            'is_late': event.is_late,
+        }
+
+
+# ── Dahua attendance sync (pull from device HTTP API) ─────────────────────────
+class DahuaSyncView(ClockInModuleMixin, APIView):
+    """
+    POST /clockin/dahua/{device_id}/sync/
+    Body: { "date": "2026-03-22" }   (optional — defaults to today)
+
+    Connects to the Dahua device's HTTP API and pulls attendance records
+    for the given date, then creates ClockEvents for any scans not yet in DB.
+
+    Requires the device to have ip_address, username, and password configured.
+    Works for Dahua ASI6214S with HTTP API enabled (port 80 accessible).
+    """
+    module_key = "CLOCKIN"
+
+    def post(self, request, device_id):
+        try:
+            device = BiometricDevice.objects.get(pk=device_id, is_active=True)
+        except BiometricDevice.DoesNotExist:
+            return Response({'error': 'Device not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not device.ip_address:
+            return Response({'error': 'Device has no IP address configured.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        sync_date_str = request.data.get('date', str(date.today()))
+        try:
+            sync_date = datetime.strptime(sync_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        start_time = f"{sync_date} 00:00:00"
+        end_time   = f"{sync_date} 23:59:59"
+
+        ip       = device.ip_address
+        port     = device.http_port or 80
+        username = device.username or 'admin'
+        password = device.password or 'admin123'
+
+        # Dahua HTTP API endpoint for attendance records
+        urls_to_try = [
+            f'http://{ip}:{port}/cgi-bin/attendancePunchRecord.cgi?action=getAllRecords&StartTime={start_time}&EndTime={end_time}',
+            f'http://{ip}:{port}/cgi-bin/recordFinder.cgi?action=find&name=AttendanceRecord&StartTime={start_time}&EndTime={end_time}',
+        ]
+
+        raw_text = None
+        last_error = ''
+        for url in urls_to_try:
+            try:
+                auth_bytes = base64.b64encode(f'{username}:{password}'.encode()).decode()
+                req = urllib.request.Request(url, headers={
+                    'Authorization': f'Basic {auth_bytes}',
+                    'User-Agent': 'SmartCampus/1.0',
+                })
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    raw_text = resp.read().decode('utf-8', errors='ignore')
+                break
+            except urllib.error.HTTPError as e:
+                last_error = f'HTTP {e.code}: {e.reason}'
+            except Exception as e:
+                last_error = str(e)
+
+        if raw_text is None:
+            return Response({
+                'error': f'Could not connect to device at {ip}:{port}. {last_error}',
+                'hint': 'Ensure the device web UI is reachable at this IP and the credentials are correct.',
+            }, status=status.HTTP_502_BAD_GATEWAY)
+
+        # Parse Dahua CGI response (key=value lines or JSON)
+        records_created = 0
+        records_skipped = 0
+        parse_errors    = []
+
+        # Try JSON first
+        try:
+            data = json.loads(raw_text)
+            records = data.get('Records') or data.get('records') or []
+            for rec in records:
+                try:
+                    card_no  = str(rec.get('CardNo') or '').strip()
+                    user_id  = str(rec.get('EmployeeNoString') or rec.get('UserID') or '').strip()
+                    time_str = rec.get('Time') or rec.get('PunchTime') or ''
+                    punch    = rec.get('Punch', -1)
+                    person = _lookup_person(card_no=card_no or None, user_id=user_id or None)
+                    if not person:
+                        records_skipped += 1
+                        continue
+                    event_timestamp = _parse_dahua_time(time_str)
+                    # Dedup: skip if event already exists within 1 minute
+                    exists = ClockEvent.objects.filter(
+                        person=person, date=event_timestamp.date(),
+                        timestamp__range=(event_timestamp - timedelta(minutes=1), event_timestamp + timedelta(minutes=1))
+                    ).exists()
+                    if exists:
+                        records_skipped += 1
+                        continue
+                    direction = 'in' if punch == 0 else ('out' if punch == 1 else 'auto')
+                    _process_scan_event(person, device, event_timestamp, direction=direction)
+                    records_created += 1
+                except Exception as e:
+                    parse_errors.append(str(e))
+        except json.JSONDecodeError:
+            # Fall back: Dahua CGI key=value text format
+            # records.item[0].CardNo=123456\nrecords.item[0].Time=2026-03-22 08:00:00\n...
+            items: dict = {}
+            for line in raw_text.splitlines():
+                line = line.strip()
+                if '=' not in line:
+                    continue
+                key, _, val = line.partition('=')
+                m = re.match(r'records?\.item\[(\d+)\]\.(.+)', key.strip())
+                if m:
+                    idx, field = m.group(1), m.group(2)
+                    if idx not in items:
+                        items[idx] = {}
+                    items[idx][field] = val.strip()
+
+            for rec in items.values():
+                try:
+                    card_no  = rec.get('CardNo', '')
+                    user_id  = rec.get('EmployeeNoString') or rec.get('UserID', '')
+                    time_str = rec.get('Time') or rec.get('PunchTime', '')
+                    punch    = int(rec.get('Punch', '-1'))
+                    person = _lookup_person(card_no=card_no or None, user_id=user_id or None)
+                    if not person:
+                        records_skipped += 1
+                        continue
+                    event_timestamp = _parse_dahua_time(time_str)
+                    exists = ClockEvent.objects.filter(
+                        person=person, date=event_timestamp.date(),
+                        timestamp__range=(event_timestamp - timedelta(minutes=1), event_timestamp + timedelta(minutes=1))
+                    ).exists()
+                    if exists:
+                        records_skipped += 1
+                        continue
+                    direction = 'in' if punch == 0 else ('out' if punch == 1 else 'auto')
+                    _process_scan_event(person, device, event_timestamp, direction=direction)
+                    records_created += 1
+                except Exception as e:
+                    parse_errors.append(str(e))
+
+        device.last_seen = timezone.now()
+        device.save(update_fields=['last_seen'])
+
+        return Response({
+            'ok': True,
+            'date': str(sync_date),
+            'records_created': records_created,
+            'records_skipped': records_skipped,
+            'parse_errors': parse_errors[:10],
+        })
 
 
 class DeviceDiscoverView(APIView):

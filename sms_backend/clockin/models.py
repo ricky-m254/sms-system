@@ -87,14 +87,21 @@ class PersonRegistry(models.Model):
         ('TEACHER', 'Teaching Staff'),
         ('STAFF', 'Non-Teaching Staff'),
     ]
-    fingerprint_id = models.CharField(max_length=100, unique=True)
-    person_type    = models.CharField(max_length=10, choices=PERSON_TYPE_CHOICES)
-    student        = models.ForeignKey('school.Student', null=True, blank=True, on_delete=models.SET_NULL)
-    employee       = models.ForeignKey('hr.Employee',    null=True, blank=True, on_delete=models.SET_NULL)
-    display_name   = models.CharField(max_length=200)
-    enrolled_at    = models.DateTimeField(auto_now_add=True)
-    is_active      = models.BooleanField(default=True)
-    notes          = models.TextField(blank=True)
+    fingerprint_id     = models.CharField(max_length=100, unique=True,
+                           help_text='Primary biometric ID — also used as Dahua Employee No / UserID')
+    # Dahua-specific identity fields
+    card_no            = models.CharField(max_length=100, blank=True, db_index=True,
+                           help_text='RFID card number (Dahua CardNo field)')
+    dahua_user_id      = models.CharField(max_length=100, blank=True, db_index=True,
+                           help_text='Dahua device UserID (EmployeeNoString). Leave blank to use fingerprint_id.')
+
+    person_type  = models.CharField(max_length=10, choices=PERSON_TYPE_CHOICES)
+    student      = models.ForeignKey('school.Student', null=True, blank=True, on_delete=models.SET_NULL)
+    employee     = models.ForeignKey('hr.Employee',    null=True, blank=True, on_delete=models.SET_NULL)
+    display_name = models.CharField(max_length=200)
+    enrolled_at  = models.DateTimeField(auto_now_add=True)
+    is_active    = models.BooleanField(default=True)
+    notes        = models.TextField(blank=True)
 
     def __str__(self):
         return str(self.display_name)

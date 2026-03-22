@@ -52,6 +52,160 @@ function guessIpPrefix(): string {
   return '192.168.1'
 }
 
+// ── Dahua webhook panel component ────────────────────────────────────────────
+function DahuaWebhookPanel({ device }: { device: Device }) {
+  const [syncing, setSyncing]     = useState(false)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
+  const [copied, setCopied]       = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+
+  const webhookUrl = `${window.location.origin}/api/clockin/dahua/event/?key=${device.api_key}`
+  const isDahua    = (device.brand || '').toLowerCase().includes('dahua') || device.model?.includes('ASI')
+
+  const copyUrl = () => {
+    navigator.clipboard.writeText(webhookUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const pullRecords = async () => {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const res = await apiClient.post<any>(`/clockin/dahua/${device.id}/sync/`, {
+        date: new Date().toISOString().slice(0, 10),
+      })
+      const d = res.data
+      setSyncResult(`✓ Synced: ${d.records_created} new event(s), ${d.records_skipped} already recorded.`)
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Could not reach device.'
+      setSyncResult(`✗ ${msg}`)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* ── Dahua native HTTP Upload (primary) ── */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+            {isDahua ? '📡 Dahua HTTP Upload' : 'Webhook Config'}
+          </h4>
+          {isDahua && (
+            <button
+              onClick={() => setShowGuide(g => !g)}
+              className="text-[10px] text-emerald-500 hover:text-emerald-400 font-semibold uppercase tracking-wider"
+            >
+              {showGuide ? 'Hide Guide' : 'Setup Guide'}
+            </button>
+          )}
+        </div>
+
+        <div className="rounded-xl bg-slate-950 p-3 border border-white/[0.05] space-y-2">
+          {/* Native Dahua webhook */}
+          <div className="space-y-1">
+            <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">
+              {isDahua ? '⭐ Dahua Native Endpoint (HTTP Upload)' : 'Endpoint URL'}
+            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-mono break-all text-emerald-400 flex-1">
+                POST /api/clockin/dahua/event/?key=…
+              </p>
+              <button
+                onClick={copyUrl}
+                title="Copy full URL"
+                className="text-[9px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition shrink-0"
+              >
+                {copied ? '✓' : 'Copy'}
+              </button>
+            </div>
+            {isDahua && (
+              <p className="text-[9px] text-slate-600">
+                Also accepts: JSON Events[], Records[], or heartbeat {}
+              </p>
+            )}
+          </div>
+
+          {/* Generic fallback */}
+          <div className="border-t border-white/[0.04] pt-2 space-y-1">
+            <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Generic Fallback</p>
+            <p className="text-[10px] font-mono text-slate-500">POST /api/clockin/scan/</p>
+            <p className="text-[9px] font-mono text-sky-500/70">X-Device-Key: {device.api_key.substring(0, 8)}•••</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Step-by-step Dahua setup guide ── */}
+      {isDahua && showGuide && (
+        <div className="rounded-xl bg-slate-900/80 border border-emerald-500/20 p-3 space-y-2 text-[10px]">
+          <p className="font-bold text-emerald-400 text-[11px]">Configure Dahua ASI6214S → HTTP Upload</p>
+          <ol className="space-y-1.5 text-slate-400 list-none">
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">1.</span>
+              Open device web UI: <span className="font-mono text-sky-400">http://{device.ip_address || '192.168.1.108'}</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">2.</span>
+              Log in with <span className="font-mono">{device.username || 'admin'} / ••••</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">3.</span>
+              Go to <span className="text-slate-300">Setup → Network → Integration Protocol → HTTP Subscription</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">4.</span>
+              Set <strong className="text-slate-200">Server URL</strong> to the copied URL above
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">5.</span>
+              Set <strong className="text-slate-200">Event Type</strong>: AccessControl (or All Events)
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">6.</span>
+              Set <strong className="text-slate-200">Format</strong>: JSON · <strong className="text-slate-200">Method</strong>: POST
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-500 font-bold shrink-0">7.</span>
+              Click <strong className="text-slate-200">Save</strong> — the device will now POST each scan to this server automatically.
+            </li>
+          </ol>
+          <div className="border-t border-white/[0.05] pt-2 text-slate-500">
+            <strong className="text-slate-400">Registry tip:</strong> In the Registry tab, set each person's
+            Dahua User ID to match the <em>Employee No</em> configured on the device, or set their
+            RFID Card No to match the card programmed in the device.
+          </div>
+        </div>
+      )}
+
+      {/* ── Pull records from device ── */}
+      {device.ip_address && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Pull Today's Records</p>
+            <button
+              onClick={pullRecords}
+              disabled={syncing}
+              className="text-[10px] px-3 py-1 rounded-lg bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 font-semibold disabled:opacity-50 transition"
+            >
+              {syncing ? 'Syncing…' : '↓ Sync Now'}
+            </button>
+          </div>
+          {syncResult && (
+            <p className={`text-[10px] rounded-lg px-3 py-1.5 ${syncResult.startsWith('✓') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+              {syncResult}
+            </p>
+          )}
+          <p className="text-[9px] text-slate-600">
+            Pulls attendance records from the device via its HTTP API. Requires the device to be reachable from this server.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ClockInDevicesPage() {
   const [devices, setDevices]     = useState<Device[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -1008,28 +1162,13 @@ export default function ClockInDevicesPage() {
                         <span className="text-slate-500">Password</span>
                         <span className="text-slate-400">••••••••</span>
                       </div>
-                      {device.channel > 1 && (
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Channel</span>
-                          <span className="text-slate-300">{device.channel}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Webhook Config</h4>
-                  <div className="space-y-3 rounded-xl bg-slate-950 p-4 border border-white/[0.05]">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-500">ENDPOINT URL</p>
-                      <p className="text-[11px] font-mono break-all text-emerald-500">POST /api/clockin/scan/</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-500">AUTH HEADER</p>
-                      <p className="text-[11px] font-mono break-all text-sky-400">X-Device-Key: {device.api_key.substring(0, 6)}•••</p>
-                    </div>
-                  </div>
-                </div>
+
+                {/* ── Dahua ASI6214S HTTP Upload Configuration ── */}
+                <DahuaWebhookPanel device={device} />
+
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setDeleteId(device.id)}
                     className="text-rose-400 hover:text-rose-300 text-xs font-semibold uppercase tracking-wider">
