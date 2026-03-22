@@ -377,85 +377,56 @@ class DeviceDiscoverView(APIView):
     Body: { "ip_prefix": "192.168.1", "timeout": 0.5, "sadp_timeout": 3 }
 
     Phase 1 — Dahua SADP broadcast (UDP 37020):
-        Sends a single broadcast; all Dahua devices on the LAN reply with
-        their exact model, serial number and MAC address.  No target IP needed.
+        Broadcasts a discovery packet; Dahua devices reply with model/serial/MAC.
 
-    Phase 2 — TCP port scan across ip_prefix.1–254:
-        Probes every IP for known biometric device ports.
-        For Dahua TCP hits on port 80 also queries the Dahua CGI HTTP API
-        to confirm the model name (works without credentials).
+    Phase 2 — TCP port scan across ip_prefix.1–254 (64 threads, pure network I/O):
+        No database access inside worker threads — django-tenants stores the
+        active schema as a thread-local which is NOT inherited by spawned threads.
+        All DB work happens in the main thread AFTER the pool completes.
 
-    Results are merged, de-duplicated by IP and returned together.
+    Results are de-duplicated by device_id and returned together.
     """
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
     module_key = "CLOCKIN"
 
     def post(self, request):
-        ip_prefix    = (request.data.get('ip_prefix') or '').strip()
-        timeout      = min(max(float(request.data.get('timeout',      0.5)), 0.1), 3.0)
-        sadp_timeout = min(max(float(request.data.get('sadp_timeout', 3.0)), 1.0), 10.0)
+        try:
+            ip_prefix    = (request.data.get('ip_prefix') or '').strip()
+            timeout      = min(max(float(request.data.get('timeout',      0.5)), 0.1), 3.0)
+            sadp_timeout = min(max(float(request.data.get('sadp_timeout', 3.0)), 1.0), 10.0)
+        except (ValueError, TypeError):
+            return Response({'detail': 'Invalid parameter values.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Auto-strip: "192.168.1.108" → "192.168.1"
         parts = ip_prefix.split('.')
-        # Auto-strip: if user pasted a full IP like "192.168.1.108", take first 3 octets
         if len(parts) == 4 and all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
             parts = parts[:3]
             ip_prefix = '.'.join(parts)
         if len(parts) != 3 or not all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
             return Response(
-                {'detail': 'ip_prefix must be like "192.168.1" (first 3 octets). You can also paste a full IP like "192.168.1.108" and the last octet will be stripped automatically.'},
+                {'detail': 'ip_prefix must be like "192.168.1" (first 3 octets). '
+                           'You can paste a full IP like "192.168.1.108" — the last octet is stripped automatically.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ── Phase 1: Dahua SADP broadcast ──────────────────────────────────
+        # ── Phase 1: Dahua SADP broadcast (main thread, no issues) ─────────
         sadp_hits  = _dahua_sadp_discover(sadp_timeout=sadp_timeout)
-        # Build a lookup  ip → sadp info  for later merge
         sadp_by_ip = {h['ip']: h for h in sadp_hits}
 
-        found: list = []
-        seen_ids: set = set()
-
-        def _already_registered(ip: str, port: int) -> bool:
-            dev_id = f"{ip}:{port}"
-            return BiometricDevice.objects.filter(
-                Q(device_id=dev_id) | Q(device_id=ip) | Q(notes__icontains=ip)
-            ).exists()
-
-        # Add SADP results first (highest confidence — real device identification)
-        for h in sadp_hits:
-            ip     = h['ip']
-            dev_id = f"{ip}:37777"
-            if dev_id in seen_ids:
-                continue
-            seen_ids.add(dev_id)
-            found.append({
-                'ip':                ip,
-                'port':              37777,
-                'brand':             f"Dahua {h['model']}",
-                'model':             h['model'],
-                'serial':            h['serial'],
-                'mac':               h['mac'],
-                'technology':        'Fingerprint / RFID',
-                'device_id':         dev_id,
-                'discovery_method':  'SADP Ethernet Broadcast',
-                'already_registered': _already_registered(ip, 37777),
-            })
-
-        # ── Phase 2: TCP port scan + optional HTTP identification ──────────
+        # ── Phase 2: TCP port scan — PURE NETWORK I/O, no DB ───────────────
+        # worker: only socket calls — no ORM, no django imports
         def probe_host(last_octet: int) -> list:
             ip   = f"{ip_prefix}.{last_octet}"
             hits = []
             for port, brand, tech in BIOMETRIC_PROBE_PORTS:
                 if not _tcp_probe(ip, port, timeout):
                     continue
-                dev_id = f"{ip}:{port}"
-                if dev_id in seen_ids:
-                    continue          # already captured via SADP
 
                 model  = ''
                 serial = ''
                 method = 'TCP Port Probe'
 
-                # Attempt HTTP identification for Dahua on port 80
+                # HTTP identification for Dahua port 80 (urllib only, no ORM)
                 if port == 80:
                     http_info = _dahua_http_identify(ip, timeout=min(timeout * 2, 2.0))
                     if http_info:
@@ -463,43 +434,104 @@ class DeviceDiscoverView(APIView):
                         method = 'TCP + HTTP Identified'
                         brand  = f"Dahua {model}" if model else brand
 
-                # If SADP also saw this IP, pull the richer info
+                # Enrich from SADP if IP was seen
                 if ip in sadp_by_ip:
-                    sadp = sadp_by_ip[ip]
-                    model  = model  or sadp['model']
-                    serial = serial or sadp['serial']
+                    sadp   = sadp_by_ip[ip]
+                    model  = model  or sadp.get('model', '')
+                    serial = serial or sadp.get('serial', '')
                     method = 'SADP + TCP confirmed'
 
                 hits.append({
-                    'ip':                ip,
-                    'port':              port,
-                    'brand':             brand,
-                    'model':             model,
-                    'serial':            serial,
-                    'mac':               '',
-                    'technology':        tech,
-                    'device_id':         dev_id,
-                    'discovery_method':  method,
-                    'already_registered': _already_registered(ip, port),
+                    'ip':               ip,
+                    'port':             port,
+                    'brand':            brand,
+                    'model':            model,
+                    'serial':           serial,
+                    'mac':              '',
+                    'technology':       tech,
+                    'device_id':        f"{ip}:{port}",
+                    'discovery_method': method,
                 })
             return hits
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=128) as pool:
-            futures = {pool.submit(probe_host, i): i for i in range(1, 255)}
-            for future in concurrent.futures.as_completed(futures, timeout=60):
-                try:
-                    batch = future.result()
-                    for item in batch:
-                        if item['device_id'] not in seen_ids:
-                            seen_ids.add(item['device_id'])
-                            found.append(item)
-                except Exception:
-                    pass
+        # Collect raw hits (no DB, thread-safe)
+        raw_hits: list = []
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=64) as pool:
+                futures = [pool.submit(probe_host, i) for i in range(1, 255)]
+                for future in concurrent.futures.as_completed(futures, timeout=65):
+                    try:
+                        raw_hits.extend(future.result())
+                    except Exception:
+                        pass
+        except concurrent.futures.TimeoutError:
+            pass  # Return whatever was found before timeout
+        except Exception:
+            pass
 
-        found.sort(key=lambda d: (list(map(int, d['ip'].split('.'))), d['port']))
+        # ── Back in the main thread: merge + DB check ───────────────────────
+        # Deduplicate by device_id (SADP results win over TCP-only)
+        seen_ids: set = set()
+        found: list   = []
+
+        # SADP results first (highest confidence)
+        for h in sadp_hits:
+            ip     = h['ip']
+            dev_id = f"{ip}:37777"
+            if dev_id in seen_ids:
+                continue
+            seen_ids.add(dev_id)
+            found.append({
+                'ip':               ip,
+                'port':             37777,
+                'brand':            f"Dahua {h.get('model', 'Device')}",
+                'model':            h.get('model', ''),
+                'serial':           h.get('serial', ''),
+                'mac':              h.get('mac', ''),
+                'technology':       'Fingerprint / RFID',
+                'device_id':        dev_id,
+                'discovery_method': 'SADP Ethernet Broadcast',
+            })
+
+        for item in raw_hits:
+            dev_id = item['device_id']
+            if dev_id not in seen_ids:
+                seen_ids.add(dev_id)
+                found.append(item)
+
+        # Single bulk DB query to check registration status (main thread = correct schema)
+        all_device_ids = [d['device_id'] for d in found]
+        all_ips        = list({d['ip'] for d in found})
+        try:
+            registered_ids = set(
+                BiometricDevice.objects.filter(
+                    Q(device_id__in=all_device_ids) |
+                    Q(ip_address__in=all_ips)
+                ).values_list('device_id', flat=True)
+            )
+            registered_ips = set(
+                BiometricDevice.objects.filter(ip_address__in=all_ips)
+                .values_list('ip_address', flat=True)
+            )
+        except Exception:
+            registered_ids = set()
+            registered_ips = set()
+
+        for d in found:
+            d['already_registered'] = (
+                d['device_id'] in registered_ids or
+                d['ip']        in registered_ips
+            )
+
+        found.sort(key=lambda d: (
+            [int(x) for x in d['ip'].split('.') if x.isdigit()],
+            d['port']
+        ))
+
         return Response({
             'devices':       found,
             'scanned':       f"{ip_prefix}.1 – {ip_prefix}.254",
             'sadp_found':    len(sadp_hits),
+            'tcp_found':     len(found) - len(sadp_hits),
             'ports_checked': [p for p, _, _ in BIOMETRIC_PROBE_PORTS],
         })

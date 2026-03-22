@@ -14,6 +14,21 @@ type Device = {
   last_seen: string | null
   notes: string
   created_at: string
+  // Network / connection
+  ip_address: string | null
+  port: number
+  http_port: number
+  rtsp_port: number
+  channel: number
+  username: string
+  password: string
+  // Device identity
+  brand: string
+  model: string
+  serial_number: string
+  mac_address: string
+  firmware_version: string
+  discovery_method: string
 }
 
 type DiscoveredDevice = {
@@ -50,6 +65,21 @@ export default function ClockInDevicesPage() {
     location:    '',
     device_type: 'BOTH' as 'ENTRY' | 'EXIT' | 'BOTH',
     notes:       '',
+    // Connection — Dahua ASI6214S factory defaults
+    ip_address:  '',
+    port:        37777,
+    http_port:   80,
+    rtsp_port:   37778,
+    channel:     1,
+    username:    'admin',
+    password:    'admin123',
+    // Identity
+    brand:            'Dahua',
+    model:            '',
+    serial_number:    '',
+    mac_address:      '',
+    firmware_version: '',
+    discovery_method: 'Manual',
   })
 
   const [deleteId, setDeleteId]     = useState<number | null>(null)
@@ -90,18 +120,28 @@ export default function ClockInDevicesPage() {
     }
   }
 
+  const BLANK_FORM = {
+    device_id: '', name: '', location: '', device_type: 'BOTH' as const, notes: '',
+    ip_address: '', port: 37777, http_port: 80, rtsp_port: 37778, channel: 1,
+    username: 'admin', password: 'admin123',
+    brand: 'Dahua', model: '', serial_number: '', mac_address: '', firmware_version: '',
+    discovery_method: 'Manual',
+  }
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsAdding(true)
     try {
       await apiClient.post('/clockin/devices/', formData)
-      setFormData({ device_id: '', name: '', location: '', device_type: 'BOTH', notes: '' })
+      setFormData(BLANK_FORM)
       setIsAdding(false)
       setShowForm(false)
       setShowDetect(false)
       fetchDevices()
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to add device.')
+      const errData = err.response?.data
+      const msg = errData?.detail || errData?.device_id?.[0] || errData?.ip_address?.[0] || 'Failed to add device.'
+      setError(msg)
       setIsAdding(false)
     }
   }
@@ -121,20 +161,35 @@ export default function ClockInDevicesPage() {
   }
 
   const prefillForm = (d: DiscoveredDevice) => {
-    const nameParts = [d.model || d.brand]
-    if (d.serial) nameParts.push(`SN:${d.serial}`)
+    const isDahua = d.brand?.toLowerCase().includes('dahua') || d.port === 37777 || d.port === 37778
     setFormData({
-      device_id:   d.serial ? d.serial : d.device_id,
-      name:        `${d.model || d.brand} @ ${d.ip}`,
-      location:    '',
-      device_type: 'BOTH',
-      notes:       [
+      device_id:        d.serial ? d.serial : d.device_id,
+      name:             `${d.model || d.brand} @ ${d.ip}`,
+      location:         '',
+      device_type:      'BOTH',
+      notes:            [
         `Auto-detected via ${d.discovery_method}`,
         d.model  ? `Model: ${d.model}`   : '',
         d.serial ? `Serial: ${d.serial}` : '',
-        d.mac    ? `MAC: ${d.mac}`        : '',
-        `IP: ${d.ip}  Port: ${d.port}   Tech: ${d.technology}`,
+        d.mac    ? `MAC: ${d.mac}`       : '',
+        `Tech: ${d.technology}`,
       ].filter(Boolean).join('\n'),
+      // Network connection (use discovered IP; Dahua SDK port wins if applicable)
+      ip_address:       d.ip === 'USB' ? '' : d.ip,
+      port:             d.port === 80 ? 37777 : (d.port || 37777),
+      http_port:        80,
+      rtsp_port:        37778,
+      channel:          1,
+      // Dahua factory credentials
+      username:         'admin',
+      password:         isDahua ? 'admin123' : '',
+      // Device identity
+      brand:            d.brand?.split(' ')[0] || 'Dahua',
+      model:            d.model || (isDahua ? 'ASI6214S' : ''),
+      serial_number:    d.serial || '',
+      mac_address:      d.mac || '',
+      firmware_version: '',
+      discovery_method: d.discovery_method || 'TCP Port Probe',
     })
     setShowForm(true)
     setShowDetect(false)
@@ -530,74 +585,176 @@ export default function ClockInDevicesPage() {
 
       {/* ── Manual registration form ── */}
       {showForm && (
-        <form onSubmit={handleAdd} className="rounded-2xl p-6 space-y-4 animate-in fade-in slide-in-from-top-4" style={GLASS}>
-          <h2 className="text-lg font-display font-semibold text-emerald-400">Register Device</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-1">
-              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Serial Number / Device ID</label>
-              <input
-                required
-                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                placeholder="e.g. SN-9988-G1 or 192.168.1.201:4370"
-                value={formData.device_id}
-                onChange={e => setFormData({ ...formData, device_id: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Friendly Name</label>
-              <input
-                required
-                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                placeholder="e.g. Main Entrance Terminal"
-                value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Location</label>
-              <input
-                required
-                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                placeholder="e.g. Front Gate"
-                value={formData.location}
-                onChange={e => setFormData({ ...formData, location: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Function</label>
-              <select
-                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                value={formData.device_type}
-                onChange={e => setFormData({ ...formData, device_type: e.target.value as any })}
-              >
-                <option value="ENTRY">Entry Only</option>
-                <option value="EXIT">Exit Only</option>
-                <option value="BOTH">Entry & Exit</option>
-              </select>
-            </div>
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Notes</label>
-              <input
-                className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                placeholder="Hardware specs, maintenance info or auto-detection notes…"
-                value={formData.notes}
-                onChange={e => setFormData({ ...formData, notes: e.target.value })}
-              />
+        <form onSubmit={handleAdd} className="rounded-2xl p-6 space-y-5 animate-in fade-in slide-in-from-top-4" style={GLASS}>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h2 className="text-lg font-display font-semibold text-emerald-400">Register Device</h2>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-white/[0.07] rounded-full px-3 py-1">
+              Dahua ASI6214S defaults pre-filled
+            </span>
+          </div>
+
+          {/* Identity section */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3">Device Identity</p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Serial / Device ID *</label>
+                <input required
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="e.g. 4A2F… or 192.168.1.108:37777"
+                  value={formData.device_id}
+                  onChange={e => setFormData({ ...formData, device_id: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Friendly Name *</label>
+                <input required
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
+                  placeholder="e.g. Main Entrance Terminal"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Location *</label>
+                <input required
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
+                  placeholder="e.g. Front Gate"
+                  value={formData.location}
+                  onChange={e => setFormData({ ...formData, location: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Brand</label>
+                <select
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
+                  value={formData.brand}
+                  onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                >
+                  <option value="Dahua">Dahua</option>
+                  <option value="ZKTeco">ZKTeco</option>
+                  <option value="Anviz">Anviz</option>
+                  <option value="FingerTec">FingerTec</option>
+                  <option value="Suprema">Suprema</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Model</label>
+                <input
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="ASI6214S"
+                  value={formData.model}
+                  onChange={e => setFormData({ ...formData, model: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Function</label>
+                <select
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
+                  value={formData.device_type}
+                  onChange={e => setFormData({ ...formData, device_type: e.target.value as any })}
+                >
+                  <option value="ENTRY">Entry Only</option>
+                  <option value="EXIT">Exit Only</option>
+                  <option value="BOTH">Entry &amp; Exit</option>
+                </select>
+              </div>
             </div>
           </div>
+
+          {/* Network / Connection section */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3">
+              Network Connection
+              <span className="ml-2 normal-case font-normal text-emerald-600">Dahua ASI6214S factory: 192.168.1.108 · SDK 37777 · HTTP 80 · admin / admin123</span>
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">IP Address</label>
+                <input
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="192.168.1.108"
+                  value={formData.ip_address}
+                  onChange={e => setFormData({ ...formData, ip_address: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">SDK Port</label>
+                <input type="number"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="37777"
+                  value={formData.port}
+                  onChange={e => setFormData({ ...formData, port: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">HTTP Port</label>
+                <input type="number"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="80"
+                  value={formData.http_port}
+                  onChange={e => setFormData({ ...formData, http_port: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Username</label>
+                <input
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="admin"
+                  value={formData.username}
+                  onChange={e => setFormData({ ...formData, username: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Password</label>
+                <input type="password"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="admin123"
+                  value={formData.password}
+                  onChange={e => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">RTSP Port</label>
+                <input type="number"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="37778"
+                  value={formData.rtsp_port}
+                  onChange={e => setFormData({ ...formData, rtsp_port: Number(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Channel</label>
+                <input type="number"
+                  className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="1"
+                  value={formData.channel}
+                  onChange={e => setFormData({ ...formData, channel: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1">
+            <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Notes</label>
+            <textarea
+              className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition resize-none"
+              rows={2}
+              placeholder="Hardware specs, firmware version, maintenance notes or auto-detection info…"
+              value={formData.notes}
+              onChange={e => setFormData({ ...formData, notes: e.target.value })}
+            />
+          </div>
+
           <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="rounded-xl border border-white/[0.09] px-5 py-2 text-sm text-slate-400 hover:text-slate-200 transition"
-            >
+            <button type="button" onClick={() => setShowForm(false)}
+              className="rounded-xl border border-white/[0.09] px-5 py-2 text-sm text-slate-400 hover:text-slate-200 transition">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={isAdding}
-              className="rounded-xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-50 transition"
-            >
+            <button type="submit" disabled={isAdding}
+              className="rounded-xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-50 transition">
               {isAdding ? 'Registering…' : 'Confirm Registration'}
             </button>
           </div>
@@ -626,11 +783,17 @@ export default function ClockInDevicesPage() {
                   <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-400 uppercase">
                     {device.device_type}
                   </span>
+                  {device.brand && (
+                    <span className="rounded-full bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 text-[10px] font-bold text-sky-400 uppercase">
+                      {device.brand}{device.model ? ` ${device.model}` : ''}
+                    </span>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Device ID</p>
-                    <p className="font-mono text-emerald-400 mt-1 break-all">{device.device_id}</p>
+                    <p className="font-mono text-emerald-400 mt-1 break-all text-xs">{device.device_id}</p>
                   </div>
                   <div>
                     <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Location</p>
@@ -640,40 +803,87 @@ export default function ClockInDevicesPage() {
                     <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Last Seen</p>
                     <p className="text-slate-300 mt-1 italic">{device.last_seen ? new Date(device.last_seen).toLocaleString() : 'Never'}</p>
                   </div>
-                  <div>
-                    <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">API Key</p>
-                    <p className="text-slate-300 mt-1 font-mono text-xs">{device.api_key.substring(0, 8)}••••••••••••••••</p>
-                  </div>
+                  {device.ip_address && (
+                    <div>
+                      <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">IP Address</p>
+                      <p className="font-mono text-sky-400 mt-1">{device.ip_address}</p>
+                    </div>
+                  )}
+                  {device.ip_address && (
+                    <div>
+                      <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">SDK · HTTP Ports</p>
+                      <p className="font-mono text-slate-300 mt-1 text-xs">{device.port} · {device.http_port}</p>
+                    </div>
+                  )}
+                  {device.serial_number && (
+                    <div>
+                      <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Serial</p>
+                      <p className="font-mono text-slate-400 mt-1 text-xs">{device.serial_number}</p>
+                    </div>
+                  )}
+                  {device.mac_address && (
+                    <div>
+                      <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">MAC</p>
+                      <p className="font-mono text-slate-400 mt-1 text-xs">{device.mac_address}</p>
+                    </div>
+                  )}
                 </div>
                 {device.notes && (
-                  <p className="text-xs text-slate-500 border-l-2 border-white/[0.09] pl-3 py-1 italic">{device.notes}</p>
+                  <p className="text-xs text-slate-500 border-l-2 border-white/[0.09] pl-3 py-1 italic whitespace-pre-line">{device.notes}</p>
                 )}
               </div>
 
               <div className="w-full md:w-80 space-y-4 border-l border-white/[0.07] pl-0 md:pl-6">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Webhook Config</h4>
-                <div className="space-y-3 rounded-xl bg-slate-950 p-4 border border-white/[0.05]">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-slate-500">ENDPOINT URL</p>
-                    <p className="text-[11px] font-mono break-all text-emerald-500">POST /api/clockin/scan/</p>
+                {device.ip_address && (
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Connection</h4>
+                    <div className="space-y-2 rounded-xl bg-slate-950 p-4 border border-white/[0.05] text-[11px] font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">IP</span>
+                        <span className="text-sky-400">{device.ip_address}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">SDK Port</span>
+                        <span className="text-slate-300">{device.port}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">HTTP Port</span>
+                        <span className="text-slate-300">{device.http_port}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Username</span>
+                        <span className="text-emerald-400">{device.username}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Password</span>
+                        <span className="text-slate-400">••••••••</span>
+                      </div>
+                      {device.channel > 1 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Channel</span>
+                          <span className="text-slate-300">{device.channel}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-slate-500">AUTH HEADER</p>
-                    <p className="text-[11px] font-mono break-all text-sky-400">X-Device-Key: {device.api_key.substring(0, 6)}•••</p>
+                )}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Webhook Config</h4>
+                  <div className="space-y-3 rounded-xl bg-slate-950 p-4 border border-white/[0.05]">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-slate-500">ENDPOINT URL</p>
+                      <p className="text-[11px] font-mono break-all text-emerald-500">POST /api/clockin/scan/</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-slate-500">AUTH HEADER</p>
+                      <p className="text-[11px] font-mono break-all text-sky-400">X-Device-Key: {device.api_key.substring(0, 6)}•••</p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => setDeleteId(device.id)}
-                    className="text-rose-400 hover:text-rose-300 text-xs font-semibold uppercase tracking-wider"
-                  >
+                  <button onClick={() => setDeleteId(device.id)}
+                    className="text-rose-400 hover:text-rose-300 text-xs font-semibold uppercase tracking-wider">
                     Delete
-                  </button>
-                  <button
-                    onClick={() => window.open('https://developer.android.com/studio', '_blank', 'noopener,noreferrer')}
-                    className="text-slate-400 hover:text-slate-100 text-xs font-semibold uppercase tracking-wider"
-                  >
-                    Download SDK
                   </button>
                 </div>
               </div>
