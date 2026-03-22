@@ -3,8 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Count
 from school.permissions import HasModuleAccess
-from .models import AlumniProfile, AlumniEvent, AlumniEventAttendee
-from .serializers import AlumniProfileSerializer, AlumniEventSerializer, AlumniEventAttendeeSerializer
+from .models import AlumniProfile, AlumniEvent, AlumniEventAttendee, AlumniMentorship, AlumniDonation
+from .serializers import AlumniProfileSerializer, AlumniEventSerializer, AlumniEventAttendeeSerializer, AlumniMentorshipSerializer, AlumniDonationSerializer
+from django.db.models import Sum
 
 class AlumniProfileViewSet(viewsets.ModelViewSet):
     queryset = AlumniProfile.objects.all().order_by('-graduation_year')
@@ -26,6 +27,22 @@ class AlumniEventAttendeeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
     module_key = "ALUMNI"
     filterset_fields = ['event', 'alumni']
+
+class AlumniMentorshipViewSet(viewsets.ModelViewSet):
+    queryset = AlumniMentorship.objects.all().select_related('mentor').order_by('-created_at')
+    serializer_class = AlumniMentorshipSerializer
+    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    module_key = "ALUMNI"
+    filterset_fields = ['status', 'mentor', 'mentee_type']
+
+
+class AlumniDonationViewSet(viewsets.ModelViewSet):
+    queryset = AlumniDonation.objects.all().select_related('alumni').order_by('-donation_date')
+    serializer_class = AlumniDonationSerializer
+    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    module_key = "ALUMNI"
+    filterset_fields = ['status', 'alumni', 'payment_method']
+
 
 class AlumniDashboardView(APIView):
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]

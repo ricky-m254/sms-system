@@ -6,13 +6,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from school.permissions import HasModuleAccess
-from .models import AssetCategory, Asset, AssetAssignment, AssetMaintenanceRecord, AssetDepreciation
+from .models import AssetCategory, Asset, AssetAssignment, AssetMaintenanceRecord, AssetDepreciation, AssetDisposal, AssetTransfer, AssetWarranty
 from .serializers import (
     AssetCategorySerializer,
     AssetSerializer,
     AssetAssignmentSerializer,
     AssetMaintenanceRecordSerializer,
     AssetDepreciationSerializer,
+    AssetDisposalSerializer,
+    AssetTransferSerializer,
+    AssetWarrantySerializer,
 )
 
 
@@ -59,6 +62,42 @@ class AssetDepreciationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
     module_key = "ASSETS"
     filterset_fields = ['asset']
+
+
+class AssetDisposalViewSet(viewsets.ModelViewSet):
+    queryset = AssetDisposal.objects.all().select_related('asset').order_by('-disposal_date')
+    serializer_class = AssetDisposalSerializer
+    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    module_key = "ASSETS"
+    filterset_fields = ['status', 'disposal_type', 'asset']
+
+    def perform_create(self, serializer):
+        disposal = serializer.save()
+        if disposal.status == 'completed':
+            disposal.asset.status = 'Disposed'
+            disposal.asset.save(update_fields=['status'])
+
+
+class AssetTransferViewSet(viewsets.ModelViewSet):
+    queryset = AssetTransfer.objects.all().select_related('asset').order_by('-transfer_date')
+    serializer_class = AssetTransferSerializer
+    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    module_key = "ASSETS"
+    filterset_fields = ['status', 'asset']
+
+    def perform_create(self, serializer):
+        transfer = serializer.save()
+        if transfer.status == 'completed':
+            transfer.asset.location = transfer.to_location
+            transfer.asset.save(update_fields=['location'])
+
+
+class AssetWarrantyViewSet(viewsets.ModelViewSet):
+    queryset = AssetWarranty.objects.all().select_related('asset').order_by('expiry_date')
+    serializer_class = AssetWarrantySerializer
+    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    module_key = "ASSETS"
+    filterset_fields = ['status', 'asset']
 
 
 class RunDepreciationView(APIView):

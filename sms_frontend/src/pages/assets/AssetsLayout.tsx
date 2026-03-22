@@ -10,6 +10,9 @@ const navItems = [
   { label: 'Assignments', to: '/modules/assets/assignments' },
   { label: 'Maintenance', to: '/modules/assets/maintenance' },
   { label: 'Depreciation', to: '/modules/assets/depreciation' },
+  { label: 'Disposals', to: '/modules/assets/disposals' },
+  { label: 'Transfers', to: '/modules/assets/transfers' },
+  { label: 'Warranties', to: '/modules/assets/warranties' },
   { label: 'Full Maintenance', to: '/modules/maintenance/dashboard' },
 ]
 

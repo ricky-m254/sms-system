@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AssetCategory, Asset, AssetAssignment, AssetMaintenanceRecord, AssetDepreciation
+from .models import AssetCategory, Asset, AssetAssignment, AssetMaintenanceRecord, AssetDepreciation, AssetDisposal, AssetTransfer, AssetWarranty
 
 class AssetCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,3 +46,38 @@ class AssetDepreciationSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssetDepreciation
         fields = '__all__'
+
+
+class AssetDisposalSerializer(serializers.ModelSerializer):
+    asset_name = serializers.ReadOnlyField(source='asset.name')
+    asset_code = serializers.ReadOnlyField(source='asset.asset_code')
+
+    class Meta:
+        model = AssetDisposal
+        fields = '__all__'
+
+
+class AssetTransferSerializer(serializers.ModelSerializer):
+    asset_name = serializers.ReadOnlyField(source='asset.name')
+    asset_code = serializers.ReadOnlyField(source='asset.asset_code')
+
+    class Meta:
+        model = AssetTransfer
+        fields = '__all__'
+
+
+class AssetWarrantySerializer(serializers.ModelSerializer):
+    asset_name = serializers.ReadOnlyField(source='asset.name')
+    asset_code = serializers.ReadOnlyField(source='asset.asset_code')
+    is_expiring_soon = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssetWarranty
+        fields = '__all__'
+
+    def get_is_expiring_soon(self, obj):
+        from django.utils import timezone
+        import datetime
+        today = timezone.now().date()
+        days_left = (obj.expiry_date - today).days
+        return 0 <= days_left <= obj.alert_days_before

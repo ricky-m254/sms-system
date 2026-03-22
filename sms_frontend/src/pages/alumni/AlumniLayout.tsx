@@ -8,6 +8,8 @@ const navItems = [
   { label: 'Profiles', to: '/modules/alumni/profiles' },
   { label: 'Events', to: '/modules/alumni/events' },
   { label: 'Attendees', to: '/modules/alumni/attendees' },
+  { label: 'Mentorship', to: '/modules/alumni/mentorship' },
+  { label: 'Donations', to: '/modules/alumni/donations' },
 ]
 
 export default function AlumniLayout() {

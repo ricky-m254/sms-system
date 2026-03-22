@@ -6,6 +6,9 @@ from .views import (
     AssetAssignmentViewSet,
     AssetMaintenanceRecordViewSet,
     AssetDepreciationViewSet,
+    AssetDisposalViewSet,
+    AssetTransferViewSet,
+    AssetWarrantyViewSet,
     RunDepreciationView,
     AssetsDashboardView,
 )
@@ -15,6 +18,9 @@ router.register(r'categories', AssetCategoryViewSet, basename='asset-category')
 router.register(r'assignments', AssetAssignmentViewSet, basename='asset-assignment')
 router.register(r'maintenance', AssetMaintenanceRecordViewSet, basename='asset-maintenance')
 router.register(r'depreciation', AssetDepreciationViewSet, basename='asset-depreciation')
+router.register(r'disposals', AssetDisposalViewSet, basename='asset-disposal')
+router.register(r'transfers', AssetTransferViewSet, basename='asset-transfer')
+router.register(r'warranties', AssetWarrantyViewSet, basename='asset-warranty')
 router.register(r'', AssetViewSet, basename='asset')
 
 urlpatterns = [

@@ -43,3 +43,57 @@ class AlumniEventAttendee(models.Model):
 
     def __str__(self):
         return f"{self.alumni} attending {self.event}"
+
+
+class AlumniMentorship(models.Model):
+    STATUS_CHOICES = [
+        ('open', 'Open / Seeking Mentee'),
+        ('matched', 'Matched'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('paused', 'Paused'),
+    ]
+    mentor = models.ForeignKey(AlumniProfile, on_delete=models.CASCADE, related_name='mentorships_as_mentor')
+    mentee_name = models.CharField(max_length=200, blank=True, help_text="Name of student or alumni being mentored")
+    mentee_type = models.CharField(max_length=20, choices=[('student', 'Student'), ('alumni', 'Alumni')], default='student')
+    industry = models.CharField(max_length=100, blank=True)
+    skills_offered = models.TextField(blank=True, help_text="Skills/areas mentor can help with")
+    areas_of_interest = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.mentor} mentoring {self.mentee_name or 'TBD'} ({self.status})"
+
+
+class AlumniDonation(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'Cash'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('mobile_money', 'Mobile Money (M-Pesa)'),
+        ('cheque', 'Cheque'),
+        ('online', 'Online / Card'),
+    ]
+    STATUS_CHOICES = [
+        ('pledged', 'Pledged'),
+        ('received', 'Received'),
+        ('acknowledged', 'Acknowledged'),
+        ('cancelled', 'Cancelled'),
+    ]
+    alumni = models.ForeignKey(AlumniProfile, on_delete=models.CASCADE, related_name='donations')
+    campaign_name = models.CharField(max_length=200, default='General Fund')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=10, default='KES')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='mobile_money')
+    donation_date = models.DateField()
+    reference = models.CharField(max_length=100, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='received')
+    is_anonymous = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.alumni} donated {self.currency} {self.amount} ({self.campaign_name})"

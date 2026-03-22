@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/auth'
 import brandLogo from '@/assets/brand/rynatyschool-logo.png'
 import {
   LayoutDashboard, GraduationCap, Calendar, BookOpen,
-  ClipboardList, Activity, LogOut, Menu, X, Library,
+  ClipboardList, Activity, LogOut, Menu, X, Library, CreditCard,
 } from 'lucide-react'
 
 const NAV = [
@@ -15,6 +15,7 @@ const NAV = [
   { label: 'E-Learning', to: '/student-portal/elearning', icon: BookOpen },
   { label: 'Attendance', to: '/student-portal/attendance', icon: Activity },
   { label: 'Library', to: '/student-portal/library', icon: Library },
+  { label: 'My Fees', to: '/student-portal/fees', icon: CreditCard },
 ]
 
 export default function StudentPortalLayout() {

@@ -145,6 +145,7 @@ const StudentPortalAssignmentsPage = lazy(() => import('./pages/studentPortal/St
 const StudentPortalELearningPage = lazy(() => import('./pages/studentPortal/StudentPortalELearningPage'))
 const StudentPortalAttendancePage = lazy(() => import('./pages/studentPortal/StudentPortalAttendancePage'))
 const StudentPortalLibraryPage = lazy(() => import('./pages/studentPortal/StudentPortalLibraryPage'))
+const StudentPortalFeesPage = lazy(() => import('./pages/studentPortal/StudentPortalFeesPage'))
 const TeacherPortalLayout = lazy(() => import('./pages/teacherPortal/TeacherPortalLayout'))
 const TeacherPortalDashboardPage = lazy(() => import('./pages/teacherPortal/TeacherPortalDashboardPage'))
 const TeacherPortalClassesPage = lazy(() => import('./pages/teacherPortal/TeacherPortalClassesPage'))
@@ -190,6 +191,9 @@ const AssetsCategoriesPage = lazy(() => import('./pages/assets/AssetsCategoriesP
 const AssetsAssignmentsPage = lazy(() => import('./pages/assets/AssetsAssignmentsPage'))
 const AssetsMaintenancePage = lazy(() => import('./pages/assets/AssetsMaintenancePage'))
 const AssetsDepreciationPage = lazy(() => import('./pages/assets/AssetsDepreciationPage'))
+const AssetsDisposalPage = lazy(() => import('./pages/assets/AssetsDisposalPage'))
+const AssetsTransfersPage = lazy(() => import('./pages/assets/AssetsTransfersPage'))
+const AssetsWarrantyPage = lazy(() => import('./pages/assets/AssetsWarrantyPage'))
 const PlatformLoginPage = lazy(() => import('./pages/platform/PlatformLoginPage'))
 const PlatformLayout = lazy(() => import('./pages/platform/PlatformLayout'))
 const PlatformOverviewPage = lazy(() => import('./pages/platform/PlatformOverviewPage'))
@@ -267,6 +271,8 @@ const AlumniDashboardPage = lazy(() => import('./pages/alumni/AlumniDashboardPag
 const AlumniProfilesPage = lazy(() => import('./pages/alumni/AlumniProfilesPage'))
 const AlumniEventsPage = lazy(() => import('./pages/alumni/AlumniEventsPage'))
 const AlumniAttendeesPage = lazy(() => import('./pages/alumni/AlumniAttendeesPage'))
+const AlumniMentorshipPage = lazy(() => import('./pages/alumni/AlumniMentorshipPage'))
+const AlumniDonationsPage = lazy(() => import('./pages/alumni/AlumniDonationsPage'))
 
 const HostelLayout = lazy(() => import('./pages/hostel/HostelLayout'))
 const HostelDashboardPage = lazy(() => import('./pages/hostel/HostelDashboardPage'))
@@ -409,6 +415,7 @@ function App() {
           <Route path="elearning" element={<StudentPortalELearningPage />} />
           <Route path="attendance" element={<StudentPortalAttendancePage />} />
           <Route path="library" element={<StudentPortalLibraryPage />} />
+          <Route path="fees" element={<StudentPortalFeesPage />} />
         </Route>
         {/* Teacher Portal */}
         <Route
@@ -640,6 +647,9 @@ function App() {
           <Route path="assignments" element={<AssetsAssignmentsPage />} />
           <Route path="maintenance" element={<AssetsMaintenancePage />} />
           <Route path="depreciation" element={<AssetsDepreciationPage />} />
+          <Route path="disposals" element={<AssetsDisposalPage />} />
+          <Route path="transfers" element={<AssetsTransfersPage />} />
+          <Route path="warranties" element={<AssetsWarrantyPage />} />
         </Route>
         <Route
           path="/modules/store/*"
@@ -759,6 +769,8 @@ function App() {
           <Route path="profiles" element={<AlumniProfilesPage />} />
           <Route path="events" element={<AlumniEventsPage />} />
           <Route path="attendees" element={<AlumniAttendeesPage />} />
+          <Route path="mentorship" element={<AlumniMentorshipPage />} />
+          <Route path="donations" element={<AlumniDonationsPage />} />
         </Route>
         <Route
           path="/modules/hostel/*"
