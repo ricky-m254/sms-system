@@ -20,8 +20,12 @@ type DiscoveredDevice = {
   ip: string
   port: number
   brand: string
+  model: string
+  serial: string
+  mac: string
   technology: string
   device_id: string
+  discovery_method: string
   already_registered: boolean
 }
 
@@ -117,12 +121,20 @@ export default function ClockInDevicesPage() {
   }
 
   const prefillForm = (d: DiscoveredDevice) => {
+    const nameParts = [d.model || d.brand]
+    if (d.serial) nameParts.push(`SN:${d.serial}`)
     setFormData({
-      device_id:   d.device_id,
-      name:        `${d.brand} @ ${d.ip}`,
+      device_id:   d.serial ? d.serial : d.device_id,
+      name:        `${d.model || d.brand} @ ${d.ip}`,
       location:    '',
       device_type: 'BOTH',
-      notes:       `Auto-detected: ${d.brand} on ${d.ip}:${d.port} (${d.technology})`,
+      notes:       [
+        `Auto-detected via ${d.discovery_method}`,
+        d.model  ? `Model: ${d.model}`   : '',
+        d.serial ? `Serial: ${d.serial}` : '',
+        d.mac    ? `MAC: ${d.mac}`        : '',
+        `IP: ${d.ip}  Port: ${d.port}   Tech: ${d.technology}`,
+      ].filter(Boolean).join('\n'),
     })
     setShowForm(true)
     setShowDetect(false)
@@ -212,9 +224,11 @@ export default function ClockInDevicesPage() {
       )
       if (abortRef.current) return
       const found = res.data.devices
-      addLog(`Scan complete. Scanned: ${res.data.scanned}`)
+      const sadpCount = res.data.sadp_found ?? 0
+      addLog(`Scan complete — ${res.data.scanned}`)
+      if (sadpCount > 0) addLog(`✓ SADP Ethernet broadcast identified ${sadpCount} Dahua device(s) by model & serial.`)
       addLog(found.length > 0
-        ? `Found ${found.length} device(s) on the network.`
+        ? `Total: ${found.length} device(s) found (${sadpCount} identified via SADP, ${found.length - sadpCount} via TCP).`
         : 'No biometric devices found on this subnet.')
       setDiscovered(prev => {
         const existing = prev.map(d => d.device_id)
@@ -416,30 +430,60 @@ export default function ClockInDevicesPage() {
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
                 Discovered ({discovered.length})
               </h3>
-              {discovered.map((d, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl bg-slate-900 border border-white/[0.07] px-5 py-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className="text-2xl">{d.technology.includes('USB') ? '🔌' : '📡'}</span>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-200">{d.brand}</p>
-                      <p className="text-xs text-slate-500 font-mono">
-                        {d.ip === 'USB' ? d.device_id : `${d.ip}:${d.port}`}
-                        <span className="ml-2 text-slate-600">· {d.technology}</span>
-                      </p>
+              {discovered.map((d, i) => {
+                const isSadp = d.discovery_method?.includes('SADP')
+                const isUsb  = d.ip === 'USB'
+                return (
+                  <div key={i} className={`rounded-xl border px-5 py-4 space-y-3 ${isSadp ? 'bg-emerald-950/30 border-emerald-500/20' : 'bg-slate-900 border-white/[0.07]'}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <span className="text-xl mt-0.5">{isUsb ? '🔌' : isSadp ? '✅' : '📡'}</span>
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-semibold text-slate-100">{d.brand}</p>
+                            {isSadp && (
+                              <span className="rounded-full bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+                                SADP Identified
+                              </span>
+                            )}
+                            {d.discovery_method?.includes('HTTP') && (
+                              <span className="rounded-full bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-sky-400">
+                                HTTP Confirmed
+                              </span>
+                            )}
+                          </div>
+                          {/* IP / address row */}
+                          <p className="text-xs font-mono text-slate-500">
+                            {isUsb ? d.device_id : `${d.ip} : ${d.port}`}
+                            <span className="ml-2 text-slate-700">· {d.technology}</span>
+                          </p>
+                          {/* Identification details */}
+                          {(d.model || d.serial || d.mac) && (
+                            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] font-mono mt-1">
+                              {d.model  && <span className="text-slate-400">Model: <span className="text-emerald-400">{d.model}</span></span>}
+                              {d.serial && <span className="text-slate-400">S/N: <span className="text-sky-400">{d.serial}</span></span>}
+                              {d.mac    && <span className="text-slate-400">MAC: <span className="text-slate-300">{d.mac}</span></span>}
+                            </div>
+                          )}
+                          <p className="text-[10px] text-slate-600">via {d.discovery_method || 'TCP'}</p>
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        {d.already_registered ? (
+                          <span className="text-xs text-slate-500 border border-white/[0.07] rounded-full px-3 py-1">Already registered</span>
+                        ) : (
+                          <button
+                            onClick={() => prefillForm(d)}
+                            className="rounded-xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 transition"
+                          >
+                            Register →
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  {d.already_registered ? (
-                    <span className="text-xs text-slate-500 border border-white/[0.07] rounded-full px-3 py-1">Already registered</span>
-                  ) : (
-                    <button
-                      onClick={() => prefillForm(d)}
-                      className="rounded-xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 transition"
-                    >
-                      Register →
-                    </button>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 

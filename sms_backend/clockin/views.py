@@ -1,4 +1,7 @@
+import re
 import socket
+import time
+import urllib.request
 import concurrent.futures
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
@@ -47,6 +50,75 @@ def _tcp_probe(ip: str, port: int, timeout: float) -> bool:
             return True
     except (socket.timeout, ConnectionRefusedError, OSError):
         return False
+
+
+# ── Dahua SADP (Smart Adaptive Discovery Protocol) ────────────────────────────
+# Standard 32-byte SADP v2 broadcast discovery packet
+_DAHUA_SADP_PACKET = b'\x42\x44\x00\x05\x00\x20' + b'\x00' * 26
+
+
+def _dahua_sadp_discover(sadp_timeout: float = 3.0) -> list:
+    """
+    Broadcast the Dahua SADP discovery packet to UDP port 37020.
+    Devices on the LAN (ASI6214S, IPC, NVR, etc.) reply with XML
+    containing their model, serial and IP — no target IP needed.
+    """
+    results = []
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.settimeout(sadp_timeout)
+        sock.bind(('', 0))
+        sock.sendto(_DAHUA_SADP_PACKET, ('255.255.255.255', 37020))
+        deadline = time.monotonic() + sadp_timeout
+        while time.monotonic() < deadline:
+            try:
+                data, addr = sock.recvfrom(8192)
+                text = data.decode('utf-8', errors='ignore')
+                model  = _xml_field(text, 'DeviceModel') or _xml_field(text, 'DeviceType') or 'Dahua Device'
+                serial = _xml_field(text, 'SN') or ''
+                mac    = _xml_field(text, 'MACAddress') or ''
+                results.append({'ip': addr[0], 'model': model, 'serial': serial, 'mac': mac})
+            except socket.timeout:
+                break
+    except Exception:
+        pass
+    finally:
+        try:
+            sock.close()
+        except Exception:
+            pass
+    return results
+
+
+def _xml_field(text: str, tag: str) -> str:
+    """Extract the first <Tag>value</Tag> from an XML string."""
+    m = re.search(rf'<{tag}>(.*?)</{tag}>', text, re.DOTALL)
+    return m.group(1).strip() if m else ''
+
+
+def _dahua_http_identify(ip: str, timeout: float = 1.5) -> dict:
+    """
+    Query the Dahua CGI API on port 80 to get device type and model.
+    Works without authentication on most Dahua access control devices.
+    Returns a dict with 'model' and/or 'type' when successful.
+    """
+    info: dict = {}
+    for action, key in [
+        ('getDeviceType',                        'type'),
+        ('getProductDefinition&name=ProductModel', 'model'),
+    ]:
+        try:
+            url = f'http://{ip}/cgi-bin/magicBox.cgi?action={action}'
+            req = urllib.request.Request(url, headers={'User-Agent': 'SmartCampus/1.0'})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                body = resp.read().decode('utf-8', errors='ignore')
+                m = re.search(r'(?:type|value)=(.+)', body)
+                if m:
+                    info[key] = m.group(1).strip()
+        except Exception:
+            pass
+    return info
 
 def _notify_admins(title, message, priority='Important', action_url=''):
     admin_users = UserProfile.objects.filter(
@@ -302,19 +374,27 @@ class RealtimeView(ClockInModuleMixin, APIView):
 class DeviceDiscoverView(APIView):
     """
     POST /clockin/devices/discover/
-    Body: { "ip_prefix": "192.168.1", "timeout": 0.5 }
-    Scans the /24 subnet for open biometric device TCP ports.
-    Returns a list of discovered candidate devices.
+    Body: { "ip_prefix": "192.168.1", "timeout": 0.5, "sadp_timeout": 3 }
+
+    Phase 1 — Dahua SADP broadcast (UDP 37020):
+        Sends a single broadcast; all Dahua devices on the LAN reply with
+        their exact model, serial number and MAC address.  No target IP needed.
+
+    Phase 2 — TCP port scan across ip_prefix.1–254:
+        Probes every IP for known biometric device ports.
+        For Dahua TCP hits on port 80 also queries the Dahua CGI HTTP API
+        to confirm the model name (works without credentials).
+
+    Results are merged, de-duplicated by IP and returned together.
     """
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
     module_key = "CLOCKIN"
 
     def post(self, request):
-        ip_prefix = (request.data.get('ip_prefix') or '').strip()
-        timeout   = float(request.data.get('timeout', 0.5))
-        timeout   = min(max(timeout, 0.1), 3.0)
+        ip_prefix    = (request.data.get('ip_prefix') or '').strip()
+        timeout      = min(max(float(request.data.get('timeout',      0.5)), 0.1), 3.0)
+        sadp_timeout = min(max(float(request.data.get('sadp_timeout', 3.0)), 1.0), 10.0)
 
-        # Validate prefix  (must be exactly "A.B.C")
         parts = ip_prefix.split('.')
         if len(parts) != 3 or not all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
             return Response(
@@ -322,38 +402,100 @@ class DeviceDiscoverView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        found = []
+        # ── Phase 1: Dahua SADP broadcast ──────────────────────────────────
+        sadp_hits  = _dahua_sadp_discover(sadp_timeout=sadp_timeout)
+        # Build a lookup  ip → sadp info  for later merge
+        sadp_by_ip = {h['ip']: h for h in sadp_hits}
 
-        def probe_host(last_octet):
-            ip = f"{ip_prefix}.{last_octet}"
+        found: list = []
+        seen_ids: set = set()
+
+        def _already_registered(ip: str, port: int) -> bool:
+            dev_id = f"{ip}:{port}"
+            return BiometricDevice.objects.filter(
+                Q(device_id=dev_id) | Q(device_id=ip) | Q(notes__icontains=ip)
+            ).exists()
+
+        # Add SADP results first (highest confidence — real device identification)
+        for h in sadp_hits:
+            ip     = h['ip']
+            dev_id = f"{ip}:37777"
+            if dev_id in seen_ids:
+                continue
+            seen_ids.add(dev_id)
+            found.append({
+                'ip':                ip,
+                'port':              37777,
+                'brand':             f"Dahua {h['model']}",
+                'model':             h['model'],
+                'serial':            h['serial'],
+                'mac':               h['mac'],
+                'technology':        'Fingerprint / RFID',
+                'device_id':         dev_id,
+                'discovery_method':  'SADP Ethernet Broadcast',
+                'already_registered': _already_registered(ip, 37777),
+            })
+
+        # ── Phase 2: TCP port scan + optional HTTP identification ──────────
+        def probe_host(last_octet: int) -> list:
+            ip   = f"{ip_prefix}.{last_octet}"
             hits = []
             for port, brand, tech in BIOMETRIC_PROBE_PORTS:
-                if _tcp_probe(ip, port, timeout):
-                    dev_id = f"{ip}:{port}"
-                    already = BiometricDevice.objects.filter(
-                        Q(device_id=dev_id) | Q(device_id=ip) | Q(notes__icontains=ip)
-                    ).exists()
-                    hits.append({
-                        'ip': ip,
-                        'port': port,
-                        'brand': brand,
-                        'technology': tech,
-                        'device_id': dev_id,
-                        'already_registered': already,
-                    })
+                if not _tcp_probe(ip, port, timeout):
+                    continue
+                dev_id = f"{ip}:{port}"
+                if dev_id in seen_ids:
+                    continue          # already captured via SADP
+
+                model  = ''
+                serial = ''
+                method = 'TCP Port Probe'
+
+                # Attempt HTTP identification for Dahua on port 80
+                if port == 80:
+                    http_info = _dahua_http_identify(ip, timeout=min(timeout * 2, 2.0))
+                    if http_info:
+                        model  = http_info.get('model', '')
+                        method = 'TCP + HTTP Identified'
+                        brand  = f"Dahua {model}" if model else brand
+
+                # If SADP also saw this IP, pull the richer info
+                if ip in sadp_by_ip:
+                    sadp = sadp_by_ip[ip]
+                    model  = model  or sadp['model']
+                    serial = serial or sadp['serial']
+                    method = 'SADP + TCP confirmed'
+
+                hits.append({
+                    'ip':                ip,
+                    'port':              port,
+                    'brand':             brand,
+                    'model':             model,
+                    'serial':            serial,
+                    'mac':               '',
+                    'technology':        tech,
+                    'device_id':         dev_id,
+                    'discovery_method':  method,
+                    'already_registered': _already_registered(ip, port),
+                })
             return hits
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=128) as pool:
             futures = {pool.submit(probe_host, i): i for i in range(1, 255)}
             for future in concurrent.futures.as_completed(futures, timeout=60):
                 try:
-                    found.extend(future.result())
+                    batch = future.result()
+                    for item in batch:
+                        if item['device_id'] not in seen_ids:
+                            seen_ids.add(item['device_id'])
+                            found.append(item)
                 except Exception:
                     pass
 
         found.sort(key=lambda d: (list(map(int, d['ip'].split('.'))), d['port']))
         return Response({
-            'devices': found,
-            'scanned': f"{ip_prefix}.1 – {ip_prefix}.254",
+            'devices':       found,
+            'scanned':       f"{ip_prefix}.1 – {ip_prefix}.254",
+            'sadp_found':    len(sadp_hits),
             'ports_checked': [p for p, _, _ in BIOMETRIC_PROBE_PORTS],
         })
