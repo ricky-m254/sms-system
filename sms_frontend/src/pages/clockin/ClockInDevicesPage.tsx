@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { apiClient } from '../../api/client'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PageHero from '../../components/PageHero'
@@ -16,23 +16,64 @@ type Device = {
   created_at: string
 }
 
+type DiscoveredDevice = {
+  ip: string
+  port: number
+  brand: string
+  technology: string
+  device_id: string
+  already_registered: boolean
+}
+
+type ScanPhase = 'idle' | 'usb' | 'network' | 'done'
+
+const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
+
+function guessIpPrefix(): string {
+  return '192.168.1'
+}
+
 export default function ClockInDevicesPage() {
-  const [devices, setDevices] = useState<Device[]>([])
+  const [devices, setDevices]     = useState<Device[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  
+  const [error, setError]         = useState<string | null>(null)
+
   const [showForm, setShowForm] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [formData, setFormData] = useState({
-    device_id: '',
-    name: '',
-    location: '',
-    device_type: 'BOTH' as const,
-    notes: '',
+    device_id:   '',
+    name:        '',
+    location:    '',
+    device_type: 'BOTH' as 'ENTRY' | 'EXIT' | 'BOTH',
+    notes:       '',
   })
 
-  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteId, setDeleteId]     = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // ── Auto-detect state ──────────────────────────────────────
+  const [showDetect, setShowDetect]         = useState(false)
+  const [scanPhase, setScanPhase]           = useState<ScanPhase>('idle')
+  const [ipPrefix, setIpPrefix]             = useState(guessIpPrefix())
+  const [scanTimeout, setScanTimeout]       = useState(0.5)
+  const [discovered, setDiscovered]         = useState<DiscoveredDevice[]>([])
+  const [scanLog, setScanLog]               = useState<string[]>([])
+  const [usbSupported, setUsbSupported]     = useState(false)
+  const [scanError, setScanError]           = useState<string | null>(null)
+  const abortRef                            = useRef(false)
+  const logRef                              = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setUsbSupported('hid' in navigator || 'serial' in navigator)
+    fetchDevices()
+  }, [])
+
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
+  }, [scanLog])
+
+  const addLog = (msg: string) =>
+    setScanLog(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`])
 
   const fetchDevices = async () => {
     try {
@@ -45,10 +86,6 @@ export default function ClockInDevicesPage() {
     }
   }
 
-  useEffect(() => {
-    fetchDevices()
-  }, [])
-
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsAdding(true)
@@ -57,6 +94,7 @@ export default function ClockInDevicesPage() {
       setFormData({ device_id: '', name: '', location: '', device_type: 'BOTH', notes: '' })
       setIsAdding(false)
       setShowForm(false)
+      setShowDetect(false)
       fetchDevices()
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to add device.')
@@ -78,6 +116,138 @@ export default function ClockInDevicesPage() {
     }
   }
 
+  const prefillForm = (d: DiscoveredDevice) => {
+    setFormData({
+      device_id:   d.device_id,
+      name:        `${d.brand} @ ${d.ip}`,
+      location:    '',
+      device_type: 'BOTH',
+      notes:       `Auto-detected: ${d.brand} on ${d.ip}:${d.port} (${d.technology})`,
+    })
+    setShowForm(true)
+    setShowDetect(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // ── USB (WebHID) detection ─────────────────────────────────
+  const runUsbScan = async () => {
+    abortRef.current = false
+    setScanPhase('usb')
+    setDiscovered([])
+    setScanLog([])
+    setScanError(null)
+    addLog('Checking browser for USB / HID fingerprint devices…')
+
+    if (!('hid' in navigator)) {
+      addLog('WebHID not supported in this browser (use Chrome or Edge).')
+      setScanPhase('network')
+      return
+    }
+
+    try {
+      addLog('Requesting USB HID device access from browser…')
+      // Common fingerprint/biometric vendor IDs
+      const hidDevices = await (navigator as any).hid.requestDevice({
+        filters: [
+          { vendorId: 0x1b55 },  // ZKTeco
+          { vendorId: 0x05ba },  // DigitalPersona / HID Global
+          { vendorId: 0x1533 },  // Suprema
+          { vendorId: 0x0483 },  // STMicroelectronics (common in generic readers)
+          { vendorId: 0x04b4 },  // Cypress / generic USB HID
+          { usagePage: 0x000d }, // Digitizer / biometric
+        ],
+      })
+
+      if (!hidDevices || hidDevices.length === 0) {
+        addLog('No USB biometric device selected or found.')
+      } else {
+        for (const dev of hidDevices) {
+          const devId = `USB-HID:${dev.vendorId.toString(16).padStart(4,'0')}:${dev.productId.toString(16).padStart(4,'0')}`
+          addLog(`Found USB device: ${dev.productName || 'Unknown'} (vendor 0x${dev.vendorId.toString(16)})`)
+          const candidate: DiscoveredDevice = {
+            ip:               'USB',
+            port:             0,
+            brand:            dev.productName || 'USB Biometric Device',
+            technology:       'USB HID Fingerprint',
+            device_id:        devId,
+            already_registered: devices.some(d => d.device_id === devId),
+          }
+          setDiscovered(prev => [...prev, candidate])
+        }
+      }
+    } catch (err: any) {
+      if (err.name === 'SecurityError' || err.name === 'NotAllowedError') {
+        addLog('USB access denied by browser. Try clicking the button again.')
+      } else {
+        addLog(`USB scan error: ${err.message}`)
+      }
+    }
+
+    setScanPhase('network')
+  }
+
+  // ── Network scan ───────────────────────────────────────────
+  const runNetworkScan = async () => {
+    abortRef.current = false
+    if (scanPhase === 'idle') {
+      setScanPhase('network')
+      setDiscovered([])
+      setScanLog([])
+      setScanError(null)
+    }
+    addLog(`Starting network scan on ${ipPrefix}.1 – ${ipPrefix}.254…`)
+    addLog('Probing ports: 4370 (ZKTeco), 5010 (Anviz), 4000 (FingerTec), 80, 8080…')
+
+    try {
+      const res = await apiClient.post<{ devices: DiscoveredDevice[]; scanned: string }>(
+        '/clockin/devices/discover/',
+        { ip_prefix: ipPrefix, timeout: scanTimeout },
+      )
+      if (abortRef.current) return
+      const found = res.data.devices
+      addLog(`Scan complete. Scanned: ${res.data.scanned}`)
+      addLog(found.length > 0
+        ? `Found ${found.length} device(s) on the network.`
+        : 'No biometric devices found on this subnet.')
+      setDiscovered(prev => {
+        const existing = prev.map(d => d.device_id)
+        const fresh    = found.filter(d => !existing.includes(d.device_id))
+        return [...prev, ...fresh]
+      })
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.message || 'Network scan failed.'
+      setScanError(msg)
+      addLog(`Error: ${msg}`)
+    } finally {
+      setScanPhase('done')
+    }
+  }
+
+  const startAutoDetect = async () => {
+    setScanPhase('idle')
+    setDiscovered([])
+    setScanLog([])
+    setScanError(null)
+    await runUsbScan()
+    if (!abortRef.current) await runNetworkScan()
+  }
+
+  const stopScan = () => {
+    abortRef.current = true
+    setScanPhase('done')
+    addLog('Scan cancelled by user.')
+  }
+
+  const resetDetect = () => {
+    abortRef.current = true
+    setScanPhase('idle')
+    setDiscovered([])
+    setScanLog([])
+    setScanError(null)
+  }
+
+  const isScanning = scanPhase === 'usb' || scanPhase === 'network'
+
   return (
     <div className="space-y-6 font-sans text-slate-100">
       <PageHero
@@ -87,30 +257,213 @@ export default function ClockInDevicesPage() {
         subtitle="Manage biometric and RFID clock-in devices"
         icon="⏰"
       />
-      <header className="rounded-2xl glass-panel p-6 flex justify-between items-center">
+
+      {/* ── Header bar ── */}
+      <header className="rounded-2xl p-5 flex flex-wrap gap-3 justify-between items-center" style={GLASS}>
         <div>
           <h1 className="text-xl font-display font-semibold">Biometric Devices</h1>
-          <p className="mt-2 text-sm text-slate-400">Manage fingerprint scanner terminals and endpoints.</p>
-          {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
+          <p className="mt-1 text-sm text-slate-400">Fingerprint scanners, RFID terminals and network endpoints.</p>
+          {error && <p className="mt-1 text-xs text-rose-300">{error}</p>}
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)}
-          className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
-        >
-          {showForm ? 'Cancel' : '+ Register Device'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => { setShowDetect(v => !v); setShowForm(false) }}
+            className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20 transition"
+          >
+            <span>📡</span> Auto-detect
+          </button>
+          <button
+            onClick={() => { setShowForm(v => !v); setShowDetect(false) }}
+            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition"
+          >
+            {showForm ? 'Cancel' : '+ Register Device'}
+          </button>
+        </div>
       </header>
 
+      {/* ── Auto-detect panel ── */}
+      {showDetect && (
+        <section className="rounded-2xl p-6 space-y-5 animate-in fade-in slide-in-from-top-4" style={GLASS}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-display font-semibold text-emerald-400">Auto-detect Biometric Devices</h2>
+              <p className="text-sm text-slate-400 mt-0.5">
+                Scans for USB fingerprint readers and network-connected terminals (ZKTeco, Anviz, FingerTec…)
+              </p>
+            </div>
+            <button onClick={() => { setShowDetect(false); resetDetect() }} className="text-slate-500 hover:text-slate-300 text-xs">✕ Close</button>
+          </div>
+
+          {/* Config row */}
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Network prefix (first 3 octets)</label>
+              <input
+                className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm font-mono outline-none focus:border-emerald-500 transition w-44"
+                placeholder="192.168.1"
+                value={ipPrefix}
+                onChange={e => setIpPrefix(e.target.value)}
+                disabled={isScanning}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Probe timeout (s)</label>
+              <select
+                className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm outline-none focus:border-emerald-500 transition"
+                value={scanTimeout}
+                onChange={e => setScanTimeout(Number(e.target.value))}
+                disabled={isScanning}
+              >
+                <option value={0.3}>0.3 s — Fast</option>
+                <option value={0.5}>0.5 s — Balanced</option>
+                <option value={1.0}>1.0 s — Thorough</option>
+                <option value={2.0}>2.0 s — Slow network</option>
+              </select>
+            </div>
+
+            {!isScanning && scanPhase !== 'done' && (
+              <button
+                onClick={startAutoDetect}
+                className="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition flex items-center gap-2"
+              >
+                <span className="animate-pulse">🔍</span> Start Scan
+              </button>
+            )}
+            {isScanning && (
+              <button
+                onClick={stopScan}
+                className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-5 py-2 text-sm font-semibold text-rose-400 hover:bg-rose-500/20 transition"
+              >
+                ⏹ Stop
+              </button>
+            )}
+            {scanPhase === 'done' && (
+              <button
+                onClick={resetDetect}
+                className="rounded-xl border border-white/[0.09] px-5 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition"
+              >
+                ↺ Scan Again
+              </button>
+            )}
+          </div>
+
+          {/* Phase indicator */}
+          {(isScanning || scanPhase === 'done') && (
+            <div className="flex items-center gap-6 text-xs">
+              <span className={`flex items-center gap-1.5 ${scanPhase === 'usb' ? 'text-emerald-400' : (scanPhase === 'idle' ? 'text-slate-600' : 'text-slate-400')}`}>
+                {scanPhase === 'usb'
+                  ? <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  : <span className="inline-block h-2 w-2 rounded-full bg-slate-600" />}
+                USB / HID
+              </span>
+              <span className={`flex items-center gap-1.5 ${scanPhase === 'network' ? 'text-emerald-400' : (scanPhase === 'done' ? 'text-slate-400' : 'text-slate-600')}`}>
+                {scanPhase === 'network'
+                  ? <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  : <span className="inline-block h-2 w-2 rounded-full bg-slate-600" />}
+                Network scan
+              </span>
+              {scanPhase === 'done' && (
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                  Complete
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Scan log console */}
+          {scanLog.length > 0 && (
+            <div
+              ref={logRef}
+              className="rounded-xl bg-slate-950 border border-white/[0.06] p-4 text-[11px] font-mono text-slate-400 space-y-1 max-h-36 overflow-y-auto"
+            >
+              {scanLog.map((line, i) => (
+                <div key={i} className={line.includes('Found') || line.includes('device') ? 'text-emerald-400' : line.includes('Error') || line.includes('denied') ? 'text-rose-400' : ''}>
+                  {line}
+                </div>
+              ))}
+              {isScanning && (
+                <div className="flex items-center gap-2 text-emerald-500">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  Scanning…
+                </div>
+              )}
+            </div>
+          )}
+
+          {scanError && (
+            <p className="text-xs text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2">{scanError}</p>
+          )}
+
+          {/* Discovered devices */}
+          {discovered.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                Discovered ({discovered.length})
+              </h3>
+              {discovered.map((d, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl bg-slate-900 border border-white/[0.07] px-5 py-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <span className="text-2xl">{d.technology.includes('USB') ? '🔌' : '📡'}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-200">{d.brand}</p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {d.ip === 'USB' ? d.device_id : `${d.ip}:${d.port}`}
+                        <span className="ml-2 text-slate-600">· {d.technology}</span>
+                      </p>
+                    </div>
+                  </div>
+                  {d.already_registered ? (
+                    <span className="text-xs text-slate-500 border border-white/[0.07] rounded-full px-3 py-1">Already registered</span>
+                  ) : (
+                    <button
+                      onClick={() => prefillForm(d)}
+                      className="rounded-xl bg-emerald-500/20 border border-emerald-500/30 px-4 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 transition"
+                    >
+                      Register →
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {scanPhase === 'done' && discovered.length === 0 && (
+            <div className="rounded-xl bg-slate-900 border border-white/[0.07] p-6 text-center space-y-3">
+              <p className="text-slate-400 text-sm">No biometric devices found on this subnet.</p>
+              <div className="text-xs text-slate-600 space-y-1">
+                <p>Make sure the device is powered on and connected to <span className="font-mono text-slate-500">{ipPrefix}.x</span></p>
+                <p>Common device defaults: ZKTeco → 192.168.1.201, Anviz → 192.168.1.100</p>
+              </div>
+              <button
+                onClick={() => { setShowForm(true); setShowDetect(false) }}
+                className="mt-2 rounded-xl border border-white/[0.09] px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition"
+              >
+                Register manually instead →
+              </button>
+            </div>
+          )}
+
+          {/* USB note */}
+          {!usbSupported && (
+            <p className="text-[11px] text-amber-400/70 bg-amber-500/5 border border-amber-500/10 rounded-xl px-4 py-2">
+              ⚠ USB auto-detection requires Chrome or Edge. The network scan works in all browsers.
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* ── Manual registration form ── */}
       {showForm && (
-        <form onSubmit={handleAdd} className="rounded-2xl glass-panel p-6 space-y-4 animate-in fade-in slide-in-from-top-4">
-          <h2 className="text-lg font-display font-semibold text-emerald-400">Register New Device</h2>
+        <form onSubmit={handleAdd} className="rounded-2xl p-6 space-y-4 animate-in fade-in slide-in-from-top-4" style={GLASS}>
+          <h2 className="text-lg font-display font-semibold text-emerald-400">Register Device</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1">
-              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Serial Number (Device ID)</label>
+              <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Serial Number / Device ID</label>
               <input
                 required
                 className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                placeholder="e.g. SN-9988-G1"
+                placeholder="e.g. SN-9988-G1 or 192.168.1.201:4370"
                 value={formData.device_id}
                 onChange={e => setFormData({ ...formData, device_id: e.target.value })}
               />
@@ -151,34 +504,44 @@ export default function ClockInDevicesPage() {
               <label className="text-xs text-slate-400 uppercase tracking-wider font-bold">Notes</label>
               <input
                 className="w-full rounded-xl border border-white/[0.09] bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 transition"
-                placeholder="Hardware specs or maintenance info..."
+                placeholder="Hardware specs, maintenance info or auto-detection notes…"
                 value={formData.notes}
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
               />
             </div>
           </div>
-          <div className="flex justify-end">
+          <div className="flex gap-3 justify-end">
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="rounded-xl border border-white/[0.09] px-5 py-2 text-sm text-slate-400 hover:text-slate-200 transition"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
               disabled={isAdding}
               className="rounded-xl bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-50 transition"
             >
-              Confirm Registration
+              {isAdding ? 'Registering…' : 'Confirm Registration'}
             </button>
           </div>
         </form>
       )}
 
+      {/* ── Registered devices list ── */}
       <div className="grid gap-6">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-400">Loading devices...</div>
+          <div className="p-12 text-center text-slate-400">Loading devices…</div>
         ) : devices.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 italic rounded-2xl border border-white/[0.07] bg-white/[0.02]">No devices registered.</div>
+          <div className="p-12 text-center text-slate-500 italic rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+            No devices registered yet. Use <span className="text-emerald-400 not-italic font-semibold">Auto-detect</span> to find devices on your network.
+          </div>
         ) : (
           devices.map(device => (
-            <article key={device.id} className="rounded-2xl glass-panel p-6 flex flex-col md:flex-row gap-6">
+            <article key={device.id} className="rounded-2xl p-6 flex flex-col md:flex-row gap-6" style={GLASS}>
               <div className="flex-1 space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <h3 className="text-xl font-display font-semibold">{device.name}</h3>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                     device.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-500/10 text-slate-400'
@@ -191,8 +554,8 @@ export default function ClockInDevicesPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Serial Number</p>
-                    <p className="font-mono text-emerald-400 mt-1">{device.device_id}</p>
+                    <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Device ID</p>
+                    <p className="font-mono text-emerald-400 mt-1 break-all">{device.device_id}</p>
                   </div>
                   <div>
                     <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Location</p>
@@ -207,7 +570,9 @@ export default function ClockInDevicesPage() {
                     <p className="text-slate-300 mt-1 font-mono text-xs">{device.api_key.substring(0, 8)}••••••••••••••••</p>
                   </div>
                 </div>
-                {device.notes && <p className="text-xs text-slate-500 border-l-2 border-white/[0.09] pl-3 py-1 italic">{device.notes}</p>}
+                {device.notes && (
+                  <p className="text-xs text-slate-500 border-l-2 border-white/[0.09] pl-3 py-1 italic">{device.notes}</p>
+                )}
               </div>
 
               <div className="w-full md:w-80 space-y-4 border-l border-white/[0.07] pl-0 md:pl-6">
@@ -223,18 +588,18 @@ export default function ClockInDevicesPage() {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                   <button 
-                     onClick={() => setDeleteId(device.id)}
-                     className="text-rose-400 hover:text-rose-300 text-xs font-semibold uppercase tracking-wider"
-                    >
-                     Delete Device
-                   </button>
-                   <button
-                     onClick={() => window.open('https://developer.android.com/studio', '_blank', 'noopener,noreferrer')}
-                     className="text-slate-400 hover:text-slate-100 text-xs font-semibold uppercase tracking-wider"
-                   >
-                     Download SDK
-                   </button>
+                  <button
+                    onClick={() => setDeleteId(device.id)}
+                    className="text-rose-400 hover:text-rose-300 text-xs font-semibold uppercase tracking-wider"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => window.open('https://developer.android.com/studio', '_blank', 'noopener,noreferrer')}
+                    className="text-slate-400 hover:text-slate-100 text-xs font-semibold uppercase tracking-wider"
+                  >
+                    Download SDK
+                  </button>
                 </div>
               </div>
             </article>

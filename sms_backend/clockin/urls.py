@@ -7,7 +7,8 @@ from .views import (
     ClockEventViewSet,
     ScanView,
     DashboardView,
-    RealtimeView
+    RealtimeView,
+    DeviceDiscoverView,
 )
 
 router = DefaultRouter()
@@ -18,8 +19,9 @@ router.register(r'events', ClockEventViewSet)
 
 urlpatterns = [
     path('scan/', ScanView.as_view()),
-    path('kiosk/scan/', ScanView.as_view()), # ScanView handles both kiosk and device scans
+    path('kiosk/scan/', ScanView.as_view()),
     path('dashboard/', DashboardView.as_view()),
     path('realtime/', RealtimeView.as_view()),
+    path('devices/discover/', DeviceDiscoverView.as_view()),
     path('', include(router.urls)),
 ]

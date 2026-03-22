@@ -1,3 +1,5 @@
+import socket
+import concurrent.futures
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,6 +17,23 @@ from school.models import AttendanceRecord as StudentAttendanceRecord, UserProfi
 from hr.models import AttendanceRecord as EmployeeAttendanceRecord
 from communication.models import Notification
 from django.db.models import Q
+
+# Ports associated with known biometric device brands
+BIOMETRIC_PROBE_PORTS = [
+    (4370, 'ZKTeco',     'Fingerprint / RFID'),
+    (5005, 'ZKTeco Alt', 'Fingerprint / RFID'),
+    (5010, 'Anviz',      'Fingerprint / RFID'),
+    (4000, 'FingerTec',  'Fingerprint'),
+    (8080, 'HTTP Terminal', 'Web-based'),
+    (80,   'HTTP Terminal', 'Web-based'),
+]
+
+def _tcp_probe(ip: str, port: int, timeout: float) -> bool:
+    try:
+        with socket.create_connection((ip, port), timeout=timeout):
+            return True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return False
 
 def _notify_admins(title, message, priority='Important', action_url=''):
     admin_users = UserProfile.objects.filter(
@@ -265,3 +284,63 @@ class RealtimeView(ClockInModuleMixin, APIView):
                     "time_in": last_event.timestamp
                 })
         return Response(results)
+
+
+class DeviceDiscoverView(APIView):
+    """
+    POST /clockin/devices/discover/
+    Body: { "ip_prefix": "192.168.1", "timeout": 0.5 }
+    Scans the /24 subnet for open biometric device TCP ports.
+    Returns a list of discovered candidate devices.
+    """
+    permission_classes = [permissions.IsAuthenticated, HasModuleAccess]
+    module_key = "CLOCKIN"
+
+    def post(self, request):
+        ip_prefix = (request.data.get('ip_prefix') or '').strip()
+        timeout   = float(request.data.get('timeout', 0.5))
+        timeout   = min(max(timeout, 0.1), 3.0)
+
+        # Validate prefix  (must be exactly "A.B.C")
+        parts = ip_prefix.split('.')
+        if len(parts) != 3 or not all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
+            return Response(
+                {'detail': 'ip_prefix must be like "192.168.1"'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        found = []
+
+        def probe_host(last_octet):
+            ip = f"{ip_prefix}.{last_octet}"
+            hits = []
+            for port, brand, tech in BIOMETRIC_PROBE_PORTS:
+                if _tcp_probe(ip, port, timeout):
+                    dev_id = f"{ip}:{port}"
+                    already = BiometricDevice.objects.filter(
+                        Q(device_id=dev_id) | Q(device_id=ip) | Q(notes__icontains=ip)
+                    ).exists()
+                    hits.append({
+                        'ip': ip,
+                        'port': port,
+                        'brand': brand,
+                        'technology': tech,
+                        'device_id': dev_id,
+                        'already_registered': already,
+                    })
+            return hits
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=128) as pool:
+            futures = {pool.submit(probe_host, i): i for i in range(1, 255)}
+            for future in concurrent.futures.as_completed(futures, timeout=60):
+                try:
+                    found.extend(future.result())
+                except Exception:
+                    pass
+
+        found.sort(key=lambda d: (list(map(int, d['ip'].split('.'))), d['port']))
+        return Response({
+            'devices': found,
+            'scanned': f"{ip_prefix}.1 – {ip_prefix}.254",
+            'ports_checked': [p for p, _, _ in BIOMETRIC_PROBE_PORTS],
+        })
