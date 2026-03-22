@@ -52,9 +52,9 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = [
-            'id', 'admission_number', 'first_name', 'last_name', 
-            'date_of_birth', 'gender', 'photo', 'is_active', 'created_at', 'guardians',
-            'uploaded_documents'
+            'id', 'admission_number', 'first_name', 'last_name',
+            'date_of_birth', 'gender', 'phone', 'email', 'photo', 'is_active',
+            'created_at', 'guardians', 'uploaded_documents',
         ]
 
     def get_uploaded_documents(self, obj):

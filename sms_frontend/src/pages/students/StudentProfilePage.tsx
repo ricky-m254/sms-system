@@ -42,6 +42,8 @@ type StudentDetail = {
   last_name: string
   date_of_birth?: string
   gender?: string
+  phone?: string
+  email?: string
   is_active?: boolean
   photo?: string | null
   uploaded_documents?: Array<{ id: number; name: string; url: string }>
@@ -224,7 +226,7 @@ export default function StudentProfilePage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const [editingProfile, setEditingProfile] = useState(false)
-  const [profileForm, setProfileForm] = useState({ first_name: '', last_name: '', date_of_birth: '', gender: '' })
+  const [profileForm, setProfileForm] = useState({ first_name: '', last_name: '', date_of_birth: '', gender: '', phone: '', email: '' })
   const [savingProfile, setSavingProfile] = useState(false)
   const [profileError, setProfileError] = useState<string | null>(null)
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null)
@@ -466,6 +468,8 @@ export default function StudentProfilePage() {
       last_name:     student.last_name     ?? '',
       date_of_birth: student.date_of_birth ?? '',
       gender:        student.gender        ?? '',
+      phone:         student.phone         ?? '',
+      email:         student.email         ?? '',
     })
     setProfileError(null)
     setProfileSuccess(null)
@@ -483,6 +487,8 @@ export default function StudentProfilePage() {
         last_name:     profileForm.last_name.trim(),
         date_of_birth: profileForm.date_of_birth || undefined,
         gender:        profileForm.gender || undefined,
+        phone:         profileForm.phone.trim() || undefined,
+        email:         profileForm.email.trim() || undefined,
       })
       setStudent(prev => prev ? { ...prev, ...res.data } : res.data)
       setProfileSuccess('Profile updated successfully.')
@@ -775,6 +781,14 @@ export default function StudentProfilePage() {
                     <span className={`w-1.5 h-1.5 rounded-full ${student?.is_active ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                     {student?.is_active ? 'Active' : 'Inactive'}
                   </span>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Phone</p>
+                  <p>{student?.phone || '--'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase text-slate-400">Email</p>
+                  <p className="truncate">{student?.email || '--'}</p>
                 </div>
                 <div>
                   <p className="text-[11px] uppercase text-slate-400">Current Class</p>
@@ -1097,6 +1111,25 @@ export default function StudentProfilePage() {
                   <option value="M">Male</option>
                   <option value="F">Female</option>
                 </select>
+              </div>
+              <div className="col-span-1">
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">Phone</label>
+                <input
+                  value={profileForm.phone}
+                  onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))}
+                  className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+                  placeholder="+254 7XX XXX XXX"
+                />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">Email</label>
+                <input
+                  type="email"
+                  value={profileForm.email}
+                  onChange={e => setProfileForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full rounded-lg border border-white/[0.09] bg-[#0d1421] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+                  placeholder="student@school.ac.ke"
+                />
               </div>
             </div>
 
