@@ -251,6 +251,15 @@ API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
 - `/finance/reports/vote-head-allocation/` — vote head allocation totals
 - `/finance/reports/arrears-by-term/` — arrears by academic term
 
+## Student Model — Contact Fields (Migration 0043)
+
+`Student` model now has `phone` (CharField 30), `email` (EmailField), `address` (TextField) — all blank=True. Migration `0043_add_student_contact_fields` applied to all schemas. `StudentSerializer` includes all three fields. **Root cause fix**: serializer previously declared `phone`/`email` fields that did not exist on the model, causing `ImproperlyConfigured` 500 errors on every `GET /api/students/` call, which blocked the entire dashboard from loading. `Student Profile → Personal` tab "Edit Profile" modal patches `first_name`, `last_name`, `date_of_birth`, `gender`, `phone`, `email` via `PATCH /students/{id}/`.
+
+## Seed Data Infrastructure
+
+- Backend: `ModuleSeedView` at `POST /school/seed/` runs `seed_kenya_school` management command for the current tenant schema (creates portal logins post-seed).
+- Frontend: `SettingsSeedPage` at `/settings/seed-data` — "Seed All Modules" button + "Seed Transport Only" secondary button. Both use idempotent `get_or_create` logic.
+
 ## Recent Updates
 
 - **Teacher Portal** (new module): Full portal at `/teacher-portal/*` — Layout, Dashboard (KPI cards, schedule, recent marks), Classes (subject/class assignments with student counts), Attendance (mark/save daily attendance), Gradebook (CBC 4-band: Exceeding/Meeting/Approaching/Below), Resources (upload/manage teaching materials), Timetable (weekly grid + daily agenda views). Accessible to all authenticated tenant users.

@@ -53,7 +53,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = [
             'id', 'admission_number', 'first_name', 'last_name',
-            'date_of_birth', 'gender', 'phone', 'email', 'photo', 'is_active',
+            'date_of_birth', 'gender', 'phone', 'email', 'address', 'photo', 'is_active',
             'created_at', 'guardians', 'uploaded_documents',
         ]
 
