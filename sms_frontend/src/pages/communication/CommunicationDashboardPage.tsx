@@ -15,20 +15,40 @@ type Summary = {
 }
 
 type RecentActivity = {
-  channel: string
-  description: string
-  time: string
-  status: 'sent' | 'delivered' | 'failed' | 'pending'
+  id?: number
+  channel?: string
+  channel_type?: string
+  subject?: string
+  message?: string
+  description?: string
+  time?: string
+  created_at?: string
+  status: 'sent' | 'delivered' | 'failed' | 'pending' | string
 }
 
-const MOCK_ACTIVITY: RecentActivity[] = [
-  { channel: 'SMS', description: 'Fee reminder sent to 124 parents', time: '2 hours ago', status: 'delivered' },
-  { channel: 'Email', description: 'Term 1 newsletter campaign dispatched', time: '4 hours ago', status: 'sent' },
-  { channel: 'Push', description: 'Announcement: KCSE Mock Schedule', time: '6 hours ago', status: 'delivered' },
-  { channel: 'SMS', description: 'Attendance alert — 3 absentees notified', time: '8 hours ago', status: 'delivered' },
-  { channel: 'Email', description: 'Report cards emailed to parents', time: '1 day ago', status: 'sent' },
-  { channel: 'WhatsApp', description: 'Staff meeting reminder to 24 teachers', time: '1 day ago', status: 'delivered' },
-]
+function asArr<T>(v: T[] | { results?: T[] }): T[] {
+  return Array.isArray(v) ? v : (v.results ?? [])
+}
+
+function activityLabel(act: RecentActivity): string {
+  return act.description ?? act.subject ?? act.message ?? '(no subject)'
+}
+
+function activityTime(act: RecentActivity): string {
+  if (act.time) return act.time
+  if (!act.created_at) return ''
+  const d = new Date(act.created_at)
+  const diff = Date.now() - d.getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
+}
+
+function activityChannel(act: RecentActivity): string {
+  return act.channel ?? act.channel_type ?? 'SMS'
+}
 
 const STATUS_COLORS = {
   sent: 'text-blue-400 bg-blue-500/15 border-blue-500/30',
@@ -44,14 +64,19 @@ const CHANNEL_ICONS: Record<string, React.ElementType> = {
 export default function CommunicationDashboardPage() {
   const navigate = useNavigate()
   const [summary, setSummary] = useState<Summary | null>(null)
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
     try {
-      const res = await apiClient.get<Summary>('/communication/analytics/summary/')
-      setSummary(res.data)
+      const [summaryRes, activityRes] = await Promise.allSettled([
+        apiClient.get<Summary>('/communication/analytics/summary/'),
+        apiClient.get('/communication/messages/', { params: { limit: 6, ordering: '-created_at' } }),
+      ])
+      if (summaryRes.status === 'fulfilled') setSummary(summaryRes.value.data)
+      if (activityRes.status === 'fulfilled') setRecentActivity(asArr<RecentActivity>(activityRes.value.data))
     } catch {
       setError('Unable to load communication summary.')
     } finally {
@@ -219,18 +244,25 @@ export default function CommunicationDashboardPage() {
             <h2 className="text-sm font-bold text-white">Recent Activity</h2>
           </div>
           <div className="space-y-2">
-            {MOCK_ACTIVITY.map((act, i) => {
-              const Icon = CHANNEL_ICONS[act.channel] ?? MessageSquare
+            {recentActivity.length === 0 ? (
+              <p className="py-6 text-center text-sm text-slate-500">
+                {loading ? 'Loading…' : 'No recent messages. Start by sending a message or announcement.'}
+              </p>
+            ) : recentActivity.map((act, i) => {
+              const ch = activityChannel(act)
+              const Icon = CHANNEL_ICONS[ch] ?? MessageSquare
+              const statusKey = act.status as keyof typeof STATUS_COLORS
+              const colorCls = STATUS_COLORS[statusKey] ?? STATUS_COLORS.pending
               return (
-                <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <div key={act.id ?? i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.04)' }}>
                   <div className="flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
                     <Icon size={12} className="text-slate-300" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-200 truncate">{act.description}</p>
-                    <p className="text-[10px] text-slate-500">{act.time}</p>
+                    <p className="text-xs font-medium text-slate-200 truncate">{activityLabel(act)}</p>
+                    <p className="text-[10px] text-slate-500">{activityTime(act)}</p>
                   </div>
-                  <span className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLORS[act.status]}`}>
+                  <span className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${colorCls}`}>
                     {act.status}
                   </span>
                 </div>

@@ -15,23 +15,8 @@ interface Stats {
   completed_requests: number
 }
 
-const RECENT_REQUESTS = [
-  { id: 'MNT-001', title: 'Leaking roof — Block B Lab', category: 'Structural', priority: 'High', status: 'Pending', date: '10 Mar', icon: Droplets, color: '#ef4444' },
-  { id: 'MNT-002', title: 'Faulty electrical sockets — Form 4 class', category: 'Electrical', priority: 'High', status: 'In Progress', date: '09 Mar', icon: Zap, color: '#f59e0b' },
-  { id: 'MNT-003', title: 'Broken lab bench — Science Lab', category: 'Carpentry', priority: 'Medium', status: 'Pending', date: '08 Mar', icon: Hammer, color: '#f97316' },
-  { id: 'MNT-004', title: 'Blocked drain — Girls hostel', category: 'Plumbing', priority: 'Medium', status: 'In Progress', date: '07 Mar', icon: Droplets, color: '#0ea5e9' },
-  { id: 'MNT-005', title: 'Broken door lock — Principal office', category: 'Structural', priority: 'Low', status: 'Completed', date: '05 Mar', icon: Settings, color: '#10b981' },
-  { id: 'MNT-006', title: 'Generator service overdue', category: 'Electrical', priority: 'High', status: 'Pending', date: '04 Mar', icon: Zap, color: '#ef4444' },
-]
-
-const CATEGORIES = [
-  { name: 'Electrical', count: 4, color: '#f59e0b', icon: Zap },
-  { name: 'Plumbing', count: 3, color: '#0ea5e9', icon: Droplets },
-  { name: 'Structural', count: 5, color: '#ef4444', icon: Hammer },
-  { name: 'Carpentry', count: 2, color: '#f97316', icon: Wrench },
-  { name: 'HVAC', count: 1, color: '#a855f7', icon: Wind },
-  { name: 'General', count: 2, color: '#6b7280', icon: Settings },
-]
+const CAT_COLORS = ['#f59e0b', '#0ea5e9', '#ef4444', '#f97316', '#a855f7', '#10b981', '#6b7280', '#ec4899']
+const CAT_ICONS = [Zap, Droplets, Hammer, Wrench, Wind, Settings, TrendingUp, AlertTriangle]
 
 const STATUS_CFG: Record<string, { color: string; bg: string }> = {
   Pending:     { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
@@ -46,14 +31,38 @@ const PRIORITY_CFG: Record<string, { color: string }> = {
   Low:    { color: '#10b981' },
 }
 
+type MaintRequest = {
+  id: number
+  reference_code?: string
+  title: string
+  category_name?: string
+  priority?: string
+  status: string
+  created_at: string
+}
+
+type MaintCategory = { id: number; name: string; request_count?: number }
+
+function asArr<T>(v: T[] | { results?: T[] }): T[] {
+  return Array.isArray(v) ? v : (v.results ?? [])
+}
+
 export default function MaintenanceDashboardPage() {
   const navigate = useNavigate()
-  const [stats, setStats] = useState<Stats>({ total_requests: 17, pending_requests: 6, in_progress: 4, completed_requests: 7 })
+  const [stats, setStats] = useState<Stats>({ total_requests: 0, pending_requests: 0, in_progress: 0, completed_requests: 0 })
+  const [recentRequests, setRecentRequests] = useState<MaintRequest[]>([])
+  const [apiCategories, setApiCategories] = useState<MaintCategory[]>([])
 
   useEffect(() => {
-    apiClient.get('/maintenance/dashboard/')
-      .then(res => setStats(res.data))
-      .catch(() => {})
+    Promise.allSettled([
+      apiClient.get('/maintenance/dashboard/'),
+      apiClient.get('/maintenance/requests/', { params: { limit: 6, ordering: '-created_at' } }),
+      apiClient.get('/maintenance/categories/'),
+    ]).then(([statsRes, reqRes, catRes]) => {
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data)
+      if (reqRes.status === 'fulfilled') setRecentRequests(asArr<MaintRequest>(reqRes.value.data))
+      if (catRes.status === 'fulfilled') setApiCategories(asArr<MaintCategory>(catRes.value.data))
+    })
   }, [])
 
   const completionRate = stats.total_requests > 0
@@ -155,16 +164,22 @@ export default function MaintenanceDashboardPage() {
             </button>
           </div>
           <div className="divide-y" style={{ divideColor: 'rgba(255,255,255,0.04)' }}>
-            {RECENT_REQUESTS.map(req => {
+            {recentRequests.length === 0 ? (
+              <div className="px-5 py-10 text-center text-sm text-slate-500">
+                No maintenance requests found. <button onClick={() => navigate('/modules/maintenance/requests')} className="text-amber-400 underline">Create one →</button>
+              </div>
+            ) : recentRequests.map((req, idx) => {
               const stCfg = STATUS_CFG[req.status] ?? STATUS_CFG.Pending
-              const prCfg = PRIORITY_CFG[req.priority] ?? PRIORITY_CFG.Low
+              const prCfg = PRIORITY_CFG[req.priority ?? 'Low'] ?? PRIORITY_CFG.Low
+              const CatIcon = CAT_ICONS[idx % CAT_ICONS.length]
+              const catColor = CAT_COLORS[idx % CAT_COLORS.length]
               return (
                 <div key={req.id} className="px-5 py-4 hover:bg-white/[0.02] transition-colors"
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                      style={{ background: `${req.color}18` }}>
-                      <req.icon size={14} style={{ color: req.color }} />
+                      style={{ background: `${catColor}18` }}>
+                      <CatIcon size={14} style={{ color: catColor }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
@@ -175,10 +190,10 @@ export default function MaintenanceDashboardPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px] text-slate-500 font-mono">{req.id}</span>
-                        <span className="text-[10px] text-slate-500">{req.category}</span>
-                        <span className="text-[10px] font-bold" style={{ color: prCfg.color }}>{req.priority}</span>
-                        <span className="text-[10px] text-slate-600 ml-auto">{req.date}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">{req.reference_code ?? `MNT-${req.id}`}</span>
+                        {req.category_name && <span className="text-[10px] text-slate-500">{req.category_name}</span>}
+                        {req.priority && <span className="text-[10px] font-bold" style={{ color: prCfg.color }}>{req.priority}</span>}
+                        <span className="text-[10px] text-slate-600 ml-auto">{req.created_at.slice(0, 10)}</span>
                       </div>
                     </div>
                   </div>
@@ -199,33 +214,40 @@ export default function MaintenanceDashboardPage() {
               </p>
             </div>
             <div className="p-4 space-y-3">
-              {CATEGORIES.map(cat => (
-                <div key={cat.name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="flex items-center gap-2 text-xs text-slate-300">
-                      <cat.icon size={11} style={{ color: cat.color }} />
-                      {cat.name}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400">{cat.count}</span>
+              {apiCategories.length === 0 ? (
+                <p className="text-xs text-slate-500">No categories configured.</p>
+              ) : apiCategories.slice(0, 8).map((cat, idx) => {
+                const color = CAT_COLORS[idx % CAT_COLORS.length]
+                const CatIcon = CAT_ICONS[idx % CAT_ICONS.length]
+                const maxCount = Math.max(...apiCategories.map(c => c.request_count ?? 0), 1)
+                return (
+                  <div key={cat.id}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="flex items-center gap-2 text-xs text-slate-300">
+                        <CatIcon size={11} style={{ color }} />
+                        {cat.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400">{cat.request_count ?? 0}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full" style={{ width: `${((cat.request_count ?? 0) / maxCount) * 100}%`, background: color }} />
+                    </div>
                   </div>
-                  <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${(cat.count / 5) * 100}%`, background: cat.color }} />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
-          {/* Priority summary */}
+          {/* Priority summary — computed from dashboard stats */}
           <div className="rounded-2xl p-4" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)' }}>
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle size={13} className="text-rose-400" />
-              <p className="text-xs font-bold text-rose-300">Priority Breakdown</p>
+              <p className="text-xs font-bold text-rose-300">Status Breakdown</p>
             </div>
             {[
-              { label: 'High Priority', count: 3, color: '#ef4444' },
-              { label: 'Medium Priority', count: 2, color: '#f59e0b' },
-              { label: 'Low Priority', count: 1, color: '#10b981' },
+              { label: 'Pending', count: stats.pending_requests, color: '#f59e0b' },
+              { label: 'In Progress', count: stats.in_progress, color: '#0ea5e9' },
+              { label: 'Completed', count: stats.completed_requests, color: '#10b981' },
             ].map(p => (
               <div key={p.label} className="flex items-center justify-between py-1.5 border-b"
                 style={{ borderColor: 'rgba(255,255,255,0.05)' }}>

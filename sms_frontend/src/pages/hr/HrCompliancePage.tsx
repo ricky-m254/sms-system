@@ -1,6 +1,7 @@
 import { Shield, FileCheck, AlertTriangle, Clock, User, Search } from 'lucide-react'
 import PageHero from '../../components/PageHero'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { apiClient } from '../../api/client'
 
 type AuditAction = 'Updated Record' | 'Created Record' | 'Deleted Record' | 'Approved Leave' | 'Rejected Leave' | 'Modified Payroll' | 'Added Employee' | 'Changed Role'
 
@@ -16,16 +17,25 @@ type AuditEntry = {
   ipAddress: string
 }
 
-const AUDIT_LOGS: AuditEntry[] = [
-  { id: 1, logId: 'LOG-2026-001', user: 'HR Manager', role: 'HR Manager', action: 'Updated Record', target: 'Jane Smith (Teacher)', module: 'Employee Records', timestamp: '2026-03-17 09:14:22', ipAddress: '192.168.1.10' },
-  { id: 2, logId: 'LOG-2026-002', user: 'Admin', role: 'School Admin', action: 'Added Employee', target: 'Kevin Mwangi (New Hire)', module: 'Employee Directory', timestamp: '2026-03-17 08:55:01', ipAddress: '192.168.1.5' },
-  { id: 3, logId: 'LOG-2026-003', user: 'HR Officer', role: 'HR Officer', action: 'Approved Leave', target: 'Peter Ochieng — Sick Leave', module: 'Leave Management', timestamp: '2026-03-16 15:30:44', ipAddress: '192.168.1.12' },
-  { id: 4, logId: 'LOG-2026-004', user: 'Payroll Officer', role: 'Finance Staff', action: 'Modified Payroll', target: 'March 2026 Payroll Batch', module: 'Payroll', timestamp: '2026-03-16 11:02:17', ipAddress: '192.168.1.8' },
-  { id: 5, logId: 'LOG-2026-005', user: 'HR Manager', role: 'HR Manager', action: 'Rejected Leave', target: 'Mary Akinyi — Annual Leave', module: 'Leave Management', timestamp: '2026-03-15 14:48:00', ipAddress: '192.168.1.10' },
-  { id: 6, logId: 'LOG-2026-006', user: 'Admin', role: 'School Admin', action: 'Changed Role', target: 'Samuel Otieno → Department Head', module: 'Roles & Access', timestamp: '2026-03-15 10:21:33', ipAddress: '192.168.1.5' },
-  { id: 7, logId: 'LOG-2026-007', user: 'HR Officer', role: 'HR Officer', action: 'Created Record', target: 'Staff Contract — Grace Adhiambo', module: 'Contract Management', timestamp: '2026-03-14 16:05:10', ipAddress: '192.168.1.12' },
-  { id: 8, logId: 'LOG-2026-008', user: 'HR Manager', role: 'HR Manager', action: 'Updated Record', target: 'Qualifications — Michael Adams', module: 'Employee Records', timestamp: '2026-03-13 09:33:45', ipAddress: '192.168.1.10' },
-]
+type ComplianceItem = { label: string; value: number; alert: boolean }
+
+function asArr<T>(v: T[] | { results?: T[] }): T[] {
+  return Array.isArray(v) ? v : (v.results ?? [])
+}
+
+function apiEntryToAudit(raw: Record<string, unknown>, idx: number): AuditEntry {
+  return {
+    id: Number(raw.id ?? idx),
+    logId: String(raw.log_id ?? raw.reference ?? `LOG-${String(raw.id ?? idx).padStart(3, '0')}`),
+    user: String(raw.user_display ?? raw.performed_by ?? raw.user ?? 'System'),
+    role: String(raw.role ?? raw.user_role ?? '—'),
+    action: (raw.action ?? raw.action_type ?? 'Updated Record') as AuditAction,
+    target: String(raw.target ?? raw.object_repr ?? raw.description ?? '—'),
+    module: String(raw.module ?? raw.content_type ?? '—'),
+    timestamp: String(raw.timestamp ?? raw.created_at ?? '—').slice(0, 19).replace('T', ' '),
+    ipAddress: String(raw.ip_address ?? raw.ip ?? '—'),
+  }
+}
 
 const ACTION_COLOR: Record<AuditAction, string> = {
   'Updated Record': 'bg-sky-500/15 text-sky-300 border-sky-500/20',
@@ -38,22 +48,39 @@ const ACTION_COLOR: Record<AuditAction, string> = {
   'Changed Role': 'bg-orange-500/15 text-orange-300 border-orange-500/20',
 }
 
-const COMPLIANCE_ITEMS = [
-  { label: 'Employment Contracts Expiring (30 days)', value: 3, alert: true },
-  { label: 'Pending Performance Reviews', value: 7, alert: true },
-  { label: 'Leave Balance Anomalies Detected', value: 1, alert: true },
-  { label: 'Staff Without Valid TSC Numbers', value: 0, alert: false },
-  { label: 'Payroll Records Unverified', value: 2, alert: true },
-  { label: 'Incomplete Onboarding Tasks', value: 4, alert: true },
-]
-
 export default function HrCompliancePage() {
   const [search, setSearch] = useState('')
   const [filterModule, setFilterModule] = useState('All')
+  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([])
+  const [complianceItems, setComplianceItems] = useState<ComplianceItem[]>([])
 
-  const modules = ['All', ...Array.from(new Set(AUDIT_LOGS.map(l => l.module)))]
+  useEffect(() => {
+    Promise.allSettled([
+      apiClient.get('/hr/audit-logs/', { params: { limit: 50, ordering: '-timestamp' } }),
+      apiClient.get('/hr/compliance/'),
+    ]).then(([auditRes, compRes]) => {
+      if (auditRes.status === 'fulfilled') {
+        const raw = asArr<Record<string, unknown>>(auditRes.value.data)
+        setAuditLogs(raw.map((r, i) => apiEntryToAudit(r, i)))
+      }
+      if (compRes.status === 'fulfilled') {
+        const data = compRes.value.data
+        if (Array.isArray(data)) setComplianceItems(data as ComplianceItem[])
+        else if (data && typeof data === 'object') {
+          const items: ComplianceItem[] = Object.entries(data as Record<string, number>).map(([label, value]) => ({
+            label,
+            value: Number(value),
+            alert: Number(value) > 0,
+          }))
+          setComplianceItems(items)
+        }
+      }
+    })
+  }, [])
 
-  const filtered = AUDIT_LOGS.filter(l => {
+  const modules = ['All', ...Array.from(new Set(auditLogs.map(l => l.module)))]
+
+  const filtered = auditLogs.filter(l => {
     const matchSearch = l.user.toLowerCase().includes(search.toLowerCase()) ||
       l.target.toLowerCase().includes(search.toLowerCase()) ||
       l.action.toLowerCase().includes(search.toLowerCase())
@@ -69,14 +96,16 @@ export default function HrCompliancePage() {
         icon={Shield}
         theme="violet"
         stats={[
-          { label: 'Audit Entries', value: AUDIT_LOGS.length },
-          { label: 'Compliance Alerts', value: COMPLIANCE_ITEMS.filter(c => c.alert).length },
+          { label: 'Audit Entries', value: auditLogs.length },
+          { label: 'Compliance Alerts', value: complianceItems.filter(c => c.alert && c.value > 0).length },
           { label: 'Staff Records', value: 120 },
         ]}
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {COMPLIANCE_ITEMS.map(item => (
+        {complianceItems.length === 0 ? (
+          <p className="text-sm text-slate-500 col-span-3 py-4">No compliance data available.</p>
+        ) : complianceItems.map(item => (
           <div key={item.label} className={`flex items-start gap-3 rounded-2xl border p-4 ${item.alert && item.value > 0 ? 'border-amber-500/20 bg-amber-500/[0.06]' : 'border-emerald-500/20 bg-emerald-500/[0.05]'}`}>
             {item.alert && item.value > 0
               ? <AlertTriangle size={16} className="text-amber-400 mt-0.5 shrink-0" />

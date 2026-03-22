@@ -35,7 +35,7 @@ from .models import (
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
     VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
-    StoreCategory, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
+    StoreCategory, StoreSupplier, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
     DispensaryVisit, DispensaryPrescription, DispensaryStock,
     DispensaryDeliveryNote, DispensaryDeliveryItem,
 )
@@ -64,7 +64,7 @@ from .serializers import (
     SchoolProfileSerializer,
     VoteHeadSerializer, VoteHeadPaymentAllocationSerializer,
     CashbookEntrySerializer, BalanceCarryForwardSerializer,
-    StoreCategorySerializer, StoreItemSerializer, StoreTransactionSerializer,
+    StoreCategorySerializer, StoreSupplierSerializer, StoreItemSerializer, StoreTransactionSerializer,
     StoreOrderRequestSerializer,
     DispensaryVisitSerializer, DispensaryPrescriptionSerializer, DispensaryStockSerializer,
     DepartmentSerializer,
@@ -5901,6 +5901,21 @@ class StoreCategoryViewSet(viewsets.ModelViewSet):
         return qs.order_by('name')
 
 
+class StoreSupplierViewSet(viewsets.ModelViewSet):
+    serializer_class = StoreSupplierSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = StoreSupplier.objects.all()
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            qs = qs.filter(is_active=is_active.lower() == 'true')
+        q = self.request.query_params.get('search')
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs.order_by('name')
+
+
 class StoreItemViewSet(viewsets.ModelViewSet):
     serializer_class = StoreItemSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -5935,6 +5950,9 @@ class StoreTransactionViewSet(viewsets.ModelViewSet):
         tx_type = self.request.query_params.get('transaction_type')
         if tx_type:
             qs = qs.filter(transaction_type=tx_type.upper())
+        dept = self.request.query_params.get('department')
+        if dept:
+            qs = qs.filter(department__icontains=dept)
         date_from = self.request.query_params.get('date_from')
         if date_from:
             qs = qs.filter(date__gte=date_from)

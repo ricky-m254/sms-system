@@ -15,7 +15,7 @@ from .models import (
     AccountingPeriod, ChartOfAccount, JournalEntry, JournalLine,
     PaymentGatewayTransaction, PaymentGatewayWebhookEvent, BankStatementLine,
     VoteHead, VoteHeadPaymentAllocation, CashbookEntry, BalanceCarryForward,
-    StoreCategory, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
+    StoreCategory, StoreSupplier, StoreItem, StoreTransaction, StoreOrderRequest, StoreOrderItem,
     DispensaryVisit, DispensaryPrescription, DispensaryStock,
     DispensaryDeliveryNote, DispensaryDeliveryItem,
 )
@@ -879,6 +879,12 @@ class StoreCategorySerializer(serializers.ModelSerializer):
         return obj.items.filter(is_active=True).count()
 
 
+class StoreSupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreSupplier
+        fields = ['id', 'name', 'contact_person', 'phone', 'email', 'address', 'product_types', 'is_active', 'created_at']
+
+
 class StoreItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     is_low_stock = serializers.BooleanField(read_only=True)
@@ -902,7 +908,7 @@ class StoreTransactionSerializer(serializers.ModelSerializer):
         model = StoreTransaction
         fields = [
             'id', 'item', 'item_name', 'item_unit', 'transaction_type',
-            'quantity', 'reference', 'purpose', 'performed_by', 'performed_by_name',
+            'quantity', 'reference', 'department', 'purpose', 'performed_by', 'performed_by_name',
             'date', 'notes', 'created_at'
         ]
         read_only_fields = ['created_at']

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { apiClient } from '../../api/client'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -14,16 +14,19 @@ type Summary = {
   by_status: Array<{ status: string; count: number }>
 }
 
-const DEPT_BREAKDOWN = [
-  { label: 'Teaching Staff',    count: 12, icon: GraduationCap, color: '#10b981', pct: 40 },
-  { label: 'Administration',    count:  5, icon: Shield,         color: '#38bdf8', pct: 17 },
-  { label: 'Security',          count:  2, icon: Shield,         color: '#a78bfa', pct:  7 },
-  { label: 'Transport',         count:  2, icon: Car,            color: '#f59e0b', pct:  7 },
-  { label: 'Kitchen',           count:  2, icon: ChefHat,        color: '#f97316', pct:  7 },
-  { label: 'Health',            count:  1, icon: Stethoscope,    color: '#f43f5e', pct:  3 },
-  { label: 'ICT & Technical',   count:  2, icon: Monitor,        color: '#22d3ee', pct:  7 },
-  { label: 'Maintenance',       count:  4, icon: Wrench,         color: '#84cc16', pct: 13 },
-]
+const STAFF_TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string }> = {
+  Teaching: { icon: GraduationCap, color: '#10b981' },
+  Administration: { icon: Shield, color: '#38bdf8' },
+  Security: { icon: Shield, color: '#a78bfa' },
+  Transport: { icon: Car, color: '#f59e0b' },
+  Kitchen: { icon: ChefHat, color: '#f97316' },
+  Health: { icon: Stethoscope, color: '#f43f5e' },
+  ICT: { icon: Monitor, color: '#22d3ee' },
+  'ICT & Technical': { icon: Monitor, color: '#22d3ee' },
+  Maintenance: { icon: Wrench, color: '#84cc16' },
+  'Non-Teaching': { icon: Users, color: '#a78bfa' },
+}
+const FALLBACK_COLORS = ['#10b981','#38bdf8','#a78bfa','#f59e0b','#f97316','#f43f5e','#22d3ee','#84cc16']
 
 export default function StaffDashboardPage() {
   const [summary, setSummary] = useState<Summary | null>(null)
@@ -89,23 +92,33 @@ export default function StaffDashboardPage() {
         <div className="lg:col-span-2 rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <p className="text-sm font-bold text-white mb-4 flex items-center gap-2"><Users size={13} className="text-emerald-400" /> Department Breakdown</p>
           <div className="space-y-3">
-            {DEPT_BREAKDOWN.map(d => (
-              <div key={d.label} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${d.color}18` }}>
-                  <d.icon size={12} style={{ color: d.color }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-300">{d.label}</span>
-                    <span className="text-xs font-bold text-slate-400 tabular-nums">{d.count}</span>
+            {(summary?.by_staff_type ?? []).length === 0 ? (
+              <p className="text-xs text-slate-500">Loading department data…</p>
+            ) : (() => {
+              const total = (summary?.by_staff_type ?? []).reduce((s, x) => s + x.count, 0) || 1
+              return (summary?.by_staff_type ?? []).map((d, idx) => {
+                const cfg = STAFF_TYPE_CONFIG[d.staff_type] ?? { icon: Users, color: FALLBACK_COLORS[idx % FALLBACK_COLORS.length] }
+                const Icon = cfg.icon
+                const pct = Math.round((d.count / total) * 100)
+                return (
+                  <div key={d.staff_type} className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${cfg.color}18` }}>
+                      <Icon size={12} style={{ color: cfg.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-slate-300">{d.staff_type}</span>
+                        <span className="text-xs font-bold text-slate-400 tabular-nums">{d.count}</span>
+                      </div>
+                      <div className="rounded-full overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.06)' }}>
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: cfg.color }} />
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-slate-600 w-8 text-right flex-shrink-0">{pct}%</span>
                   </div>
-                  <div className="rounded-full overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${d.pct}%`, background: d.color }} />
-                  </div>
-                </div>
-                <span className="text-[10px] text-slate-600 w-8 text-right flex-shrink-0">{d.pct}%</span>
-              </div>
-            ))}
+                )
+              })
+            })()}
           </div>
         </div>
 

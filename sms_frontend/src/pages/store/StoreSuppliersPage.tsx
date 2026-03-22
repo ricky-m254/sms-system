@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Building2, Phone, Mail, MapPin, Package, Plus, Pencil, Trash2 } from 'lucide-react'
 import PageHero from '../../components/PageHero'
-import { Building2, Phone, Mail, MapPin, Package, Plus, Pencil, X, Check } from 'lucide-react'
+import { apiClient } from '../../api/client'
 
 const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
-const GLASS_MID = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }
 
 type Supplier = {
   id: number
@@ -16,25 +16,41 @@ type Supplier = {
   is_active: boolean
 }
 
-const INITIAL: Supplier[] = [
-  { id: 1, name: 'Nairobi General Supplies', contact_person: 'James Mwangi', phone: '+254 701 234 567', email: 'james@ngsupplies.co.ke', address: 'Industrial Area, Nairobi', product_types: 'Food, Office Supplies', is_active: true },
-  { id: 2, name: 'Unga Group PLC', contact_person: 'Sarah Wanjiku', phone: '+254 722 345 678', email: 'sarah@ungagroup.com', address: 'Ruaraka, Nairobi', product_types: 'Food (Flour, Cereals)', is_active: true },
-  { id: 3, name: 'Kenya Office Mart', contact_person: 'Peter Kamau', phone: '+254 733 456 789', email: 'peter@keoffice.co.ke', address: 'Tom Mboya Street, Nairobi', product_types: 'Office Supplies, Stationery', is_active: true },
-  { id: 4, name: 'Lab & Science Supplies EA', contact_person: 'Fatuma Ali', phone: '+254 712 567 890', email: 'fatuma@labsciea.com', address: 'Westlands, Nairobi', product_types: 'Laboratory Equipment', is_active: false },
-]
+const BLANK: Omit<Supplier, 'id'> = { name: '', contact_person: '', phone: '', email: '', address: '', product_types: '', is_active: true }
 
-const EMPTY: Omit<Supplier, 'id'> = { name: '', contact_person: '', phone: '', email: '', address: '', product_types: '', is_active: true }
-
-let nextId = INITIAL.length + 1
+function asArr<T>(v: T[] | { results?: T[] }): T[] {
+  return Array.isArray(v) ? v : (v.results ?? [])
+}
 
 export default function StoreSuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(INITIAL)
-  const [showForm, setShowForm] = useState(false)
-  const [editId, setEditId] = useState<number | null>(null)
-  const [form, setForm] = useState<Omit<Supplier, 'id'>>(EMPTY)
-  const [search, setSearch] = useState('')
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   const [filterActive, setFilterActive] = useState<'all' | 'active' | 'inactive'>('all')
+
+  const [showForm, setShowForm] = useState(false)
+  const [editTarget, setEditTarget] = useState<Supplier | null>(null)
+  const [form, setForm] = useState<Omit<Supplier, 'id'>>(BLANK)
+  const [saving, setSaving] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Supplier | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  const load = async () => {
+    try {
+      setLoading(true)
+      const res = await apiClient.get('/store/suppliers/')
+      setSuppliers(asArr<Supplier>(res.data))
+      setError(null)
+    } catch {
+      setError('Failed to load suppliers')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void load() }, [])
 
   const filtered = suppliers.filter(s => {
     const q = search.toLowerCase()
@@ -43,196 +59,199 @@ export default function StoreSuppliersPage() {
     return matchSearch && matchActive
   })
 
-  const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true) }
-  const openEdit = (s: Supplier) => { setForm({ name: s.name, contact_person: s.contact_person, phone: s.phone, email: s.email, address: s.address, product_types: s.product_types, is_active: s.is_active }); setEditId(s.id); setShowForm(true) }
+  function openAdd() {
+    setEditTarget(null)
+    setForm(BLANK)
+    setShowForm(true)
+  }
 
-  const save = () => {
+  function openEdit(s: Supplier) {
+    setEditTarget(s)
+    setForm({ name: s.name, contact_person: s.contact_person, phone: s.phone, email: s.email, address: s.address, product_types: s.product_types, is_active: s.is_active })
+    setShowForm(true)
+  }
+
+  async function handleSave() {
     if (!form.name.trim()) return
-    if (editId !== null) {
-      setSuppliers(prev => prev.map(s => s.id === editId ? { ...s, ...form } : s))
-      setNotice('Supplier updated.')
-    } else {
-      setSuppliers(prev => [...prev, { ...form, id: nextId++ }])
-      setNotice('Supplier added.')
+    setSaving(true)
+    try {
+      if (editTarget) {
+        await apiClient.patch(`/store/suppliers/${editTarget.id}/`, form)
+        setNotice('Supplier updated.')
+      } else {
+        await apiClient.post('/store/suppliers/', form)
+        setNotice('Supplier added.')
+      }
+      setShowForm(false)
+      void load()
+    } catch {
+      setNotice('Save failed. Please try again.')
+    } finally {
+      setSaving(false)
     }
-    setShowForm(false); setEditId(null); setForm(EMPTY)
-    setTimeout(() => setNotice(null), 3000)
   }
 
-  const toggleActive = (id: number) => {
-    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, is_active: !s.is_active } : s))
+  async function handleDelete(s: Supplier) {
+    setDeleting(true)
+    try {
+      await apiClient.delete(`/store/suppliers/${s.id}/`)
+      setNotice('Supplier deleted.')
+      setDeleteTarget(null)
+      void load()
+    } catch {
+      setNotice('Delete failed.')
+    } finally {
+      setDeleting(false)
+    }
   }
 
-  const activeCount = suppliers.filter(s => s.is_active).length
+  const active = suppliers.filter(s => s.is_active).length
 
   return (
     <div className="space-y-6">
       <PageHero
-        badge="STORE"
-        badgeColor="orange"
-        title="Supplier Management"
-        subtitle="Manage vendor contacts, product types and procurement sources"
-        icon="🏭"
+        title="Suppliers"
+        subtitle="Manage vendor and supplier contacts for store procurement"
+        icon={Building2}
+        theme="sky"
+        stats={[
+          { label: 'Total Suppliers', value: suppliers.length },
+          { label: 'Active', value: active },
+          { label: 'Inactive', value: suppliers.length - active },
+        ]}
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Suppliers', value: suppliers.length, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-          { label: 'Active', value: activeCount, color: '#0ea5e9', bg: 'rgba(14,165,233,0.1)' },
-          { label: 'Inactive', value: suppliers.length - activeCount, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-          { label: 'Product Categories', value: new Set(suppliers.flatMap(s => s.product_types.split(',').map(p => p.trim()))).size, color: '#a855f7', bg: 'rgba(168,85,247,0.1)' },
-        ].map(k => (
-          <div key={k.label} className="rounded-2xl p-5" style={{ background: k.bg, border: `1px solid ${k.color}25` }}>
-            <p className="text-2xl font-bold text-white tabular-nums">{k.value}</p>
-            <p className="text-xs text-slate-400 mt-1">{k.label}</p>
-          </div>
-        ))}
-      </div>
-
       {notice && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-          <Check size={14} />{notice}
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          {notice} <button onClick={() => setNotice(null)} className="ml-2 text-xs underline">Dismiss</button>
         </div>
       )}
+      {error && (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div>
+      )}
 
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2 items-center">
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search suppliers…"
+            className="rounded-xl border border-white/[0.09] bg-white/[0.04] px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/50"
+          />
           {(['all', 'active', 'inactive'] as const).map(f => (
             <button key={f} onClick={() => setFilterActive(f)}
-              className="rounded-xl px-4 py-2 text-xs font-semibold capitalize transition"
-              style={{
-                background: filterActive === f ? '#10b981' : 'rgba(255,255,255,0.04)',
-                color: filterActive === f ? '#fff' : '#94a3b8',
-                border: '1px solid rgba(255,255,255,0.07)',
-              }}>
+              className={`rounded-xl px-3 py-1.5 text-xs font-medium capitalize transition ${filterActive === f ? 'bg-sky-500/20 text-sky-200 border border-sky-500/30' : 'border border-white/[0.07] text-slate-400 hover:text-white'}`}>
               {f}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search suppliers…"
-            className="w-full max-w-xs rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white outline-none" />
-          <button onClick={openAdd}
-            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400 transition whitespace-nowrap">
-            <Plus size={14} /> Add Supplier
-          </button>
-        </div>
+        <button onClick={openAdd} className="flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 transition">
+          <Plus size={16} /> Add Supplier
+        </button>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="rounded-2xl p-6" style={GLASS}>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-white">{editId !== null ? 'Edit Supplier' : 'New Supplier'}</p>
-            <button onClick={() => setShowForm(false)} className="text-slate-500 hover:text-white transition"><X size={16} /></button>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Supplier name *"
-              className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white sm:col-span-2" />
-            <input value={form.contact_person} onChange={e => setForm(p => ({ ...p, contact_person: e.target.value }))} placeholder="Contact person"
-              className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white" />
-            <input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="Phone (e.g. +254 7xx xxx xxx)"
-              className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white" />
-            <input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="Email address" type="email"
-              className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white" />
-            <input value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} placeholder="Physical address"
-              className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white" />
-            <input value={form.product_types} onChange={e => setForm(p => ({ ...p, product_types: e.target.value }))} placeholder="Product types (e.g. Food, Office Supplies)"
-              className="rounded-xl border border-white/[0.09] bg-slate-950 px-3 py-2 text-sm text-white sm:col-span-2" />
-            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-              <input type="checkbox" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))}
-                className="rounded" />
-              Active supplier
-            </label>
-          </div>
-          <button onClick={save} disabled={!form.name.trim()}
-            className="mt-4 rounded-xl bg-emerald-500 px-6 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50 hover:bg-emerald-400 transition">
-            {editId !== null ? 'Update Supplier' : 'Add Supplier'}
-          </button>
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-44 rounded-2xl animate-pulse" style={GLASS} />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filtered.map(s => (
+            <div key={s.id} className="glass-panel rounded-2xl p-5 flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-semibold text-white">{s.name}</p>
+                  {!s.is_active && (
+                    <span className="mt-1 inline-block rounded-lg bg-slate-700/30 border border-slate-600/30 px-2 py-0.5 text-[10px] text-slate-500">Inactive</span>
+                  )}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <button onClick={() => openEdit(s)} className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-white/10 transition"><Pencil size={13} /></button>
+                  <button onClick={() => setDeleteTarget(s)} className="rounded-lg p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition"><Trash2 size={13} /></button>
+                </div>
+              </div>
+              <div className="space-y-1.5 text-sm text-slate-400">
+                {s.contact_person && (
+                  <div className="flex items-center gap-2"><Building2 size={12} className="text-slate-500 shrink-0" /><span>{s.contact_person}</span></div>
+                )}
+                {s.phone && (
+                  <div className="flex items-center gap-2"><Phone size={12} className="text-slate-500 shrink-0" /><span>{s.phone}</span></div>
+                )}
+                {s.email && (
+                  <div className="flex items-center gap-2"><Mail size={12} className="text-slate-500 shrink-0" /><span className="truncate">{s.email}</span></div>
+                )}
+                {s.address && (
+                  <div className="flex items-center gap-2"><MapPin size={12} className="text-slate-500 shrink-0" /><span className="text-xs">{s.address}</span></div>
+                )}
+              </div>
+              {s.product_types && (
+                <div className="pt-2 border-t border-white/[0.06] flex items-center gap-2">
+                  <Package size={12} className="text-slate-500" />
+                  <span className="text-xs text-slate-500">{s.product_types}</span>
+                </div>
+              )}
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="col-span-3 rounded-2xl py-16 text-center text-slate-500" style={GLASS}>
+              No suppliers found. Add your first supplier above.
+            </div>
+          )}
         </div>
       )}
 
-      {/* Supplier Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered.length === 0 ? (
-          <p className="text-slate-500 text-sm col-span-2 py-8 text-center">No suppliers found.</p>
-        ) : filtered.map(s => (
-          <div key={s.id} className="rounded-2xl p-5 transition-all hover:scale-[1.01]" style={GLASS_MID}>
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: s.is_active ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)' }}>
-                  <Building2 size={18} style={{ color: s.is_active ? '#10b981' : '#64748b' }} />
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-[#0d1421] border border-white/[0.09] p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-display font-semibold">{editTarget ? 'Edit Supplier' : 'Add Supplier'}</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Supplier Name *', key: 'name', placeholder: 'e.g. Nairobi General Supplies', full: true },
+                { label: 'Contact Person', key: 'contact_person', placeholder: 'e.g. James Mwangi' },
+                { label: 'Phone', key: 'phone', placeholder: '+254 7XX XXX XXX' },
+                { label: 'Email', key: 'email', placeholder: 'contact@supplier.co.ke' },
+                { label: 'Address', key: 'address', placeholder: 'Industrial Area, Nairobi', full: true },
+                { label: 'Product Types', key: 'product_types', placeholder: 'e.g. Food, Office Supplies', full: true },
+              ].map(f => (
+                <div key={f.key} className={f.full ? 'col-span-2' : ''}>
+                  <label className="text-xs text-slate-400 mb-1 block">{f.label}</label>
+                  <input
+                    value={(form as Record<string, string | boolean>)[f.key] as string}
+                    onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                    placeholder={f.placeholder}
+                    className="w-full rounded-xl border border-white/[0.09] bg-white/[0.04] px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/50"
+                  />
                 </div>
-                <div>
-                  <p className="font-bold text-white text-sm">{s.name}</p>
-                  <span className="rounded-full px-2 py-0.5 text-[10px] font-bold mt-0.5 inline-block"
-                    style={{
-                      background: s.is_active ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.04)',
-                      color: s.is_active ? '#10b981' : '#64748b',
-                    }}>
-                    {s.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button onClick={() => openEdit(s)} className="rounded-lg p-1.5 text-slate-500 hover:text-sky-400 transition"
-                  style={{ background: 'rgba(255,255,255,0.04)' }}>
-                  <Pencil size={13} />
-                </button>
-                <button onClick={() => toggleActive(s.id)} className="rounded-lg p-1.5 text-slate-500 hover:text-amber-400 transition"
-                  style={{ background: 'rgba(255,255,255,0.04)' }} title={s.is_active ? 'Deactivate' : 'Activate'}>
-                  {s.is_active ? <X size={13} /> : <Check size={13} />}
-                </button>
+              ))}
+              <div className="col-span-2 flex items-center gap-3">
+                <input type="checkbox" id="is_active" checked={form.is_active} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))} className="rounded" />
+                <label htmlFor="is_active" className="text-sm text-slate-300">Active supplier</label>
               </div>
             </div>
-            <div className="space-y-2">
-              {s.contact_person && (
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <div className="w-4 h-4 flex items-center justify-center">👤</div>
-                  {s.contact_person}
-                </div>
-              )}
-              {s.phone && (
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <Phone size={12} className="text-slate-500 shrink-0" />
-                  <a href={`tel:${s.phone}`} className="hover:text-emerald-400 transition">{s.phone}</a>
-                </div>
-              )}
-              {s.email && (
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <Mail size={12} className="text-slate-500 shrink-0" />
-                  <a href={`mailto:${s.email}`} className="hover:text-emerald-400 transition truncate">{s.email}</a>
-                </div>
-              )}
-              {s.address && (
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <MapPin size={12} className="text-slate-500 shrink-0" />
-                  {s.address}
-                </div>
-              )}
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => setShowForm(false)} disabled={saving} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300 hover:text-white transition">Cancel</button>
+              <button onClick={() => void handleSave()} disabled={saving} className="flex-1 rounded-xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 transition disabled:opacity-60">
+                {saving ? 'Saving…' : editTarget ? 'Save Changes' : 'Add Supplier'}
+              </button>
             </div>
-            {s.product_types && (
-              <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Package size={11} className="text-slate-500" />
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Products Supplied</p>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {s.product_types.split(',').map(p => p.trim()).filter(Boolean).map(p => (
-                    <span key={p} className="rounded-full px-2.5 py-0.5 text-[11px] font-medium text-slate-300"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-[#0d1421] border border-white/[0.09] p-6 space-y-4">
+            <h3 className="text-lg font-display font-semibold text-rose-400">Delete Supplier?</h3>
+            <p className="text-sm text-slate-400">Remove <strong className="text-white">{deleteTarget.name}</strong>? This cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteTarget(null)} disabled={deleting} className="flex-1 rounded-xl border border-white/[0.09] px-4 py-2 text-sm text-slate-300">Cancel</button>
+              <button onClick={() => void handleDelete(deleteTarget)} disabled={deleting} className="flex-1 rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-400 disabled:opacity-60">
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

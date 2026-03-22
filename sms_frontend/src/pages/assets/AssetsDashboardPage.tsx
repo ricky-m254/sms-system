@@ -15,24 +15,17 @@ type DashboardData = {
   categories_count: number; assignments_active: number; maintenance_pending: number
 }
 
-const ASSET_CATEGORIES = [
-  { name: 'Electronics', count: 4, value: 2380000, color: '#0ea5e9', icon: '💻' },
-  { name: 'Furniture', count: 2, value: 130000, color: '#10b981', icon: '🪑' },
-  { name: 'Laboratory', count: 3, value: 330000, color: '#a855f7', icon: '🔬' },
-  { name: 'Sports Equipment', count: 2, value: 44000, color: '#f59e0b', icon: '⚽' },
-  { name: 'Library', count: 1, value: 96000, color: '#6366f1', icon: '📚' },
-  { name: 'Transport', count: 1, value: 4500000, color: '#ec4899', icon: '🚌' },
-  { name: 'Kitchen', count: 1, value: 380000, color: '#f97316', icon: '🍳' },
-  { name: 'Office', count: 1, value: 180000, color: '#14b8a6', icon: '🖨️' },
-]
+const CAT_COLORS = ['#0ea5e9', '#10b981', '#a855f7', '#f59e0b', '#6366f1', '#ec4899', '#f97316', '#14b8a6']
 
-const RECENT_ASSETS = [
-  { code: 'AST-002', name: 'HP ProBook Laptops (15 units)', category: 'Electronics', cost: 750000, value: 637500, status: 'Active', year: 2023 },
-  { code: 'AST-010', name: 'Isuzu School Bus', category: 'Transport', cost: 4500000, value: 3375000, status: 'Active', year: 2022 },
-  { code: 'AST-014', name: 'Desktop Computers (20 units)', category: 'Electronics', cost: 1200000, value: 864000, status: 'Active', year: 2022 },
-  { code: 'AST-011', name: 'Office Photocopier', category: 'Office', cost: 180000, value: 158400, status: 'Active', year: 2023 },
-  { code: 'AST-004', name: 'Science Lab Microscopes (10)', category: 'Laboratory', cost: 250000, value: 162500, status: 'Active', year: 2021 },
-]
+type AssetItem = {
+  id: number; asset_code: string; name: string; category_name?: string
+  purchase_cost?: number; current_value?: number; status: string; purchase_date?: string
+}
+type AssetCategory = { id: number; name: string; asset_count?: number; total_value?: number }
+
+function asArr<T>(v: T[] | { results?: T[] }): T[] {
+  return Array.isArray(v) ? v : (v.results ?? [])
+}
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
   Active: { label: 'Active', color: '#10b981', bg: 'rgba(16,185,129,0.12)', icon: CheckCircle2 },
@@ -46,17 +39,24 @@ const fmtKsh = (n: number) => 'Ksh ' + n.toLocaleString('en-KE', { minimumFracti
 export default function AssetsDashboardPage() {
   const navigate = useNavigate()
   const [data, setData] = useState<DashboardData>({
-    total_assets: 15, active: 15, in_repair: 0, retired: 0, disposed: 0,
-    total_value: 8040900, total_cost: 9860000, total_accumulated_depreciation: 1819100,
-    categories_count: 8, assignments_active: 0, maintenance_pending: 0,
+    total_assets: 0, active: 0, in_repair: 0, retired: 0, disposed: 0,
+    total_value: 0, total_cost: 0, total_accumulated_depreciation: 0,
+    categories_count: 0, assignments_active: 0, maintenance_pending: 0,
   })
+  const [recentAssets, setRecentAssets] = useState<AssetItem[]>([])
+  const [assetCategories, setAssetCategories] = useState<AssetCategory[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiClient.get<DashboardData>('/assets/dashboard/')
-      .then(res => setData(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    Promise.allSettled([
+      apiClient.get<DashboardData>('/assets/dashboard/'),
+      apiClient.get('/assets/', { params: { limit: 5, ordering: '-created_at' } }),
+      apiClient.get('/assets/categories/'),
+    ]).then(([dashRes, assetsRes, catsRes]) => {
+      if (dashRes.status === 'fulfilled') setData(dashRes.value.data)
+      if (assetsRes.status === 'fulfilled') setRecentAssets(asArr<AssetItem>(assetsRes.value.data))
+      if (catsRes.status === 'fulfilled') setAssetCategories(asArr<AssetCategory>(catsRes.value.data))
+    }).finally(() => setLoading(false))
   }, [])
 
   const deprecPct = data.total_cost > 0 ? (data.total_accumulated_depreciation / data.total_cost * 100) : 0
@@ -154,16 +154,20 @@ export default function AssetsDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {RECENT_ASSETS.map((asset, i) => {
+                {recentAssets.length === 0 ? (
+                  <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
+                    {loading ? 'Loading…' : 'No assets registered yet.'}
+                  </td></tr>
+                ) : recentAssets.map((asset, i) => {
                   const cfg = STATUS_CFG[asset.status] ?? STATUS_CFG.Active
                   return (
-                    <tr key={asset.code} className="hover:bg-white/[0.02] transition-colors"
-                      style={{ borderBottom: i < RECENT_ASSETS.length - 1 ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
-                      <td className="px-4 py-3 font-mono text-[11px] text-slate-500">{asset.code}</td>
+                    <tr key={asset.id} className="hover:bg-white/[0.02] transition-colors"
+                      style={{ borderBottom: i < recentAssets.length - 1 ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
+                      <td className="px-4 py-3 font-mono text-[11px] text-slate-500">{asset.asset_code}</td>
                       <td className="px-4 py-3 text-xs font-medium text-white">{asset.name}</td>
-                      <td className="px-4 py-3 text-[11px] text-slate-400">{asset.category}</td>
-                      <td className="px-4 py-3 text-[11px] text-slate-300 font-medium">{fmtKsh(asset.cost)}</td>
-                      <td className="px-4 py-3 text-[11px] font-bold" style={{ color: '#10b981' }}>{fmtKsh(asset.value)}</td>
+                      <td className="px-4 py-3 text-[11px] text-slate-400">{asset.category_name ?? '—'}</td>
+                      <td className="px-4 py-3 text-[11px] text-slate-300 font-medium">{asset.purchase_cost ? fmtKsh(asset.purchase_cost) : '—'}</td>
+                      <td className="px-4 py-3 text-[11px] font-bold" style={{ color: '#10b981' }}>{asset.current_value ? fmtKsh(asset.current_value) : '—'}</td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase"
                           style={{ background: cfg.bg, color: cfg.color }}>
@@ -189,24 +193,32 @@ export default function AssetsDashboardPage() {
               </p>
             </div>
             <div className="p-4 space-y-2.5">
-              {ASSET_CATEGORIES.slice(0, 6).map(cat => (
-                <div key={cat.name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="flex items-center gap-1.5 text-xs text-slate-300">
-                      <span>{cat.icon}</span>{cat.name}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400">{cat.count} items</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <div className="h-full rounded-full" style={{ width: `${(cat.value / 4500000) * 100}%`, background: cat.color }} />
+              {assetCategories.length === 0 ? (
+                <p className="text-xs text-slate-500">{loading ? 'Loading…' : 'No categories found.'}</p>
+              ) : (() => {
+                const maxVal = Math.max(...assetCategories.map(c => c.total_value ?? 0), 1)
+                return assetCategories.slice(0, 6).map((cat, idx) => {
+                  const color = CAT_COLORS[idx % CAT_COLORS.length]
+                  return (
+                    <div key={cat.id}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs text-slate-300">{cat.name}</span>
+                        <span className="text-[10px] font-bold text-slate-400">{cat.asset_count ?? 0} items</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${((cat.total_value ?? 0) / maxVal) * 100}%`, background: color }} />
+                        </div>
+                        {cat.total_value ? (
+                          <span className="text-[9px] font-medium flex-shrink-0" style={{ color }}>
+                            {fmtKsh(cat.total_value).replace('Ksh ', '')}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                    <span className="text-[9px] font-medium flex-shrink-0" style={{ color: cat.color }}>
-                      {fmtKsh(cat.value).replace('Ksh ', '')}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  )
+                })
+              })()}
             </div>
           </div>
 

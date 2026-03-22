@@ -59,7 +59,7 @@ from .views import (
     VoteHeadViewSet, VoteHeadPaymentAllocationViewSet,
     CashbookEntryViewSet, CashbookSummaryView,
     BalanceCarryForwardViewSet,
-    StoreCategoryViewSet, StoreItemViewSet, StoreTransactionViewSet,
+    StoreCategoryViewSet, StoreSupplierViewSet, StoreItemViewSet, StoreTransactionViewSet,
     StoreOrderRequestViewSet, StoreOrderReviewView, StoreDashboardView,
     DispensaryVisitViewSet, DispensaryPrescriptionViewSet, DispensaryStockViewSet, DispensaryDashboardView,
     DispensaryDeliveryNoteViewSet, DispensaryOutsideTreatmentViewSet,
@@ -130,6 +130,7 @@ router.register(r'finance/vote-head-allocations', VoteHeadPaymentAllocationViewS
 router.register(r'finance/cashbook', CashbookEntryViewSet, basename='cashbook-entry')
 router.register(r'finance/carry-forwards', BalanceCarryForwardViewSet, basename='carry-forward')
 router.register(r'store/categories', StoreCategoryViewSet, basename='store-category')
+router.register(r'store/suppliers', StoreSupplierViewSet, basename='store-supplier')
 router.register(r'store/items', StoreItemViewSet, basename='store-item')
 router.register(r'store/transactions', StoreTransactionViewSet, basename='store-transaction')
 router.register(r'store/orders', StoreOrderRequestViewSet, basename='store-order')

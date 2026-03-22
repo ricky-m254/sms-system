@@ -1511,6 +1511,23 @@ class StoreCategory(models.Model):
         verbose_name_plural = 'Store Categories'
 
 
+class StoreSupplier(models.Model):
+    name = models.CharField(max_length=200)
+    contact_person = models.CharField(max_length=150, blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
+    address = models.TextField(blank=True)
+    product_types = models.CharField(max_length=300, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
 class StoreItem(models.Model):
     ITEM_TYPE_CHOICES = [('FOOD', 'Food'), ('OFFICE', 'Office/Stationery'), ('OTHER', 'Other')]
     name = models.CharField(max_length=200)
@@ -1549,6 +1566,7 @@ class StoreTransaction(models.Model):
     transaction_type = models.CharField(max_length=12, choices=TYPE_CHOICES)
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
     reference = models.CharField(max_length=100, blank=True)
+    department = models.CharField(max_length=100, blank=True)
     purpose = models.CharField(max_length=255, blank=True)
     performed_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
     date = models.DateField()

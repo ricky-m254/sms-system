@@ -15,23 +15,30 @@ interface Stats {
   total_resources: number
 }
 
-const SUBJECTS = [
-  { name: 'Mathematics', code: 'MTH', lessons: 24, topics: 18, color: '#3b82f6' },
-  { name: 'English Language', code: 'ENG', lessons: 20, topics: 15, color: '#10b981' },
-  { name: 'Biology', code: 'BIO', lessons: 22, topics: 16, color: '#22c55e' },
-  { name: 'Chemistry', code: 'CHE', lessons: 21, topics: 14, color: '#a855f7' },
-  { name: 'Physics', code: 'PHY', lessons: 19, topics: 13, color: '#0ea5e9' },
-  { name: 'History & Govt', code: 'HIS', lessons: 18, topics: 12, color: '#f97316' },
-]
+const SUBJ_COLORS = ['#3b82f6','#10b981','#22c55e','#a855f7','#0ea5e9','#f97316','#f43f5e','#f59e0b','#38bdf8','#84cc16']
+
+type SubjectItem = {
+  id: number; name: string; code?: string; subject_code?: string
+  lesson_count?: number; topic_count?: number
+}
+
+function asArr<T>(v: T[] | { results?: T[] }): T[] {
+  return Array.isArray(v) ? v : (v.results ?? [])
+}
 
 export default function CurriculumDashboardPage() {
   const navigate = useNavigate()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [subjects, setSubjects] = useState<SubjectItem[]>([])
 
   useEffect(() => {
-    apiClient.get('/curriculum/dashboard/')
-      .then(res => setStats(res.data))
-      .catch(() => {})
+    Promise.allSettled([
+      apiClient.get('/curriculum/dashboard/'),
+      apiClient.get('/academics/subjects/', { params: { limit: 6 } }),
+    ]).then(([statsRes, subjRes]) => {
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data)
+      if (subjRes.status === 'fulfilled') setSubjects(asArr<SubjectItem>(subjRes.value.data))
+    })
   }, [])
 
   const kpis = [
@@ -113,20 +120,26 @@ export default function CurriculumDashboardPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-5">
-            {SUBJECTS.map(subj => {
-              const pct = Math.round((subj.topics / subj.lessons) * 100)
+            {subjects.length === 0 ? (
+              <p className="col-span-2 py-8 text-center text-sm text-slate-500">No subjects found.</p>
+            ) : subjects.slice(0, 6).map((subj, idx) => {
+              const lessons = subj.lesson_count ?? 0
+              const topics = subj.topic_count ?? 0
+              const pct = lessons > 0 ? Math.round((topics / lessons) * 100) : 0
+              const color = SUBJ_COLORS[idx % SUBJ_COLORS.length]
+              const code = subj.code ?? subj.subject_code ?? ''
               return (
-                <div key={subj.code} className="rounded-xl p-3"
+                <div key={subj.id} className="rounded-xl p-3"
                   style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <p className="text-sm font-semibold text-white">{subj.name}</p>
-                      <p className="text-[10px] text-slate-500">{subj.lessons} lessons · {subj.topics} topics covered</p>
+                      <p className="text-[10px] text-slate-500">{code && `${code} · `}{lessons} lessons · {topics} topics covered</p>
                     </div>
-                    <span className="text-xs font-bold" style={{ color: subj.color }}>{pct}%</span>
+                    <span className="text-xs font-bold" style={{ color }}>{pct}%</span>
                   </div>
                   <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: subj.color }} />
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
                   </div>
                 </div>
               )
