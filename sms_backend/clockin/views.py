@@ -18,14 +18,24 @@ from hr.models import AttendanceRecord as EmployeeAttendanceRecord
 from communication.models import Notification
 from django.db.models import Q
 
-# Ports associated with known biometric device brands
+# Ports associated with known biometric device brands.
+# ASI6214S (ZKTeco) is the PRIMARY target — listed first and probed first.
 BIOMETRIC_PROBE_PORTS = [
-    (4370, 'ZKTeco',     'Fingerprint / RFID'),
-    (5005, 'ZKTeco Alt', 'Fingerprint / RFID'),
-    (5010, 'Anviz',      'Fingerprint / RFID'),
-    (4000, 'FingerTec',  'Fingerprint'),
-    (8080, 'HTTP Terminal', 'Web-based'),
-    (80,   'HTTP Terminal', 'Web-based'),
+    # ── PRIMARY: ZKTeco ASI6214S ──────────────────────────────
+    (4370, 'ZKTeco ASI6214S',        'Fingerprint / RFID'),  # ZKPCP protocol (default)
+    (4000, 'ZKTeco ASI6214S (alt)',  'Fingerprint / RFID'),  # Some ASI variants
+    # ── Other ZKTeco series ───────────────────────────────────
+    (5005, 'ZKTeco (other model)',   'Fingerprint / RFID'),
+    # ── Anviz series ─────────────────────────────────────────
+    (5010, 'Anviz',                  'Fingerprint / RFID'),
+    (6000, 'Anviz (alt port)',       'Fingerprint / RFID'),
+    # ── FingerTec ────────────────────────────────────────────
+    (4008, 'FingerTec',              'Fingerprint'),
+    # ── Suprema ──────────────────────────────────────────────
+    (9922, 'Suprema BioStar',        'Fingerprint'),
+    # ── Generic HTTP terminals ────────────────────────────────
+    (8080, 'HTTP Biometric Terminal', 'Web-based'),
+    (80,   'HTTP Biometric Terminal', 'Web-based'),
 ]
 
 def _tcp_probe(ip: str, port: int, timeout: float) -> bool:

@@ -136,7 +136,7 @@ export default function ClockInDevicesPage() {
     setDiscovered([])
     setScanLog([])
     setScanError(null)
-    addLog('Checking browser for USB / HID fingerprint devices…')
+    addLog('Checking for USB-connected biometric devices (ZKTeco ASI6214S priority)…')
 
     if (!('hid' in navigator)) {
       addLog('WebHID not supported in this browser (use Chrome or Edge).')
@@ -145,31 +145,37 @@ export default function ClockInDevicesPage() {
     }
 
     try {
-      addLog('Requesting USB HID device access from browser…')
-      // Common fingerprint/biometric vendor IDs
+      addLog('Prompting browser for USB HID access — select your device in the dialog…')
+      // PRIMARY: ZKTeco ASI6214S (vendor 0x1b55) + other known brands
       const hidDevices = await (navigator as any).hid.requestDevice({
         filters: [
-          { vendorId: 0x1b55 },  // ZKTeco
+          { vendorId: 0x1b55 },  // ZKTeco (ASI6214S, ZK9500, ZK4500 series)
           { vendorId: 0x05ba },  // DigitalPersona / HID Global
           { vendorId: 0x1533 },  // Suprema
-          { vendorId: 0x0483 },  // STMicroelectronics (common in generic readers)
+          { vendorId: 0x2109 },  // VIA Labs (used in some ZKTeco USB hubs)
+          { vendorId: 0x0483 },  // STMicroelectronics (generic readers)
           { vendorId: 0x04b4 },  // Cypress / generic USB HID
-          { usagePage: 0x000d }, // Digitizer / biometric
+          { vendorId: 0x1a79 },  // Crossmatch / Aware
+          { usagePage: 0x000d }, // Digitizer / biometric (catch-all)
         ],
       })
 
       if (!hidDevices || hidDevices.length === 0) {
-        addLog('No USB biometric device selected or found.')
+        addLog('No USB biometric device selected or found via USB.')
       } else {
         for (const dev of hidDevices) {
-          const devId = `USB-HID:${dev.vendorId.toString(16).padStart(4,'0')}:${dev.productId.toString(16).padStart(4,'0')}`
-          addLog(`Found USB device: ${dev.productName || 'Unknown'} (vendor 0x${dev.vendorId.toString(16)})`)
+          const devId   = `USB-HID:${dev.vendorId.toString(16).padStart(4,'0')}:${dev.productId.toString(16).padStart(4,'0')}`
+          const isZKT   = dev.vendorId === 0x1b55
+          const brand   = isZKT
+            ? (dev.productName || 'ZKTeco ASI6214S')
+            : (dev.productName || 'USB Biometric Device')
+          addLog(`✓ Found: ${brand} (VID 0x${dev.vendorId.toString(16).toUpperCase()}, PID 0x${dev.productId.toString(16).toUpperCase()})`)
           const candidate: DiscoveredDevice = {
-            ip:               'USB',
-            port:             0,
-            brand:            dev.productName || 'USB Biometric Device',
-            technology:       'USB HID Fingerprint',
-            device_id:        devId,
+            ip:                 'USB',
+            port:               0,
+            brand,
+            technology:         isZKT ? 'ZKTeco USB HID (ASI series)' : 'USB HID Fingerprint',
+            device_id:          devId,
             already_registered: devices.some(d => d.device_id === devId),
           }
           setDiscovered(prev => [...prev, candidate])
@@ -177,7 +183,7 @@ export default function ClockInDevicesPage() {
       }
     } catch (err: any) {
       if (err.name === 'SecurityError' || err.name === 'NotAllowedError') {
-        addLog('USB access denied by browser. Try clicking the button again.')
+        addLog('USB access denied by browser — try again and allow access in the dialog.')
       } else {
         addLog(`USB scan error: ${err.message}`)
       }
@@ -196,7 +202,7 @@ export default function ClockInDevicesPage() {
       setScanError(null)
     }
     addLog(`Starting network scan on ${ipPrefix}.1 – ${ipPrefix}.254…`)
-    addLog('Probing ports: 4370 (ZKTeco), 5010 (Anviz), 4000 (FingerTec), 80, 8080…')
+    addLog('PRIMARY: port 4370 (ZKTeco ASI6214S / ZKPCP) · Also: 5010 (Anviz), 4008 (FingerTec), 9922 (Suprema), 80, 8080…')
 
     try {
       const res = await apiClient.post<{ devices: DiscoveredDevice[]; scanned: string }>(
@@ -284,14 +290,21 @@ export default function ClockInDevicesPage() {
       {/* ── Auto-detect panel ── */}
       {showDetect && (
         <section className="rounded-2xl p-6 space-y-5 animate-in fade-in slide-in-from-top-4" style={GLASS}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-display font-semibold text-emerald-400">Auto-detect Biometric Devices</h2>
-              <p className="text-sm text-slate-400 mt-0.5">
-                Scans for USB fingerprint readers and network-connected terminals (ZKTeco, Anviz, FingerTec…)
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2 className="text-lg font-display font-semibold text-emerald-400">Auto-detect Biometric Devices</h2>
+                <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-emerald-400 uppercase">
+                  PRIMARY: ASI6214S
+                </span>
+              </div>
+              <p className="text-sm text-slate-400">
+                Scans USB and network for biometric terminals.
+                <span className="ml-1 text-emerald-500/80 font-medium">ZKTeco ASI6214S</span> is checked first (port 4370),
+                then Anviz, FingerTec, Suprema and HTTP-based terminals.
               </p>
             </div>
-            <button onClick={() => { setShowDetect(false); resetDetect() }} className="text-slate-500 hover:text-slate-300 text-xs">✕ Close</button>
+            <button onClick={() => { setShowDetect(false); resetDetect() }} className="shrink-0 text-slate-500 hover:text-slate-300 text-xs mt-0.5">✕ Close</button>
           </div>
 
           {/* Config row */}
@@ -305,6 +318,7 @@ export default function ClockInDevicesPage() {
                 onChange={e => setIpPrefix(e.target.value)}
                 disabled={isScanning}
               />
+              <p className="text-[10px] text-slate-600">ASI6214S default: <span className="font-mono text-emerald-600">192.168.1</span>.201</p>
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Probe timeout (s)</label>
@@ -429,15 +443,23 @@ export default function ClockInDevicesPage() {
           )}
 
           {scanPhase === 'done' && discovered.length === 0 && (
-            <div className="rounded-xl bg-slate-900 border border-white/[0.07] p-6 text-center space-y-3">
-              <p className="text-slate-400 text-sm">No biometric devices found on this subnet.</p>
-              <div className="text-xs text-slate-600 space-y-1">
-                <p>Make sure the device is powered on and connected to <span className="font-mono text-slate-500">{ipPrefix}.x</span></p>
-                <p>Common device defaults: ZKTeco → 192.168.1.201, Anviz → 192.168.1.100</p>
+            <div className="rounded-xl bg-slate-900 border border-white/[0.07] p-6 space-y-4">
+              <p className="text-slate-300 text-sm font-semibold">No biometric devices found on this subnet.</p>
+              <div className="space-y-2 text-xs text-slate-500">
+                <p>Ensure the device is powered on and on the same LAN as this server.</p>
+                <div className="rounded-lg bg-slate-950 border border-white/[0.06] p-3 space-y-1.5 font-mono">
+                  <p className="text-slate-400 font-sans font-bold text-[10px] uppercase tracking-widest mb-2">Known factory defaults</p>
+                  <p><span className="text-emerald-400 font-bold">ZKTeco ASI6214S</span> → <span className="text-sky-400">192.168.1.201</span> · port <span className="text-sky-400">4370</span></p>
+                  <p><span className="text-slate-400">ZKTeco (other)</span>   → <span className="text-slate-500">192.168.1.201</span> · port <span className="text-slate-500">4370</span></p>
+                  <p><span className="text-slate-400">Anviz</span>             → <span className="text-slate-500">192.168.1.100</span> · port <span className="text-slate-500">5010</span></p>
+                  <p><span className="text-slate-400">FingerTec</span>         → <span className="text-slate-500">192.168.1.200</span> · port <span className="text-slate-500">4008</span></p>
+                  <p><span className="text-slate-400">Suprema BioStar</span>   → <span className="text-slate-500">192.168.1.x</span>   · port <span className="text-slate-500">9922</span></p>
+                </div>
+                <p>If the ASI6214S is on a different subnet, update the network prefix above and scan again.</p>
               </div>
               <button
                 onClick={() => { setShowForm(true); setShowDetect(false) }}
-                className="mt-2 rounded-xl border border-white/[0.09] px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition"
+                className="rounded-xl border border-white/[0.09] px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition"
               >
                 Register manually instead →
               </button>
