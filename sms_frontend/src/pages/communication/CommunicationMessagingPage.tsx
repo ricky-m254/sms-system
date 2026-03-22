@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   MessageSquare, Plus, Send, Search, Users, Hash,
-  MoreHorizontal, Circle, RefreshCw, Loader2,
+  MoreHorizontal, Circle, RefreshCw, Loader2, Archive, Trash2, X,
 } from 'lucide-react'
 import { apiClient } from '../../api/client'
 import PageHero from '../../components/PageHero'
@@ -35,7 +35,34 @@ export default function CommunicationMessagingPage() {
   const [sending, setSending] = useState(false)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showOptions, setShowOptions] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const archiveConversation = async () => {
+    if (!selected) return
+    setShowOptions(false)
+    try {
+      await apiClient.patch(`/communication/conversations/${selected}/`, { is_archived: true })
+      setSelected(null)
+      setMessages([])
+      await loadConversations()
+    } catch {
+      setError('Unable to archive conversation.')
+    }
+  }
+
+  const deleteConversation = async () => {
+    if (!selected) return
+    setShowOptions(false)
+    try {
+      await apiClient.delete(`/communication/conversations/${selected}/`)
+      setSelected(null)
+      setMessages([])
+      await loadConversations()
+    } catch {
+      setError('Unable to delete conversation.')
+    }
+  }
 
   const loadConversations = async () => {
     const res = await apiClient.get<Conversation[] | { results: Conversation[] }>('/communication/conversations/')
@@ -203,13 +230,41 @@ export default function CommunicationMessagingPage() {
                 >
                   <RefreshCw size={11} className="text-slate-400" />
                 </button>
-                <button
-                  onClick={() => alert('Message options: Archive, Mark as Read, or Delete this conversation.')}
-                  className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition"
-                  title="More options"
-                >
-                  <MoreHorizontal size={13} className="text-slate-400" />
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowOptions(!showOptions)}
+                    className="h-7 w-7 rounded-lg border border-white/[0.09] flex items-center justify-center hover:bg-slate-700 transition"
+                    title="More options"
+                  >
+                    <MoreHorizontal size={13} className="text-slate-400" />
+                  </button>
+                  {showOptions && (
+                    <div className="absolute right-0 top-9 z-30 w-44 rounded-xl border border-white/[0.09] bg-slate-900 shadow-xl py-1">
+                      <button
+                        onClick={() => void archiveConversation()}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-300 hover:bg-white/[0.06] hover:text-white transition"
+                      >
+                        <Archive size={12} className="text-amber-400" />
+                        Archive conversation
+                      </button>
+                      <button
+                        onClick={() => void deleteConversation()}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-rose-400 hover:bg-rose-500/10 transition"
+                      >
+                        <Trash2 size={12} />
+                        Delete conversation
+                      </button>
+                      <hr className="border-white/[0.06] my-1" />
+                      <button
+                        onClick={() => setShowOptions(false)}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-500 hover:text-slate-300 transition"
+                      >
+                        <X size={12} />
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <p className="text-sm text-slate-500">Select a conversation</p>

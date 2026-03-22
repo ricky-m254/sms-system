@@ -47,11 +47,18 @@ class MessageAttachmentSerializer(serializers.ModelSerializer):
 class CommunicationMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.CharField(source="sender.username", read_only=True)
     attachments = MessageAttachmentSerializer(many=True, read_only=True)
+    is_own = serializers.SerializerMethodField()
+
+    def get_is_own(self, obj):
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            return obj.sender_id == request.user.id
+        return False
 
     class Meta:
         model = CommunicationMessage
         fields = "__all__"
-        read_only_fields = ["sender_name", "sender", "sent_at", "edited_at", "delivery_status", "attachments"]
+        read_only_fields = ["sender_name", "sender", "sent_at", "edited_at", "delivery_status", "attachments", "is_own"]
 
 
 class MessageReadReceiptSerializer(serializers.ModelSerializer):

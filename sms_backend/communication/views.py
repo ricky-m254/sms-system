@@ -92,6 +92,8 @@ class ConversationViewSet(CommunicationAccessMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        if _is_admin(user):
+            return super().get_queryset()
         return (
             super().get_queryset()
             .filter(participants__user=user, participants__is_active=True)
@@ -140,14 +142,24 @@ class CommunicationMessageViewSet(CommunicationAccessMixin, viewsets.ModelViewSe
         conversation = self.request.query_params.get("conversation")
         if conversation:
             qs = qs.filter(conversation_id=conversation)
-        qs = qs.filter(conversation__participants__user=self.request.user, conversation__participants__is_active=True).distinct()
-        return qs
+        if not _is_admin(self.request.user):
+            qs = qs.filter(conversation__participants__user=self.request.user, conversation__participants__is_active=True).distinct()
+        return qs.order_by("sent_at")
 
     def perform_create(self, serializer):
+        user = self.request.user
         conversation = serializer.validated_data.get("conversation")
-        if not ConversationParticipant.objects.filter(conversation=conversation, user=self.request.user, is_active=True).exists():
-            raise PermissionDenied("You are not an active participant in this conversation.")
-        serializer.save(sender=self.request.user, delivery_status="Sent")
+        is_participant = ConversationParticipant.objects.filter(conversation=conversation, user=user, is_active=True).exists()
+        if not is_participant:
+            if _is_admin(user):
+                ConversationParticipant.objects.get_or_create(
+                    conversation=conversation,
+                    user=user,
+                    defaults={"role": "Admin", "is_active": True},
+                )
+            else:
+                raise PermissionDenied("You are not an active participant in this conversation.")
+        serializer.save(sender=user, delivery_status="Sent")
 
     def perform_update(self, serializer):
         instance = self.get_object()

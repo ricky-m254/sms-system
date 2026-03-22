@@ -31,6 +31,7 @@ export default function TimetableMySchedulePage() {
   const [coverages, setCoverages] = useState<LessonCoverage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   
   const username = useAuthStore((state) => state.username)
 
@@ -64,6 +65,18 @@ export default function TimetableMySchedulePage() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-sm text-rose-300">
+          {error}
+          <button onClick={() => setError(null)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+        </div>
+      )}
+      {successMsg && (
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-300">
+          {successMsg}
+          <button onClick={() => setSuccessMsg(null)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+        </div>
+      )}
       <PageHero
         badge="TIMETABLE"
         badgeColor="violet"
@@ -149,7 +162,7 @@ export default function TimetableMySchedulePage() {
                           <p className="text-xs text-slate-500 mt-1">📍 {slot.room}</p>
                           
                           <button
-                            onClick={() => alert(`Change request submitted for ${slot.subject_name}. Your HOD will be notified.`)}
+                            onClick={() => { setSuccessMsg(`Change request submitted for ${slot.subject_name}. Your HOD will be notified.`); setTimeout(() => setSuccessMsg(null), 5000) }}
                             className="mt-4 w-full py-2 rounded-xl border border-white/[0.09] bg-slate-950 text-[10px] font-bold text-slate-300 uppercase tracking-wider hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100"
                           >
                             Request Change

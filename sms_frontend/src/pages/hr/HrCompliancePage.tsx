@@ -53,6 +53,7 @@ export default function HrCompliancePage() {
   const [filterModule, setFilterModule] = useState('All')
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([])
   const [complianceItems, setComplianceItems] = useState<ComplianceItem[]>([])
+  const [activeEmployees, setActiveEmployees] = useState<number | null>(null)
 
   useEffect(() => {
     Promise.allSettled([
@@ -65,8 +66,12 @@ export default function HrCompliancePage() {
       }
       if (compRes.status === 'fulfilled') {
         const data = compRes.value.data
-        if (Array.isArray(data)) setComplianceItems(data as ComplianceItem[])
-        else if (data && typeof data === 'object') {
+        if (Array.isArray(data)) {
+          const items = data as ComplianceItem[]
+          setComplianceItems(items)
+          const activeEmpItem = items.find(i => i.label === 'Active Employees')
+          if (activeEmpItem) setActiveEmployees(activeEmpItem.value)
+        } else if (data && typeof data === 'object') {
           const items: ComplianceItem[] = Object.entries(data as Record<string, number>).map(([label, value]) => ({
             label,
             value: Number(value),
@@ -98,7 +103,7 @@ export default function HrCompliancePage() {
         stats={[
           { label: 'Audit Entries', value: auditLogs.length },
           { label: 'Compliance Alerts', value: complianceItems.filter(c => c.alert && c.value > 0).length },
-          { label: 'Staff Records', value: 120 },
+          { label: 'Active Staff', value: activeEmployees ?? '—' },
         ]}
       />
 

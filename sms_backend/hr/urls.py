@@ -14,6 +14,8 @@ from .views import (
     HrAnalyticsLeaveView,
     HrAnalyticsDiversityView,
     HrAnalyticsPayrollCostsView,
+    HrAuditLogView,
+    HrComplianceView,
     LeaveBalanceView,
     LeaveCalendarView,
     LeavePolicyViewSet,
@@ -76,6 +78,8 @@ urlpatterns = [
     path("analytics/payroll-costs/", HrAnalyticsPayrollCostsView.as_view(), name="hr_analytics_payroll_costs"),
     path("leave-balance/<int:employee_id>/", LeaveBalanceView.as_view(), name="hr_leave_balance"),
     path("leave-calendar/", LeaveCalendarView.as_view(), name="hr_leave_calendar"),
+    path("audit-logs/", HrAuditLogView.as_view(), name="hr_audit_logs"),
+    path("compliance/", HrComplianceView.as_view(), name="hr_compliance"),
     path("onboarding/<int:employee_id>/", OnboardingChecklistView.as_view(), name="hr_onboarding_checklist"),
     path(
         "documents/upload/",

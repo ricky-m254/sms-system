@@ -1587,6 +1587,85 @@ class HrAnalyticsPayrollCostsView(HrModuleAccessMixin, APIView):
         )
 
 
+class HrAuditLogView(HrModuleAccessMixin, APIView):
+    def get(self, request):
+        limit = int(request.query_params.get("limit", 50))
+        ordering = request.query_params.get("ordering", "-timestamp")
+
+        logs = []
+
+        leave_qs = LeaveRequest.objects.select_related("employee", "employee__user", "approved_by", "approved_by__user").order_by("-submitted_at")[:limit]
+        for lr in leave_qs:
+            emp_name = (lr.employee.user.get_full_name() or lr.employee.user.username) if lr.employee and lr.employee.user else "—"
+            approver = lr.approved_by
+            actor = (approver.user.get_full_name() or approver.user.username) if approver and hasattr(approver, 'user') and approver.user else "System"
+            action_label = "Approved Leave" if lr.status == "Approved" else ("Rejected Leave" if lr.status == "Rejected" else "Created Record")
+            logs.append({
+                "id": f"LR-{lr.id}",
+                "log_id": f"LR-{str(lr.id).zfill(4)}",
+                "user_display": actor,
+                "role": "HR Manager",
+                "action": action_label,
+                "target": f"{emp_name}",
+                "module": "Leave",
+                "timestamp": (lr.approved_at or lr.submitted_at).isoformat() if (lr.approved_at or lr.submitted_at) else "",
+                "ip_address": "—",
+            })
+
+        payroll_qs = PayrollBatch.objects.select_related("processed_by", "approved_by").order_by("-created_at")[:20]
+        for pb in payroll_qs:
+            actor = (pb.processed_by.get_full_name() or pb.processed_by.username) if pb.processed_by else "System"
+            logs.append({
+                "id": f"PB-{pb.id}",
+                "log_id": f"PB-{str(pb.id).zfill(4)}",
+                "user_display": actor,
+                "role": "Payroll Admin",
+                "action": "Modified Payroll",
+                "target": f"Payroll — {pb.month}/{pb.year}",
+                "module": "Payroll",
+                "timestamp": pb.created_at.isoformat() if pb.created_at else "",
+                "ip_address": "—",
+            })
+
+        emp_qs = Employee.objects.select_related("user").order_by("-created_at")[:20]
+        for emp in emp_qs:
+            name = emp.user.get_full_name() or emp.user.username if emp.user else "—"
+            logs.append({
+                "id": f"EMP-{emp.id}",
+                "log_id": f"EMP-{str(emp.id).zfill(4)}",
+                "user_display": "HR Admin",
+                "role": "HR Admin",
+                "action": "Added Employee",
+                "target": name,
+                "module": "Employees",
+                "timestamp": emp.created_at.isoformat() if emp.created_at else "",
+                "ip_address": "—",
+            })
+
+        logs.sort(key=lambda x: x["timestamp"], reverse=(not ordering.startswith("-") or ordering == "-timestamp"))
+        return Response(logs[:limit], status=status.HTTP_200_OK)
+
+
+class HrComplianceView(HrModuleAccessMixin, APIView):
+    def get(self, request):
+        total_emp = Employee.objects.filter(is_active=True).count()
+        pending_leave = LeaveRequest.objects.filter(status="Pending").count()
+        incomplete_onboarding = OnboardingTask.objects.filter(is_completed=False).count()
+        no_salary = Employee.objects.filter(is_active=True).exclude(salary_structures__is_active=True).count()
+        pending_reviews = PerformanceReview.objects.filter(status="Pending").count()
+        open_positions = JobPosting.objects.filter(status="Open").count()
+
+        data = [
+            {"label": "Pending Leave Requests", "value": pending_leave, "alert": pending_leave > 0},
+            {"label": "Incomplete Onboarding Tasks", "value": incomplete_onboarding, "alert": incomplete_onboarding > 0},
+            {"label": "Employees Without Salary Structure", "value": no_salary, "alert": no_salary > 0},
+            {"label": "Pending Performance Reviews", "value": pending_reviews, "alert": pending_reviews > 0},
+            {"label": "Open Job Postings", "value": open_positions, "alert": False},
+            {"label": "Active Employees", "value": total_emp, "alert": False},
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
+
 class StaffTransferViewSet(HrModuleAccessMixin, viewsets.ModelViewSet):
     def get_serializer_class(self):
         from .serializers import StaffTransferSerializer

@@ -40,6 +40,12 @@ export default function FinanceStoreRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
   const [processing, setProcessing] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const load = async () => {
     setLoading(true);
@@ -73,13 +79,13 @@ export default function FinanceStoreRequestsPage() {
     try {
       const res = await apiClient.post(`/store/orders/${orderId}/generate-expense/`);
       if (res.data.already_generated) {
-        alert(`Already sent — Expense #${res.data.expense_id} was previously created for this order.`);
+        showToast(`Already sent — Expense #${res.data.expense_id} was previously created for this order.`, 'success');
       } else {
-        alert(`Expense #${res.data.expense_id} created successfully.`);
+        showToast(`Expense #${res.data.expense_id} created successfully.`, 'success');
       }
       load();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to generate expense');
+      showToast(err.response?.data?.error || 'Failed to generate expense', 'error');
     } finally {
       setProcessing(null);
     }
@@ -95,6 +101,12 @@ export default function FinanceStoreRequestsPage() {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm shadow-xl transition-all ${toast.type === 'success' ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/40 bg-rose-500/10 text-rose-200'}`}>
+          {toast.msg}
+          <button onClick={() => setToast(null)} className="ml-2 opacity-60 hover:opacity-100">✕</button>
+        </div>
+      )}
       <PageHero
         badge="FINANCE"
         badgeColor="emerald"
