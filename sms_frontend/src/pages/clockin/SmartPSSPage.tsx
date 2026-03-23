@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import apiClient from '../../api/apiClient'
+import { apiClient } from '../../api/client'
 
 const GLASS = { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }
 const INPUT_CLS = 'w-full rounded-xl bg-white/[0.06] border border-white/[0.1] px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/60'
