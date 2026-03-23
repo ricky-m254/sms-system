@@ -13,12 +13,18 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from datetime import date, datetime, timedelta
-from .models import BiometricDevice, SchoolShift, PersonRegistry, ClockEvent
+from .models import BiometricDevice, SchoolShift, PersonRegistry, ClockEvent, SmartPSSSource, SmartPSSImportLog
 from .serializers import (
     BiometricDeviceSerializer,
     SchoolShiftSerializer,
     PersonRegistrySerializer,
-    ClockEventSerializer
+    ClockEventSerializer,
+    SmartPSSSourceSerializer,
+    SmartPSSImportLogSerializer,
+)
+from .smartpss_client import (
+    SmartPSSLiteClient, SmartPSSError,
+    normalise_attend_status, parse_smartpss_time, parse_smartpss_csv,
 )
 from school.permissions import HasModuleAccess
 from school.models import AttendanceRecord as StudentAttendanceRecord, UserProfile
@@ -1026,4 +1032,256 @@ class DeviceDiscoverView(APIView):
             'sadp_found':    len(sadp_hits),
             'tcp_found':     len(found) - len(sadp_hits),
             'ports_checked': [p for p, _, _ in BIOMETRIC_PROBE_PORTS],
+        })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SmartPSS Lite Integration
+# ══════════════════════════════════════════════════════════════════════════════
+
+class SmartPSSSourceViewSet(ClockInModuleMixin, viewsets.ModelViewSet):
+    """
+    CRUD for SmartPSS Lite sources.
+    GET  /clockin/smartpss/sources/
+    POST /clockin/smartpss/sources/
+    PUT/PATCH/DELETE /clockin/smartpss/sources/{id}/
+    """
+    queryset         = SmartPSSSource.objects.all()
+    serializer_class = SmartPSSSourceSerializer
+
+
+class SmartPSSImportLogViewSet(ClockInModuleMixin, viewsets.ReadOnlyModelViewSet):
+    """Read-only log of every API sync and CSV import."""
+    queryset         = SmartPSSImportLog.objects.all()[:200]
+    serializer_class = SmartPSSImportLogSerializer
+
+
+def _save_smartpss_records(records: list, source: SmartPSSSource | None,
+                           source_type: str, triggered_by: str) -> dict:
+    """
+    Shared pipeline: take a list of normalised attendance records (dicts with
+    card_no / employee_id / name / time / status) and create ClockEvents.
+    Returns a summary dict.
+    """
+    log = SmartPSSImportLog.objects.create(
+        source=source, source_type=source_type,
+        records_found=len(records), triggered_by=triggered_by,
+    )
+    saved = skipped = errors = 0
+
+    for rec in records:
+        try:
+            card_no     = rec.get('card_no', '').strip()
+            employee_id = rec.get('employee_id', '').strip()
+            name        = rec.get('name', '').strip()
+            time_str    = rec.get('time', '')
+            event_type  = rec.get('status', 'IN')
+
+            # Lookup person — card_no first, then employee ID, then name (last resort)
+            person = None
+            if card_no:
+                person = _lookup_person(card_no=card_no)
+            if not person and employee_id:
+                person = _lookup_person(user_id=employee_id, fingerprint_id=employee_id)
+            if not person and name:
+                person = PersonRegistry.objects.filter(
+                    display_name__iexact=name, is_active=True
+                ).first()
+
+            if not person:
+                skipped += 1
+                continue
+
+            # Parse timestamp
+            event_timestamp = parse_smartpss_time(time_str)
+
+            # Deduplicate: skip if an identical event exists within 60 seconds
+            window_start = event_timestamp - timedelta(seconds=60)
+            window_end   = event_timestamp + timedelta(seconds=60)
+            if ClockEvent.objects.filter(
+                person=person, event_type=event_type,
+                timestamp__range=(window_start, window_end)
+            ).exists():
+                skipped += 1
+                continue
+
+            _process_scan_event(person, None, event_timestamp,
+                                direction='in' if event_type == 'IN' else 'out')
+            saved += 1
+
+        except Exception as exc:
+            errors += 1
+            log.error_detail += f"{rec.get('name', '?')}: {exc}\n"
+
+    log.records_saved = saved
+    log.skipped       = skipped
+    log.errors        = errors
+    log.finished_at   = timezone.now()
+    log.save()
+
+    return {
+        'records_found': log.records_found,
+        'records_saved': saved,
+        'skipped':       skipped,
+        'errors':        errors,
+        'log_id':        log.id,
+    }
+
+
+class SmartPSSTestView(ClockInModuleMixin, APIView):
+    """
+    POST /clockin/smartpss/sources/{id}/test/
+    Tests connectivity to a SmartPSS Lite instance by logging in and immediately
+    logging out.  Returns { ok, message, api_url }.
+    """
+    def post(self, request, pk):
+        source = SmartPSSSource.objects.filter(pk=pk).first()
+        if not source:
+            return Response({'error': 'SmartPSS source not found.'}, status=404)
+        client = SmartPSSLiteClient(
+            host=source.host, port=source.port,
+            username=source.username, password=source.password,
+            use_https=source.use_https,
+        )
+        try:
+            result = client.test_connection()
+            return Response({
+                'ok':      True,
+                'message': f'Connected to SmartPSS Lite at {result["base_url"]}',
+                'api_url': result['base_url'],
+            })
+        except SmartPSSError as exc:
+            return Response({'ok': False, 'message': str(exc)}, status=200)
+        except Exception as exc:
+            return Response({'ok': False, 'message': f'Unexpected error: {exc}'}, status=200)
+
+
+class SmartPSSSyncView(ClockInModuleMixin, APIView):
+    """
+    POST /clockin/smartpss/sources/{id}/sync/
+    Body (optional): { "days_back": 3 }
+
+    Calls the SmartPSS Lite REST API, retrieves attendance records for the
+    configured date range, and inserts them as ClockEvents.
+
+    Network prerequisite: the SmartPSS Lite PC must be reachable from this server.
+    If it is not (e.g., behind NAT without port forwarding), use CSV import instead.
+    """
+    def post(self, request, pk):
+        source = SmartPSSSource.objects.filter(pk=pk).first()
+        if not source:
+            return Response({'error': 'SmartPSS source not found.'}, status=404)
+        if not source.is_active:
+            return Response({'error': 'This SmartPSS source is disabled.'}, status=400)
+
+        try:
+            days_back = int(request.data.get('days_back', source.sync_days_back))
+            days_back = min(max(days_back, 1), 90)
+        except (ValueError, TypeError):
+            days_back = source.sync_days_back
+
+        end_dt   = timezone.now()
+        start_dt = end_dt - timedelta(days=days_back)
+
+        client = SmartPSSLiteClient(
+            host=source.host, port=source.port,
+            username=source.username, password=source.password,
+            use_https=source.use_https,
+        )
+        try:
+            with client.session() as token:
+                raw_records = client.search_attendance_all(token, start_dt, end_dt)
+        except SmartPSSError as exc:
+            return Response({
+                'error': str(exc),
+                'tip': (
+                    'Cannot reach SmartPSS Lite. Options: '
+                    '(1) Enable port forwarding on your router, '
+                    '(2) Use a VPN, '
+                    '(3) Export CSV from SmartPSS Lite and use CSV Import instead.'
+                ),
+            }, status=503)
+        except Exception as exc:
+            return Response({'error': f'Unexpected error during sync: {exc}'}, status=500)
+
+        # Normalise raw records from SmartPSS Lite API format
+        normalised = []
+        for rec in raw_records:
+            normalised.append({
+                'card_no':     rec.get('cardNo', ''),
+                'employee_id': rec.get('personId', ''),
+                'name':        rec.get('personName', ''),
+                'time':        rec.get('time', ''),
+                'status':      normalise_attend_status(rec.get('attendStatus', 0)),
+            })
+
+        summary = _save_smartpss_records(
+            normalised, source, 'API',
+            triggered_by=getattr(request.user, 'username', 'system'),
+        )
+
+        # Update last_sync_at
+        source.last_sync_at = timezone.now()
+        import json as _json
+        source.last_sync_result = _json.dumps(summary)
+        source.save(update_fields=['last_sync_at', 'last_sync_result'])
+
+        return Response({
+            'ok':      True,
+            'source':  source.name,
+            'period':  f'{start_dt.date()} → {end_dt.date()}',
+            **summary,
+        })
+
+
+class SmartPSSCSVImportView(ClockInModuleMixin, APIView):
+    """
+    POST /clockin/smartpss/import-csv/
+    multipart/form-data: file=<csv_file>, source_id=<optional_int>
+
+    Import a CSV file exported from SmartPSS Lite.  Supported export formats:
+      • SmartPSS Lite Attendance Report (English)
+      • SmartPSS Lite 出勤记录 (Chinese columns — GBK or UTF-8)
+
+    How to export from SmartPSS Lite:
+      Reports → Attendance → Search → Export → CSV / Excel
+
+    This endpoint always works regardless of network configuration and is the
+    recommended import method for schools without a static IP or port forwarding.
+    """
+    def post(self, request):
+        csv_file  = request.FILES.get('file')
+        source_id = request.data.get('source_id')
+
+        if not csv_file:
+            return Response({'error': 'No file uploaded. Send file as multipart field "file".'}, status=400)
+
+        source = None
+        if source_id:
+            source = SmartPSSSource.objects.filter(pk=source_id).first()
+
+        try:
+            content = csv_file.read()
+            records = parse_smartpss_csv(content)
+        except Exception as exc:
+            return Response({'error': f'Failed to parse CSV: {exc}'}, status=400)
+
+        if not records:
+            return Response({
+                'error': 'No valid rows found in the CSV file.',
+                'tip': (
+                    'Make sure the file is a SmartPSS Lite attendance export. '
+                    'Required columns: Name, Card Number or Employee ID, Time, Status.'
+                ),
+            }, status=400)
+
+        summary = _save_smartpss_records(
+            records, source, 'CSV',
+            triggered_by=getattr(request.user, 'username', 'system'),
+        )
+
+        return Response({
+            'ok':       True,
+            'filename': csv_file.name,
+            **summary,
         })

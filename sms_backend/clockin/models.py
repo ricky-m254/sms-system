@@ -127,3 +127,73 @@ class ClockEvent(models.Model):
     def __str__(self):
         name = self.person.display_name if self.person else 'Unknown'
         return f"{name} - {self.event_type} at {self.timestamp}"
+
+
+# ── SmartPSS Lite Integration ─────────────────────────────────────────────────
+
+class SmartPSSSource(models.Model):
+    """
+    Represents a SmartPSS Lite instance installed on a Windows PC at the school.
+    SmartPSS Lite aggregates attendance from ALL connected Dahua devices into one
+    central database and exposes a local REST API on port 8443 by default.
+
+    Pull mode: backend calls the SmartPSS Lite REST API (requires network access).
+    CSV mode:  user exports CSV from SmartPSS Lite and uploads via the portal.
+    Both modes feed into the same ClockEvent pipeline.
+    """
+    name          = models.CharField(max_length=150,
+                      help_text='Friendly label, e.g. "Main Office SmartPSS"')
+    host          = models.CharField(max_length=255,
+                      help_text='IP address or hostname of the Windows PC running SmartPSS Lite '
+                                '(e.g. 192.168.1.10). Must be reachable from this server.')
+    port          = models.PositiveIntegerField(default=8443,
+                      help_text='SmartPSS Lite API port (default 8443)')
+    use_https     = models.BooleanField(default=False,
+                      help_text='Use HTTPS instead of HTTP for the SmartPSS Lite API')
+    username      = models.CharField(max_length=100, default='admin')
+    password      = models.CharField(max_length=200, default='admin123')
+
+    sync_days_back = models.PositiveIntegerField(default=7,
+                       help_text='How many days back to pull on each sync')
+    is_active      = models.BooleanField(default=True)
+    last_sync_at   = models.DateTimeField(null=True, blank=True)
+    last_sync_result = models.TextField(blank=True,
+                        help_text='JSON summary of the last sync result')
+    notes          = models.TextField(blank=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.host}:{self.port})"
+
+    class Meta:
+        ordering = ['name']
+        verbose_name        = 'SmartPSS Lite Source'
+        verbose_name_plural = 'SmartPSS Lite Sources'
+
+
+class SmartPSSImportLog(models.Model):
+    """Records every CSV import or API sync from a SmartPSS Lite source."""
+    SOURCE_TYPE_CHOICES = [
+        ('API', 'API Pull'),
+        ('CSV', 'CSV Upload'),
+    ]
+    source        = models.ForeignKey(SmartPSSSource, null=True, blank=True,
+                      on_delete=models.SET_NULL, related_name='import_logs')
+    source_type   = models.CharField(max_length=5, choices=SOURCE_TYPE_CHOICES)
+    started_at    = models.DateTimeField(auto_now_add=True)
+    finished_at   = models.DateTimeField(null=True, blank=True)
+    records_found = models.IntegerField(default=0)
+    records_saved = models.IntegerField(default=0)
+    skipped       = models.IntegerField(default=0,
+                      help_text='Records skipped (unknown person / duplicate)')
+    errors        = models.IntegerField(default=0)
+    error_detail  = models.TextField(blank=True)
+    triggered_by  = models.CharField(max_length=150, blank=True,
+                      help_text='Username or system trigger')
+
+    class Meta:
+        ordering = ['-started_at']
+
+    def __str__(self):
+        src = self.source.name if self.source else 'CSV'
+        return f"{src} {self.source_type} @ {self.started_at:%Y-%m-%d %H:%M} ({self.records_saved} saved)"

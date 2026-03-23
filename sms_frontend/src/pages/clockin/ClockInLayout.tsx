@@ -8,6 +8,7 @@ const navItems = [
   { label: 'Kiosk', to: '/modules/clockin/kiosk' },
   { label: 'Registry', to: '/modules/clockin/registry' },
   { label: 'Devices', to: '/modules/clockin/devices' },
+  { label: 'SmartPSS Lite', to: '/modules/clockin/smartpss' },
   { label: 'Shifts', to: '/modules/clockin/shifts' },
   { label: 'Reports', to: '/modules/clockin/reports' },
   { label: 'Alerts', to: '/modules/clockin/alerts' },

@@ -234,6 +234,7 @@ const ClockInDevicesPage = lazy(() => import('./pages/clockin/ClockInDevicesPage
 const ClockInShiftsPage = lazy(() => import('./pages/clockin/ClockInShiftsPage'))
 const ClockInReportsPage = lazy(() => import('./pages/clockin/ClockInReportsPage'))
 const ClockInAlertsPage = lazy(() => import('./pages/clockin/ClockInAlertsPage'))
+const SmartPSSPage = lazy(() => import('./pages/clockin/SmartPSSPage'))
 
 const TimetableLayout = lazy(() => import('./pages/timetable/TimetableLayout'))
 const TimetableGridPage = lazy(() => import('./pages/timetable/TimetableGridPage'))
@@ -712,6 +713,7 @@ function App() {
           <Route path="shifts" element={<ClockInShiftsPage />} />
           <Route path="reports" element={<ClockInReportsPage />} />
           <Route path="alerts" element={<ClockInAlertsPage />} />
+          <Route path="smartpss" element={<SmartPSSPage />} />
         </Route>
         <Route
           path="/modules/timetable/*"
