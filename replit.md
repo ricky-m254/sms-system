@@ -260,6 +260,88 @@ API: `POST /api/clockin/kiosk/scan/` with `{ fingerprint_id: string }`
 - Backend: `ModuleSeedView` at `POST /school/seed/` runs `seed_kenya_school` management command for the current tenant schema (creates portal logins post-seed).
 - Frontend: `SettingsSeedPage` at `/settings/seed-data` — "Seed All Modules" button + "Seed Transport Only" secondary button. Both use idempotent `get_or_create` logic.
 
+## DBMA Architecture (Phase 1–16)
+
+### Cross-cutting Domains Layer (`sms_backend/domains/`)
+
+Implements the DBMA (Domain-Driven, Behaviour-Modelled Architecture) per the AI Prompts roadmap.
+Rule #1: Only extend and refactor safely — no rewrites.
+
+**Directory Structure:**
+```
+sms_backend/domains/
+  users/         domain/entities.py (Student, Parent, Guardian)
+                 domain/interfaces/repositories.py (StudentRepository, ParentRepository)
+                 application/create_student_service.py
+                 infrastructure/django_student_repository.py
+  academics/     domain/entities.py (AcademicYear, Term, SchoolClass, Subject, Enrollment)
+                 domain/interfaces/repositories.py
+                 application/enroll_student_service.py
+  finance/       domain/entities.py (FeeStructure, Invoice, Payment) — IPSAS-compliant
+                 domain/interfaces/repositories.py
+  inventory/     domain/entities.py (Item, Stock, StockMovement, Asset)
+                 domain/interfaces/repositories.py
+  auth/          domain/entities.py (UserAccount, Role, Permission, UserPermissionOverride)
+                 domain/interfaces/repositories.py
+                 application/login_service.py
+                 application/assign_role_service.py
+                 application/jwt_service.py
+                 application/permission_resolver_service.py  ← Phase 16 Advanced RBAC
+                 infrastructure/django_user_repository.py
+                 infrastructure/django_role_repository.py
+                 infrastructure/django_permission_repository.py
+                 infrastructure/django_override_repository.py
+                 infrastructure/has_permission_middleware.py ← in MIDDLEWARE after Auth
+  tenants/       domain/entities.py (Tenant)
+                 domain/interfaces/repositories.py (TenantRepository)
+                 application/tenant_resolver_service.py
+                 infrastructure/django_tenant_repository.py
+                 infrastructure/tenant_middleware.py
+  communication/ domain/entities.py (Message, Announcement)
+  analytics/     domain/entities.py (DashboardMetric, Report)
+  operations/    library/  transport/  hostel/  cafeteria/  visitor/
+                 Each: domain/entities.py + (application, infrastructure, presentation stubs)
+```
+
+**Per-app domain re-exports:**
+- `sms_backend/academics/domain/entities/__init__.py` → re-exports from `domains.academics`
+- `sms_backend/academics/domain/interfaces/__init__.py`
+- `sms_backend/finance/domain/entities/__init__.py`
+- `sms_backend/transport/domain/entities/__init__.py`
+
+### Phase 16 Advanced RBAC
+
+**Permission format**: `<domain>.<resource>.<action>` — e.g. `finance.invoice.read`
+
+**Django models added** (migration `school/0044_phase16_rbac_permission_override`):
+- `school.Permission` — all named permissions (60 default)
+- `school.RolePermissionGrant` — role → permission M2M bridge
+- `school.UserPermissionOverride` — per-user GRANT/DENY override (overrides take priority)
+
+**Resolution logic** (PermissionResolverService):
+`Final Permissions = (Role Permissions ∪ Overrides.GRANT) − Overrides.DENY`
+
+**API endpoints** (all under `/api/`):
+- `GET  rbac/permissions/` — list all 60 permissions (filter: `?module=finance`)
+- `POST rbac/permissions/seed/` — seed default permissions (admin only)
+- `GET  rbac/roles/` — list roles with permissions
+- `POST rbac/roles/<role_id>/grant/` — grant permission to role
+- `POST rbac/roles/<role_id>/revoke/` — revoke permission from role
+- `GET  rbac/users/<user_id>/permissions/` — effective permissions for a user
+- `GET  rbac/users/<user_id>/overrides/` — list user overrides
+- `POST rbac/users/<user_id>/overrides/` — create/update override
+- `DEL  rbac/users/<user_id>/overrides/<permission_id>/` — delete override
+
+**Management command**: `python manage.py seed_default_permissions --assign-roles --schema=demo_school`
+- Creates 60 default permissions
+- Seeds TENANT_SUPER_ADMIN + ADMIN: 60 perms; ACCOUNTANT: 7; TEACHER: 10; PARENT: 6; STUDENT: 5
+
+**HasPermissionMiddleware**: registered in `settings.py` after `AuthenticationMiddleware`
+- Attaches `request.has_permission("finance.invoice.read")` to every request
+- Attaches `request.effective_permissions` set
+
+**Seed integration**: `POST /school/seed/` now also runs `seed_default_permissions --assign-roles` automatically.
+
 ## Recent Updates
 
 - **Teacher Portal** (new module): Full portal at `/teacher-portal/*` — Layout, Dashboard (KPI cards, schedule, recent marks), Classes (subject/class assignments with student counts), Attendance (mark/save daily attendance), Gradebook (CBC 4-band: Exceeding/Meeting/Approaching/Below), Resources (upload/manage teaching materials), Timetable (weekly grid + daily agenda views). Accessible to all authenticated tenant users.

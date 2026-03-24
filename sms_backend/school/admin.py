@@ -6,7 +6,9 @@ from .models import (
     Student, Guardian, Enrollment,
     # Finance
     FeeStructure, Invoice, InvoiceLineItem, Payment, PaymentAllocation, Expense,
-    FeeAssignment, InvoiceAdjustment
+    FeeAssignment, InvoiceAdjustment,
+    # Phase 16 Advanced RBAC
+    Permission, RolePermissionGrant, UserPermissionOverride,
 )
 
 # ==========================================
@@ -110,4 +112,38 @@ class FeeAssignmentAdmin(admin.ModelAdmin):
 class InvoiceAdjustmentAdmin(admin.ModelAdmin):
     list_display = ['invoice', 'amount', 'reason', 'adjusted_by', 'created_at']
     readonly_fields = ['created_at', 'adjusted_by']
+
+
+# ==========================================
+# Phase 16 Advanced RBAC Admin
+# ==========================================
+
+class RolePermissionGrantInline(admin.TabularInline):
+    model = RolePermissionGrant
+    extra = 0
+    autocomplete_fields = ['permission']
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'module', 'action', 'description']
+    list_filter = ['module', 'action']
+    search_fields = ['name', 'module', 'description']
+    ordering = ['module', 'name']
+
+
+@admin.register(RolePermissionGrant)
+class RolePermissionGrantAdmin(admin.ModelAdmin):
+    list_display = ['role', 'permission']
+    list_filter = ['role']
+    autocomplete_fields = ['permission']
+
+
+@admin.register(UserPermissionOverride)
+class UserPermissionOverrideAdmin(admin.ModelAdmin):
+    list_display = ['user', 'permission', 'is_allowed', 'reason', 'created_at']
+    list_filter = ['is_allowed', 'permission__module']
+    search_fields = ['user__username', 'permission__name', 'reason']
+    readonly_fields = ['created_at', 'updated_at']
+    autocomplete_fields = ['permission']
 

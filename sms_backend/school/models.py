@@ -134,6 +134,91 @@ class SubmodulePermission(models.Model):
         return f"{self.role.name} | {self.module_key}.{self.submodule_key}"
 
 
+
+# ──────────────────────────────────────────────────────────────
+# Phase 16 Advanced RBAC models  (Prompts 88-91)
+# ──────────────────────────────────────────────────────────────
+
+class Permission(models.Model):
+    """
+    Granular permission — Phase 16 Advanced RBAC (Prompt 88).
+    Name format: <domain>.<resource>.<action>
+    e.g. finance.invoice.read | academics.attendance.mark
+    """
+    name = models.CharField(
+        max_length=150,
+        unique=True,
+        help_text="Format: <domain>.<resource>.<action>  e.g. finance.invoice.read"
+    )
+    module = models.CharField(max_length=50, help_text="Domain/module key e.g. finance")
+    action = models.CharField(max_length=50, help_text="Action e.g. read, create, update, delete")
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class RolePermissionGrant(models.Model):
+    """
+    Many-to-many link between Role and Permission — Phase 16 (Prompt 89).
+    Records which permissions a role has by default.
+    """
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='permission_grants')
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name='role_grants')
+
+    class Meta:
+        unique_together = ('role', 'permission')
+
+    def __str__(self) -> str:
+        return f"{self.role.name} → {self.permission.name}"
+
+
+class UserPermissionOverride(models.Model):
+    """
+    Per-user permission override — Phase 16 Advanced RBAC (Prompt 90).
+    Final Permission = Role Permissions + Overrides (overrides take priority).
+    is_allowed=True  → GRANT  (even if role doesn't have it)
+    is_allowed=False → DENY   (even if role does have it)
+    """
+    user = models.ForeignKey(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='permission_overrides'
+    )
+    permission = models.ForeignKey(
+        Permission,
+        on_delete=models.CASCADE,
+        related_name='user_overrides'
+    )
+    is_allowed = models.BooleanField(
+        default=True,
+        help_text="True = GRANT this permission. False = DENY this permission."
+    )
+    reason = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='granted_overrides'
+    )
+
+    class Meta:
+        unique_together = ('user', 'permission')
+
+    def __str__(self) -> str:
+        action = "GRANT" if self.is_allowed else "DENY"
+        return f"{self.user.username} | {action} | {self.permission.name}"
+
+# ──────────────────────────────────────────────────────────────
+
+
 class TenantModule(models.Model):
     """
     Tenant-scoped module enablement record.

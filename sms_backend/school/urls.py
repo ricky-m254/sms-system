@@ -8,6 +8,16 @@ from .views import (
     StudentSearchForUserCreateView, StudentsByClassForUserCreateView,
     BulkCreateStudentUsersView, VoteHeadBudgetReportView,
 )
+from .rbac_views import (
+    RbacPermissionListView,
+    RbacPermissionSeedView,
+    RbacRoleListView,
+    RbacRoleGrantPermissionView,
+    RbacRoleRevokePermissionView,
+    RbacUserEffectivePermissionsView,
+    RbacUserOverrideListView,
+    RbacUserOverrideDeleteView,
+)
 from .views import (
     EnrollmentViewSet, ExpenseViewSet, FeeStructureViewSet, MessageViewSet, 
     StaffViewSet, StudentViewSet, InvoiceViewSet, PaymentViewSet, 
@@ -264,4 +274,15 @@ urlpatterns = [
 
     # 5. Tenant API Routes (Router)
     path('', include(router.urls)),
+
+    # ── Phase 11 + 16 Advanced RBAC API ──────────────────────────────────────
+    path('rbac/permissions/',               RbacPermissionListView.as_view(),   name='rbac_permission_list'),
+    path('rbac/permissions/seed/',          RbacPermissionSeedView.as_view(),   name='rbac_permission_seed'),
+    path('rbac/roles/',                     RbacRoleListView.as_view(),         name='rbac_role_list'),
+    path('rbac/roles/<int:role_id>/grant/', RbacRoleGrantPermissionView.as_view(), name='rbac_role_grant'),
+    path('rbac/roles/<int:role_id>/revoke/',RbacRoleRevokePermissionView.as_view(), name='rbac_role_revoke'),
+    path('rbac/users/<int:user_id>/permissions/', RbacUserEffectivePermissionsView.as_view(), name='rbac_user_effective_permissions'),
+    path('rbac/users/<int:user_id>/overrides/',   RbacUserOverrideListView.as_view(),         name='rbac_user_overrides'),
+    path('rbac/users/<int:user_id>/overrides/<int:permission_id>/', RbacUserOverrideDeleteView.as_view(), name='rbac_user_override_delete'),
+    # ─────────────────────────────────────────────────────────────────────────
 ]

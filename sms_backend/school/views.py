@@ -6419,6 +6419,13 @@ class ModuleSeedView(APIView):
             out = io.StringIO()
             call_command('seed_kenya_school', f'--schema_name={schema}', stdout=out)
 
+            # Phase 16 Advanced RBAC — seed default permissions and role grants
+            try:
+                perm_out = io.StringIO()
+                call_command('seed_default_permissions', '--assign-roles', f'--schema={schema}', stdout=perm_out)
+            except Exception:
+                pass
+
             # Create portal login accounts for all seeded students and guardians
             counts = self._create_portal_accounts()
 
