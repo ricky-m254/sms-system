@@ -64,8 +64,9 @@ export default function LoginPage() {
   const setTenant      = useAuthStore(s => s.setTenant)
   const setAuthMode    = useAuthStore(s => s.setAuthMode)
   const setUsername    = useAuthStore(s => s.setUsername)
-  const setRole        = useAuthStore(s => s.setRole)
-  const setPermissions = useAuthStore(s => s.setPermissions)
+  const setRole            = useAuthStore(s => s.setRole)
+  const setPermissions     = useAuthStore(s => s.setPermissions)
+  const setAssignedModules = useAuthStore(s => s.setAssignedModules)
   const storedTenant   = useAuthStore(s => s.tenantId)
 
   const [mode,      setMode]          = useState<LoginMode>('staff')
@@ -94,6 +95,15 @@ export default function LoginPage() {
       const routing = await apiClient.get<RoutingResponse>('/dashboard/routing/')
       setRole(routing.data.role ?? null)
       setPermissions(routing.data.permissions ?? [])
+
+      /* Fetch user's assigned modules — determines which sidebar/dashboard items are visible */
+      try {
+        const me = await apiClient.get<{ role: string; assigned_module_keys: string[] }>('/auth/me/')
+        setAssignedModules(me.data.assigned_module_keys ?? [])
+        /* Also sync role from /auth/me/ which is authoritative */
+        if (me.data.role) setRole(me.data.role)
+      } catch { /* fall back to routing role — assigned modules remain [] */ }
+
       try {
         localStorage.setItem('sms_user', JSON.stringify({
           id: routing.data.user, username: routing.data.user,

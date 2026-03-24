@@ -616,27 +616,24 @@ function SystemGroupCard({
           className="px-5 pb-5 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
-          {group.modules.map(modKey => {
-            const isAssigned = assignedKeys.has(modKey)
-            const route = MODULE_ROUTES[modKey]
-            return (
-              <button
-                key={modKey}
-                onClick={() => isAssigned && route && onNavigate(route)}
-                disabled={!isAssigned || !route}
-                className={`rounded-xl px-3 py-2.5 text-left transition-all ${
-                  isAssigned
-                    ? `${group.bgColor} ${group.color} border hover:opacity-90 hover:scale-[1.02]`
-                    : 'bg-white/[0.02] text-slate-700 cursor-not-allowed border border-white/[0.04]'
-                } ${isAssigned ? group.borderColor : ''}`}
-              >
-                <p className="text-[11px] font-semibold">{MODULE_LABELS[modKey] ?? modKey}</p>
-                <p className={`text-[10px] mt-0.5 ${isAssigned ? 'opacity-60' : 'text-slate-800'}`}>
-                  {isAssigned ? 'Open →' : 'Not assigned'}
-                </p>
-              </button>
-            )
-          })}
+          {group.modules
+            .filter(modKey => assignedKeys.size === 0 || assignedKeys.has(modKey))
+            .map(modKey => {
+              const route = MODULE_ROUTES[modKey]
+              return (
+                <button
+                  key={modKey}
+                  onClick={() => route && onNavigate(route)}
+                  disabled={!route}
+                  className={`rounded-xl px-3 py-2.5 text-left transition-all
+                    ${group.bgColor} ${group.color} border hover:opacity-90 hover:scale-[1.02]
+                    ${group.borderColor}`}
+                >
+                  <p className="text-[11px] font-semibold">{MODULE_LABELS[modKey] ?? modKey}</p>
+                  <p className="text-[10px] mt-0.5 opacity-60">Open →</p>
+                </button>
+              )
+            })}
         </div>
       )}
     </div>
@@ -648,7 +645,8 @@ export default function DashboardPage() {
   const logout = useAuthStore((state) => state.logout)
   const username = useAuthStore((state) => state.username)
   const tenantId = useAuthStore((state) => state.tenantId)
-  const userRole = useAuthStore((state) => state.role)
+  const userRole          = useAuthStore((state) => state.role)
+  const storedAssignedMods = useAuthStore((state) => state.assignedModules)
 
   const [data, setData] = useState<DashboardSummary | null>(null)
   const [schoolName, setSchoolName] = useState<string | null>(null)
@@ -710,16 +708,33 @@ export default function DashboardPage() {
 
   const handleLogout = () => { logout(); navigate('/login') }
 
+  /* Source of truth: module keys from /api/auth/me/ stored at login.
+     Falls back to dashboard summary modules if store is empty (e.g. after a hard refresh
+     before re-login, which is extremely rare — they are persisted in localStorage). */
   const assignedModuleKeys = useMemo(() => {
+    if (storedAssignedMods.length > 0) {
+      return storedAssignedMods
+        .map(k => normalizeModuleKey(k))
+        .filter(k => k !== 'CORE')
+    }
+    // Fallback: use tenant-level modules from summary (less precise, but safe)
     if (!data) return []
     const combined = [
       ...data.modules.map(k => normalizeModuleKey(k)),
       ...data.modules_detail.map(item => normalizeModuleKey(item.key)),
     ]
     return Array.from(new Set(combined)).filter(k => k !== 'CORE').filter(k => isBackendModuleEnabled(k) || k === 'ASSETS')
-  }, [data])
+  }, [storedAssignedMods, data])
 
   const assignedSet = useMemo(() => new Set(assignedModuleKeys), [assignedModuleKeys])
+
+  /* Filter SYSTEM_GROUPS: only show groups where the user has ≥1 assigned module.
+     An empty assignedSet means either (a) admin loading or (b) truly no modules.
+     Admins have a full assignedModules list from /auth/me/ so they will never be empty. */
+  const visibleSystemGroups = useMemo(() => {
+    if (assignedSet.size === 0) return SYSTEM_GROUPS // fallback: show all while loading
+    return SYSTEM_GROUPS.filter(g => g.modules.some(m => assignedSet.has(m)))
+  }, [assignedSet])
 
   const financeBreakdownData = useMemo(() => {
     const finance = data?.summary?.finance
@@ -985,7 +1000,11 @@ export default function DashboardPage() {
             {/* ── Quick Actions ────────────────────────── */}
             {(() => {
               const roleKey = (userRole ?? 'DEFAULT').toUpperCase()
-              const quickActions = ROLE_QUICK_ACTIONS[roleKey] ?? ROLE_QUICK_ACTIONS['DEFAULT']
+              const allRoleActions = ROLE_QUICK_ACTIONS[roleKey] ?? ROLE_QUICK_ACTIONS['DEFAULT']
+              /* Only show actions for modules the user is actually assigned to */
+              const quickActions = assignedSet.size > 0
+                ? allRoleActions.filter(a => a.module === 'CORE' || assignedSet.has(a.module))
+                : allRoleActions
               const roleLabel: Record<string, string> = {
                 TENANT_SUPER_ADMIN: 'Super Admin', ADMIN: 'Admin',
                 TEACHER: 'Teacher', ACCOUNTANT: 'Accountant', DEFAULT: '',
@@ -1069,7 +1088,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <div className="grid gap-2.5 md:grid-cols-2">
-                {SYSTEM_GROUPS.map(group => (
+                {visibleSystemGroups.map(group => (
                   <SystemGroupCard key={group.key} group={group} assignedKeys={assignedSet} onNavigate={navigate} />
                 ))}
               </div>

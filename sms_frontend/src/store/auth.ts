@@ -8,6 +8,8 @@ type AuthState = {
   username: string | null
   role: string | null
   permissions: string[]
+  /** Module keys this user is allowed to access, sourced from /api/auth/me/ */
+  assignedModules: string[]
   isAuthenticated: boolean
   setTokens: (accessToken: string, refreshToken: string) => void
   setTenant: (tenantId: string | null) => void
@@ -15,16 +17,18 @@ type AuthState = {
   setUsername: (username: string | null) => void
   setRole: (role: string | null) => void
   setPermissions: (permissions: string[]) => void
+  setAssignedModules: (modules: string[]) => void
   logout: () => void
 }
 
-const ACCESS_TOKEN_KEY = 'sms_access_token'
-const REFRESH_TOKEN_KEY = 'sms_refresh_token'
-const TENANT_ID_KEY = 'sms_tenant_id'
-const AUTH_MODE_KEY = 'sms_auth_mode'
-const USERNAME_KEY = 'sms_username'
-const ROLE_KEY = 'sms_role'
-const PERMISSIONS_KEY = 'sms_permissions'
+const ACCESS_TOKEN_KEY      = 'sms_access_token'
+const REFRESH_TOKEN_KEY     = 'sms_refresh_token'
+const TENANT_ID_KEY         = 'sms_tenant_id'
+const AUTH_MODE_KEY         = 'sms_auth_mode'
+const USERNAME_KEY          = 'sms_username'
+const ROLE_KEY              = 'sms_role'
+const PERMISSIONS_KEY       = 'sms_permissions'
+const ASSIGNED_MODULES_KEY  = 'sms_assigned_modules'
 
 const readStorage = (key: string) => {
   try {
@@ -47,23 +51,24 @@ const writeStorage = (key: string, value: string | null) => {
 }
 
 export const useAuthStore = create<AuthState>((set) => {
-  const accessToken = readStorage(ACCESS_TOKEN_KEY)
+  const accessToken  = readStorage(ACCESS_TOKEN_KEY)
   const refreshToken = readStorage(REFRESH_TOKEN_KEY)
-  const tenantId = readStorage(TENANT_ID_KEY)
-  const authMode = readStorage(AUTH_MODE_KEY) === 'platform' ? 'platform' : 'tenant'
-  const username = readStorage(USERNAME_KEY)
-  const role = readStorage(ROLE_KEY)
-  const permissions = (() => {
-    const raw = readStorage(PERMISSIONS_KEY)
+  const tenantId     = readStorage(TENANT_ID_KEY)
+  const authMode     = readStorage(AUTH_MODE_KEY) === 'platform' ? 'platform' : 'tenant'
+  const username     = readStorage(USERNAME_KEY)
+  const role         = readStorage(ROLE_KEY)
+
+  const parseJsonArray = (raw: string | null): string[] => {
     if (!raw) return []
     try {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return parsed.filter((item) => typeof item === 'string') as string[]
-    } catch {
-      // ignore
-    }
-    return raw.split(',').map((item) => item.trim()).filter(Boolean)
-  })()
+      if (Array.isArray(parsed)) return parsed.filter(item => typeof item === 'string') as string[]
+    } catch { /* ignore */ }
+    return raw.split(',').map(item => item.trim()).filter(Boolean)
+  }
+
+  const permissions      = parseJsonArray(readStorage(PERMISSIONS_KEY))
+  const assignedModules  = parseJsonArray(readStorage(ASSIGNED_MODULES_KEY))
 
   return {
     accessToken,
@@ -73,6 +78,7 @@ export const useAuthStore = create<AuthState>((set) => {
     username,
     role,
     permissions,
+    assignedModules,
     isAuthenticated: Boolean(accessToken),
     setTokens: (nextAccess, nextRefresh) => {
       writeStorage(ACCESS_TOKEN_KEY, nextAccess)
@@ -103,6 +109,10 @@ export const useAuthStore = create<AuthState>((set) => {
       writeStorage(PERMISSIONS_KEY, JSON.stringify(nextPermissions))
       set({ permissions: nextPermissions })
     },
+    setAssignedModules: (nextModules) => {
+      writeStorage(ASSIGNED_MODULES_KEY, JSON.stringify(nextModules))
+      set({ assignedModules: nextModules })
+    },
     logout: () => {
       writeStorage(ACCESS_TOKEN_KEY, null)
       writeStorage(REFRESH_TOKEN_KEY, null)
@@ -111,6 +121,7 @@ export const useAuthStore = create<AuthState>((set) => {
       writeStorage(USERNAME_KEY, null)
       writeStorage(ROLE_KEY, null)
       writeStorage(PERMISSIONS_KEY, null)
+      writeStorage(ASSIGNED_MODULES_KEY, null)
       set({
         accessToken: null,
         refreshToken: null,
@@ -119,6 +130,7 @@ export const useAuthStore = create<AuthState>((set) => {
         username: null,
         role: null,
         permissions: [],
+        assignedModules: [],
         isAuthenticated: false,
       })
     },

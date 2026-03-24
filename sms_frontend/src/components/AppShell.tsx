@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { apiClient } from '../api/client'
@@ -251,8 +251,12 @@ export default function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { username, role, logout } = useAuthStore(s => ({ username: s.username, role: s.role, logout: s.logout }))
-  const [allowedModules, setAllowedModules] = useState<Set<string> | null>(null)
+  const { username, role, logout, assignedModules } = useAuthStore(s => ({
+    username: s.username,
+    role: s.role,
+    logout: s.logout,
+    assignedModules: s.assignedModules,
+  }))
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => setCursor({ x: e.clientX, y: e.clientY })
@@ -298,35 +302,32 @@ export default function AppShell() {
     }).catch(() => {})
   }, [])
 
-  /* Fetch role-based module permissions — fail-open (show all if no perms configured) */
-  useEffect(() => {
+  /* Compute filtered sidebar groups from the user's assigned module keys.
+     - Admin / Super Admin: assignedModules contains ALL active modules (backend sends all)
+     - Other roles: only their assigned subset
+     - Fails CLOSED: if assignedModules is empty for a non-admin, show nothing until loaded
+     No additional API call needed — data is populated at login via /api/auth/me/ */
+  const filteredGroups: NavGroup[] = useMemo(() => {
     const upperRole = (role ?? '').toUpperCase()
-    if (upperRole === 'ADMIN' || upperRole === 'TENANT_SUPER_ADMIN') {
-      setAllowedModules(null) // admins see everything
-      return
-    }
-    apiClient.get<{ permissions?: Array<{ module_key: string; can_view: boolean }> }>('/users/submodule-permissions/').then(r => {
-      const perms = r.data?.permissions ?? []
-      if (perms.length === 0) {
-        setAllowedModules(null) // no perms configured → show all
-        return
-      }
-      const allowed = new Set(
-        perms.filter(p => p.can_view).map(p => p.module_key)
-      )
-      setAllowedModules(allowed.size > 0 ? allowed : null)
-    }).catch(() => {
-      setAllowedModules(null) // on error, show all
-    })
-  }, [role])
+    const isAdmin = upperRole === 'ADMIN' || upperRole === 'TENANT_SUPER_ADMIN'
 
-  /* Compute filtered groups based on allowed modules */
-  const filteredGroups: NavGroup[] = allowedModules
-    ? NAV_GROUPS.map(g => ({
-        ...g,
-        items: g.items.filter(item => !item.moduleKey || allowedModules.has(item.moduleKey)),
-      })).filter(g => g.items.length > 0)
-    : NAV_GROUPS
+    // Admin with no assigned modules in store yet → show all while loading
+    if (isAdmin && assignedModules.length === 0) return NAV_GROUPS
+
+    // If assignedModules is populated, always filter (admins also filter, but they get all modules)
+    if (assignedModules.length > 0) {
+      const allowed = new Set(assignedModules.map(k => k.toUpperCase()))
+      return NAV_GROUPS
+        .map(g => ({
+          ...g,
+          items: g.items.filter(item => !item.moduleKey || allowed.has(item.moduleKey)),
+        }))
+        .filter(g => g.items.length > 0)
+    }
+
+    // Non-admin with no assigned modules: show nothing (fail closed)
+    return []
+  }, [role, assignedModules])
 
   const toggleGroup = useCallback((key: string) => {
     setOpenGroups(prev => {

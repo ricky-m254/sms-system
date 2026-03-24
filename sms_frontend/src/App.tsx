@@ -1,4 +1,4 @@
-import { Suspense, lazy, Component } from 'react'
+import React, { Suspense, lazy, Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
@@ -28,6 +28,28 @@ class ChunkErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
 }
 import { useAuthStore } from './store/auth'
 import { isModuleRouteEnabled } from './config/moduleFocus'
+
+/**
+ * ModuleGuard — route-level RBAC protection.
+ * Redirects to /dashboard if the authenticated user does not have the
+ * specified module key in their assigned modules.
+ * Admins and Super Admins always pass through.
+ * If assignedModules is empty (race on hard-reload before re-login), passes
+ * through to avoid false-positives — the sidebar is already filtered.
+ */
+function ModuleGuard({ moduleKey, children }: { moduleKey: string; children: React.ReactNode }) {
+  const assignedModules = useAuthStore(s => s.assignedModules)
+  const role            = useAuthStore(s => s.role)
+  const upperRole       = (role ?? '').toUpperCase()
+  const isAdmin         = upperRole === 'ADMIN' || upperRole === 'TENANT_SUPER_ADMIN'
+
+  if (isAdmin) return <>{children}</>
+  if (assignedModules.length === 0) return <>{children}</> // still loading — pass through
+  const upper = moduleKey.toUpperCase()
+  const hasAccess = assignedModules.some(k => k.toUpperCase() === upper)
+  if (hasAccess) return <>{children}</>
+  return <Navigate to="/dashboard" replace />
+}
 import Footer from './components/Footer'
 const AppShell = lazy(() => import('./components/AppShell'))
 
@@ -465,7 +487,7 @@ function App() {
         />
         <Route
           path="/modules/students/*"
-          element={isTenantAuth && studentsEnabled ? <StudentsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && studentsEnabled ? <ModuleGuard moduleKey="STUDENTS"><StudentsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<StudentsDashboardPage />} />
           <Route path="directory" element={<StudentsDirectoryPage />} />
@@ -480,7 +502,7 @@ function App() {
         </Route>
         <Route
           path="/modules/admissions/*"
-          element={isTenantAuth && admissionsEnabled ? <AdmissionsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && admissionsEnabled ? <ModuleGuard moduleKey="ADMISSIONS"><AdmissionsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/admissions/dashboard" replace />} />
           <Route path="dashboard" element={<AdmissionsDashboardPage />} />
@@ -496,7 +518,7 @@ function App() {
         </Route>
         <Route
           path="/modules/finance/*"
-          element={isTenantAuth && financeEnabled ? <FinanceLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && financeEnabled ? <ModuleGuard moduleKey="FINANCE"><FinanceLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<FinanceSummaryPage />} />
           <Route path="invoices" element={<FinanceInvoicesPage />} />
@@ -543,7 +565,7 @@ function App() {
         </Route>
         <Route
           path="/modules/academics/*"
-          element={isTenantAuth && academicsEnabled ? <AcademicsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && academicsEnabled ? <ModuleGuard moduleKey="ACADEMICS"><AcademicsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/academics/dashboard" replace />} />
           <Route path="dashboard" element={<AcademicsDashboardPage />} />
@@ -558,7 +580,7 @@ function App() {
         </Route>
         <Route
           path="/modules/hr/*"
-          element={isTenantAuth && hrEnabled ? <HrLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && hrEnabled ? <ModuleGuard moduleKey="HR"><HrLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/hr/dashboard" replace />} />
           <Route path="dashboard" element={<HrDashboardPage />} />
@@ -578,7 +600,7 @@ function App() {
         </Route>
         <Route
           path="/modules/staff/*"
-          element={isTenantAuth && staffEnabled ? <StaffLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && staffEnabled ? <ModuleGuard moduleKey="STAFF"><StaffLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/staff/dashboard" replace />} />
           <Route path="dashboard" element={<StaffDashboardPage />} />
@@ -592,7 +614,7 @@ function App() {
         </Route>
         <Route
           path="/modules/communication/*"
-          element={isTenantAuth && communicationEnabled ? <CommunicationLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && communicationEnabled ? <ModuleGuard moduleKey="COMMUNICATION"><CommunicationLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/communication/dashboard" replace />} />
           <Route path="dashboard" element={<CommunicationDashboardPage />} />
@@ -608,7 +630,7 @@ function App() {
         </Route>
         <Route
           path="/modules/parent-portal/*"
-          element={isTenantAuth && parentPortalEnabled ? <ParentPortalLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && parentPortalEnabled ? <ModuleGuard moduleKey="PARENT_PORTAL"><ParentPortalLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/parent-portal/dashboard" replace />} />
           <Route path="dashboard" element={<ParentPortalDashboardPage />} />
@@ -624,7 +646,7 @@ function App() {
         </Route>
         <Route
           path="/modules/library/*"
-          element={isTenantAuth && libraryEnabled ? <LibraryLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && libraryEnabled ? <ModuleGuard moduleKey="LIBRARY"><LibraryLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/library/dashboard" replace />} />
           <Route path="dashboard" element={<LibraryDashboardPage />} />
@@ -639,7 +661,7 @@ function App() {
         </Route>
         <Route
           path="/modules/assets/*"
-          element={isTenantAuth && assetsEnabled ? <AssetsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && assetsEnabled ? <ModuleGuard moduleKey="ASSETS"><AssetsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/assets/dashboard" replace />} />
           <Route path="dashboard" element={<AssetsDashboardPage />} />
@@ -654,7 +676,7 @@ function App() {
         </Route>
         <Route
           path="/modules/store/*"
-          element={isTenantAuth && storeEnabled ? <StoreLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && storeEnabled ? <ModuleGuard moduleKey="STORE"><StoreLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<StoreDashboardPage />} />
           <Route path="items" element={<StoreItemsPage />} />
@@ -669,7 +691,7 @@ function App() {
         </Route>
         <Route
           path="/modules/dispensary/*"
-          element={isTenantAuth && dispensaryEnabled ? <DispensaryLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && dispensaryEnabled ? <ModuleGuard moduleKey="DISPENSARY"><DispensaryLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<DispensaryDashboardPage />} />
           <Route path="visits" element={<DispensaryVisitsPage />} />
@@ -703,7 +725,7 @@ function App() {
         />
         <Route
           path="/modules/clockin/*"
-          element={isTenantAuth && clockinEnabled ? <ClockInLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && clockinEnabled ? <ModuleGuard moduleKey="CLOCKIN"><ClockInLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/clockin/dashboard" replace />} />
           <Route path="dashboard" element={<ClockInDashboardPage />} />
@@ -717,7 +739,7 @@ function App() {
         </Route>
         <Route
           path="/modules/timetable/*"
-          element={isTenantAuth && timetableEnabled ? <TimetableLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && timetableEnabled ? <ModuleGuard moduleKey="TIMETABLE"><TimetableLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<Navigate to="/modules/timetable/grid" replace />} />
           <Route path="grid" element={<TimetableGridPage />} />
@@ -728,7 +750,7 @@ function App() {
         </Route>
         <Route
           path="/modules/transport/*"
-          element={isTenantAuth && transportEnabled ? <TransportLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && transportEnabled ? <ModuleGuard moduleKey="TRANSPORT"><TransportLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<TransportDashboardPage />} />
           <Route path="dashboard" element={<TransportDashboardPage />} />
@@ -740,7 +762,7 @@ function App() {
         </Route>
         <Route
           path="/modules/visitors/*"
-          element={isTenantAuth && visitorsEnabled ? <VisitorMgmtLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && visitorsEnabled ? <ModuleGuard moduleKey="VISITOR_MGMT"><VisitorMgmtLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<VisitorDashboardPage />} />
           <Route path="dashboard" element={<VisitorDashboardPage />} />
@@ -750,7 +772,7 @@ function App() {
         </Route>
         <Route
           path="/modules/examinations/*"
-          element={isTenantAuth && examinationsEnabled ? <ExaminationsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && examinationsEnabled ? <ModuleGuard moduleKey="EXAMINATIONS"><ExaminationsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<ExaminationsDashboardPage />} />
           <Route path="dashboard" element={<ExaminationsDashboardPage />} />
@@ -764,7 +786,7 @@ function App() {
         </Route>
         <Route
           path="/modules/alumni/*"
-          element={isTenantAuth && alumniEnabled ? <AlumniLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && alumniEnabled ? <ModuleGuard moduleKey="ALUMNI"><AlumniLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<AlumniDashboardPage />} />
           <Route path="dashboard" element={<AlumniDashboardPage />} />
@@ -776,7 +798,7 @@ function App() {
         </Route>
         <Route
           path="/modules/hostel/*"
-          element={isTenantAuth && hostelEnabled ? <HostelLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && hostelEnabled ? <ModuleGuard moduleKey="HOSTEL"><HostelLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<HostelDashboardPage />} />
           <Route path="dashboard" element={<HostelDashboardPage />} />
@@ -788,7 +810,7 @@ function App() {
         </Route>
         <Route
           path="/modules/ptm/*"
-          element={isTenantAuth && ptmEnabled ? <PTMLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && ptmEnabled ? <ModuleGuard moduleKey="PTM"><PTMLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<PTMDashboardPage />} />
           <Route path="dashboard" element={<PTMDashboardPage />} />
@@ -798,7 +820,7 @@ function App() {
         </Route>
         <Route
           path="/modules/sports/*"
-          element={isTenantAuth && sportsEnabled ? <SportsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && sportsEnabled ? <ModuleGuard moduleKey="SPORTS"><SportsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<SportsDashboardPage />} />
           <Route path="dashboard" element={<SportsDashboardPage />} />
@@ -808,7 +830,7 @@ function App() {
         </Route>
         <Route
           path="/modules/cafeteria/*"
-          element={isTenantAuth && cafeteriaEnabled ? <CafeteriaLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && cafeteriaEnabled ? <ModuleGuard moduleKey="CAFETERIA"><CafeteriaLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<CafeteriaDashboardPage />} />
           <Route path="dashboard" element={<CafeteriaDashboardPage />} />
@@ -825,7 +847,7 @@ function App() {
         </Route>
         <Route
           path="/modules/curriculum/*"
-          element={isTenantAuth && curriculumEnabled ? <CurriculumLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && curriculumEnabled ? <ModuleGuard moduleKey="CURRICULUM"><CurriculumLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<CurriculumDashboardPage />} />
           <Route path="dashboard" element={<CurriculumDashboardPage />} />
@@ -835,7 +857,7 @@ function App() {
         </Route>
         <Route
           path="/modules/maintenance/*"
-          element={isTenantAuth && maintenanceEnabled ? <MaintenanceLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && maintenanceEnabled ? <ModuleGuard moduleKey="MAINTENANCE"><MaintenanceLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<MaintenanceDashboardPage />} />
           <Route path="dashboard" element={<MaintenanceDashboardPage />} />
@@ -845,7 +867,7 @@ function App() {
         </Route>
         <Route
           path="/modules/elearning/*"
-          element={isTenantAuth && elearningEnabled ? <ELearningLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && elearningEnabled ? <ModuleGuard moduleKey="ELEARNING"><ELearningLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<ELearningDashboardPage />} />
           <Route path="dashboard" element={<ELearningDashboardPage />} />
@@ -856,7 +878,7 @@ function App() {
         </Route>
         <Route
           path="/modules/analytics/*"
-          element={isTenantAuth && analyticsEnabled ? <AnalyticsLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+          element={isTenantAuth && analyticsEnabled ? <ModuleGuard moduleKey="ANALYTICS"><AnalyticsLayout /></ModuleGuard> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
         >
           <Route index element={<AnalyticsDashboardPage />} />
           <Route path="dashboard" element={<AnalyticsDashboardPage />} />
