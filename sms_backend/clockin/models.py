@@ -152,6 +152,9 @@ class SmartPSSSource(models.Model):
                       help_text='Use HTTPS instead of HTTP for the SmartPSS Lite API')
     username      = models.CharField(max_length=100, default='admin')
     password      = models.CharField(max_length=200, default='admin123')
+    device_model  = models.CharField(max_length=100, blank=True, default='',
+                      help_text='Dahua device model managed by this SmartPSS instance, '
+                                'e.g. "AS16214S", "ASI7213X-T1", "ASI3214S"')
 
     sync_days_back = models.PositiveIntegerField(default=7,
                        help_text='How many days back to pull on each sync')

@@ -74,7 +74,13 @@ class SmartPSSLiteClient:
     # ── low-level helpers ────────────────────────────────────────────────────
 
     def _request(self, method: str, path: str, body: Optional[dict] = None,
-                 token: Optional[str] = None, timeout: float = CONNECT_TIMEOUT) -> dict:
+                 token: Optional[str] = None, timeout: float = CONNECT_TIMEOUT,
+                 _retry: int = 1) -> dict:
+        """
+        Make an HTTP request to SmartPSS Lite.
+        Retries once on URLError (connection reset / brief network blip).
+        """
+        import time as _time
         url = f'{self.base}{path}'
         data = json.dumps(body or {}).encode('utf-8') if body is not None else b'{}'
         headers = {
@@ -91,6 +97,9 @@ class SmartPSSLiteClient:
         except urllib.error.HTTPError as e:
             raise SmartPSSError(f'HTTP {e.code} from SmartPSS Lite at {url}', code=e.code)
         except urllib.error.URLError as e:
+            if _retry > 0:
+                _time.sleep(2)
+                return self._request(method, path, body, token, timeout, _retry=_retry - 1)
             raise SmartPSSError(
                 f'Cannot reach SmartPSS Lite at {self.base}: {e.reason}. '
                 'Check host/port and ensure port forwarding is configured.', code=0)
@@ -127,7 +136,7 @@ class SmartPSSLiteClient:
         except SmartPSSError:
             pass
 
-    class session:
+    class _SessionContext:
         """Context manager: login on enter, logout on exit."""
         def __init__(self, client: 'SmartPSSLiteClient'):
             self.client = client
@@ -140,6 +149,10 @@ class SmartPSSLiteClient:
         def __exit__(self, *_):
             if self.token:
                 self.client.logout(self.token)
+
+    def session(self) -> '_SessionContext':
+        """Return a context manager that logs in on enter and logs out on exit."""
+        return SmartPSSLiteClient._SessionContext(self)
 
     # ── data retrieval ───────────────────────────────────────────────────────
 

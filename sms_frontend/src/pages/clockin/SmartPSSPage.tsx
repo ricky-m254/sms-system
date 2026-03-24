@@ -14,6 +14,7 @@ type Source = {
   port: number
   use_https: boolean
   username: string
+  device_model: string
   sync_days_back: number
   is_active: boolean
   last_sync_at: string | null
@@ -37,7 +38,7 @@ type Log = {
 const EMPTY_FORM = {
   name: '', host: '', port: 8443, use_https: false,
   username: 'admin', password: 'admin123',
-  sync_days_back: 7, is_active: true, notes: '',
+  device_model: '', sync_days_back: 7, is_active: true, notes: '',
 }
 
 export default function SmartPSSPage() {
@@ -85,6 +86,7 @@ export default function SmartPSSPage() {
     setForm({
       name: src.name, host: src.host, port: src.port,
       use_https: src.use_https, username: src.username, password: '',
+      device_model: src.device_model || '',
       sync_days_back: src.sync_days_back, is_active: src.is_active, notes: src.notes,
     })
     setFormErr('')
@@ -253,6 +255,14 @@ export default function SmartPSSPage() {
                 Active
               </label>
             </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '4px' }}>Device Model</label>
+              <input className={INPUT_CLS} placeholder="e.g. AS16214S, ASI7213X-T1" value={form.device_model}
+                onChange={e => setForm(f => ({ ...f, device_model: e.target.value }))} />
+              <p style={{ color: '#475569', fontSize: '0.72rem', marginTop: '3px' }}>
+                Dahua device managed by this SmartPSS instance (optional, for reference)
+              </p>
+            </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '4px' }}>Notes</label>
               <input className={INPUT_CLS} placeholder="Optional notes" value={form.notes}
@@ -302,6 +312,7 @@ export default function SmartPSSPage() {
                     </div>
                     <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '4px' }}>
                       {src.api_url} &nbsp;·&nbsp; Sync {src.sync_days_back}d back
+                      {src.device_model && <>&nbsp;·&nbsp;<span style={{ color: '#10b981' }}>📷 {src.device_model}</span></>}
                     </p>
                     <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '2px' }}>
                       Last sync: {fmtDate(src.last_sync_at)}

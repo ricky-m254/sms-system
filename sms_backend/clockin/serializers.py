@@ -55,8 +55,8 @@ class SmartPSSSourceSerializer(serializers.ModelSerializer):
         model  = SmartPSSSource
         fields = [
             'id', 'name', 'host', 'port', 'use_https', 'username', 'password',
-            'sync_days_back', 'is_active', 'last_sync_at', 'last_sync_result',
-            'notes', 'created_at', 'api_url',
+            'device_model', 'sync_days_back', 'is_active', 'last_sync_at',
+            'last_sync_result', 'notes', 'created_at', 'api_url',
         ]
         read_only_fields = ('created_at', 'last_sync_at', 'last_sync_result')
 
