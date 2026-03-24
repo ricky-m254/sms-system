@@ -342,6 +342,67 @@ sms_backend/domains/
 
 **Seed integration**: `POST /school/seed/` now also runs `seed_default_permissions --assign-roles` automatically.
 
+### Phase 13 — Testing (Prompts 50-56)
+
+Test files in `sms_backend/domains/tests/` — all use Python stdlib `unittest`, no database required:
+
+| File | Tests | Coverage |
+|---|---|---|
+| `test_create_student_service.py` | 7 | Validation, duplicate prevention, whitespace, save guard |
+| `test_enroll_student_service.py` | 6 | Student/class existence, duplicate enrollment, term_id |
+| `test_permission_resolver_service.py` | 8 | Role perms, GRANT/DENY overrides, has_permission, no-role |
+| `test_api_auth_students.py` | 13 | Permission format, auth schema, Role add/remove/idempotent |
+| `test_tenant_isolation.py` | 18 | Tenant entity, resolver, blank/None header, cross-tenant |
+
+Run: `python -m unittest domains.tests.test_create_student_service domains.tests.test_enroll_student_service domains.tests.test_permission_resolver_service domains.tests.test_api_auth_students domains.tests.test_tenant_isolation`
+
+### Phase 14 — Database Migration Analysis (Prompts 57-63)
+
+Management command: `python manage.py analyze_inventory_migration --schema=demo_school`
+
+**Finding**: Asset models are CORRECTLY isolated in the `assets/` Django app. Store/Inventory models (`StoreItem`, `StoreCategory`, etc.) live in `school/models.py` — architecturally acceptable at current scale. API separation is sound. No data migration needed today.
+
+**Deprecation plan** (v2.1+): Create standalone `inventory` Django app, copy models, run `INSERT INTO inventory_* SELECT * FROM school_store*`, keep backward-compat aliases.
+
+### Phase 15 — Frontend Alignment (Prompts 64-70)
+
+**New hooks/components:**
+- `sms_frontend/src/hooks/usePermissions.ts` — fetches `/rbac/users/{id}/permissions/`, 5-min sessionStorage cache, fail-open (`'*'` wildcard on error)
+- `sms_frontend/src/components/PermissionGate.tsx` — `<PermissionGate permission="…">`, `anyOf`, `allOf`, `fallback` props; `usePermissionCheck()` hook variant
+- `sms_frontend/src/modules/` — 7 barrel `index.ts` files (users, academics, finance, operations, inventory, communication, analytics) with module keys and route lists
+
+### Phase 16 UX — Permission-Based UI (Prompts 71-75)
+
+PermissionGate applied to action buttons:
+- `StudentsDirectoryPage.tsx` — "+ Add Student" gated on `students.student.create`
+- `FinancePaymentsPage.tsx` — "Record payment" gated on `finance.payment.create`
+
+Pattern to extend to other pages: import `PermissionGate` from `'../../components/PermissionGate'`, wrap add/create/delete buttons.
+
+### Phase 17 — Workflow Optimization (Prompts 76-80)
+
+Management command: `python manage.py workflow_optimization_report --schema=demo_school`
+
+Analyzed 4 workflows:
+- **Admissions**: 5-step → 3-step (auto-enroll signal + 2-step form)
+- **Fee Payment**: Student Profile → Finance tab shortcut + quick-fill buttons
+- **Attendance**: "Mark All Present" bulk action + sticky save button
+- **Duplication**: Unified student creation path; RBAC hybrid duplication is by design
+
+### Phase 18 — Performance Optimization (Prompts 81-86)
+
+**DB Indexes** (migration `0045_phase18_performance_indexes` — applied to demo_school):
+- `Student.is_active`, `Student.created_at`
+- `Invoice.status`, `Invoice.(student, status)`, `Invoice.due_date`
+- `Payment.payment_date`, `Payment.is_active`, `Payment.(student, is_active)`
+- `AttendanceRecord.date`, `AttendanceRecord.status`
+- `StoreItem.is_active`
+- `Enrollment.status`
+
+**Query optimization**: `StudentViewSet.get_queryset` → `prefetch_related('guardians')` (eliminates N+1 on student detail with multiple guardians)
+
+**Caching** (`DashboardSummaryView`): 2-minute per-tenant+user LocMemCache. Cache key: `dashboard_summary_{schema}_{user_id}`. `cache.set()` failure is caught silently so cache errors never break the view.
+
 ## Recent Updates
 
 - **Teacher Portal** (new module): Full portal at `/teacher-portal/*` — Layout, Dashboard (KPI cards, schedule, recent marks), Classes (subject/class assignments with student counts), Attendance (mark/save daily attendance), Gradebook (CBC 4-band: Exceeding/Meeting/Approaching/Below), Resources (upload/manage teaching materials), Timetable (weekly grid + daily agenda views). Accessible to all authenticated tenant users.

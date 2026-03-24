@@ -6,6 +6,7 @@ import { X } from 'lucide-react'
 import { normalizePaginatedResponse } from '../../api/pagination'
 import { downloadBlob, extractFilename } from '../../utils/download'
 import PageHero from '../../components/PageHero'
+import PermissionGate from '../../components/PermissionGate'
 
 type Student = {
   id: number
@@ -185,10 +186,12 @@ export default function StudentsDirectoryPage() {
         subtitle="Browse and search all students."
         icon="📋"
         actions={
-          <button onClick={() => { setShowAddStudent(true); setAddMsg('') }}
-            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
-            + Add Student
-          </button>
+          <PermissionGate permission="students.student.create">
+            <button onClick={() => { setShowAddStudent(true); setAddMsg('') }}
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
+              + Add Student
+            </button>
+          </PermissionGate>
         }
       />
 

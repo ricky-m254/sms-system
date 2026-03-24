@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Sum, Count, Q
 from django.db import models
 from django.db import connection
@@ -248,7 +249,8 @@ class StudentViewSet(viewsets.ModelViewSet):
     pagination_class = FinanceResultsPagination
 
     def get_queryset(self):
-        queryset = Student.objects.all().order_by('-id')
+        # Phase 18: prefetch guardians to eliminate N+1 on student detail pages
+        queryset = Student.objects.prefetch_related('guardians').order_by('-id')
         search = (self.request.query_params.get('search') or '').strip()
         gender = (self.request.query_params.get('gender') or '').strip()
         is_active = self.request.query_params.get('is_active')
@@ -4331,10 +4333,24 @@ class DashboardRoutingView(APIView):
 class DashboardSummaryView(APIView):
     """
     Aggregated, read-only summaries across modules for the main dashboard.
+    Phase 18 — Prompt 84: Caching strategy.
+    Cache per tenant + user role for 2 minutes to reduce DB load.
     """
     permission_classes = [permissions.IsAuthenticated]
+    CACHE_TTL = 120  # seconds
+
+    def _cache_key(self, request) -> str:
+        from django.db import connection as _conn
+        schema = getattr(_conn, 'schema_name', 'public')
+        user_id = request.user.id
+        return f"dashboard_summary_{schema}_{user_id}"
 
     def get(self, request):
+        cache_key = self._cache_key(request)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
         role_name = None
         if hasattr(request.user, 'userprofile'):
             role_name = request.user.userprofile.role.name
@@ -4526,12 +4542,18 @@ class DashboardSummaryView(APIView):
             if key not in handled:
                 unavailable.append(key)
 
-        return Response({
+        # Phase 18: cache dashboard summary for 2 minutes per tenant+user
+        response_data = {
             "modules": module_keys,
             "modules_detail": modules,
             "unavailable_modules": sorted(list(set(unavailable))),
             "summary": summary
-        })
+        }
+        try:
+            cache.set(cache_key, response_data, self.CACHE_TTL)
+        except Exception:
+            pass  # cache failure must never break the view
+        return Response(response_data)
 
 class FinanceSummaryCsvExportView(APIView):
     """CSV export for finance summary."""

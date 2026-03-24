@@ -8,6 +8,7 @@ import { extractApiErrorMessage } from '../../utils/forms'
 import { downloadBlob } from '../../utils/download'
 import PrintButton from '../../components/PrintButton'
 import PageHero from '../../components/PageHero'
+import PermissionGate from '../../components/PermissionGate'
 
 type Payment = {
   id: number
@@ -531,12 +532,14 @@ export default function FinancePaymentsPage() {
                 setPaymentPage(1)
               }}
             />
-            <button
-              className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 sm:w-auto"
-              onClick={() => navigate('/modules/finance/payments/new')}
-            >
-              Record payment
-            </button>
+            <PermissionGate permission="finance.payment.create">
+              <button
+                className="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 sm:w-auto"
+                onClick={() => navigate('/modules/finance/payments/new')}
+              >
+                Record payment
+              </button>
+            </PermissionGate>
           </div>
         </div>
         <p className="mt-3 text-xs text-slate-500">On small screens, scroll the table horizontally.</p>
