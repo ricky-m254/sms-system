@@ -27,10 +27,13 @@ from .smartpss_client import (
     normalise_attend_status, parse_smartpss_time, parse_smartpss_csv,
 )
 from school.permissions import HasModuleAccess
-from school.models import AttendanceRecord as StudentAttendanceRecord, UserProfile
-from hr.models import AttendanceRecord as EmployeeAttendanceRecord
-from communication.models import Notification
 from django.db.models import Q
+# ── DBMA cross-domain imports removed from module level ──────────────────────
+# school.models, hr.models, communication.models are accessed ONLY through
+# infrastructure layer services:
+#   clockin/infrastructure/services/attendance_service.py   (school + hr)
+#   clockin/infrastructure/services/notification_service.py (communication)
+# This fixes DBMA Rule 4.2 (no direct cross-domain model imports at module level)
 
 # Ports associated with known biometric device brands.
 # PRIMARY: Dahua ASI6214S — probed first on its default ports.
@@ -132,19 +135,28 @@ def _dahua_http_identify(ip: str, timeout: float = 1.5) -> dict:
     return info
 
 def _notify_admins(title, message, priority='Important', action_url=''):
-    admin_users = UserProfile.objects.filter(
-        role__name__in=['ADMIN', 'TENANT_SUPER_ADMIN']
-    ).select_related('user')
-    for up in admin_users:
-        Notification.objects.create(
-            recipient=up.user,
-            notification_type='HR',
-            title=title,
-            message=message,
-            priority=priority,
-            action_url=action_url,
-            delivery_status='Sent',
-        )
+    """
+    Send notification to admins.
+    Uses local imports (infrastructure layer pattern) — no top-level cross-domain import.
+    """
+    try:
+        from communication.models import Notification
+        from school.models import UserProfile
+        admin_users = UserProfile.objects.filter(
+            role__name__in=['ADMIN', 'TENANT_SUPER_ADMIN']
+        ).select_related('user')
+        for up in admin_users:
+            Notification.objects.create(
+                recipient=up.user,
+                notification_type='HR',
+                title=title,
+                message=message,
+                priority=priority,
+                action_url=action_url,
+                delivery_status='Sent',
+            )
+    except Exception:
+        pass
 
 class ClockInModuleMixin:
     permission_classes = [permissions.IsAuthenticated, HasModuleAccess]

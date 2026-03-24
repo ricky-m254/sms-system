@@ -116,7 +116,14 @@ export default function HostelDashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-6 justify-center lg:justify-end">
-            <OccupancyRing pct={loading ? 0 : occupancy} color="#0ea5e9" />
+            {loading ? (
+              <div className="w-[100px] h-[100px] rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(14,165,233,0.06)', border: '2px solid rgba(14,165,233,0.15)' }}>
+                <div className="w-12 h-12 rounded-full bg-white/[0.04] animate-pulse" />
+              </div>
+            ) : (
+              <OccupancyRing pct={occupancy} color="#0ea5e9" />
+            )}
             <div className="space-y-3">
               {loading ? (
                 <div className="space-y-3">
