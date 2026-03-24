@@ -396,11 +396,23 @@ class RealtimeView(ClockInModuleMixin, APIView):
 # ── Shared helper: process one scan event ─────────────────────────────────────
 def _process_scan_event(person, device, event_timestamp, direction='auto'):
     """
-    Create a ClockEvent for a person, determine IN/OUT, late status,
-    update attendance records and send admin notifications.
+    Phase 4 thin adapter — delegates to ClockInService application layer.
 
-    direction:  'in' | 'out' | 'auto'  (Dahua Direction 0=in, 1=out)
-    Returns the created ClockEvent.
+    Signature and return type are preserved for full backward compatibility
+    with all Dahua / SmartPSS views that call this function.
+
+    direction: 'in' | 'out' | 'auto'
+    Returns:   ClockEvent ORM instance, or None on duplicate.
+    """
+    from clockin.application.services.clock_in_service import ClockInService
+    return ClockInService().process_scan(person, device, event_timestamp, direction)
+
+
+def _process_scan_event_LEGACY_UNUSED(person, device, event_timestamp, direction='auto'):
+    """
+    LEGACY — kept for reference only. All callers now use _process_scan_event
+    which delegates to ClockInService (Phase 4 of the DDD refactor).
+    DO NOT call this function directly.
     """
     event_date = event_timestamp.date()
 
@@ -536,16 +548,12 @@ def _lookup_person(card_no=None, user_id=None, fingerprint_id=None):
 
 
 def _parse_dahua_time(time_str):
-    """Parse Dahua time strings: '2026-03-22 12:00:00' or ISO format."""
-    if not time_str:
-        return timezone.now()
-    for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%SZ'):
-        try:
-            dt = datetime.strptime(time_str.strip(), fmt)
-            return timezone.make_aware(dt) if timezone.is_naive(dt) else dt
-        except ValueError:
-            continue
-    return timezone.now()
+    """
+    Phase 4 thin adapter — delegates to infrastructure/dahua/utils.parse_device_time.
+    Signature preserved for full backward compatibility.
+    """
+    from clockin.infrastructure.dahua.utils import parse_device_time
+    return parse_device_time(time_str)
 
 
 # ── Dahua ASI6214S HTTP Upload webhook ────────────────────────────────────────

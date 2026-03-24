@@ -113,9 +113,13 @@ class ProcessScanUseCase:
 
     def execute_from_person_obj(self, person_obj, device_obj, event_timestamp, direction='auto'):
         """
-        Backward-compatible entry point called from legacy views.py functions.
-        Wraps the Django model objects into a thin adapter so views.py
-        does not need to be rewritten immediately.
+        Phase 4 backward-compatible entry point called by the thin adapter in views.py.
+        Wraps Django ORM objects → domain layer → returns ClockEvent ORM instance.
+
+        Maintains identical API contract to the old _process_scan_event:
+          - Returns ClockEvent ORM object (or None on duplicate)
+          - Sets attendance_updated=True flag after cross-domain write
+          - Sends late-arrival notifications through infrastructure service
         """
         from clockin.infrastructure.repositories.person_repository import PersonEntityAdapter
         from clockin.infrastructure.repositories.clock_event_repository import DjangoClockEventRepository
@@ -124,47 +128,69 @@ class ProcessScanUseCase:
         from clockin.infrastructure.services.notification_service import DjangoNotificationService
 
         person_entity = PersonEntityAdapter.from_model(person_obj)
-        event_date = event_timestamp.date()
+        event_date    = event_timestamp.date()
 
-        # Determine IN/OUT using domain rule
-        last_event = DjangoClockEventRepository().find_last_for_person_on_date(person_obj.pk, event_date)
+        ce_repo    = DjangoClockEventRepository()
+        shift_repo = DjangoShiftRepository()
+
+        # 1. Determine IN/OUT using domain rule
+        last_event = ce_repo.find_last_for_person_on_date(person_obj.pk, event_date)
         last_type  = last_event.event_type if last_event else None
         event_type = determine_event_type(direction, last_type)
 
-        # Late detection
+        # 2. Late detection (IN events only)
         late = False
         late_mins = 0
         if event_type == 'IN':
-            shift_data = DjangoShiftRepository().find_active_shift_for_person_type(person_obj.person_type)
+            shift_data = shift_repo.find_active_shift_for_person_type(person_obj.person_type)
             if shift_data:
-                late = is_late_arrival(event_timestamp, shift_data['expected_arrival'], shift_data['grace_period_minutes'])
+                late = is_late_arrival(event_timestamp, shift_data['expected_arrival'],
+                                       shift_data['grace_period_minutes'])
                 if late:
-                    late_mins = minutes_late(event_timestamp, shift_data['expected_arrival'], shift_data['grace_period_minutes'])
+                    late_mins = minutes_late(event_timestamp, shift_data['expected_arrival'],
+                                            shift_data['grace_period_minutes'])
 
-        # Dedup
-        if DjangoClockEventRepository().duplicate_exists(person_obj.pk, event_type, event_timestamp):
-            return None   # caller decides what to do
+        # 3. Dedup guard — return None so callers can decide behaviour
+        if ce_repo.duplicate_exists(person_obj.pk, event_type, event_timestamp):
+            return None
 
-        # Persist
+        # 4. Persist via repository
         entity = ClockEventEntity(
-            person_id=person_obj.pk,
-            event_type=event_type,
-            timestamp=event_timestamp,
-            event_date=event_date,
-            is_late=late,
-            device_id=device_obj.pk if device_obj else None,
+            person_id = person_obj.pk,
+            event_type = event_type,
+            timestamp  = event_timestamp,
+            event_date = event_date,
+            is_late    = late,
+            device_id  = device_obj.pk if device_obj else None,
         )
-        event_orm = DjangoClockEventRepository().save(entity)
+        event_orm = ce_repo.save(entity)
 
-        # Cross-domain write
-        DjangoAttendanceService().update(person_entity, event_type, event_timestamp, event_date, late)
+        # 5. Cross-domain write (attendance records in school + hr)
+        att_updated = False
+        try:
+            DjangoAttendanceService().update(person_entity, event_type, event_timestamp,
+                                             event_date, late)
+            att_updated = True
+        except Exception as exc:
+            print(f"[ProcessScan] attendance update failed: {exc}")
 
-        # Notifications
+        # 6. Set attendance_updated flag on the event (matches legacy behaviour)
+        if att_updated and event_orm is not None:
+            try:
+                event_orm.attendance_updated = True
+                event_orm.save(update_fields=['attendance_updated'])
+            except Exception:
+                pass
+
+        # 7. Late-arrival notification through infrastructure service
         if late:
-            DjangoNotificationService().notify_late_arrival(
-                person=person_entity,
-                event_time=event_timestamp,
-                minutes_late=late_mins,
-            )
+            try:
+                DjangoNotificationService().notify_late_arrival(
+                    person=person_entity,
+                    event_time=event_timestamp,
+                    minutes_late=late_mins,
+                )
+            except Exception as exc:
+                print(f"[ProcessScan] notification failed: {exc}")
 
         return event_orm
