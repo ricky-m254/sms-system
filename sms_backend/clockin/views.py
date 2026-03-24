@@ -5,6 +5,7 @@ import socket
 import time
 import urllib.request
 import urllib.error
+import urllib.parse
 import concurrent.futures
 from rest_framework import viewsets, permissions, status
 from rest_framework.views import APIView
@@ -775,10 +776,23 @@ class DahuaSyncView(ClockInModuleMixin, APIView):
         username = device.username or 'admin'
         password = device.password or 'admin123'
 
+        # URL-encode datetime strings so spaces become %20 (urllib rejects raw spaces)
+        qs_punch = urllib.parse.urlencode({
+            'action': 'getAllRecords',
+            'StartTime': start_time,
+            'EndTime': end_time,
+        })
+        qs_finder = urllib.parse.urlencode({
+            'action': 'find',
+            'name': 'AttendanceRecord',
+            'StartTime': start_time,
+            'EndTime': end_time,
+        })
+
         # Dahua HTTP API endpoint for attendance records
         urls_to_try = [
-            f'http://{ip}:{port}/cgi-bin/attendancePunchRecord.cgi?action=getAllRecords&StartTime={start_time}&EndTime={end_time}',
-            f'http://{ip}:{port}/cgi-bin/recordFinder.cgi?action=find&name=AttendanceRecord&StartTime={start_time}&EndTime={end_time}',
+            f'http://{ip}:{port}/cgi-bin/attendancePunchRecord.cgi?{qs_punch}',
+            f'http://{ip}:{port}/cgi-bin/recordFinder.cgi?{qs_finder}',
         ]
 
         raw_text = None
