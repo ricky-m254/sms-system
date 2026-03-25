@@ -40,7 +40,16 @@ class HasModuleAccess(permissions.BasePermission):
     Enforces per-module access using UserModuleAssignment.
     ViewSets should define `module_key` (e.g., "FINANCE", "STUDENTS").
     ADMIN and TENANT_SUPER_ADMIN bypass module checks.
+    PARENT role automatically passes PARENTS module.
+    STUDENT role automatically passes STUDENT_PORTAL module.
     """
+
+    # Roles that have inherent access to their own dedicated portal module
+    _PORTAL_ROLE_MAP = {
+        'PARENT':  {'PARENTS', 'PARENT_PORTAL'},
+        'STUDENT': {'STUDENT_PORTAL', 'STUDENTS_PORTAL'},
+    }
+
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
@@ -51,9 +60,14 @@ class HasModuleAccess(permissions.BasePermission):
         if not module_key:
             return True
 
+        role_name = None
         if hasattr(request.user, 'userprofile'):
             role_name = request.user.userprofile.role.name
             if role_name in ['ADMIN', 'TENANT_SUPER_ADMIN']:
+                return True
+            # Portal roles have inherent access to their own modules
+            allowed_keys = self._PORTAL_ROLE_MAP.get(role_name, set())
+            if module_key.upper() in allowed_keys:
                 return True
 
         from .models import UserModuleAssignment

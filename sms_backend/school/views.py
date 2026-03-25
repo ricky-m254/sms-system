@@ -1238,6 +1238,12 @@ class CurrentUserView(APIView):
         # Super-admin / admin roles get ALL active modules
         if role_name in ('ADMIN', 'TENANT_SUPER_ADMIN') or user.is_superuser:
             module_keys = list(Module.objects.filter(is_active=True).values_list('key', flat=True).order_by('key'))
+        elif role_name == 'PARENT':
+            # Parent users have inherent access to the parent portal — no module assignment needed
+            module_keys = ['PARENTS', 'PARENT_PORTAL']
+        elif role_name == 'STUDENT':
+            # Student users have inherent access to the student portal — no module assignment needed
+            module_keys = ['STUDENT_PORTAL']
         else:
             module_keys = list(
                 UserModuleAssignment.objects.filter(

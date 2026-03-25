@@ -171,9 +171,10 @@ export default function SettingsSeedPage() {
       <div className="rounded-2xl p-4 text-[11px] text-slate-500 space-y-1" style={GLASS}>
         <p className="font-semibold text-slate-400 mb-2">Tips</p>
         <p>• After seeding, navigate to any module (Students, Finance, Transport…) to see the data.</p>
-        <p>• The demo credentials are: tenant <strong className="text-slate-300">demo_school</strong>, username <strong className="text-slate-300">admin</strong>, password <strong className="text-slate-300">admin123</strong>.</p>
+        <p>• Admin credentials: tenant <strong className="text-slate-300">demo_school</strong>, username <strong className="text-slate-300">admin</strong>, password <strong className="text-slate-300">admin123</strong>.</p>
+        <p>• Student login: username = admission number (e.g. <strong className="text-slate-300">STM2025001</strong>), password <strong className="text-slate-300">student123</strong>.</p>
+        <p>• Parent login: username <strong className="text-slate-300">parent_kamau</strong>, password <strong className="text-slate-300">parent123</strong>.</p>
         <p>• All amounts are in KES (Kenyan Shillings).</p>
-        <p>• Student admission numbers follow the format set in your school profile (default: ADM-0001).</p>
       </div>
     </div>
   )

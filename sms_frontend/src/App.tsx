@@ -44,6 +44,8 @@ function ModuleGuard({ moduleKey, children }: { moduleKey: string; children: Rea
   const isAdmin         = upperRole === 'ADMIN' || upperRole === 'TENANT_SUPER_ADMIN'
 
   if (isAdmin) return <>{children}</>
+  // Portal roles bypass module guard — they have inherent access to their own portal
+  if (upperRole === 'PARENT' || upperRole === 'STUDENT') return <>{children}</>
   if (assignedModules.length === 0) return <>{children}</> // still loading — pass through
   const upper = moduleKey.toUpperCase()
   const hasAccess = assignedModules.some(k => k.toUpperCase() === upper)

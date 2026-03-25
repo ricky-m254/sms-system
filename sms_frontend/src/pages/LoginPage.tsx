@@ -33,17 +33,17 @@ const MODES: { key: LoginMode; label: string; icon: typeof Shield; hint: string;
     key: 'parent',
     label: 'Parent / Guardian',
     icon: Users,
-    hint: 'Use the username or email address given to you at parent registration.',
-    userLabel: 'Username or Email',
-    userPlaceholder: 'parent.wanjiku',
+    hint: 'Use the guardian username provided by the school (e.g. parent_kamau) and your password.',
+    userLabel: 'Guardian Username',
+    userPlaceholder: 'parent_kamau',
   },
   {
     key: 'student',
     label: 'Student',
     icon: BookOpen,
-    hint: 'Use your admission number (e.g. ADM-0001) or the student username assigned by your school.',
-    userLabel: 'Admission No. / Username',
-    userPlaceholder: 'ADM-0001',
+    hint: 'Use your admission number as your username (e.g. STM2025001) and the password given by your school.',
+    userLabel: 'Admission Number',
+    userPlaceholder: 'STM2025001',
   },
 ]
 
@@ -261,7 +261,7 @@ export default function LoginPage() {
             {/* Tenant ID */}
             <div>
               <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-[0.12em]">
-                School ID (Tenant)
+                School ID
               </label>
               <input
                 value={tenantId}
@@ -273,6 +273,11 @@ export default function LoginPage() {
                 onFocus={e => { e.target.style.borderColor = 'rgba(16,185,129,0.5)'; e.target.style.background = 'rgba(16,185,129,0.04)' }}
                 onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; e.target.style.background = 'rgba(255,255,255,0.04)' }}
               />
+              {(mode === 'student' || mode === 'parent') && (
+                <p className="text-[10px] text-slate-600 mt-1.5">
+                  Your school's unique ID — printed on your fee invoice or letter. Ask the school office if unsure.
+                </p>
+              )}
             </div>
 
             {/* Username / Admission No */}
