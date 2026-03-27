@@ -232,6 +232,10 @@ export default function StudentProfilePage() {
   const [profileError, setProfileError] = useState<string | null>(null)
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null)
 
+  const [resettingLogin, setResettingLogin] = useState(false)
+  const [loginResetMsg, setLoginResetMsg] = useState<string | null>(null)
+  const [loginResetError, setLoginResetError] = useState<string | null>(null)
+
   useEffect(() => {
     if (!id) return
     let isMounted = true
@@ -505,6 +509,24 @@ export default function StudentProfilePage() {
     }
   }
 
+  const handleResetLogin = async () => {
+    if (!id || !student) return
+    const adm = student.admission_number
+    if (!confirm(`Reset login for ${student.first_name} ${student.last_name}?\n\nThis will create a portal account (or reset the password) with:\n  Username: ${adm}\n  Password: student123\n\nProceed?`)) return
+    setResettingLogin(true)
+    setLoginResetMsg(null)
+    setLoginResetError(null)
+    try {
+      await apiClient.post(`/students/${id}/create-login/`, { password: 'student123' })
+      setLoginResetMsg(`Login ready. Username: ${adm} · Password: student123`)
+    } catch (err) {
+      const data = (err as { response?: { data?: { detail?: string } } })?.response?.data
+      setLoginResetError(data?.detail ?? 'Failed to reset login. Please try again.')
+    } finally {
+      setResettingLogin(false)
+    }
+  }
+
   const handlePrintStudentReport = async () => {
     if (!id) return
     setPrintError(null)
@@ -743,18 +765,37 @@ export default function StudentProfilePage() {
         )}
 
         <div className="mt-6 rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4 text-sm text-slate-300">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <p className="text-xs uppercase text-slate-400">{activeTab}</p>
             {activeTab === 'Personal' && student && (
-              <button
-                onClick={openEditProfile}
-                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
-                style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
-              >
-                Edit Profile
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleResetLogin}
+                  disabled={resettingLogin}
+                  className="flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20 disabled:opacity-50"
+                >
+                  {resettingLogin ? '…' : '🔑 Reset Login'}
+                </button>
+                <button
+                  onClick={openEditProfile}
+                  className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 active:scale-[0.98]"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                >
+                  Edit Profile
+                </button>
+              </div>
             )}
           </div>
+          {activeTab === 'Personal' && loginResetMsg && (
+            <div className="mb-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2.5 text-xs text-emerald-200 font-mono">
+              {loginResetMsg}
+            </div>
+          )}
+          {activeTab === 'Personal' && loginResetError && (
+            <div className="mb-3 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-200">
+              {loginResetError}
+            </div>
+          )}
           <div className="grid gap-3 md:grid-cols-2">
             {activeTab === 'Personal' ? (
               <>

@@ -428,10 +428,12 @@ class StudentViewSet(viewsets.ModelViewSet):
             user.set_password(password)
             user.save()
         else:
-            # Re-enable if previously deactivated
-            if not user.is_active:
-                user.is_active = True
-                user.save(update_fields=['is_active'])
+            # Always reset password + re-enable on explicit create-login call
+            user.set_password(password)
+            user.is_active = True
+            user.first_name = student.first_name
+            user.last_name = student.last_name
+            user.save()
 
         if student_role:
             profile, _ = UserProfile.objects.get_or_create(
@@ -452,8 +454,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         return Response({
             'created': created,
             'username': username,
-            'password_hint': password if created else None,
-            'message': f'Login account {"created" if created else "already exists"} for {username}.',
+            'password_hint': password,
+            'message': f'Login account {"created" if created else "reset"} for {username}.',
         }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
@@ -5854,9 +5856,12 @@ class UserManagementListCreateView(APIView):
 
     def get(self, request):
         from django.contrib.auth.models import User as AuthUser
-        users = AuthUser.objects.select_related('userprofile__role').filter(is_active=True).order_by('username')
+        include_inactive = request.query_params.get('include_inactive', '0') in ('1', 'true', 'yes')
+        qs = AuthUser.objects.select_related('userprofile__role').order_by('username')
+        if not include_inactive:
+            qs = qs.filter(is_active=True)
         data = []
-        for u in users:
+        for u in qs:
             profile = getattr(u, 'userprofile', None)
             role = getattr(profile, 'role', None)
             data.append({
@@ -5949,7 +5954,12 @@ class UserManagementDetailView(APIView):
     def patch(self, request, user_id):
         u = self._get_user(user_id)
         if not u:
-            return Response({'detail': 'User not found.'}, status=404)
+            # Allow finding deactivated users too
+            from django.contrib.auth.models import User as AuthUser
+            try:
+                u = AuthUser.objects.select_related('userprofile__role').get(id=user_id)
+            except AuthUser.DoesNotExist:
+                return Response({'detail': 'User not found.'}, status=404)
         data = request.data
         if 'email' in data:
             u.email = data['email']
@@ -5959,6 +5969,10 @@ class UserManagementDetailView(APIView):
             u.last_name = data['last_name']
         if 'password' in data and data['password']:
             u.set_password(data['password'])
+        if 'is_active' in data:
+            if str(user_id) == str(request.user.id) and not data['is_active']:
+                return Response({'detail': 'You cannot deactivate your own account.'}, status=400)
+            u.is_active = bool(data['is_active'])
         u.save()
 
         profile = getattr(u, 'userprofile', None)
@@ -5994,13 +6008,14 @@ class UserManagementDetailView(APIView):
     def delete(self, request, user_id):
         from django.contrib.auth.models import User as AuthUser
         if str(user_id) == str(request.user.id):
-            return Response({'detail': 'You cannot deactivate your own account.'}, status=400)
-        u = self._get_user(user_id)
-        if not u:
+            return Response({'detail': 'You cannot delete your own account.'}, status=400)
+        try:
+            u = AuthUser.objects.get(id=user_id)
+        except AuthUser.DoesNotExist:
             return Response({'detail': 'User not found.'}, status=404)
-        u.is_active = False
-        u.save()
-        return Response({'detail': f'User "{u.username}" has been deactivated.'})
+        username = u.username
+        u.delete()
+        return Response({'detail': f'User "{username}" has been permanently deleted.'})
 
 
 # ==========================================

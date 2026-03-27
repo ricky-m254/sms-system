@@ -92,12 +92,14 @@ export default function SettingsUsersPage() {
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [showInactive, setShowInactive] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<TenantUser | null>(null)
   const [form, setForm] = useState<FormState>(blank)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [message, setMessage] = useState('')
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success')
 
   // User type selector step
   const [userType, setUserType] = useState<'staff' | 'student' | 'parent' | null>(null)
@@ -119,11 +121,11 @@ export default function SettingsUsersPage() {
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null)
   const [bulkError, setBulkError] = useState('')
 
-  const load = async () => {
+  const load = async (includeInactive = false) => {
     setLoading(true)
     try {
       const [usersRes, rolesRes] = await Promise.all([
-        apiClient.get('/users/'),
+        apiClient.get(`/users/${includeInactive ? '?include_inactive=1' : ''}`),
         apiClient.get('/users/roles/'),
       ])
       setUsers(usersRes.data.results ?? usersRes.data)
@@ -136,7 +138,7 @@ export default function SettingsUsersPage() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(showInactive) }, [showInactive])
 
   // Debounced student search
   useEffect(() => {
@@ -238,13 +240,42 @@ export default function SettingsUsersPage() {
   }
 
   const handleDeactivate = async (u: TenantUser) => {
-    if (!confirm(`Deactivate "${u.username}"? They will lose access immediately.`)) return
+    if (!confirm(`Deactivate "${u.username}"? They will lose access immediately but the account will be preserved.`)) return
     try {
-      await apiClient.delete(`/users/${u.id}/`)
+      await apiClient.patch(`/users/${u.id}/`, { is_active: false })
       setMessage(`${u.username} has been deactivated.`)
-      load()
+      setMessageType('success')
+      load(showInactive)
     } catch (err) {
       setMessage(extractApiError(err, 'Failed to deactivate user.'))
+      setMessageType('error')
+    }
+  }
+
+  const handleReactivate = async (u: TenantUser) => {
+    if (!confirm(`Reactivate "${u.username}"? They will regain access immediately.`)) return
+    try {
+      await apiClient.patch(`/users/${u.id}/`, { is_active: true })
+      setMessage(`${u.username} has been reactivated.`)
+      setMessageType('success')
+      load(showInactive)
+    } catch (err) {
+      setMessage(extractApiError(err, 'Failed to reactivate user.'))
+      setMessageType('error')
+    }
+  }
+
+  const handleDelete = async (u: TenantUser) => {
+    if (!confirm(`PERMANENTLY DELETE "${u.username}"? This cannot be undone — all data for this account will be removed.`)) return
+    if (!confirm(`Are you sure? Type OK to confirm deletion of "${u.username}".`)) return
+    try {
+      await apiClient.delete(`/users/${u.id}/`)
+      setMessage(`${u.username} has been permanently deleted.`)
+      setMessageType('success')
+      load(showInactive)
+    } catch (err) {
+      setMessage(extractApiError(err, 'Failed to delete user.'))
+      setMessageType('error')
     }
   }
 
@@ -301,15 +332,24 @@ export default function SettingsUsersPage() {
     }
   }
 
-  const filtered = users.filter(u => {
+  const activeUsers = users.filter(u => u.is_active)
+  const inactiveUsers = users.filter(u => !u.is_active)
+
+  const filtered = activeUsers.filter(u => {
+    const q = search.toLowerCase()
+    return !q || [u.username, u.email, u.first_name, u.last_name, u.role_name].join(' ').toLowerCase().includes(q)
+  })
+
+  const filteredInactive = inactiveUsers.filter(u => {
     const q = search.toLowerCase()
     return !q || [u.username, u.email, u.first_name, u.last_name, u.role_name].join(' ').toLowerCase().includes(q)
   })
 
   const summary = {
-    total: users.length,
+    total: activeUsers.length,
+    inactive: inactiveUsers.length,
     byRole: roles.reduce((acc, r) => {
-      acc[r.name] = users.filter(u => u.role_name === r.name).length
+      acc[r.name] = activeUsers.filter(u => u.role_name === r.name).length
       return acc
     }, {} as Record<string, number>),
   }
@@ -335,7 +375,13 @@ export default function SettingsUsersPage() {
               Create accounts and assign roles. Use Bulk Create to provision student logins by class.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setShowInactive(v => !v)}
+              className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${showInactive ? 'border-amber-500/50 bg-amber-500/15 text-amber-300' : 'border-white/[0.09] bg-white/[0.04] text-slate-400 hover:text-white'}`}
+            >
+              {showInactive ? `Hide Deactivated (${summary.inactive})` : `Show Deactivated${summary.inactive > 0 ? ` (${summary.inactive})` : ''}`}
+            </button>
             <button
               onClick={openBulkCreate}
               className="rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-300 hover:bg-sky-500/20"
@@ -351,7 +397,7 @@ export default function SettingsUsersPage() {
           </div>
         </div>
         {message && (
-          <p className="mt-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs text-emerald-200">
+          <p className={`mt-3 rounded-xl border px-4 py-2 text-xs ${messageType === 'error' ? 'border-rose-500/40 bg-rose-500/10 text-rose-200' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'}`}>
             {message}
           </p>
         )}
@@ -437,7 +483,8 @@ export default function SettingsUsersPage() {
                     <td className="py-3 text-right">
                       <div className="flex justify-end gap-3">
                         <button onClick={() => openEdit(u)} className="text-xs text-slate-400 hover:text-white transition">Edit</button>
-                        <button onClick={() => handleDeactivate(u)} className="text-xs text-red-400 hover:text-red-300 transition">Deactivate</button>
+                        <button onClick={() => handleDeactivate(u)} className="text-xs text-amber-400 hover:text-amber-300 transition">Deactivate</button>
+                        <button onClick={() => handleDelete(u)} className="text-xs text-red-500 hover:text-red-400 transition">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -447,6 +494,79 @@ export default function SettingsUsersPage() {
           </div>
         )}
       </div>
+
+      {/* Deactivated Users Section */}
+      {showInactive && (
+        <div className="rounded-2xl glass-panel p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-2 h-2 rounded-full bg-amber-500" />
+            <h2 className="text-base font-semibold text-amber-300">Deactivated Accounts</h2>
+            <span className="rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-xs font-medium text-amber-300">
+              {filteredInactive.length}
+            </span>
+          </div>
+          {filteredInactive.length === 0 ? (
+            <p className="py-6 text-center text-sm text-slate-500">No deactivated accounts found.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-slate-400">
+                <thead>
+                  <tr className="border-b border-white/[0.07] text-xs uppercase tracking-wider text-slate-600">
+                    <th className="pb-3 pr-5 text-left">Name</th>
+                    <th className="pb-3 pr-5 text-left">Username / Adm No.</th>
+                    <th className="pb-3 pr-5 text-left">Role</th>
+                    <th className="pb-3 pr-5 text-left">Last Login</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/40">
+                  {filteredInactive.map(u => (
+                    <tr key={u.id} className="opacity-60 hover:opacity-80 transition">
+                      <td className="py-3 pr-5">
+                        <div className="font-medium text-slate-300 line-through decoration-slate-600">
+                          {u.first_name || u.last_name ? `${u.first_name} ${u.last_name}`.trim() : <span className="text-slate-600 italic no-underline">No name</span>}
+                        </div>
+                      </td>
+                      <td className="py-3 pr-5">
+                        <div className="font-mono text-xs text-slate-500">{u.username}</div>
+                        {u.admission_number && (
+                          <div className="mt-0.5 font-mono text-xs text-slate-600">{u.admission_number}</div>
+                        )}
+                      </td>
+                      <td className="py-3 pr-5">
+                        {u.role_name ? (
+                          <span className="rounded-full bg-slate-700/60 px-2.5 py-0.5 text-xs font-medium text-slate-500">
+                            {ROLE_LABELS[u.role_name] ?? u.role_name}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 pr-5 text-xs text-slate-600">{u.last_login ?? 'Never'}</td>
+                      <td className="py-3 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => handleReactivate(u)}
+                            className="text-xs text-emerald-500 hover:text-emerald-400 transition font-medium"
+                          >
+                            Reactivate
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u)}
+                            className="text-xs text-red-500 hover:text-red-400 transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Role reference */}
       <div className="rounded-2xl glass-panel p-5">
