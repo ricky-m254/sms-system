@@ -13,6 +13,9 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '../api/client';
+import { useAuthStore } from '../store/auth';
+
+const ADMIN_ROLES = new Set(['ADMIN', 'TENANT_SUPER_ADMIN']);
 
 interface UsePermissionsResult {
   permissions: Set<string>;
@@ -70,8 +73,18 @@ export function usePermissions(): UsePermissionsResult {
   const [permissions, setPermissions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const fetchRef = useRef(0);
+  const role = useAuthStore(s => s.role);
 
   const fetchPermissions = useCallback(async () => {
+    // Admin and super-admin bypass all permission checks — grant wildcard immediately
+    if (role && ADMIN_ROLES.has(role.toUpperCase())) {
+      // Clear any stale cache that might have been stored with empty permissions
+      sessionStorage.removeItem(CACHE_KEY);
+      setPermissions(new Set(['*']));
+      setLoading(false);
+      return;
+    }
+
     const cached = readCache();
     if (cached) {
       setPermissions(cached);
@@ -117,11 +130,11 @@ export function usePermissions(): UsePermissionsResult {
         setLoading(false);
       }
     }
-  }, []);
+  }, [role]);
 
   useEffect(() => {
     setLoading(true);
-    fetchPermissions();
+    void fetchPermissions();
   }, [fetchPermissions]);
 
   const hasPermission = useCallback(

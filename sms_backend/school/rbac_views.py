@@ -170,9 +170,26 @@ class RbacUserEffectivePermissionsView(APIView):
     """Return the final resolved permission set for a user (Phase 16)."""
     permission_classes = [IsAuthenticated]
 
+    _ADMIN_ROLES = {'ADMIN', 'TENANT_SUPER_ADMIN'}
+
     def get(self, request, user_id):
         if not (request.user.is_staff or request.user.pk == user_id):
             return Response({'error': 'Forbidden'}, status=403)
+
+        # Admin / super-admin roles get all permissions (wildcard)
+        try:
+            from school.models import UserProfile, Permission as RbacPermission
+            profile = UserProfile.objects.select_related('role').filter(user_id=user_id).first()
+            if profile and profile.role and profile.role.name in self._ADMIN_ROLES:
+                all_perms = list(
+                    RbacPermission.objects.filter(is_active=True).values_list('name', flat=True)
+                )
+                if not all_perms:
+                    all_perms = ['*']
+                return Response({'user_id': user_id, 'permissions': all_perms, 'count': len(all_perms), 'is_admin': True})
+        except Exception:
+            pass
+
         try:
             from domains.auth.infrastructure.django_user_repository import DjangoUserRepository
             from domains.auth.infrastructure.django_permission_repository import DjangoPermissionRepository
