@@ -364,6 +364,99 @@ class StudentViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(rows)
         return Response({"count": len(rows), "results": rows}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get', 'post'], url_path='guardians')
+    def guardians(self, request, pk=None):
+        """
+        GET  /students/{id}/guardians/  — list guardians for this student
+        POST /students/{id}/guardians/  — add a guardian to this student
+        """
+        student = self.get_object()
+        if request.method == 'GET':
+            qs = Guardian.objects.filter(student=student, is_active=True)
+            return Response([
+                {'id': g.id, 'name': g.name, 'relationship': g.relationship,
+                 'phone': g.phone, 'email': g.email}
+                for g in qs
+            ])
+        # POST — create a new guardian
+        name = (request.data.get('name') or '').strip()
+        if not name:
+            return Response({'error': 'Guardian name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        guardian = Guardian.objects.create(
+            student=student,
+            name=name,
+            relationship=(request.data.get('relationship') or 'Guardian').strip(),
+            phone=(request.data.get('phone') or '').strip(),
+            email=(request.data.get('email') or '').strip(),
+            is_active=True,
+        )
+        AuditLog.objects.create(
+            user_id=request.user.id if getattr(request.user, 'is_authenticated', False) else None,
+            action='CREATE',
+            model_name='Guardian',
+            object_id=str(guardian.id),
+            details=f'Guardian "{guardian.name}" added to student {student.admission_number}.',
+        )
+        return Response(
+            {'id': guardian.id, 'name': guardian.name, 'relationship': guardian.relationship,
+             'phone': guardian.phone, 'email': guardian.email},
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=['post'], url_path='create-login')
+    def create_login(self, request, pk=None):
+        """
+        POST /students/{id}/create-login/
+        Creates (or re-activates) a Django login account for the student.
+        Returns: { created, username, message }
+        """
+        student = self.get_object()
+        from django.contrib.auth.models import User as DjangoUser
+        username = student.admission_number
+        password = (request.data.get('password') or 'student123')
+
+        student_role = Role.objects.filter(name='STUDENT').first()
+        user, created = DjangoUser.objects.get_or_create(
+            username=username,
+            defaults={
+                'first_name': student.first_name,
+                'last_name': student.last_name,
+                'is_active': True,
+            },
+        )
+        if created:
+            user.set_password(password)
+            user.save()
+        else:
+            # Re-enable if previously deactivated
+            if not user.is_active:
+                user.is_active = True
+                user.save(update_fields=['is_active'])
+
+        if student_role:
+            profile, _ = UserProfile.objects.get_or_create(
+                user=user,
+                defaults={'role': student_role, 'admission_number': username},
+            )
+            if profile.admission_number != username:
+                profile.admission_number = username
+                profile.save(update_fields=['admission_number'])
+
+        AuditLog.objects.create(
+            user_id=request.user.id if getattr(request.user, 'is_authenticated', False) else None,
+            action='CREATE_LOGIN',
+            model_name='Student',
+            object_id=str(student.id),
+            details=f'Portal login account {"created" if created else "verified"} for student {username}.',
+        )
+        return Response({
+            'created': created,
+            'username': username,
+            'password_hint': password if created else None,
+            'message': f'Login account {"created" if created else "already exists"} for {username}.',
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
 def _journal_get_or_create_account(code, name, account_type):
     """Find or create a Chart of Account entry for auto-journaling."""
     try:
