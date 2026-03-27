@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import {
@@ -102,6 +102,19 @@ export default function AddStudentWizard({ classes, onClose, onSuccess }: Props)
   const [created, setCreated] = useState<Created | null>(null)
   const [creatingLogin, setCreatingLogin] = useState(false)
 
+  const [currentTermId, setCurrentTermId] = useState<number | null>(null)
+
+  // Fetch the current active term on mount so enrollment can include term ID
+  useEffect(() => {
+    apiClient.get<{ id: number; is_current: boolean; is_active: boolean }[] | { results: { id: number; is_current: boolean; is_active: boolean }[] }>(
+      '/finance/terms/'
+    ).then(res => {
+      const terms = Array.isArray(res.data) ? res.data : (res.data as { results: { id: number; is_current: boolean; is_active: boolean }[] }).results ?? []
+      const current = terms.find(t => t.is_current) ?? terms.find(t => t.is_active) ?? terms[0]
+      if (current) setCurrentTermId(current.id)
+    }).catch(() => { /* term is optional for enrollment — proceed without it */ })
+  }, [])
+
   const [s1, setS1] = useState<S1>({
     first_name: '', last_name: '', gender: 'M', date_of_birth: '',
     blood_group: '', nationality: 'Kenyan', religion: '', photo: null, photoPreview: '',
@@ -125,31 +138,50 @@ export default function AddStudentWizard({ classes, onClose, onSuccess }: Props)
     setSubmitting(true)
     setError(null)
     try {
-      const fd = new FormData()
-      fd.append('first_name',      s1.first_name.trim())
-      fd.append('last_name',       s1.last_name.trim())
-      fd.append('gender',          s1.gender)
-      fd.append('is_active',       'true')
-      if (s1.date_of_birth)  fd.append('date_of_birth',  s1.date_of_birth)
-      if (s2.phone)          fd.append('phone',          s2.phone.trim())
-      if (s2.email)          fd.append('email',          s2.email.trim())
-      if (s2.address)        fd.append('address',        s2.address.trim())
-      if (s2.enrollment_date) fd.append('enrollment_date', s2.enrollment_date)
-      if (s2.custom_admission) fd.append('admission_number', s2.custom_admission.trim())
-      if (s1.photo)          fd.append('photo',          s1.photo)
+      // Build payload — use JSON if no photo, FormData if photo attached
+      let studentRes: { data: { id: number; admission_number: string } }
+      if (s1.photo) {
+        const fd = new FormData()
+        fd.append('first_name',  s1.first_name.trim())
+        fd.append('last_name',   s1.last_name.trim())
+        fd.append('gender',      s1.gender)
+        fd.append('is_active',   'true')
+        if (s1.date_of_birth)    fd.append('date_of_birth', s1.date_of_birth)
+        if (s2.phone)            fd.append('phone',         s2.phone.trim())
+        if (s2.email)            fd.append('email',         s2.email.trim())
+        if (s2.address)          fd.append('address',       s2.address.trim())
+        if (s2.custom_admission) fd.append('admission_number', s2.custom_admission.trim())
+        fd.append('photo', s1.photo)
+        studentRes = await apiClient.post<{ id: number; admission_number: string }>('/students/', fd, {
+          headers: { 'Content-Type': undefined as unknown as string },
+        })
+      } else {
+        studentRes = await apiClient.post<{ id: number; admission_number: string }>('/students/', {
+          first_name:       s1.first_name.trim(),
+          last_name:        s1.last_name.trim(),
+          gender:           s1.gender,
+          is_active:        true,
+          date_of_birth:    s1.date_of_birth || undefined,
+          phone:            s2.phone.trim() || undefined,
+          email:            s2.email.trim() || undefined,
+          address:          s2.address.trim() || undefined,
+          admission_number: s2.custom_admission.trim() || undefined,
+        })
+      }
 
-      const res = await apiClient.post<{ id: number; admission_number: string }>('/students/', fd)
-      const studentId = res.data.id
-      const admissionNumber = res.data.admission_number
+      const studentId     = studentRes.data.id
+      const admissionNumber = studentRes.data.admission_number
 
       if (s2.school_class) {
         try {
-          await apiClient.post('/academics/enrollments/', {
-            student: studentId,
-            school_class: Number(s2.school_class),
+          const enrollPayload: Record<string, unknown> = {
+            student:         studentId,
+            school_class:    Number(s2.school_class),
             enrollment_date: s2.enrollment_date || new Date().toISOString().slice(0, 10),
-            is_active: true,
-          })
+            is_active:       true,
+          }
+          if (currentTermId) enrollPayload.term = currentTermId
+          await apiClient.post('/academics/enrollments/', enrollPayload)
         } catch { /* enrollment is optional, non-blocking */ }
       }
 
@@ -167,10 +199,10 @@ export default function AddStudentWizard({ classes, onClose, onSuccess }: Props)
       if (!s3.skip && s3.name.trim()) {
         try {
           await apiClient.post(`/students/${studentId}/guardians/`, {
-            name: s3.name.trim(),
+            name:         s3.name.trim(),
             relationship: s3.relationship,
-            phone: s3.phone.trim(),
-            email: s3.email.trim(),
+            phone:        s3.phone.trim(),
+            email:        s3.email.trim(),
           })
         } catch { /* guardian is optional, non-blocking */ }
       }
@@ -178,13 +210,31 @@ export default function AddStudentWizard({ classes, onClose, onSuccess }: Props)
       setCreated({ id: studentId, admission_number: admissionNumber, loginCreated, loginUsername })
       setStep(5)
     } catch (err: unknown) {
-      const e = err as { response?: { data?: Record<string, string | string[]> } }
+      const e = err as { response?: { data?: Record<string, unknown> } }
       const data = e?.response?.data
-      if (data?.first_name)  setError(Array.isArray(data.first_name) ? data.first_name[0] : data.first_name)
-      else if (data?.last_name) setError(Array.isArray(data.last_name) ? data.last_name[0] : data.last_name)
-      else if (data?.error)  setError(String(data.error))
-      else if (data?.detail) setError(String(data.detail))
-      else setError('Unable to create student. Please try again.')
+      if (!data) {
+        setError('Network error — check your connection and try again.')
+        return
+      }
+      // Find first field-level error and surface it
+      const fieldError = (key: string) => {
+        const v = data[key]
+        if (!v) return null
+        return Array.isArray(v) ? String(v[0]) : String(v)
+      }
+      const msg =
+        fieldError('first_name')   ??
+        fieldError('last_name')    ??
+        fieldError('date_of_birth') ??
+        fieldError('gender')       ??
+        fieldError('admission_number') ??
+        fieldError('error')        ??
+        fieldError('detail')       ??
+        fieldError('non_field_errors') ??
+        // Fall back to first key-value pair in the error body
+        Object.entries(data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v[0] : v}`)[0] ??
+        'Unable to create student. Please try again.'
+      setError(msg)
     } finally {
       setSubmitting(false)
     }
