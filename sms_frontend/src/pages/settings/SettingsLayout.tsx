@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   BookOpen, Building2, ChevronDown, ChevronRight, ClipboardList, DollarSign,
-  GraduationCap, LayoutDashboard, MessageSquare, Package, Settings,
-  Shield, Users, Wrench,
+  GraduationCap, Hash, LayoutDashboard, MessageSquare, Package, Settings,
+  Shield, Upload, Users, Wrench,
 } from 'lucide-react'
 import ModuleToolbar from '../../components/ModuleToolbar'
 
@@ -29,6 +29,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     items: [
       { key: 'school-profile', label: 'School Profile', route: '/settings/school-profile' },
       { key: 'academics', label: 'Academic Configuration', route: '/settings/academics' },
+      { key: 'admission', label: 'Admission Numbers', route: '/settings/admission' },
       { key: 'students', label: 'Student Configuration', route: '/settings/students' },
       { key: 'staff', label: 'Staff Configuration', route: '/settings/staff' },
       { key: 'departments', label: 'Departments', route: '/settings/departments', tag: 'soon' },
@@ -73,6 +74,14 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
       { key: 'assets', label: 'Inventory & Assets Config', route: '/settings/assets' },
       { key: 'dispensary', label: 'Health & Dispensary Config', route: '/settings/dispensary' },
       { key: 'visitor-mgmt', label: 'Visitor Management Config', route: '/settings/visitor-mgmt' },
+    ],
+  },
+  {
+    label: 'Data Management',
+    icon: Upload,
+    color: 'text-sky-400',
+    items: [
+      { key: 'import-export', label: 'Import & Export', route: '/settings/import-export' },
     ],
   },
   {

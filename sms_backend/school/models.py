@@ -1995,3 +1995,83 @@ class StaffHistory(models.Model):
 
     def __str__(self):
         return f"Staff {self.employee_name} @ {self.school_name} ({self.start_date}–{self.end_date or 'present'})"
+
+
+# ──────────────────────────────────────────────
+# SETTINGS & ADMISSION SYSTEM
+# ──────────────────────────────────────────────
+
+class AdmissionSettings(models.Model):
+    """
+    Extended admission-number configuration per tenant.
+    Tracks the running sequence for auto-generated numbers and
+    holds the transfer-student policy.
+    """
+    TRANSFER_POLICY_CHOICES = [
+        ('new', 'Assign new admission number (store previous)'),
+        ('keep', 'Retain old admission number from source school'),
+    ]
+    RESET_CHOICES = [
+        ('never', 'Never reset — numbers keep incrementing'),
+        ('yearly', 'Reset sequence each academic year'),
+    ]
+
+    prefix          = models.CharField(max_length=20, default='ADM-', help_text='e.g. STM- or 2025/')
+    year            = models.PositiveIntegerField(default=2025, help_text='Current academic year used in number')
+    sequence        = models.PositiveIntegerField(default=0, help_text='Last used sequence number')
+    padding         = models.PositiveIntegerField(default=4, help_text='Zero-pad width e.g. 4 → 0001')
+    include_year    = models.BooleanField(default=True, help_text='Include year in format: PREFIX-YEAR-SEQ')
+    reset_policy    = models.CharField(max_length=10, choices=RESET_CHOICES, default='never')
+    transfer_policy = models.CharField(max_length=10, choices=TRANSFER_POLICY_CHOICES, default='new')
+    auto_generate   = models.BooleanField(default=True, help_text='Auto-generate on enrolment (vs. manual entry)')
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Admission Settings'
+
+    def __str__(self):
+        return f"AdmissionSettings(prefix={self.prefix}, seq={self.sequence})"
+
+    def generate_next(self) -> str:
+        """Return the next admission number and increment the sequence."""
+        self.sequence += 1
+        self.save(update_fields=['sequence', 'updated_at'])
+        seq_str = str(self.sequence).zfill(self.padding)
+        if self.include_year:
+            return f"{self.prefix}{self.year}-{seq_str}"
+        return f"{self.prefix}{seq_str}"
+
+
+class MediaFile(models.Model):
+    """Tracks uploaded media/document files per module."""
+    MODULE_CHOICES = [
+        ('STUDENTS', 'Students'),
+        ('STAFF', 'Staff'),
+        ('FINANCE', 'Finance'),
+        ('BRANDING', 'Branding'),
+        ('COMMUNICATION', 'Communication'),
+        ('OTHER', 'Other'),
+    ]
+    FILE_TYPE_CHOICES = [
+        ('image', 'Image'),
+        ('pdf', 'PDF'),
+        ('doc', 'Document'),
+        ('spreadsheet', 'Spreadsheet'),
+        ('other', 'Other'),
+    ]
+
+    module      = models.CharField(max_length=30, choices=MODULE_CHOICES, default='OTHER')
+    file_type   = models.CharField(max_length=20, choices=FILE_TYPE_CHOICES, default='other')
+    file        = models.FileField(upload_to='media_files/%Y/%m/')
+    original_name = models.CharField(max_length=255, blank=True)
+    size_bytes  = models.PositiveIntegerField(default=0)
+    url         = models.URLField(blank=True, help_text='Absolute URL populated on save')
+    uploaded_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.CharField(max_length=255, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.module} / {self.original_name or self.file.name}"

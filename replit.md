@@ -2,6 +2,27 @@
 
 A multi-tenant school management system built by Rynatyspace Technologies. Django 4.2 backend, React/Vite frontend, PostgreSQL schema-per-tenant, IPSAS-compliant finance. 28 modules.
 
+## Recently Added Modules
+
+### Transfer System (migration 0046)
+- Models: `CrossTenantTransfer`, `TransferPackage`, `StudentHistory`, `StaffHistory`
+- 11 API endpoints covering: initiate, approve-from, approve-to, execute, reject, cancel, package, history
+- Frontend: `pages/transfers/` (Dashboard, Initiate, Detail pages)
+- Supports cross-tenant and internal (class/stream) transfers with JSON data snapshots
+
+### Settings & Admission System (migration 0047)
+- Models: `AdmissionSettings` (sequence tracking, year, padding, transfer policy, reset policy), `MediaFile` (file upload registry)
+- 7 new API endpoints:
+  - `GET/PATCH /settings/admission/` — admission number configuration
+  - `GET /settings/admission/preview/` — preview next admission number without consuming it
+  - `POST /settings/media/upload/` — multipart file upload with module tagging
+  - `GET /settings/media/` — list uploaded files
+  - `GET /settings/import/{module}/template/` — download blank CSV template (students/staff/fees/payments)
+  - `POST /settings/import/students/` — bulk CSV import with validate-only dry-run support
+  - `POST /settings/import/staff/` — bulk CSV import for HR employees
+- Frontend: `pages/settings/SettingsAdmissionPage.tsx`, `pages/settings/SettingsImportExportPage.tsx`
+- Sidebar: "Admission Numbers" added to School Setup; "Import & Export" added under new Data Management group
+
 ## Architecture
 
 - **Backend**: Django 4.2 + Django REST Framework, running on `localhost:8000` (dev) / port 3000 (production)

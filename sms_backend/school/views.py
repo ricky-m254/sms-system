@@ -7382,3 +7382,428 @@ class StaffTransferHistoryView(APIView):
         from .serializers import StaffHistorySerializer
         qs = StaffHistory.objects.filter(employee_id=employee_id)
         return Response(StaffHistorySerializer(qs, many=True).data)
+
+
+# ═══════════════════════════════════════════════════════════════
+# SETTINGS & ADMISSION SYSTEM — API Views
+# ═══════════════════════════════════════════════════════════════
+
+class AdmissionSettingsView(APIView):
+    """GET / PATCH tenant admission-number configuration."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_or_create(self):
+        from .models import AdmissionSettings
+        obj, _ = AdmissionSettings.objects.get_or_create(pk=1)
+        return obj
+
+    def get(self, request):
+        from .models import AdmissionSettings
+        obj = self._get_or_create()
+        profile = SchoolProfile.objects.filter(is_active=True).first()
+        data = {
+            'prefix':           obj.prefix,
+            'year':             obj.year,
+            'sequence':         obj.sequence,
+            'padding':          obj.padding,
+            'include_year':     obj.include_year,
+            'reset_policy':     obj.reset_policy,
+            'transfer_policy':  obj.transfer_policy,
+            'auto_generate':    obj.auto_generate,
+            'updated_at':       obj.updated_at,
+            # legacy fields from SchoolProfile (kept in sync)
+            'legacy_prefix':    profile.admission_number_prefix if profile else 'ADM-',
+            'legacy_mode':      profile.admission_number_mode if profile else 'AUTO',
+        }
+        return Response(data)
+
+    def patch(self, request):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+        obj = self._get_or_create()
+        allowed = ['prefix', 'year', 'sequence', 'padding', 'include_year',
+                   'reset_policy', 'transfer_policy', 'auto_generate']
+        for field in allowed:
+            if field in request.data:
+                setattr(obj, field, request.data[field])
+        obj.save()
+        # Keep SchoolProfile.admission_number_prefix in sync
+        profile = SchoolProfile.objects.filter(is_active=True).first()
+        if profile and 'prefix' in request.data:
+            profile.admission_number_prefix = request.data['prefix']
+            profile.save(update_fields=['admission_number_prefix'])
+        from .models import AuditLog
+        AuditLog.objects.create(
+            user=request.user,
+            action='UPDATE',
+            model_name='AdmissionSettings',
+            object_id='1',
+            details=f"Updated by {request.user.username}",
+        )
+        return Response({'detail': 'Admission settings updated.', 'sequence': obj.sequence})
+
+
+class AdmissionNumberPreviewView(APIView):
+    """GET — preview what the next admission number will look like without consuming it."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from .models import AdmissionSettings
+        obj, _ = AdmissionSettings.objects.get_or_create(pk=1)
+        next_seq = obj.sequence + 1
+        seq_str = str(next_seq).zfill(obj.padding)
+        if obj.include_year:
+            preview = f"{obj.prefix}{obj.year}-{seq_str}"
+        else:
+            preview = f"{obj.prefix}{seq_str}"
+        return Response({
+            'preview': preview,
+            'next_sequence': next_seq,
+            'format': f"{obj.prefix}{'YEAR-' if obj.include_year else ''}{seq_str}",
+        })
+
+
+class MediaUploadView(APIView):
+    """POST multipart file upload → returns stored MediaFile record."""
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    _MIME_MAP = {
+        'image/jpeg': 'image', 'image/png': 'image', 'image/gif': 'image',
+        'image/webp': 'image', 'image/svg+xml': 'image',
+        'application/pdf': 'pdf',
+        'application/msword': 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'doc',
+        'application/vnd.ms-excel': 'spreadsheet',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'spreadsheet',
+        'text/csv': 'spreadsheet',
+    }
+
+    def post(self, request):
+        from .models import MediaFile
+        upload = request.FILES.get('file')
+        if not upload:
+            return Response({'error': 'file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        module = (request.data.get('module') or 'OTHER').upper()
+        valid_modules = ['STUDENTS', 'STAFF', 'FINANCE', 'BRANDING', 'COMMUNICATION', 'OTHER']
+        if module not in valid_modules:
+            module = 'OTHER'
+
+        content_type = upload.content_type or ''
+        file_type = self._MIME_MAP.get(content_type, 'other')
+
+        mf = MediaFile.objects.create(
+            module=module,
+            file_type=file_type,
+            file=upload,
+            original_name=upload.name,
+            size_bytes=upload.size,
+            uploaded_by=request.user,
+            description=request.data.get('description', ''),
+        )
+        url = request.build_absolute_uri(mf.file.url)
+        mf.url = url
+        mf.save(update_fields=['url'])
+
+        return Response({
+            'id':            mf.id,
+            'module':        mf.module,
+            'file_type':     mf.file_type,
+            'original_name': mf.original_name,
+            'size_bytes':    mf.size_bytes,
+            'url':           url,
+            'created_at':    mf.created_at,
+        }, status=status.HTTP_201_CREATED)
+
+
+class MediaFileListView(APIView):
+    """GET list of uploaded media files, optionally filtered by module."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from .models import MediaFile
+        module = request.query_params.get('module', '').upper()
+        qs = MediaFile.objects.all()
+        if module:
+            qs = qs.filter(module=module)
+        data = []
+        for mf in qs[:100]:
+            data.append({
+                'id': mf.id, 'module': mf.module, 'file_type': mf.file_type,
+                'original_name': mf.original_name, 'size_bytes': mf.size_bytes,
+                'url': request.build_absolute_uri(mf.file.url) if mf.file else mf.url,
+                'description': mf.description, 'created_at': mf.created_at,
+                'uploaded_by': mf.uploaded_by.get_full_name() if mf.uploaded_by else '',
+            })
+        return Response({'count': len(data), 'results': data})
+
+
+class ImportTemplateDownloadView(APIView):
+    """GET — download a blank CSV import template for the given module."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    _TEMPLATES = {
+        'students': [
+            'first_name', 'last_name', 'gender', 'date_of_birth',
+            'admission_number', 'class_name', 'stream',
+            'parent_name', 'parent_phone', 'parent_email',
+            'address', 'national_id',
+        ],
+        'staff': [
+            'first_name', 'last_name', 'gender', 'date_of_birth',
+            'employee_id', 'department', 'designation', 'date_joined',
+            'email', 'phone', 'national_id', 'tsc_number',
+        ],
+        'fees': [
+            'admission_number', 'student_name', 'fee_item', 'amount',
+            'academic_year', 'term', 'due_date',
+        ],
+        'payments': [
+            'admission_number', 'amount', 'payment_date', 'reference',
+            'payment_method', 'notes',
+        ],
+    }
+
+    def get(self, request, module):
+        module = module.lower()
+        headers = self._TEMPLATES.get(module)
+        if not headers:
+            return Response(
+                {'error': f"No template for module '{module}'. Valid: {list(self._TEMPLATES)}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{module}_import_template.csv"'
+        writer = csv.writer(response)
+        writer.writerow(headers)
+        # Write 3 example rows to guide the user
+        if module == 'students':
+            writer.writerow(['Jane', 'Doe', 'Female', '2015-03-14', '', 'Grade 4', 'East', 'John Doe', '0700000001', 'jdoe@example.com', 'Nairobi', ''])
+        elif module == 'staff':
+            writer.writerow(['Samuel', 'Otieno', 'Male', '1985-06-01', '', 'Science', 'Teacher', '2020-01-15', 'samuel@school.ac.ke', '0711222333', '12345678', 'TSC12345'])
+        return response
+
+
+class StudentsBulkImportView(APIView):
+    """
+    POST multipart CSV upload to bulk-import students.
+    Pass validate_only=true to preview errors without committing.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    _REQUIRED = {'first_name', 'last_name', 'gender', 'date_of_birth', 'class_name'}
+
+    def post(self, request):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+
+        upload = request.FILES.get('file')
+        validate_only = str(request.data.get('validate_only', 'false')).lower() in ('true', '1', 'yes')
+
+        if not upload:
+            return Response({'error': 'file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded = upload.read().decode('utf-8-sig')
+        except Exception:
+            return Response({'error': 'Cannot decode file. Use UTF-8 CSV.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        reader = csv.DictReader(decoded.splitlines())
+        if not reader.fieldnames:
+            return Response({'error': 'CSV has no headers.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        rows = list(reader)
+        errors = []
+        previews = []
+
+        for idx, row in enumerate(rows, start=2):
+            row_errors = []
+            for f in self._REQUIRED:
+                if not (row.get(f) or '').strip():
+                    row_errors.append(f"'{f}' is required")
+            if row_errors:
+                errors.append({'row': idx, 'errors': row_errors})
+                continue
+
+            # Check for duplicate admission number
+            adm = (row.get('admission_number') or '').strip()
+            if adm and Student.objects.filter(admission_number=adm).exists():
+                errors.append({'row': idx, 'errors': [f"Admission number '{adm}' already exists"]})
+                continue
+
+            # Check duplicate by name + DOB
+            dob_raw = (row.get('date_of_birth') or '').strip()
+            try:
+                dob = datetime.strptime(dob_raw, '%Y-%m-%d').date() if dob_raw else None
+            except ValueError:
+                errors.append({'row': idx, 'errors': [f"date_of_birth '{dob_raw}' must be YYYY-MM-DD"]})
+                continue
+
+            previews.append({'row': idx, 'first_name': row.get('first_name', '').strip(),
+                             'last_name': row.get('last_name', '').strip(), 'admission_number': adm or '(auto)'})
+
+        if validate_only or errors:
+            return Response({
+                'valid_rows': len(previews),
+                'error_rows': len(errors),
+                'errors': errors[:50],
+                'preview': previews[:20],
+                'committed': False,
+            })
+
+        # Commit import
+        from .models import AdmissionSettings
+        admission_cfg, _ = AdmissionSettings.objects.get_or_create(pk=1)
+        created_ids = []
+        commit_errors = []
+
+        for idx, row in enumerate(rows, start=2):
+            for f in self._REQUIRED:
+                if not (row.get(f) or '').strip():
+                    continue
+
+            try:
+                dob_raw = (row.get('date_of_birth') or '').strip()
+                dob = datetime.strptime(dob_raw, '%Y-%m-%d').date() if dob_raw else None
+
+                adm = (row.get('admission_number') or '').strip()
+                if not adm:
+                    if admission_cfg.auto_generate:
+                        adm = admission_cfg.generate_next()
+                        while Student.objects.filter(admission_number=adm).exists():
+                            adm = admission_cfg.generate_next()
+                    else:
+                        adm = _resolve_student_admission_number(None)
+
+                # Resolve class
+                class_name = (row.get('class_name') or '').strip()
+                school_class = SchoolClass.objects.filter(name__iexact=class_name).first() if class_name else None
+
+                student = Student.objects.create(
+                    first_name=(row.get('first_name') or '').strip(),
+                    last_name=(row.get('last_name') or '').strip(),
+                    gender=(row.get('gender') or 'Other').strip(),
+                    date_of_birth=dob,
+                    admission_number=adm,
+                    address=(row.get('address') or '').strip(),
+                    is_active=True,
+                )
+                if school_class:
+                    Enrollment.objects.create(
+                        student=student,
+                        school_class=school_class,
+                        stream=(row.get('stream') or '').strip(),
+                        status='Active',
+                        is_active=True,
+                        enrollment_date=timezone.now().date(),
+                    )
+                created_ids.append(student.id)
+            except Exception as exc:
+                commit_errors.append({'row': idx, 'errors': [str(exc)]})
+
+        return Response({
+            'valid_rows': len(previews),
+            'created': len(created_ids),
+            'failed': len(commit_errors),
+            'errors': commit_errors[:25],
+            'committed': True,
+        }, status=status.HTTP_201_CREATED)
+
+
+class StaffBulkImportView(APIView):
+    """
+    POST CSV to bulk-import staff (HR employees).
+    Pass validate_only=true for a dry run.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    _REQUIRED = {'first_name', 'last_name', 'gender', 'department', 'designation'}
+
+    def post(self, request):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+
+        upload = request.FILES.get('file')
+        validate_only = str(request.data.get('validate_only', 'false')).lower() in ('true', '1', 'yes')
+
+        if not upload:
+            return Response({'error': 'file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded = upload.read().decode('utf-8-sig')
+        except Exception:
+            return Response({'error': 'Cannot decode file. Use UTF-8 CSV.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        reader = csv.DictReader(decoded.splitlines())
+        rows = list(reader)
+        errors = []
+        previews = []
+
+        for idx, row in enumerate(rows, start=2):
+            row_errors = []
+            for f in self._REQUIRED:
+                if not (row.get(f) or '').strip():
+                    row_errors.append(f"'{f}' is required")
+            if row_errors:
+                errors.append({'row': idx, 'errors': row_errors})
+            else:
+                previews.append({'row': idx, 'name': f"{row.get('first_name','')} {row.get('last_name','')}".strip(),
+                                 'department': row.get('department', ''), 'designation': row.get('designation', '')})
+
+        if validate_only or errors:
+            return Response({
+                'valid_rows': len(previews),
+                'error_rows': len(errors),
+                'errors': errors[:50],
+                'preview': previews[:20],
+                'committed': False,
+            })
+
+        # Commit — delegate to HR Employee model
+        created_count = 0
+        commit_errors = []
+
+        try:
+            from hr.models import Employee, Department
+        except ImportError:
+            return Response({'error': 'HR module not available.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        for idx, row in enumerate(rows, start=2):
+            missing = [f for f in self._REQUIRED if not (row.get(f) or '').strip()]
+            if missing:
+                continue
+            try:
+                dept_name = (row.get('department') or '').strip()
+                dept = Department.objects.filter(name__iexact=dept_name).first()
+
+                dob_raw = (row.get('date_of_birth') or '').strip()
+                dob = datetime.strptime(dob_raw, '%Y-%m-%d').date() if dob_raw else None
+                joined_raw = (row.get('date_joined') or '').strip()
+                joined = datetime.strptime(joined_raw, '%Y-%m-%d').date() if joined_raw else timezone.now().date()
+
+                Employee.objects.create(
+                    first_name=(row.get('first_name') or '').strip(),
+                    last_name=(row.get('last_name') or '').strip(),
+                    gender=(row.get('gender') or 'Male').strip(),
+                    date_of_birth=dob,
+                    date_joined=joined,
+                    email=(row.get('email') or '').strip(),
+                    phone=(row.get('phone') or '').strip(),
+                    designation=(row.get('designation') or '').strip(),
+                    department=dept,
+                    tsc_number=(row.get('tsc_number') or '').strip(),
+                    employment_status='Active',
+                )
+                created_count += 1
+            except Exception as exc:
+                commit_errors.append({'row': idx, 'errors': [str(exc)]})
+
+        return Response({
+            'created': created_count,
+            'failed': len(commit_errors),
+            'errors': commit_errors[:25],
+            'committed': True,
+        }, status=status.HTTP_201_CREATED)

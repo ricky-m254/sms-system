@@ -11,6 +11,9 @@ from .views import (
     TransferApproveFromView, TransferApproveToView, TransferRejectView,
     TransferCancelView, TransferExecuteView, TransferPackageView,
     StudentTransferHistoryView, StaffTransferHistoryView,
+    AdmissionSettingsView, AdmissionNumberPreviewView,
+    MediaUploadView, MediaFileListView,
+    ImportTemplateDownloadView, StudentsBulkImportView, StaffBulkImportView,
 )
 from .rbac_views import (
     RbacPermissionListView,
@@ -292,6 +295,15 @@ urlpatterns = [
     path('transfers/<int:transfer_id>/package/',        TransferPackageView.as_view(),      name='transfer_package'),
     path('students/<int:student_id>/transfer-history/', StudentTransferHistoryView.as_view(), name='student_transfer_history'),
     path('staff/<int:employee_id>/transfer-history/',   StaffTransferHistoryView.as_view(),   name='staff_transfer_history'),
+    # ─────────────────────────────────────────────────────────────────────────
+    # ── Settings & Admission System ─────────────────────────────────────────
+    path('settings/admission/',             AdmissionSettingsView.as_view(),        name='admission_settings'),
+    path('settings/admission/preview/',     AdmissionNumberPreviewView.as_view(),   name='admission_number_preview'),
+    path('settings/media/upload/',          MediaUploadView.as_view(),              name='media_upload'),
+    path('settings/media/',                 MediaFileListView.as_view(),            name='media_list'),
+    path('settings/import/<str:module>/template/', ImportTemplateDownloadView.as_view(), name='import_template'),
+    path('settings/import/students/',       StudentsBulkImportView.as_view(),       name='students_bulk_import'),
+    path('settings/import/staff/',          StaffBulkImportView.as_view(),          name='staff_bulk_import'),
     # ─────────────────────────────────────────────────────────────────────────
     path('rbac/permissions/',               RbacPermissionListView.as_view(),   name='rbac_permission_list'),
     path('rbac/permissions/seed/',          RbacPermissionSeedView.as_view(),   name='rbac_permission_seed'),
