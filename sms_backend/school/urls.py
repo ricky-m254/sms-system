@@ -7,6 +7,10 @@ from .views import SmartCampusTokenObtainPairView
 from .views import (
     StudentSearchForUserCreateView, StudentsByClassForUserCreateView,
     BulkCreateStudentUsersView, VoteHeadBudgetReportView,
+    TransferListView, TransferInitiateView, TransferDetailView,
+    TransferApproveFromView, TransferApproveToView, TransferRejectView,
+    TransferCancelView, TransferExecuteView, TransferPackageView,
+    StudentTransferHistoryView, StaffTransferHistoryView,
 )
 from .rbac_views import (
     RbacPermissionListView,
@@ -276,6 +280,19 @@ urlpatterns = [
     path('', include(router.urls)),
 
     # ── Phase 11 + 16 Advanced RBAC API ──────────────────────────────────────
+    # ── Transfer System ──────────────────────────────────────────────────────
+    path('transfers/',                                  TransferListView.as_view(),         name='transfer_list'),
+    path('transfers/initiate/',                         TransferInitiateView.as_view(),     name='transfer_initiate'),
+    path('transfers/<int:transfer_id>/',                TransferDetailView.as_view(),       name='transfer_detail'),
+    path('transfers/<int:transfer_id>/approve-from/',   TransferApproveFromView.as_view(),  name='transfer_approve_from'),
+    path('transfers/<int:transfer_id>/approve-to/',     TransferApproveToView.as_view(),    name='transfer_approve_to'),
+    path('transfers/<int:transfer_id>/reject/',         TransferRejectView.as_view(),       name='transfer_reject'),
+    path('transfers/<int:transfer_id>/cancel/',         TransferCancelView.as_view(),       name='transfer_cancel'),
+    path('transfers/<int:transfer_id>/execute/',        TransferExecuteView.as_view(),      name='transfer_execute'),
+    path('transfers/<int:transfer_id>/package/',        TransferPackageView.as_view(),      name='transfer_package'),
+    path('students/<int:student_id>/transfer-history/', StudentTransferHistoryView.as_view(), name='student_transfer_history'),
+    path('staff/<int:employee_id>/transfer-history/',   StaffTransferHistoryView.as_view(),   name='staff_transfer_history'),
+    # ─────────────────────────────────────────────────────────────────────────
     path('rbac/permissions/',               RbacPermissionListView.as_view(),   name='rbac_permission_list'),
     path('rbac/permissions/seed/',          RbacPermissionSeedView.as_view(),   name='rbac_permission_seed'),
     path('rbac/roles/',                     RbacRoleListView.as_view(),         name='rbac_role_list'),

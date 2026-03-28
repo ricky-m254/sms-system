@@ -6839,3 +6839,546 @@ class StudentTransferViewSet(viewsets.ModelViewSet):
         if student_f:
             qs = qs.filter(student_id=student_f)
         return qs
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TRANSFER SYSTEM  —  Cross-Tenant + Internal Transfers
+# ═══════════════════════════════════════════════════════════════════
+
+def _transfer_generate_package(transfer):
+    """Build a JSON data snapshot of the entity being transferred."""
+    from django.utils import timezone
+    snapshot = {
+        'generated_at': timezone.now().isoformat(),
+        'transfer_type': transfer.transfer_type,
+        'entity_id': transfer.entity_id,
+        'from_tenant': transfer.from_tenant_id,
+        'to_tenant': transfer.to_tenant_id,
+    }
+    try:
+        if 'student' in transfer.transfer_type:
+            from .models import Student, Enrollment, AttendanceRecord, Invoice
+            student = Student.objects.filter(id=transfer.entity_id).first()
+            if student:
+                # Profile
+                snapshot['profile'] = {
+                    'admission_number': student.admission_number,
+                    'first_name': student.first_name,
+                    'last_name': student.last_name,
+                    'date_of_birth': str(student.date_of_birth) if student.date_of_birth else None,
+                    'gender': student.gender,
+                    'phone': student.phone or '',
+                    'email': student.email or '',
+                    'address': student.address or '',
+                    'is_active': student.is_active,
+                }
+                # Academic history (Enrollment records)
+                try:
+                    enrollments = Enrollment.objects.filter(student=student).select_related('school_class', 'term').values(
+                        'school_class__name', 'term__name', 'enrollment_date', 'status'
+                    )[:20]
+                    snapshot['academic_history'] = list(enrollments)
+                except Exception:
+                    snapshot['academic_history'] = []
+                # Attendance summary
+                try:
+                    att_total = AttendanceRecord.objects.filter(student=student).count()
+                    att_present = AttendanceRecord.objects.filter(student=student, status='Present').count()
+                    snapshot['attendance_summary'] = {
+                        'total': att_total,
+                        'present': att_present,
+                        'rate': round(att_present / att_total * 100, 1) if att_total else 0,
+                    }
+                except Exception:
+                    snapshot['attendance_summary'] = {}
+                # Fee balance (Invoice model)
+                try:
+                    invoices = Invoice.objects.filter(student=student)
+                    total_due  = sum(float(i.total_amount or 0) for i in invoices)
+                    total_paid = sum(float(i.amount_paid or 0) for i in invoices)
+                    balance = total_due - total_paid
+                    snapshot['fee_summary'] = {
+                        'total_invoiced': round(total_due, 2),
+                        'total_paid': round(total_paid, 2),
+                        'balance': round(balance, 2),
+                    }
+                    if balance > 0:
+                        transfer.fee_balance_cleared = False
+                        transfer.save(update_fields=['fee_balance_cleared'])
+                except Exception:
+                    snapshot['fee_summary'] = {}
+        else:
+            # Staff snapshot
+            try:
+                from hr.models import Employee, Department
+                emp = Employee.objects.filter(id=transfer.entity_id).first()
+                if emp:
+                    snapshot['profile'] = {
+                        'employee_id': emp.employee_id,
+                        'first_name': emp.first_name,
+                        'last_name': emp.last_name,
+                        'designation': emp.designation or '',
+                        'email': emp.email or '',
+                        'phone': emp.phone or '',
+                        'date_joined': str(emp.date_joined) if emp.date_joined else None,
+                    }
+                    dept = emp.department
+                    snapshot['department'] = dept.name if dept else ''
+            except Exception:
+                pass
+    except Exception as e:
+        snapshot['error'] = str(e)
+
+    import json as _json
+    from datetime import date, datetime as _dt
+
+    def _serialize(obj):
+        if isinstance(obj, (date, _dt)):
+            return obj.isoformat()
+        raise TypeError(f'Not serializable: {type(obj)}')
+
+    clean_snapshot = _json.loads(_json.dumps(snapshot, default=_serialize))
+
+    from .models import TransferPackage as TP
+    pkg, _ = TP.objects.get_or_create(transfer=transfer)
+    pkg.data_snapshot = clean_snapshot
+    pkg.save()
+    return clean_snapshot
+
+
+def _is_transfer_admin(user):
+    from .models import UserProfile
+    try:
+        profile = UserProfile.objects.get(user=user)
+        return profile.role.name in ('ADMIN', 'TENANT_SUPER_ADMIN')
+    except Exception:
+        return _is_admin_like(user)
+
+
+def _is_transfer_parent(user):
+    from .models import UserProfile
+    try:
+        profile = UserProfile.objects.get(user=user)
+        return profile.role.name == 'PARENT'
+    except Exception:
+        return False
+
+
+class TransferListView(APIView):
+    """GET /transfers/ — list all transfers for this tenant (filtered by role)."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from .models import CrossTenantTransfer
+        from .serializers import CrossTenantTransferSerializer
+        tenant = getattr(request.tenant, 'schema_name', '')
+
+        qs = CrossTenantTransfer.objects.filter(
+            models.Q(from_tenant_id=tenant) | models.Q(to_tenant_id=tenant)
+        ).select_related('initiated_by', 'approved_from_by', 'approved_to_by', 'rejected_by')
+
+        # Filter params
+        status_f = request.query_params.get('status')
+        type_f   = request.query_params.get('transfer_type')
+        dir_f    = request.query_params.get('direction')  # 'in' | 'out'
+
+        if status_f:
+            qs = qs.filter(status=status_f)
+        if type_f:
+            qs = qs.filter(transfer_type=type_f)
+        if dir_f == 'in':
+            qs = qs.filter(to_tenant_id=tenant)
+        elif dir_f == 'out':
+            qs = qs.filter(from_tenant_id=tenant)
+
+        # Parents see only transfers for their children
+        if _is_transfer_parent(request.user):
+            from .models import UserProfile, Guardian
+            try:
+                profile = UserProfile.objects.get(user=request.user)
+                guardian = Guardian.objects.filter(user=request.user).first()
+                if guardian:
+                    student_ids = list(guardian.students.values_list('id', flat=True))
+                    qs = qs.filter(entity_id__in=student_ids, transfer_type__in=['student', 'internal_student'])
+                else:
+                    qs = qs.none()
+            except Exception:
+                qs = qs.none()
+
+        serializer = CrossTenantTransferSerializer(qs, many=True)
+        stats = {
+            'pending': qs.filter(status='pending').count(),
+            'approved_from': qs.filter(status='approved_from').count(),
+            'approved_to': qs.filter(status='approved_to').count(),
+            'completed': qs.filter(status='completed').count(),
+            'rejected': qs.filter(status='rejected').count(),
+            'incoming': qs.filter(to_tenant_id=tenant).count(),
+            'outgoing': qs.filter(from_tenant_id=tenant).count(),
+        }
+        return Response({'results': serializer.data, 'count': qs.count(), 'stats': stats})
+
+
+class TransferInitiateView(APIView):
+    """POST /transfers/initiate/ — initiate a new transfer."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from .models import CrossTenantTransfer, Student, StudentHistory
+        from .serializers import CrossTenantTransferSerializer
+
+        # RBAC: admin or parent (parent only for student transfer)
+        is_admin = _is_transfer_admin(request.user)
+        is_parent = _is_transfer_parent(request.user)
+        if not (is_admin or is_parent):
+            return Response({'detail': 'Only admins or parents can initiate transfers.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data
+        transfer_type = data.get('transfer_type', 'student')
+        if is_parent and 'staff' in transfer_type:
+            return Response({'detail': 'Parents can only initiate student transfers.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        entity_id  = data.get('entity_id')
+        to_tenant  = data.get('to_tenant_id', '')
+        reason     = data.get('reason', '')
+
+        if not entity_id:
+            return Response({'detail': 'entity_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tenant = getattr(request.tenant, 'schema_name', '')
+
+        # Edge case: check for active exams
+        exam_flag = False
+        mid_term_flag = False
+        fee_balance = False
+
+        if 'student' in transfer_type:
+            try:
+                student = Student.objects.get(id=entity_id)
+                # Check fee balance
+                from .models import FeeInvoice
+                invoices = FeeInvoice.objects.filter(student=student)
+                total_due  = sum(i.amount_due for i in invoices)
+                total_paid = sum(i.amount_paid for i in invoices)
+                if float(total_due - total_paid) > 0:
+                    fee_balance = True
+            except Student.DoesNotExist:
+                return Response({'detail': 'Student not found.'}, status=status.HTTP_404_NOT_FOUND)
+            except Exception:
+                pass
+
+        transfer = CrossTenantTransfer.objects.create(
+            transfer_type=transfer_type,
+            entity_id=entity_id,
+            from_tenant_id=tenant,
+            to_tenant_id=to_tenant,
+            reason=reason,
+            status='pending',
+            initiated_by=request.user,
+            exam_in_progress=exam_flag,
+            mid_term=mid_term_flag,
+            fee_balance_cleared=not fee_balance,
+            effective_date=data.get('effective_date'),
+            from_class=data.get('from_class', ''),
+            to_class=data.get('to_class', ''),
+            from_stream=data.get('from_stream', ''),
+            to_stream=data.get('to_stream', ''),
+            from_department=data.get('from_department', ''),
+            to_department=data.get('to_department', ''),
+            from_role=data.get('from_role', ''),
+            to_role=data.get('to_role', ''),
+            notes=data.get('notes', ''),
+        )
+
+        # Generate transfer package immediately
+        _transfer_generate_package(transfer)
+
+        warnings = []
+        if fee_balance:
+            warnings.append('Student has outstanding fee balance. Transfer flagged.')
+        if exam_flag:
+            warnings.append('Exam in progress detected. Please verify before proceeding.')
+
+        return Response({
+            'detail': 'Transfer initiated successfully.',
+            'transfer': CrossTenantTransferSerializer(transfer).data,
+            'warnings': warnings,
+        }, status=status.HTTP_201_CREATED)
+
+
+class TransferDetailView(APIView):
+    """GET /transfers/{id}/ — retrieve transfer details."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, transfer_id):
+        from .models import CrossTenantTransfer
+        from .serializers import CrossTenantTransferSerializer
+        tenant = getattr(request.tenant, 'schema_name', '')
+        try:
+            transfer = CrossTenantTransfer.objects.get(
+                id=transfer_id,
+                **({'from_tenant_id': tenant} if not _is_transfer_admin(request.user) else {})
+            )
+        except CrossTenantTransfer.DoesNotExist:
+            try:
+                transfer = CrossTenantTransfer.objects.get(id=transfer_id, to_tenant_id=tenant)
+            except CrossTenantTransfer.DoesNotExist:
+                return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(CrossTenantTransferSerializer(transfer).data)
+
+
+class TransferApproveFromView(APIView):
+    """POST /transfers/{id}/approve-from/ — source school approves."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, transfer_id):
+        from .models import CrossTenantTransfer
+        from .serializers import CrossTenantTransferSerializer
+        if not _is_transfer_admin(request.user):
+            return Response({'detail': 'Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            transfer = CrossTenantTransfer.objects.get(id=transfer_id)
+        except CrossTenantTransfer.DoesNotExist:
+            return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if transfer.status != 'pending':
+            return Response({'detail': f'Cannot approve from — current status is "{transfer.status}".'}, status=status.HTTP_400_BAD_REQUEST)
+        if transfer.exam_in_progress:
+            return Response({'detail': 'Cannot approve transfer while exam is in progress.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        transfer.status = 'approved_from'
+        transfer.approved_from_by = request.user
+        transfer.save()
+
+        # Regenerate package
+        _transfer_generate_package(transfer)
+
+        return Response({
+            'detail': 'Transfer approved by source school.',
+            'transfer': CrossTenantTransferSerializer(transfer).data,
+        })
+
+
+class TransferApproveToView(APIView):
+    """POST /transfers/{id}/approve-to/ — destination school approves (both approvals → ready to execute)."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, transfer_id):
+        from .models import CrossTenantTransfer
+        from .serializers import CrossTenantTransferSerializer
+        if not _is_transfer_admin(request.user):
+            return Response({'detail': 'Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            transfer = CrossTenantTransfer.objects.get(id=transfer_id)
+        except CrossTenantTransfer.DoesNotExist:
+            return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # For internal transfers, only one approval needed
+        is_internal = transfer.transfer_type.startswith('internal_')
+        if is_internal:
+            if transfer.status not in ('pending', 'approved_from'):
+                return Response({'detail': f'Cannot approve — current status is "{transfer.status}".'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if transfer.status != 'approved_from':
+                return Response({'detail': 'Source school must approve first.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        transfer.status = 'approved_to'
+        transfer.approved_to_by = request.user
+        transfer.save()
+        return Response({
+            'detail': 'Transfer approved by destination. Ready to execute.',
+            'transfer': CrossTenantTransferSerializer(transfer).data,
+        })
+
+
+class TransferRejectView(APIView):
+    """POST /transfers/{id}/reject/ — reject a transfer."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, transfer_id):
+        from .models import CrossTenantTransfer
+        from .serializers import CrossTenantTransferSerializer
+        if not _is_transfer_admin(request.user):
+            return Response({'detail': 'Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            transfer = CrossTenantTransfer.objects.get(id=transfer_id)
+        except CrossTenantTransfer.DoesNotExist:
+            return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if transfer.status in ('completed', 'cancelled'):
+            return Response({'detail': 'Cannot reject a completed or cancelled transfer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        transfer.status = 'rejected'
+        transfer.rejected_by = request.user
+        transfer.rejection_reason = request.data.get('reason', '')
+        transfer.save()
+        return Response({
+            'detail': 'Transfer rejected.',
+            'transfer': CrossTenantTransferSerializer(transfer).data,
+        })
+
+
+class TransferCancelView(APIView):
+    """POST /transfers/{id}/cancel/ — cancel before execution (rollback)."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, transfer_id):
+        from .models import CrossTenantTransfer
+        from .serializers import CrossTenantTransferSerializer
+        try:
+            transfer = CrossTenantTransfer.objects.get(id=transfer_id)
+        except CrossTenantTransfer.DoesNotExist:
+            return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if transfer.status == 'completed':
+            return Response({'detail': 'Cannot cancel an already completed transfer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_admin = _is_transfer_admin(request.user)
+        is_parent = _is_transfer_parent(request.user)
+        if not (is_admin or is_parent):
+            return Response({'detail': 'Not authorized to cancel this transfer.'}, status=status.HTTP_403_FORBIDDEN)
+
+        transfer.status = 'cancelled'
+        transfer.notes = (transfer.notes + f'\nCancelled by {request.user.username}: {request.data.get("reason","")}').strip()
+        transfer.save()
+        return Response({
+            'detail': 'Transfer cancelled successfully.',
+            'transfer': CrossTenantTransferSerializer(transfer).data,
+        })
+
+
+class TransferExecuteView(APIView):
+    """POST /transfers/{id}/execute/ — execute a fully-approved transfer."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, transfer_id):
+        from django.utils import timezone
+        from .models import CrossTenantTransfer, StudentHistory, StaffHistory
+        from .serializers import CrossTenantTransferSerializer
+
+        if not _is_transfer_admin(request.user):
+            return Response({'detail': 'Admin access required.'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            transfer = CrossTenantTransfer.objects.get(id=transfer_id)
+        except CrossTenantTransfer.DoesNotExist:
+            return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if transfer.status != 'approved_to':
+            return Response({'detail': f'Transfer must be fully approved before execution (current: {transfer.status}).'}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_internal = transfer.transfer_type.startswith('internal_')
+        today = timezone.now().date()
+
+        if 'student' in transfer.transfer_type:
+            from .models import Student
+            try:
+                student = Student.objects.get(id=transfer.entity_id)
+            except Student.DoesNotExist:
+                return Response({'detail': 'Student not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            if is_internal:
+                # Close current history record
+                StudentHistory.objects.filter(student=student, end_date__isnull=True).update(end_date=today)
+                # Open new history record
+                StudentHistory.objects.create(
+                    student=student,
+                    tenant_id=transfer.from_tenant_id,
+                    school_name=transfer.from_tenant_id,
+                    class_name=transfer.to_class,
+                    stream=transfer.to_stream,
+                    start_date=today,
+                    transfer=transfer,
+                )
+            else:
+                # Cross-tenant: mark active enrollments as Transferred, deactivate student
+                from .models import Enrollment as _Enrollment
+                _Enrollment.objects.filter(student=student, status='Active').update(status='Transferred')
+                student.is_active = False
+                student.save(update_fields=['is_active'])
+                # Close history
+                StudentHistory.objects.filter(student=student, end_date__isnull=True).update(end_date=today)
+                # Open a placeholder history at destination tenant
+                StudentHistory.objects.create(
+                    student=student,
+                    tenant_id=transfer.to_tenant_id,
+                    school_name=transfer.to_tenant_id,
+                    class_name=transfer.to_class,
+                    stream=transfer.to_stream,
+                    start_date=today,
+                    transfer=transfer,
+                )
+
+        else:
+            # Staff transfer
+            try:
+                from hr.models import Employee
+                emp = Employee.objects.filter(id=transfer.entity_id).first()
+                if emp:
+                    StaffHistory.objects.filter(employee_id=transfer.entity_id, end_date__isnull=True).update(end_date=today)
+                    StaffHistory.objects.create(
+                        employee_id=transfer.entity_id,
+                        employee_name=f"{emp.first_name} {emp.last_name}",
+                        tenant_id=transfer.to_tenant_id or transfer.from_tenant_id,
+                        school_name=transfer.to_tenant_id or transfer.from_tenant_id,
+                        role=transfer.to_role or getattr(emp, 'designation', ''),
+                        department=transfer.to_department,
+                        start_date=today,
+                        transfer=transfer,
+                    )
+                    if not is_internal:
+                        emp.is_active = False
+                        emp.save(update_fields=['is_active'])
+            except Exception as e:
+                pass
+
+        transfer.status = 'completed'
+        transfer.executed_at = timezone.now()
+        transfer.save()
+
+        return Response({
+            'detail': 'Transfer executed successfully.',
+            'transfer': CrossTenantTransferSerializer(transfer).data,
+        })
+
+
+class TransferPackageView(APIView):
+    """GET /transfers/{id}/package/ — retrieve or regenerate the data package."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, transfer_id):
+        from .models import CrossTenantTransfer
+        from .serializers import TransferPackageSerializer
+        try:
+            transfer = CrossTenantTransfer.objects.get(id=transfer_id)
+        except CrossTenantTransfer.DoesNotExist:
+            return Response({'detail': 'Transfer not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        snapshot = _transfer_generate_package(transfer)
+        from .models import TransferPackage
+        pkg = TransferPackage.objects.get(transfer=transfer)
+        return Response(TransferPackageSerializer(pkg).data)
+
+
+class StudentTransferHistoryView(APIView):
+    """GET /students/{student_id}/transfer-history/ — all history entries for a student."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, student_id):
+        from .models import StudentHistory
+        from .serializers import StudentHistorySerializer
+        qs = StudentHistory.objects.filter(student_id=student_id).select_related('transfer')
+        return Response(StudentHistorySerializer(qs, many=True).data)
+
+
+class StaffTransferHistoryView(APIView):
+    """GET /staff/{employee_id}/transfer-history/ — all history entries for a staff member."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, employee_id):
+        from .models import StaffHistory
+        from .serializers import StaffHistorySerializer
+        qs = StaffHistory.objects.filter(employee_id=employee_id)
+        return Response(StaffHistorySerializer(qs, many=True).data)

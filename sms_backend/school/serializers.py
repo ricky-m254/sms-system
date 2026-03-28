@@ -1078,3 +1078,108 @@ class StudentTransferSerializer(serializers.ModelSerializer):
 
     def get_student_name(self, obj):
         return obj.student.full_name if obj.student else ''
+
+
+# ─────────────────────────────────────────────
+# TRANSFER SYSTEM SERIALIZERS
+# ─────────────────────────────────────────────
+
+class CrossTenantTransferSerializer(serializers.ModelSerializer):
+    initiated_by_name   = serializers.SerializerMethodField()
+    approved_from_name  = serializers.SerializerMethodField()
+    approved_to_name    = serializers.SerializerMethodField()
+    entity_name         = serializers.SerializerMethodField()
+    status_display      = serializers.SerializerMethodField()
+    type_display        = serializers.SerializerMethodField()
+    has_package         = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import CrossTenantTransfer
+        model = CrossTenantTransfer
+        fields = [
+            'id', 'transfer_type', 'type_display', 'entity_id', 'entity_name',
+            'from_tenant_id', 'to_tenant_id', 'status', 'status_display',
+            'reason', 'fee_balance_cleared', 'exam_in_progress', 'mid_term',
+            'initiated_by', 'initiated_by_name',
+            'approved_from_by', 'approved_from_name',
+            'approved_to_by', 'approved_to_name',
+            'rejected_by', 'rejection_reason',
+            'from_class', 'to_class', 'from_stream', 'to_stream',
+            'from_department', 'to_department', 'from_role', 'to_role',
+            'effective_date', 'executed_at', 'notes',
+            'has_package', 'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'status', 'initiated_by', 'approved_from_by', 'approved_to_by',
+            'rejected_by', 'executed_at', 'created_at', 'updated_at',
+            'exam_in_progress', 'mid_term',
+        ]
+
+    def get_initiated_by_name(self, obj):
+        if obj.initiated_by:
+            return obj.initiated_by.get_full_name() or obj.initiated_by.username
+        return ''
+
+    def get_approved_from_name(self, obj):
+        if obj.approved_from_by:
+            return obj.approved_from_by.get_full_name() or obj.approved_from_by.username
+        return ''
+
+    def get_approved_to_name(self, obj):
+        if obj.approved_to_by:
+            return obj.approved_to_by.get_full_name() or obj.approved_to_by.username
+        return ''
+
+    def get_entity_name(self, obj):
+        try:
+            if 'student' in obj.transfer_type:
+                from .models import Student
+                s = Student.objects.filter(id=obj.entity_id).first()
+                if s:
+                    return f"{s.first_name} {s.last_name} ({s.admission_number})"
+            else:
+                try:
+                    from hr.models import Employee
+                    e = Employee.objects.filter(id=obj.entity_id).first()
+                    if e:
+                        return f"{e.first_name} {e.last_name} ({e.employee_id})"
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        return f"Entity #{obj.entity_id}"
+
+    def get_status_display(self, obj):
+        return dict(obj.STATUS_CHOICES).get(obj.status, obj.status)
+
+    def get_type_display(self, obj):
+        return dict(obj.TYPE_CHOICES).get(obj.transfer_type, obj.transfer_type)
+
+    def get_has_package(self, obj):
+        return hasattr(obj, 'package')
+
+
+class TransferPackageSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import TransferPackage
+        model = TransferPackage
+        fields = ['id', 'transfer', 'data_snapshot', 'generated_at']
+        read_only_fields = ['generated_at']
+
+
+class StudentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import StudentHistory
+        model = StudentHistory
+        fields = ['id', 'student', 'tenant_id', 'school_name', 'class_name', 'stream',
+                  'start_date', 'end_date', 'transfer', 'created_at']
+        read_only_fields = ['created_at']
+
+
+class StaffHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import StaffHistory
+        model = StaffHistory
+        fields = ['id', 'employee_id', 'employee_name', 'tenant_id', 'school_name',
+                  'role', 'department', 'start_date', 'end_date', 'transfer', 'created_at']
+        read_only_fields = ['created_at']

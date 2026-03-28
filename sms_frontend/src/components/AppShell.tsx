@@ -67,6 +67,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: 'Library', route: '/modules/library/dashboard', moduleKey: 'LIBRARY' },
       { label: 'Transport', route: '/modules/transport/dashboard', moduleKey: 'TRANSPORT' },
       { label: 'Hostel / Boarding', route: '/modules/hostel/dashboard', moduleKey: 'HOSTEL' },
+      { label: 'Transfers', route: '/modules/transfers/dashboard' },
       { label: 'Visitor Management', route: '/modules/visitors/dashboard', moduleKey: 'VISITOR_MGMT' },
       { label: 'Dispensary', route: '/modules/dispensary', moduleKey: 'DISPENSARY' },
       { label: 'Maintenance', route: '/modules/maintenance/dashboard', moduleKey: 'MAINTENANCE' },

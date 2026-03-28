@@ -1890,3 +1890,108 @@ class StudentTransfer(models.Model):
 
     def __str__(self):
         return f"{self.student} → {self.other_school} ({self.direction})"
+
+
+# ──────────────────────────────────────────────
+# TRANSFER SYSTEM  (Cross-tenant + Internal)
+# ──────────────────────────────────────────────
+
+class CrossTenantTransfer(models.Model):
+    TYPE_CHOICES = [
+        ('student', 'Student Transfer'),
+        ('staff',   'Staff Transfer'),
+        ('internal_student', 'Internal Student Transfer'),
+        ('internal_staff',   'Internal Staff Transfer'),
+    ]
+    STATUS_CHOICES = [
+        ('pending',       'Pending'),
+        ('approved_from', 'Approved by Source School'),
+        ('approved_to',   'Approved by Destination School'),
+        ('rejected',      'Rejected'),
+        ('completed',     'Completed'),
+        ('cancelled',     'Cancelled'),
+    ]
+
+    transfer_type   = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    entity_id       = models.IntegerField(help_text='student_id or employee_id')
+    from_tenant_id  = models.CharField(max_length=100)
+    to_tenant_id    = models.CharField(max_length=100, blank=True)
+    status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reason          = models.TextField(blank=True)
+    fee_balance_cleared = models.BooleanField(default=False)
+    exam_in_progress    = models.BooleanField(default=False, help_text='Flagged if active exam detected')
+    mid_term            = models.BooleanField(default=False, help_text='Flagged if transfer is mid-term')
+
+    initiated_by    = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='initiated_transfers')
+    approved_from_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_from_transfers')
+    approved_to_by  = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_to_transfers')
+    rejected_by     = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='rejected_transfers')
+    rejection_reason = models.TextField(blank=True)
+
+    # Internal transfer fields
+    from_class      = models.CharField(max_length=100, blank=True)
+    to_class        = models.CharField(max_length=100, blank=True)
+    from_stream     = models.CharField(max_length=100, blank=True)
+    to_stream       = models.CharField(max_length=100, blank=True)
+    from_department = models.CharField(max_length=150, blank=True)
+    to_department   = models.CharField(max_length=150, blank=True)
+    from_role       = models.CharField(max_length=100, blank=True)
+    to_role         = models.CharField(max_length=100, blank=True)
+
+    effective_date  = models.DateField(null=True, blank=True)
+    executed_at     = models.DateTimeField(null=True, blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+    notes           = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Transfer #{self.pk} [{self.transfer_type}] {self.from_tenant_id}→{self.to_tenant_id} ({self.status})"
+
+
+class TransferPackage(models.Model):
+    transfer    = models.OneToOneField(CrossTenantTransfer, on_delete=models.CASCADE, related_name='package')
+    data_snapshot = models.JSONField(default=dict, help_text='Full entity data snapshot at time of transfer')
+    generated_at  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Package for Transfer #{self.transfer_id}"
+
+
+class StudentHistory(models.Model):
+    student     = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='school_history')
+    tenant_id   = models.CharField(max_length=100)
+    school_name = models.CharField(max_length=255, blank=True)
+    class_name  = models.CharField(max_length=100, blank=True)
+    stream      = models.CharField(max_length=100, blank=True)
+    start_date  = models.DateField()
+    end_date    = models.DateField(null=True, blank=True)
+    transfer    = models.ForeignKey(CrossTenantTransfer, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.student} @ {self.school_name} ({self.start_date}–{self.end_date or 'present'})"
+
+
+class StaffHistory(models.Model):
+    employee_id  = models.IntegerField(help_text='hr.Employee pk')
+    employee_name = models.CharField(max_length=255, blank=True)
+    tenant_id    = models.CharField(max_length=100)
+    school_name  = models.CharField(max_length=255, blank=True)
+    role         = models.CharField(max_length=100, blank=True)
+    department   = models.CharField(max_length=150, blank=True)
+    start_date   = models.DateField()
+    end_date     = models.DateField(null=True, blank=True)
+    transfer     = models.ForeignKey(CrossTenantTransfer, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"Staff {self.employee_name} @ {self.school_name} ({self.start_date}–{self.end_date or 'present'})"

@@ -267,6 +267,11 @@ const TimetableCoveragePage = lazy(() => import('./pages/timetable/TimetableCove
 const TimetableChangeRequestsPage = lazy(() => import('./pages/timetable/TimetableChangeRequestsPage'))
 const TimetableStaffDutyPage = lazy(() => import('./pages/timetable/TimetableStaffDutyPage'))
 
+const TransfersLayout = lazy(() => import('./pages/transfers/TransfersLayout'))
+const TransfersDashboardPage = lazy(() => import('./pages/transfers/TransfersDashboardPage'))
+const TransfersInitiatePage = lazy(() => import('./pages/transfers/TransfersInitiatePage'))
+const TransferDetailPage = lazy(() => import('./pages/transfers/TransferDetailPage'))
+
 const TransportLayout = lazy(() => import('./pages/transport/TransportLayout'))
 const TransportDashboardPage = lazy(() => import('./pages/transport/TransportDashboardPage'))
 const TransportVehiclesPage = lazy(() => import('./pages/transport/TransportVehiclesPage'))
@@ -408,6 +413,7 @@ function App() {
   const maintenanceEnabled = isModuleRouteEnabled('maintenance')
   const elearningEnabled = isModuleRouteEnabled('elearning')
   const analyticsEnabled = isModuleRouteEnabled('analytics')
+  const transfersEnabled = isModuleRouteEnabled('transfers')
 
   return (
     <>
@@ -761,6 +767,18 @@ function App() {
           <Route path="stops" element={<TransportStopsPage />} />
           <Route path="students" element={<TransportStudentsPage />} />
           <Route path="incidents" element={<TransportIncidentsPage />} />
+        </Route>
+        <Route
+          path="/modules/transfers/*"
+          element={isTenantAuth ? <TransfersLayout /> : <Navigate to={isPlatformAuth ? '/platform' : '/dashboard'} replace />}
+        >
+          <Route index element={<TransfersDashboardPage />} />
+          <Route path="dashboard" element={<TransfersDashboardPage />} />
+          <Route path="incoming" element={<TransfersDashboardPage />} />
+          <Route path="outgoing" element={<TransfersDashboardPage />} />
+          <Route path="history" element={<TransfersDashboardPage />} />
+          <Route path="initiate" element={<TransfersInitiatePage />} />
+          <Route path=":transferId" element={<TransferDetailPage />} />
         </Route>
         <Route
           path="/modules/visitors/*"
