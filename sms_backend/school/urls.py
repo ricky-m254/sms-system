@@ -206,6 +206,7 @@ urlpatterns = [
     path('students/<int:student_id>/report/export/csv/', StudentReportCsvExportView.as_view(), name='student_report_csv'),
     path('students/<int:student_id>/report/export/pdf/', StudentReportPdfExportView.as_view(), name='student_report_pdf'),
     path('school/classes/', SchoolClassListView.as_view(), name='school_classes'),
+    path('attendance/capture/', include('clockin.urls_capture')),
     path('attendance/summary/', AttendanceSummaryView.as_view(), name='attendance_summary'),
     path('attendance/summary/export/csv/', AttendanceSummaryCsvExportView.as_view(), name='attendance_summary_csv'),
     path('attendance/summary/export/pdf/', AttendanceSummaryPdfExportView.as_view(), name='attendance_summary_pdf'),

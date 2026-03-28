@@ -9,12 +9,21 @@ class BiometricDevice(models.Model):
         ('EXIT', 'Exit Only'),
         ('BOTH', 'Entry & Exit'),
     ]
+    USE_CONTEXT_CHOICES = [
+        ('gate',           'Gate / Entrance'),
+        ('classroom',      'Classroom'),
+        ('staff_terminal', 'Staff Terminal'),
+    ]
 
     # Core identity
     device_id   = models.CharField(max_length=100, unique=True)
     name        = models.CharField(max_length=150)
     location    = models.CharField(max_length=200)
     device_type = models.CharField(max_length=10, choices=DEVICE_TYPE_CHOICES)
+    use_context = models.CharField(
+        max_length=20, choices=USE_CONTEXT_CHOICES, default='gate',
+        help_text='Functional context: gate entry scanner, classroom scanner, or staff punch terminal',
+    )
 
     # Network / connection (Dahua ASI6214S defaults pre-filled)
     ip_address  = models.GenericIPAddressField(null=True, blank=True,
@@ -200,3 +209,55 @@ class SmartPSSImportLog(models.Model):
     def __str__(self):
         src = self.source.name if self.source else 'CSV'
         return f"{src} {self.source_type} @ {self.started_at:%Y-%m-%d %H:%M} ({self.records_saved} saved)"
+
+
+# ── Phase 1: Raw Capture Log ──────────────────────────────────────────────────
+
+class AttendanceCaptureLog(models.Model):
+    """
+    Raw log of every inbound scan from any device before identity resolution.
+    Status lifecycle: pending → success | failed
+    One log entry per POST to /api/attendance/capture/.
+    """
+    METHOD_CHOICES = [
+        ('card',        'Card / RFID'),
+        ('fingerprint', 'Fingerprint'),
+        ('face',        'Face Recognition'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed',  'Failed'),
+    ]
+
+    device          = models.ForeignKey(
+                        BiometricDevice, null=True, blank=True,
+                        on_delete=models.SET_NULL, related_name='capture_logs',
+                      )
+    person          = models.ForeignKey(
+                        PersonRegistry, null=True, blank=True,
+                        on_delete=models.SET_NULL, related_name='capture_logs',
+                      )
+    method          = models.CharField(max_length=20, choices=METHOD_CHOICES)
+    identifier      = models.CharField(
+                        max_length=200,
+                        help_text='Raw card UID / fingerprint ID / face template ID sent by the device',
+                      )
+    timestamp       = models.DateTimeField()
+    status          = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    failure_reason  = models.CharField(max_length=500, blank=True)
+    raw_payload     = models.JSONField(default=dict, blank=True,
+                        help_text='Full request body for audit / debugging')
+    created_at      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes  = [
+            models.Index(fields=['timestamp']),
+            models.Index(fields=['device', 'timestamp']),
+            models.Index(fields=['status']),
+        ]
+
+    def __str__(self):
+        who = self.person.display_name if self.person else 'Unknown'
+        return f"{who} [{self.method}] {self.status} @ {self.timestamp}"

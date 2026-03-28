@@ -14,7 +14,10 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from datetime import date, datetime, timedelta
-from .models import BiometricDevice, SchoolShift, PersonRegistry, ClockEvent, SmartPSSSource, SmartPSSImportLog
+from .models import (
+    BiometricDevice, SchoolShift, PersonRegistry, ClockEvent,
+    SmartPSSSource, SmartPSSImportLog, AttendanceCaptureLog,
+)
 from .serializers import (
     BiometricDeviceSerializer,
     SchoolShiftSerializer,
@@ -22,6 +25,7 @@ from .serializers import (
     ClockEventSerializer,
     SmartPSSSourceSerializer,
     SmartPSSImportLogSerializer,
+    AttendanceCaptureLogSerializer,
 )
 from .smartpss_client import (
     SmartPSSLiteClient, SmartPSSError,
@@ -1319,3 +1323,105 @@ class SmartPSSCSVImportView(ClockInModuleMixin, APIView):
             'filename': csv_file.name,
             **summary,
         })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Phase 1 — Attendance Capture Endpoint
+# POST /api/attendance/capture/   (also routed at /api/clockin/capture/)
+#
+# Validates device by device_id + api_key (tenant isolation via schema context),
+# persists a raw AttendanceCaptureLog with status=PENDING, returns log id.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CaptureView(APIView):
+    """
+    Receive a raw biometric scan from a registered device.
+
+    Authentication: device-level API key (no user JWT required).
+    The device must be registered in BiometricDevice for this tenant.
+
+    Request body (JSON):
+        {
+            "device_id":  "GATE-001",
+            "api_key":    "<secret>",
+            "method":     "card" | "fingerprint" | "face",
+            "identifier": "<card_uid or fingerprint_id>",
+            "timestamp":  "2026-03-28T07:45:00Z"   // optional, defaults to now
+        }
+
+    Responses:
+        202 Accepted  — log stored, status=pending, identity resolution pending
+        400 Bad Request — missing fields
+        401 Unauthorized — invalid device_id / api_key
+        422 Unprocessable — invalid method
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        from clockin.application.services.attendance_capture_service import AttendanceCaptureService
+        from django.utils.dateparse import parse_datetime
+
+        body = request.data
+
+        # ── Required field validation ─────────────────────────────────────────
+        required = ['device_id', 'api_key', 'method', 'identifier']
+        missing  = [f for f in required if not body.get(f)]
+        if missing:
+            return Response(
+                {'ok': False, 'error': f"Missing required fields: {', '.join(missing)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # ── Optional timestamp ────────────────────────────────────────────────
+        ts = None
+        raw_ts = body.get('timestamp')
+        if raw_ts:
+            ts = parse_datetime(raw_ts)
+            if ts is None:
+                return Response(
+                    {'ok': False, 'error': 'Invalid timestamp format. Use ISO-8601 (e.g. 2026-03-28T07:45:00Z).'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # ── Service call ──────────────────────────────────────────────────────
+        svc    = AttendanceCaptureService()
+        result = svc.receive_scan(
+            device_id   = body['device_id'],
+            api_key     = body['api_key'],
+            method      = body['method'],
+            identifier  = body['identifier'],
+            timestamp   = ts,
+            raw_payload = dict(body),
+        )
+
+        if not result['ok']:
+            error = result.get('error', 'Capture failed.')
+            if 'not found or API key' in error:
+                http_status = status.HTTP_401_UNAUTHORIZED
+            elif 'Invalid method' in error:
+                http_status = status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                http_status = status.HTTP_400_BAD_REQUEST
+            return Response(result, status=http_status)
+
+        return Response(result, status=status.HTTP_202_ACCEPTED)
+
+
+class AttendanceCaptureLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only viewset for AttendanceCaptureLog.
+    Supports filtering: ?status=pending|success|failed  ?device=<id>
+    """
+    serializer_class   = AttendanceCaptureLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = AttendanceCaptureLog.objects.select_related('device', 'person').all()
+        s  = self.request.query_params.get('status')
+        d  = self.request.query_params.get('device')
+        if s:
+            qs = qs.filter(status=s)
+        if d:
+            qs = qs.filter(device_id=d)
+        return qs

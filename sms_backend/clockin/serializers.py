@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import BiometricDevice, SchoolShift, PersonRegistry, ClockEvent, SmartPSSSource, SmartPSSImportLog
+from .models import (
+    BiometricDevice, SchoolShift, PersonRegistry, ClockEvent,
+    SmartPSSSource, SmartPSSImportLog, AttendanceCaptureLog,
+)
 
 class BiometricDeviceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,3 +74,20 @@ class SmartPSSImportLogSerializer(serializers.ModelSerializer):
     class Meta:
         model  = SmartPSSImportLog
         fields = '__all__'
+
+
+class AttendanceCaptureLogSerializer(serializers.ModelSerializer):
+    device_name  = serializers.ReadOnlyField(source='device.name')
+    device_ctx   = serializers.ReadOnlyField(source='device.use_context')
+    person_name  = serializers.ReadOnlyField(source='person.display_name')
+    person_type  = serializers.ReadOnlyField(source='person.person_type')
+
+    class Meta:
+        model  = AttendanceCaptureLog
+        fields = [
+            'id', 'device', 'device_name', 'device_ctx',
+            'person', 'person_name', 'person_type',
+            'method', 'identifier', 'timestamp',
+            'status', 'failure_reason', 'created_at',
+        ]
+        read_only_fields = fields

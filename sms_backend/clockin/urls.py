@@ -16,13 +16,16 @@ from .views import (
     SmartPSSTestView,
     SmartPSSSyncView,
     SmartPSSCSVImportView,
+    CaptureView,
+    AttendanceCaptureLogViewSet,
 )
 
 router = DefaultRouter()
-router.register(r'devices',  BiometricDeviceViewSet)
-router.register(r'registry', PersonRegistryViewSet)
-router.register(r'shifts',   SchoolShiftViewSet)
-router.register(r'events',   ClockEventViewSet)
+router.register(r'devices',       BiometricDeviceViewSet)
+router.register(r'registry',      PersonRegistryViewSet)
+router.register(r'shifts',        SchoolShiftViewSet)
+router.register(r'events',        ClockEventViewSet)
+router.register(r'capture-logs',  AttendanceCaptureLogViewSet, basename='capture-log')
 
 smartpss_router = DefaultRouter()
 smartpss_router.register(r'sources', SmartPSSSourceViewSet, basename='smartpss-source')
@@ -32,6 +35,9 @@ urlpatterns = [
     # Generic scan (existing)
     path('scan/',             ScanView.as_view()),
     path('kiosk/scan/',       ScanView.as_view()),
+
+    # Phase 1 — raw device capture (also exposed at /api/attendance/capture/)
+    path('capture/', CaptureView.as_view()),
 
     # Dahua ASI6214S native endpoints
     path('dahua/event/',                  DahuaEventView.as_view()),

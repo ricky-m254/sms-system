@@ -4,6 +4,22 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
 
 ## Recently Added Modules
 
+### Smart Attendance & Access Control — Phase 1: Device Capture (clockin migration 0006)
+- **Extends** existing `clockin` module (DO NOT rewrite — extend only)
+- **`BiometricDevice`** extended with `use_context` field: `gate` / `classroom` / `staff_terminal`
+- **`AttendanceCaptureLog`** new model — raw event log per device scan:
+  - Fields: `device` (FK), `person` (FK, nullable), `method` (card/fingerprint/face), `identifier`, `timestamp`, `status` (pending/success/failed), `failure_reason`, `raw_payload`
+  - Indexes on `timestamp`, `device+timestamp`, `status`
+- **`AttendanceCaptureService`** (`clockin/application/services/attendance_capture_service.py`) — Phase 1 service:
+  - `receive_scan()` validates device by `device_id + api_key`, stores raw log with `status=PENDING`, updates `device.last_seen`
+  - Returns structured result dict; Phase 2 identity resolution hooks in next
+- **`CaptureView`** (in `clockin/views.py`) — `POST /api/attendance/capture/` and `POST /api/clockin/capture/`:
+  - No JWT required (device authenticates with `api_key`)
+  - Validates required fields; parses optional ISO-8601 timestamp
+  - Returns `202 Accepted` on success; `401` for bad key; `422` for invalid method
+- **`AttendanceCaptureLogViewSet`** — read-only list/detail; filter by `?status=` and `?device=`
+- **Routes**: `attendance/capture/` wired in `school/urls.py` via thin `clockin/urls_capture.py` module
+
 ### Custom Domain Onboarding (clients migration 0014 + dnspython)
 - **Model**: `CustomDomainRequest` (public schema) — tracks domain, verification token, status (PENDING/VERIFIED/ACTIVE/FAILED/REJECTED), timestamps, attempts
 - **Service**: `clients/domain_service.py` — `initiate_domain_request()`, `verify_domain_request()` (DNS TXT lookup via dnspython), `activate_domain_request()`, `reject_domain_request()`, `get_current_request()`
