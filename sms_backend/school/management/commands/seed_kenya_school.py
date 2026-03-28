@@ -19,7 +19,7 @@ from django_tenants.utils import schema_context
 from clients.models import Tenant, Domain
 from school.models import (
     Role, UserProfile, Student, Guardian, Enrollment, SchoolClass,
-    FeeStructure, Invoice, InvoiceLineItem, Payment, PaymentAllocation,
+    FeeStructure, FeeAssignment, Invoice, InvoiceLineItem, Payment, PaymentAllocation,
     Expense, AdmissionApplication, AcademicYear, Term,
     Department, Subject,
     GradingScheme, GradeBand,
@@ -188,6 +188,9 @@ class Command(BaseCommand):
 
         self.stdout.write("  Seeding fee structures and invoices…")
         self._seed_fees(year, terms, students)
+
+        self.stdout.write("  Seeding fee assignments (student → fee structure links)…")
+        self._seed_fee_assignments(terms, students)
 
         self.stdout.write("  Seeding admission applications…")
         self._seed_admissions(year, terms)
@@ -1819,6 +1822,31 @@ class Command(BaseCommand):
                 pass
 
         self.stdout.write(f'    → Visitors: {Visitor.objects.count()} visitor entries seeded')
+
+    # ── Fee Assignments ────────────────────────────────────────────────────────
+    def _seed_fee_assignments(self, terms, students):
+        """Link each student to a fee structure from Term 1 (tuition + activity fees)."""
+        if not terms or not students:
+            return
+        term1 = terms[0]
+        structs = list(FeeStructure.objects.filter(
+            term=term1,
+            name__icontains='fee',
+            is_active=True,
+        )[:8])
+        if not structs:
+            return
+        created = 0
+        for i, student in enumerate(students):
+            fs = structs[i % len(structs)]
+            _, made = FeeAssignment.objects.get_or_create(
+                student=student,
+                fee_structure=fs,
+                defaults={'discount_amount': 0, 'is_active': True},
+            )
+            if made:
+                created += 1
+        self.stdout.write(f'    → Fee Assignments: {created} created')
 
     # ── Chart of Accounts ─────────────────────────────────────────────────────
     def _seed_chart_of_accounts(self):

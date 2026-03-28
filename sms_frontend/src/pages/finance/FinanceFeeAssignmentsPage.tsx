@@ -56,6 +56,8 @@ export default function FinanceFeeAssignmentsPage() {
   const [termFilter, setTermFilter] = useState('all')
   const [terms, setTerms] = useState<{ id: number; name: string }[]>([])
   const [page, setPage] = useState(1)
+  const [flash, setFlash] = useState<string | null>(null)
+  const pageSize = 8
 
   useEffect(() => {
     if (academicContext) {
