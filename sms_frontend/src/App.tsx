@@ -240,6 +240,8 @@ const PlatformFeatureFlagsPage = lazy(() => import('./pages/platform/PlatformFea
 const PlatformNotificationsPage = lazy(() => import('./pages/platform/PlatformNotificationsPage'))
 const PlatformApiIntegrationsPage = lazy(() => import('./pages/platform/PlatformApiIntegrationsPage'))
 const PlatformRevenueAnalyticsPage = lazy(() => import('./pages/platform/PlatformRevenueAnalyticsPage'))
+const PlatformWorkflowMonitorPage = lazy(() => import('./pages/platform/PlatformWorkflowMonitorPage'))
+const PlatformGlobalReportsPage = lazy(() => import('./pages/platform/PlatformGlobalReportsPage'))
 const StoreLayout = lazy(() => import('./pages/store/StoreLayout'))
 const StoreDashboardPage = lazy(() => import('./pages/store/StoreDashboardPage'))
 const StoreItemsPage = lazy(() => import('./pages/store/StoreItemsPage'))
@@ -491,6 +493,8 @@ function App() {
           <Route path="notifications" element={<PlatformNotificationsPage />} />
           <Route path="api-integrations" element={<PlatformApiIntegrationsPage />} />
           <Route path="revenue-analytics" element={<PlatformRevenueAnalyticsPage />} />
+          <Route path="workflow-monitor" element={<PlatformWorkflowMonitorPage />} />
+          <Route path="global-reports" element={<PlatformGlobalReportsPage />} />
         </Route>
         <Route
           path="/modules"

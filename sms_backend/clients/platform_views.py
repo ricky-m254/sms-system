@@ -1267,6 +1267,176 @@ class PlatformAnalyticsViewSet(viewsets.ViewSet):
         latest_total = points[-1]["total_storage_gb"] if points else "0.00"
         return Response({"latest_total_storage_gb": latest_total, "points": points})
 
+    @action(detail=False, methods=["get"], url_path="workflow-monitor")
+    def workflow_monitor(self, request):
+        from school.models import (
+            StudentTransfer, AdmissionApplication, Invoice, Payment,
+            Student, Staff, CrossTenantTransfer,
+        )
+
+        tenants = Tenant.objects.filter(
+            status__in=[Tenant.STATUS_ACTIVE, Tenant.STATUS_TRIAL]
+        ).exclude(schema_name="public").order_by("name")
+
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+
+        totals = {
+            "total_students": 0,
+            "total_staff": 0,
+            "pending_transfers": 0,
+            "pending_admissions": 0,
+            "overdue_invoices": 0,
+            "recent_payments": 0,
+        }
+        tenant_rows = []
+
+        for tenant in tenants:
+            try:
+                with schema_context(tenant.schema_name):
+                    student_count   = Student.objects.filter(is_active=True).count()
+                    staff_count     = Staff.objects.filter(is_active=True).count()
+                    pending_tx      = StudentTransfer.objects.filter(status="Pending").count()
+                    pending_adm     = AdmissionApplication.objects.filter(
+                        status__in=["Submitted", "Documents Received", "Interview Scheduled", "Assessed"]
+                    ).count()
+                    overdue_inv     = Invoice.objects.filter(status="OVERDUE").count()
+                    recent_pay      = Payment.objects.filter(payment_date__gte=thirty_days_ago).count()
+
+                totals["total_students"]    += student_count
+                totals["total_staff"]       += staff_count
+                totals["pending_transfers"] += pending_tx
+                totals["pending_admissions"]+= pending_adm
+                totals["overdue_invoices"]  += overdue_inv
+                totals["recent_payments"]   += recent_pay
+
+                tenant_rows.append({
+                    "tenant_id": tenant.id,
+                    "tenant_name": tenant.name,
+                    "status": tenant.status,
+                    "students": student_count,
+                    "staff": staff_count,
+                    "pending_transfers": pending_tx,
+                    "pending_admissions": pending_adm,
+                    "overdue_invoices": overdue_inv,
+                    "recent_payments": recent_pay,
+                })
+            except Exception as exc:
+                logger.warning("workflow_monitor: schema %s error: %s", tenant.schema_name, exc)
+                tenant_rows.append({
+                    "tenant_id": tenant.id,
+                    "tenant_name": tenant.name,
+                    "status": tenant.status,
+                    "error": str(exc),
+                })
+
+        cross_pending = 0
+        cross_approved = 0
+        cross_completed = 0
+        for tenant in tenants:
+            try:
+                with schema_context(tenant.schema_name):
+                    cross_pending   += CrossTenantTransfer.objects.filter(
+                        from_tenant_id=tenant.schema_name, status="pending"
+                    ).count()
+                    cross_approved  += CrossTenantTransfer.objects.filter(
+                        from_tenant_id=tenant.schema_name, status="approved_from"
+                    ).count()
+                    cross_completed += CrossTenantTransfer.objects.filter(
+                        from_tenant_id=tenant.schema_name,
+                        status="completed",
+                        updated_at__gte=thirty_days_ago,
+                    ).count()
+            except Exception:
+                pass
+
+        cross_tenant = {
+            "pending": cross_pending,
+            "approved_from_source": cross_approved,
+            "completed_30d": cross_completed,
+        }
+
+        return Response({
+            "totals": totals,
+            "cross_tenant_transfers": cross_tenant,
+            "tenants": tenant_rows,
+        })
+
+    @action(detail=False, methods=["get"], url_path="global-reports")
+    def global_reports(self, request):
+        from school.models import Student, Staff, Invoice, Payment
+        from django.db.models import Sum as _Sum
+
+        tenants = Tenant.objects.filter(
+            status__in=[Tenant.STATUS_ACTIVE, Tenant.STATUS_TRIAL]
+        ).exclude(schema_name="public").order_by("name")
+
+        total_students = 0
+        total_staff    = 0
+        total_invoiced = Decimal("0.00")
+        total_paid     = Decimal("0.00")
+        total_overdue  = Decimal("0.00")
+        by_tenant      = []
+
+        for tenant in tenants:
+            try:
+                with schema_context(tenant.schema_name):
+                    students = Student.objects.filter(is_active=True).count()
+                    staff    = Staff.objects.filter(is_active=True).count()
+                    invoiced = Invoice.objects.aggregate(t=_Sum("total_amount"))["t"] or Decimal("0.00")
+                    paid     = Payment.objects.aggregate(t=_Sum("amount"))["t"] or Decimal("0.00")
+                    overdue  = (
+                        Invoice.objects.filter(status="OVERDUE")
+                        .aggregate(t=_Sum("total_amount"))["t"] or Decimal("0.00")
+                    )
+
+                total_students += students
+                total_staff    += staff
+                total_invoiced += invoiced
+                total_paid     += paid
+                total_overdue  += overdue
+
+                collection_rate = (
+                    (paid / invoiced * Decimal("100")).quantize(Decimal("0.01"))
+                    if invoiced > 0 else Decimal("0.00")
+                )
+
+                by_tenant.append({
+                    "tenant_id": tenant.id,
+                    "tenant_name": tenant.name,
+                    "status": tenant.status,
+                    "students": students,
+                    "staff": staff,
+                    "invoiced": str(invoiced.quantize(Decimal("0.01"))),
+                    "paid": str(paid.quantize(Decimal("0.01"))),
+                    "overdue": str(overdue.quantize(Decimal("0.01"))),
+                    "collection_rate_percent": str(collection_rate),
+                })
+            except Exception as exc:
+                logger.warning("global_reports: schema %s error: %s", tenant.schema_name, exc)
+                by_tenant.append({
+                    "tenant_id": tenant.id,
+                    "tenant_name": tenant.name,
+                    "status": tenant.status,
+                    "error": str(exc),
+                })
+
+        overall_rate = (
+            (total_paid / total_invoiced * Decimal("100")).quantize(Decimal("0.01"))
+            if total_invoiced > 0 else Decimal("0.00")
+        )
+
+        return Response({
+            "summary": {
+                "total_students": total_students,
+                "total_staff": total_staff,
+                "total_invoiced": str(total_invoiced.quantize(Decimal("0.01"))),
+                "total_paid": str(total_paid.quantize(Decimal("0.01"))),
+                "total_overdue": str(total_overdue.quantize(Decimal("0.01"))),
+                "overall_collection_rate_percent": str(overall_rate),
+            },
+            "by_tenant": by_tenant,
+        })
+
 
 class PlatformSupportTicketViewSet(viewsets.ModelViewSet):
     queryset = SupportTicket.objects.select_related("tenant", "assigned_to").order_by("-created_at")

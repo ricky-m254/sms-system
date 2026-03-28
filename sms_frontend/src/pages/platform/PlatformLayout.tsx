@@ -5,7 +5,10 @@ import { useAuthStore } from '../../store/auth'
 const navItems = [
   { to: '/platform', label: 'Overview' },
   { to: '/platform/tenants', label: 'Tenants' },
+  { to: '/platform/workflow-monitor', label: 'Workflow Monitor' },
+  { to: '/platform/global-reports', label: 'Global Reports' },
   { to: '/platform/billing', label: 'Subscription & Billing' },
+  { to: '/platform/revenue-analytics', label: 'Revenue Analytics' },
   { to: '/platform/support', label: 'Support' },
   { to: '/platform/impersonation', label: 'Impersonation' },
   { to: '/platform/monitoring', label: 'Monitoring' },
@@ -19,7 +22,6 @@ const navItems = [
   { to: '/platform/feature-flags', label: 'Feature Flags' },
   { to: '/platform/notifications', label: 'Notifications' },
   { to: '/platform/api-integrations', label: 'API & Integrations' },
-  { to: '/platform/revenue-analytics', label: 'Revenue Analytics' },
 ]
 
 export default function PlatformLayout() {
