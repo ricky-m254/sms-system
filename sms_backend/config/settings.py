@@ -1,6 +1,14 @@
 import os
+import warnings
 from datetime import timedelta
 from pathlib import Path
+
+# Suppress harmless pkg_resources deprecation warning from simplejwt
+warnings.filterwarnings(
+    'ignore',
+    message='pkg_resources is deprecated as an API',
+    category=UserWarning,
+)
 
 from corsheaders.defaults import default_headers
 from django.core.exceptions import ImproperlyConfigured

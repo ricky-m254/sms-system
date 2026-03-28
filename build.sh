@@ -70,10 +70,7 @@ except Exception as exc:
     traceback.print_exc()
 PYEOF
 
-echo "==> [build] Seeding modules for all tenants (idempotent)..."
-python manage.py seed_modules --all-tenants 2>&1 || true
-
-echo "==> [build] Seeding demo school (idempotent — safe to re-run)..."
+echo "==> [build] Seeding demo school tenant (idempotent — safe to re-run)..."
 python manage.py seed_demo \
   --schema_name demo_school \
   --name "Demo School" \
@@ -82,7 +79,10 @@ python manage.py seed_demo \
   --admin_pass admin123 \
   --admin_email admin@demo.school 2>&1 || true
 
-echo "==> [build] Seeding full school data for demo_school (students, teachers, parents, finance, library)..."
+echo "==> [build] Seeding modules + activating TenantModules for all tenants (runs AFTER tenant exists)..."
+python manage.py seed_modules --all-tenants 2>&1 || true
+
+echo "==> [build] Seeding full school data for demo_school (students, teachers, HR, finance, Chart of Accounts, library)..."
 python manage.py seed_kenya_school --schema_name demo_school 2>&1 || true
 
 echo "==> [build] Creating portal login accounts for demo_school students and parents..."

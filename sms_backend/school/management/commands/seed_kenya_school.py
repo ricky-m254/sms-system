@@ -24,7 +24,7 @@ from school.models import (
     Department, Subject,
     GradingScheme, GradeBand,
     Assessment, AssessmentGrade, TermResult, ReportCard,
-    VoteHead, Budget,
+    VoteHead, Budget, ChartOfAccount, Module, TenantModule,
 )
 from hr.models import Staff
 from communication.models import Message
@@ -230,6 +230,18 @@ class Command(BaseCommand):
 
         self.stdout.write("  Seeding visitor log…")
         self._seed_visitors()
+
+        self.stdout.write("  Seeding Chart of Accounts (IPSAS-aligned)…")
+        self._seed_chart_of_accounts()
+
+        self.stdout.write("  Seeding HR Employee records for teaching + non-teaching staff…")
+        self._seed_hr_employees()
+
+        self.stdout.write("  Seeding Staff Management member records…")
+        self._seed_staff_mgmt_members()
+
+        self.stdout.write("  Activating all modules for this tenant (TenantModule)…")
+        self._seed_tenant_modules()
 
     # ── Gradebook + Report Cards ──────────────────────────────────────────────
     def _seed_gradebook_and_reports(self, year, terms, classes):
@@ -1807,3 +1819,244 @@ class Command(BaseCommand):
                 pass
 
         self.stdout.write(f'    → Visitors: {Visitor.objects.count()} visitor entries seeded')
+
+    # ── Chart of Accounts ─────────────────────────────────────────────────────
+    def _seed_chart_of_accounts(self):
+        ACCOUNTS = [
+            ('1001', 'Cash in Hand',                     'ASSET'),
+            ('1002', 'M-Pesa Float Account',             'ASSET'),
+            ('1003', 'Bank Account — KCB',               'ASSET'),
+            ('1004', 'Bank Account — Equity',            'ASSET'),
+            ('1010', 'Student Fee Receivables',          'ASSET'),
+            ('1020', 'Prepaid Expenses',                 'ASSET'),
+            ('1030', 'Stationery & Supplies Inventory',  'ASSET'),
+            ('1040', 'Library Books & Resources',        'ASSET'),
+            ('1050', 'Furniture and Fixtures',           'ASSET'),
+            ('1060', 'Computers & ICT Equipment',        'ASSET'),
+            ('1070', 'School Vehicles',                  'ASSET'),
+            ('1080', 'Land and Buildings',               'ASSET'),
+            ('2001', 'Accounts Payable',                 'LIABILITY'),
+            ('2002', 'Fees Received in Advance',         'LIABILITY'),
+            ('2003', 'Accrued Staff Salaries',           'LIABILITY'),
+            ('2010', 'NHIF/NSSF Payable',               'LIABILITY'),
+            ('2020', 'Tax Withholding Payable',          'LIABILITY'),
+            ('3001', 'School Development Fund',          'EQUITY'),
+            ('3002', 'Retained Surplus',                 'EQUITY'),
+            ('3003', 'General Reserve',                  'EQUITY'),
+            ('4001', 'Tuition Fees Revenue',             'REVENUE'),
+            ('4002', 'Boarding Fees Revenue',            'REVENUE'),
+            ('4003', 'Activity Fees Revenue',            'REVENUE'),
+            ('4004', 'Cafeteria / Lunch Revenue',        'REVENUE'),
+            ('4005', 'ICT Levy Revenue',                 'REVENUE'),
+            ('4006', 'Exam Fees Revenue',                'REVENUE'),
+            ('4007', 'Transport Fees Revenue',           'REVENUE'),
+            ('4010', 'Donations and Grants',             'REVENUE'),
+            ('4020', 'Miscellaneous Income',             'REVENUE'),
+            ('5001', 'Teaching Staff Salaries',          'EXPENSE'),
+            ('5002', 'Non-Teaching Staff Salaries',      'EXPENSE'),
+            ('5003', 'NHIF Employer Contribution',       'EXPENSE'),
+            ('5004', 'NSSF Employer Contribution',       'EXPENSE'),
+            ('5010', 'Electricity and Water',            'EXPENSE'),
+            ('5011', 'Telephone and Internet',           'EXPENSE'),
+            ('5012', 'Fuel and Lubricants',              'EXPENSE'),
+            ('5020', 'Teaching Materials',               'EXPENSE'),
+            ('5021', 'Laboratory Supplies',              'EXPENSE'),
+            ('5022', 'Library Acquisitions',             'EXPENSE'),
+            ('5030', 'Repairs and Maintenance',          'EXPENSE'),
+            ('5040', 'Security Services',                'EXPENSE'),
+            ('5050', 'Catering / Meals',                 'EXPENSE'),
+            ('5060', 'Sports & Extra-curricular',        'EXPENSE'),
+            ('5070', 'Advertising and Printing',         'EXPENSE'),
+            ('5080', 'Bank Charges',                     'EXPENSE'),
+            ('5090', 'Depreciation Expense',             'EXPENSE'),
+            ('5099', 'Miscellaneous Expenses',           'EXPENSE'),
+        ]
+        created = 0
+        for code, name, account_type in ACCOUNTS:
+            _, was_created = ChartOfAccount.objects.get_or_create(
+                code=code,
+                defaults={'name': name, 'account_type': account_type, 'is_active': True},
+            )
+            if was_created:
+                created += 1
+        self.stdout.write(
+            f'    → Chart of Accounts: {created} new accounts added '
+            f'(total: {ChartOfAccount.objects.count()})'
+        )
+
+    # ── HR Employees ──────────────────────────────────────────────────────────
+    def _seed_hr_employees(self):
+        try:
+            from hr.models import Employee
+        except ImportError:
+            self.stdout.write(self.style.WARNING('    → hr.models.Employee not found — skipped'))
+            return
+
+        # Employee.department FK points to school.models.Department
+        dept = Department.objects.filter(is_active=True).first()
+
+        MALE_FIRST = {
+            'Samuel', 'David', 'Peter', 'John', 'James', 'George',
+            'Joseph', 'Charles', 'Moses', 'Simon', 'Francis', 'James',
+            'Michael', 'Daniel', 'Patrick', 'Emmanuel', 'Brian', 'Kevin',
+            'Collins', 'Victor', 'Eric', 'Mark', 'Andrew', 'Timothy',
+        }
+
+        created = 0
+        # Teaching staff
+        for i, (first, last, subject, phone) in enumerate(TEACHER_DATA):
+            emp_id = f"TCH{str(i + 1).zfill(3)}"
+            gender = 'Male' if first in MALE_FIRST else 'Female'
+            _, was_created = Employee.objects.get_or_create(
+                employee_id=emp_id,
+                defaults={
+                    'first_name': first,
+                    'last_name': last,
+                    'date_of_birth': date(1985, (i % 12) + 1, 15),
+                    'gender': gender,
+                    'nationality': 'Kenyan',
+                    'national_id': f"3{str(20000000 + i).zfill(8)}",
+                    'marital_status': 'Married' if i % 2 == 0 else 'Single',
+                    'employment_type': 'Full-time',
+                    'status': 'Active',
+                    'join_date': date(2020, 1, 15),
+                    'notice_period_days': 30,
+                    'is_active': True,
+                    'department': dept,
+                },
+            )
+            if was_created:
+                created += 1
+
+        # Non-teaching staff
+        for i, (first, last, role, phone) in enumerate(NON_TEACHING_STAFF_DATA):
+            emp_id = f"NTS{str(i + 1).zfill(3)}"
+            gender = 'Male' if first in MALE_FIRST else 'Female'
+            _, was_created = Employee.objects.get_or_create(
+                employee_id=emp_id,
+                defaults={
+                    'first_name': first,
+                    'last_name': last,
+                    'date_of_birth': date(1982, (i % 12) + 1, 10),
+                    'gender': gender,
+                    'nationality': 'Kenyan',
+                    'national_id': f"2{str(30000000 + i).zfill(8)}",
+                    'marital_status': 'Married' if i % 3 != 0 else 'Single',
+                    'employment_type': 'Full-time',
+                    'status': 'Active',
+                    'join_date': date(2018, 3, 1),
+                    'notice_period_days': 30,
+                    'is_active': True,
+                    'department': dept,
+                },
+            )
+            if was_created:
+                created += 1
+
+        self.stdout.write(
+            f'    → HR Employees: {created} new records created '
+            f'(total: {Employee.objects.count()})'
+        )
+
+    # ── Staff Management Members ──────────────────────────────────────────────
+    def _seed_staff_mgmt_members(self):
+        try:
+            from staff_mgmt.models import StaffMember
+        except ImportError:
+            self.stdout.write(self.style.WARNING('    → staff_mgmt.models.StaffMember not found — skipped'))
+            return
+
+        MALE_FIRST = {
+            'Samuel', 'David', 'Peter', 'John', 'James', 'George',
+            'Joseph', 'Charles', 'Moses', 'Simon', 'Francis',
+            'Michael', 'Daniel', 'Patrick', 'Emmanuel', 'Brian', 'Kevin',
+            'Collins', 'Victor', 'Eric', 'Mark', 'Andrew', 'Timothy',
+        }
+        ADMIN_ROLES = {
+            'Principal', 'Deputy Principal', 'Senior Clerk', 'Bursar',
+            'Accounts Assistant', 'School Secretary',
+        }
+
+        created = 0
+        # Teaching staff
+        for i, (first, last, subject, phone) in enumerate(TEACHER_DATA):
+            staff_id = f"TCH{str(i + 1).zfill(3)}"
+            username = f"{first.lower()}.{last.lower()}"
+            user = User.objects.filter(username=username).first()
+            gender = 'Male' if first in MALE_FIRST else 'Female'
+            _, was_created = StaffMember.objects.get_or_create(
+                staff_id=staff_id,
+                defaults={
+                    'first_name': first,
+                    'last_name': last,
+                    'gender': gender,
+                    'nationality': 'Kenyan',
+                    'phone_primary': phone,
+                    'phone_alternate': '',
+                    'email_personal': '',
+                    'email_work': f"{username}@stmarysnairobi.ac.ke",
+                    'address_current': 'Nairobi, Kenya',
+                    'address_permanent': 'Nairobi, Kenya',
+                    'staff_type': 'Teaching',
+                    'employment_type': 'Full-time',
+                    'status': 'Active',
+                    'join_date': date(2020, 1, 15),
+                    'is_active': True,
+                    'user': user,
+                },
+            )
+            if was_created:
+                created += 1
+
+        # Non-teaching staff
+        for i, (first, last, role, phone) in enumerate(NON_TEACHING_STAFF_DATA):
+            staff_id = f"NTS{str(i + 1).zfill(3)}"
+            gender = 'Male' if first in MALE_FIRST else 'Female'
+            staff_type = 'Administrative' if role in ADMIN_ROLES else 'Support'
+            _, was_created = StaffMember.objects.get_or_create(
+                staff_id=staff_id,
+                defaults={
+                    'first_name': first,
+                    'last_name': last,
+                    'gender': gender,
+                    'nationality': 'Kenyan',
+                    'phone_primary': phone,
+                    'phone_alternate': '',
+                    'email_personal': '',
+                    'email_work': '',
+                    'address_current': 'Nairobi, Kenya',
+                    'address_permanent': 'Nairobi, Kenya',
+                    'staff_type': staff_type,
+                    'employment_type': 'Full-time',
+                    'status': 'Active',
+                    'join_date': date(2018, 3, 1),
+                    'is_active': True,
+                },
+            )
+            if was_created:
+                created += 1
+
+        self.stdout.write(
+            f'    → Staff Members: {created} new records created '
+            f'(total: {StaffMember.objects.count()})'
+        )
+
+    # ── TenantModule Activations ──────────────────────────────────────────────
+    def _seed_tenant_modules(self):
+        from school.management.commands.seed_modules import ALL_MODULES
+        created = 0
+        for key, name, sort_order in ALL_MODULES:
+            module, _ = Module.objects.get_or_create(
+                key=key,
+                defaults={'name': name, 'is_active': True},
+            )
+            _, was_created = TenantModule.objects.get_or_create(
+                module=module,
+                defaults={'is_enabled': True, 'sort_order': sort_order},
+            )
+            if was_created:
+                created += 1
+        self.stdout.write(
+            f'    → TenantModule: {created} new activations '
+            f'(total active: {TenantModule.objects.filter(is_enabled=True).count()})'
+        )
