@@ -72,3 +72,6 @@ DJANGO_DEBUG = "true"
 [userenv.production]
 DJANGO_DEBUG = "false"
 DJANGO_SECURE_SSL_REDIRECT = "false"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-67bd2f0e-8b5e-4442-a3c8-e29a31d0c1a2"
