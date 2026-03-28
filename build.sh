@@ -24,34 +24,14 @@ python manage.py migrate_schemas --shared --fake --noinput 2>&1 || true
 echo "==> [build] Applying any pending tenant-schema migrations..."
 python manage.py migrate_schemas --noinput 2>&1 || true
 
-echo "==> [build] Seeding modules for all tenants (idempotent)..."
-python manage.py seed_modules --all-tenants 2>&1 || true
-
-echo "==> [build] Seeding demo school (idempotent — safe to re-run)..."
-python manage.py seed_demo \
-  --schema_name demo_school \
-  --name "Demo School" \
-  --domain "demo.localhost" \
-  --admin_user admin \
-  --admin_pass admin123 \
-  --admin_email admin@demo.school 2>&1 || true
-
-echo "==> [build] Seeding full school data for demo_school (students, teachers, parents, finance, library)..."
-python manage.py seed_kenya_school --schema_name demo_school 2>&1 || true
-
-echo "==> [build] Creating portal login accounts for demo_school students and parents..."
-python manage.py seed_portal_accounts --schema_name demo_school 2>&1 || true
-
-echo "==> [build] Registering production domain..."
+echo "==> [build] Registering production domain (MUST run before seeding — seeding may time out)..."
 python manage.py shell << 'PYEOF'
 import os
 try:
     from django.db import connection
     from clients.models import Tenant, Domain
 
-    # Ensure the public tenant record exists — use raw SQL to bypass
-    # auto_create_schema (the 'public' PostgreSQL schema already exists)
-    # and to supply all NOT NULL columns that the model requires.
+    # Ensure the public tenant record exists
     with connection.cursor() as cursor:
         cursor.execute("""
             INSERT INTO clients_tenant
@@ -71,13 +51,17 @@ try:
 
     replit_domains = os.environ.get("REPLIT_DOMAINS", "")
     print(f"[domain] REPLIT_DOMAINS='{replit_domains}'")
-    for raw in replit_domains.split(","):
-        domain_name = raw.strip()
-        if not domain_name:
-            continue
+
+    # Register all REPLIT_DOMAINS + standard dev domains as public tenant
+    domains_to_register = [d.strip() for d in replit_domains.split(",") if d.strip()]
+    for dev_domain in ["localhost", "127.0.0.1"]:
+        if dev_domain not in domains_to_register:
+            domains_to_register.append(dev_domain)
+
+    for domain_name in domains_to_register:
         obj, created = Domain.objects.get_or_create(
             domain=domain_name,
-            defaults={"tenant": public_tenant, "is_primary": True},
+            defaults={"tenant": public_tenant, "is_primary": False},
         )
         print(f"[domain] {'Registered' if created else 'Already registered'}: {domain_name}")
 except Exception as exc:
@@ -85,6 +69,24 @@ except Exception as exc:
     print(f"[domain] WARNING: {exc}")
     traceback.print_exc()
 PYEOF
+
+echo "==> [build] Seeding modules for all tenants (idempotent)..."
+python manage.py seed_modules --all-tenants 2>&1 || true
+
+echo "==> [build] Seeding demo school (idempotent — safe to re-run)..."
+python manage.py seed_demo \
+  --schema_name demo_school \
+  --name "Demo School" \
+  --domain "demo.localhost" \
+  --admin_user admin \
+  --admin_pass admin123 \
+  --admin_email admin@demo.school 2>&1 || true
+
+echo "==> [build] Seeding full school data for demo_school (students, teachers, parents, finance, library)..."
+python manage.py seed_kenya_school --schema_name demo_school 2>&1 || true
+
+echo "==> [build] Creating portal login accounts for demo_school students and parents..."
+python manage.py seed_portal_accounts --schema_name demo_school 2>&1 || true
 
 echo "==> [build] Ensuring platform super-admin user exists..."
 python manage.py shell << 'PYEOF'

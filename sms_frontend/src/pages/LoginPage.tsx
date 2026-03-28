@@ -205,12 +205,15 @@ export default function LoginPage() {
       // Zustand-store interceptor which may read stale state on first render.
       const tenantHeaders = tid ? { 'X-Tenant-ID': tid } : {}
 
+      console.log('[LOGIN] attempt', { url: `${apiClient.defaults.baseURL}/auth/login/`, username: username.trim(), tenantId: tid, headers: tenantHeaders })
+
       // 1. Login — response now includes role, available_roles, redirect_to, tenant_id
       const loginRes = await apiClient.post<LoginResponse>(
         '/auth/login/',
         { username: username.trim(), password },
         { headers: tenantHeaders },
       )
+      console.log('[LOGIN] success', { role: loginRes.data.role, tenant_id: loginRes.data.tenant_id })
       setTokens(loginRes.data.access, loginRes.data.refresh)
       if (loginRes.data.role) setRole(loginRes.data.role)
       const resolvedTenantId = loginRes.data.tenant_id || tid
@@ -255,6 +258,7 @@ export default function LoginPage() {
       navigate(resolveRedirect(routing.data, loginRes.data.redirect_to))
     } catch (err) {
       const errResp = (err as { response?: { data?: LoginError; status?: number } })?.response
+      console.error('[LOGIN] failed', { status: errResp?.status, data: errResp?.data, noResponse: !errResp })
       const msg = errResp?.data?.detail
       if (msg) {
         setError(msg)

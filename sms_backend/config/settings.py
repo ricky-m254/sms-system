@@ -273,6 +273,14 @@ TENANT_DOMAIN_MODEL = "clients.Domain"
 PUBLIC_SCHEMA_NAME = "public"
 PUBLIC_SCHEMA_URLCONF = "config.public_urls"
 
+# Fall back to public schema (and PUBLIC_SCHEMA_URLCONF) when the request
+# host is not registered as a tenant domain.  This allows the deployed
+# .replit.app URL (which is always registered as the public tenant) to
+# work even if the build script's domain-registration step didn't run.
+# Our TenantContextGuardMiddleware + _tenant_aware_login_view then handle
+# tenant switching via the X-Tenant-ID header.
+SHOW_PUBLIC_IF_NO_TENANT_FOUND = True
+
 TENANT_HEADER_NAME = _env_str("TENANT_HEADER_NAME", default="X-Tenant-ID")
 TENANT_HEADERS = [TENANT_HEADER_NAME]
 TENANT_REQUIRE_HEADER = _env_bool("TENANT_REQUIRE_HEADER", default=False)
