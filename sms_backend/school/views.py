@@ -413,7 +413,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         student = self.get_object()
         from django.contrib.auth.models import User as DjangoUser
         username = student.admission_number
-        password = (request.data.get('password') or 'student123')
+        password = (request.data.get('password') or username)
 
         student_role = Role.objects.filter(name='STUDENT').first()
         user, created = DjangoUser.objects.get_or_create(
@@ -6595,7 +6595,7 @@ class ModuleSeedView(APIView):
                 },
             )
             if created:
-                user.set_password('student123')
+                user.set_password(adm)
                 user.save()
                 student_count += 1
             if student_role:

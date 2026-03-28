@@ -41,7 +41,7 @@ const MODES: { key: LoginMode; label: string; icon: typeof Shield; hint: string;
     key: 'student',
     label: 'Student',
     icon: BookOpen,
-    hint: 'Use your admission number as your username (e.g. STM2025001) and the password given by your school.',
+    hint: 'Enter your admission number as both your username and initial password (e.g. STM2025001). Change your password after first login.',
     userLabel: 'Admission Number',
     userPlaceholder: 'STM2025001',
   },
