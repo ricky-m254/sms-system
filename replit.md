@@ -2,6 +2,13 @@
 
 A multi-tenant school management system built by Rynatyspace Technologies. Django 4.2 backend, React/Vite frontend, PostgreSQL schema-per-tenant, IPSAS-compliant finance. 28 modules.
 
+## Recent Fixes
+
+### Parent/Student Login Race Condition Fix (2026-03-28)
+- **Root cause**: `setTokens()` was called immediately after the login POST, making `isTenantAuth=true`. At the next `await` yield point (routing/me calls), React re-rendered the `/login` route as `<Navigate to="/dashboard" replace />`, sending parents/students to the staff dashboard BEFORE the final `navigate('/modules/parent-portal/dashboard')` fired.
+- **Fix in `LoginPage.tsx` `handleSubmit`**: Deferred ALL Zustand store writes (tokens, role, tenant, permissions, assignedModules, availableRoles) until AFTER all API calls (routing + me) complete. Added explicit `Authorization: Bearer ${token}` + `X-Tenant-ID` headers to routing/me calls so they work without the store. Then committed all state + called `navigate()` in one synchronous block — React 18 automatic batching ensures a single render at the destination URL.
+- **Effect**: Parents land on `/modules/parent-portal/dashboard`, students on `/student-portal` — no flash through staff dashboard, no race condition.
+
 ## Recently Added Modules
 
 ### Student Portal & Parent Portal — Full Fix (2026-03)

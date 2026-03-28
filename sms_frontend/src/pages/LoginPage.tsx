@@ -197,65 +197,89 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       const tid = tenantId.trim() || null
-      setTenant(tid)
-      setAuthMode('tenant')
-      setUsername(username.trim())
 
-      // Explicit tenant header on every call — do not rely solely on the
-      // Zustand-store interceptor which may read stale state on first render.
+      // Explicit tenant header on every call.
       const tenantHeaders = tid ? { 'X-Tenant-ID': tid } : {}
 
       console.log('[LOGIN] attempt', { url: `${apiClient.defaults.baseURL}/auth/login/`, username: username.trim(), tenantId: tid, headers: tenantHeaders })
 
-      // 1. Login — response now includes role, available_roles, redirect_to, tenant_id
+      // 1. Login — response includes role, available_roles, redirect_to, tenant_id
       const loginRes = await apiClient.post<LoginResponse>(
         '/auth/login/',
         { username: username.trim(), password },
         { headers: tenantHeaders },
       )
       console.log('[LOGIN] success', { role: loginRes.data.role, tenant_id: loginRes.data.tenant_id })
-      setTokens(loginRes.data.access, loginRes.data.refresh)
-      if (loginRes.data.role) setRole(loginRes.data.role)
-      const resolvedTenantId = loginRes.data.tenant_id || tid
-      if (resolvedTenantId) setTenant(resolvedTenantId)
 
-      const authHeaders = resolvedTenantId ? { 'X-Tenant-ID': resolvedTenantId } : {}
+      const resolvedTenantId = loginRes.data.tenant_id || tid
+
+      // Explicit auth headers for ALL subsequent calls — DO NOT call setTokens() yet.
+      // If we write tokens to the store here, React re-renders the /login route with
+      // isTenantAuth=true, which fires <Navigate to="/dashboard" replace /> BEFORE our
+      // final navigate() call, sending portal users (PARENT/STUDENT) to the staff
+      // dashboard. By deferring store writes until after all awaits, we ensure the
+      // first render with isTenantAuth=true happens at the correct destination URL.
+      const authHeaders: Record<string, string> = {
+        Authorization: `Bearer ${loginRes.data.access}`,
+        ...(resolvedTenantId ? { 'X-Tenant-ID': resolvedTenantId } : {}),
+      }
 
       // 2. Fetch routing (permissions + module list)
       const routing = await apiClient.get<RoutingResponse>('/dashboard/routing/', { headers: authHeaders })
-      setPermissions(routing.data.permissions ?? [])
 
       // 3. Fetch full profile (authoritative role + module keys)
+      let meRole: string | null = loginRes.data.role ?? null
+      let meModules: string[] = []
       try {
         const me = await apiClient.get<{ role: string; assigned_module_keys: string[] }>('/auth/me/', { headers: authHeaders })
-        setAssignedModules(me.data.assigned_module_keys ?? [])
-        if (me.data.role) setRole(me.data.role)
+        meModules = me.data.assigned_module_keys ?? []
+        if (me.data.role) meRole = me.data.role
       } catch { /* fall back to login role */ }
 
       // 4. Available roles — prefer routing (freshest), fall back to login response
       const available: string[] = (
         (routing.data.available_roles ?? loginRes.data.available_roles ?? []).filter(Boolean) as string[]
       )
-      setAvailableRoles(available)
 
       // 5. Persist minimal user context in localStorage (audit / quick reads)
       try {
         localStorage.setItem('sms_user', JSON.stringify({
           username: username.trim(),
           role: routing.data.role ?? loginRes.data.role,
-          tenant_id: loginRes.data.tenant_id ?? tenantId.trim(),
+          tenant_id: resolvedTenantId ?? tenantId.trim(),
           permissions: routing.data.permissions ?? [],
         }))
       } catch { /* ignore */ }
 
-      // 6. Multi-role: show selector; single role: redirect immediately
+      // 6. Multi-role: show selector — commit store writes first so modal has context
       if (available.length > 1) {
+        setTokens(loginRes.data.access, loginRes.data.refresh)
+        setAuthMode('tenant')
+        setUsername(username.trim())
+        if (meRole) setRole(meRole)
+        if (resolvedTenantId) setTenant(resolvedTenantId)
+        setPermissions(routing.data.permissions ?? [])
+        setAssignedModules(meModules)
+        setAvailableRoles(available)
         setPendingRoles(available)
         setShowRoleModal(true)
         return
       }
 
-      navigate(resolveRedirect(routing.data, loginRes.data.redirect_to))
+      // 7. Single role — commit ALL store writes + navigate in one synchronous block.
+      // React 18 automatic batching ensures these and the router state update from
+      // navigate() all flush together in a single render at the destination URL,
+      // so the /login guard never sees isTenantAuth=true while still at /login.
+      const destination = resolveRedirect(routing.data, loginRes.data.redirect_to)
+      setTokens(loginRes.data.access, loginRes.data.refresh)
+      setAuthMode('tenant')
+      setUsername(username.trim())
+      if (meRole) setRole(meRole)
+      if (resolvedTenantId) setTenant(resolvedTenantId)
+      setPermissions(routing.data.permissions ?? [])
+      setAssignedModules(meModules)
+      setAvailableRoles(available)
+      navigate(destination)
     } catch (err) {
       const errResp = (err as { response?: { data?: LoginError; status?: number } })?.response
       console.error('[LOGIN] failed', { status: errResp?.status, data: errResp?.data, noResponse: !errResp })
