@@ -29,6 +29,16 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
 - `SettingsSchoolProfilePage.tsx` updated with Timezone and System Language dropdowns
 - Sidebar: "Admission Numbers" added to School Setup; "Import & Export" added under new Data Management group; "Finance" wired to dedicated SettingsFinancePage
 
+### Auto-Role Login System
+- **JWT enrichment**: `get_token()` now embeds `role` and `tenant_id` as custom claims in every access token
+- **Login response enriched**: `POST /auth/login/` returns `{access, refresh, role, available_roles, redirect_to, tenant_id}` alongside tokens
+- **Audit trail**: Every successful login writes a `LOGIN` record to `AuditLog` (action, user, role, tenant_id, redirect_to, timestamp)
+- **New endpoint**: `POST /auth/role-switch/` validates requested role against user's assigned roles, returns routing info + logs `ROLE_SWITCH` to AuditLog
+- **Dashboard routing enriched**: `GET /dashboard/routing/` now returns `available_roles` and `redirect_path` fields in every response
+- **Multi-role frontend**: `LoginPage.tsx` shows a glassmorphism `RoleSelectModal` when `available_roles.length > 1`; role selection calls `/auth/role-switch/` then navigates
+- **Auth store**: `availableRoles: string[]` added to Zustand store (persisted in `localStorage` via `sms_available_roles`)
+- **Role → path table**: STUDENT→`/student-portal`, PARENT→`/modules/parent-portal/dashboard`, all staff/admin→`/dashboard`
+
 ## Architecture
 
 - **Backend**: Django 4.2 + Django REST Framework, running on `localhost:8000` (dev) / port 3000 (production)

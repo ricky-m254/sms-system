@@ -10,6 +10,8 @@ type AuthState = {
   permissions: string[]
   /** Module keys this user is allowed to access, sourced from /api/auth/me/ */
   assignedModules: string[]
+  /** All roles available to this user (for multi-role accounts) */
+  availableRoles: string[]
   isAuthenticated: boolean
   setTokens: (accessToken: string, refreshToken: string) => void
   setTenant: (tenantId: string | null) => void
@@ -18,6 +20,7 @@ type AuthState = {
   setRole: (role: string | null) => void
   setPermissions: (permissions: string[]) => void
   setAssignedModules: (modules: string[]) => void
+  setAvailableRoles: (roles: string[]) => void
   logout: () => void
 }
 
@@ -29,6 +32,7 @@ const USERNAME_KEY          = 'sms_username'
 const ROLE_KEY              = 'sms_role'
 const PERMISSIONS_KEY       = 'sms_permissions'
 const ASSIGNED_MODULES_KEY  = 'sms_assigned_modules'
+const AVAILABLE_ROLES_KEY   = 'sms_available_roles'
 
 const readStorage = (key: string) => {
   try {
@@ -69,6 +73,7 @@ export const useAuthStore = create<AuthState>((set) => {
 
   const permissions      = parseJsonArray(readStorage(PERMISSIONS_KEY))
   const assignedModules  = parseJsonArray(readStorage(ASSIGNED_MODULES_KEY))
+  const availableRoles   = parseJsonArray(readStorage(AVAILABLE_ROLES_KEY))
 
   return {
     accessToken,
@@ -79,6 +84,7 @@ export const useAuthStore = create<AuthState>((set) => {
     role,
     permissions,
     assignedModules,
+    availableRoles,
     isAuthenticated: Boolean(accessToken),
     setTokens: (nextAccess, nextRefresh) => {
       writeStorage(ACCESS_TOKEN_KEY, nextAccess)
@@ -113,6 +119,10 @@ export const useAuthStore = create<AuthState>((set) => {
       writeStorage(ASSIGNED_MODULES_KEY, JSON.stringify(nextModules))
       set({ assignedModules: nextModules })
     },
+    setAvailableRoles: (nextRoles) => {
+      writeStorage(AVAILABLE_ROLES_KEY, JSON.stringify(nextRoles))
+      set({ availableRoles: nextRoles })
+    },
     logout: () => {
       writeStorage(ACCESS_TOKEN_KEY, null)
       writeStorage(REFRESH_TOKEN_KEY, null)
@@ -122,6 +132,7 @@ export const useAuthStore = create<AuthState>((set) => {
       writeStorage(ROLE_KEY, null)
       writeStorage(PERMISSIONS_KEY, null)
       writeStorage(ASSIGNED_MODULES_KEY, null)
+      writeStorage(AVAILABLE_ROLES_KEY, null)
       set({
         accessToken: null,
         refreshToken: null,
@@ -131,6 +142,7 @@ export const useAuthStore = create<AuthState>((set) => {
         role: null,
         permissions: [],
         assignedModules: [],
+        availableRoles: [],
         isAuthenticated: false,
       })
     },

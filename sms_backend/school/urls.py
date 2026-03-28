@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import SmartCampusTokenObtainPairView
+from .views import SmartCampusTokenObtainPairView, RoleSwitchView
 from .views import (
     StudentSearchForUserCreateView, StudentsByClassForUserCreateView,
     BulkCreateStudentUsersView, VoteHeadBudgetReportView,
@@ -168,6 +168,7 @@ urlpatterns = [
     path('auth/login/', SmartCampusTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', CurrentUserView.as_view(), name='current_user'),
+    path('auth/role-switch/', RoleSwitchView.as_view(), name='role_switch'),
 
     # 2. Summary Endpoints (must come before router to avoid /students/{pk} collisions)
     path('finance/summary/', FinancialSummaryView.as_view(), name='financial_summary'),

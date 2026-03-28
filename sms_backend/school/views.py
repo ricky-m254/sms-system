@@ -4293,6 +4293,25 @@ class SchoolDashboardView(APIView):
             "enrollments_this_year": Enrollment.objects.filter(is_active=True).count()
         })
 
+_ROLE_REDIRECT_PATHS = {
+    'STUDENT': '/student-portal',
+    'PARENT': '/modules/parent-portal/dashboard',
+    'TEACHER': '/dashboard',
+    'ACCOUNTANT': '/dashboard',
+    'FINANCE_STAFF': '/dashboard',
+    'OPERATIONS_STAFF': '/dashboard',
+    'ADMIN': '/dashboard',
+    'TENANT_SUPER_ADMIN': '/dashboard',
+}
+
+
+def _role_redirect_path(role_name):
+    """Return the frontend path a user should land on given their role."""
+    if not role_name:
+        return '/dashboard'
+    return _ROLE_REDIRECT_PATHS.get(role_name.upper(), '/dashboard')
+
+
 class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Custom JWT login serializer.
@@ -4300,7 +4319,63 @@ class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
       1. Normal Django username auth
       2. UserProfile.admission_number lookup  (students & parents with user accounts)
       3. Student.admission_number lookup      (students whose username == admission_number)
+
+    Enriches the response with: role, available_roles, redirect_to, tenant_id.
+    Writes a LOGIN AuditLog entry on every successful authentication.
+    Embeds role + tenant_id as custom JWT claims.
     """
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        try:
+            role = user.userprofile.role.name if (
+                hasattr(user, 'userprofile') and user.userprofile and user.userprofile.role
+            ) else None
+            token['role'] = role
+        except Exception:
+            token['role'] = None
+        try:
+            token['tenant_id'] = getattr(connection, 'schema_name', 'public')
+        except Exception:
+            token['tenant_id'] = 'public'
+        return token
+
+    def _enrich(self, data):
+        """Add routing + tenant metadata to the token response and create audit log."""
+        role_name = None
+        try:
+            if hasattr(self.user, 'userprofile') and self.user.userprofile and self.user.userprofile.role:
+                role_name = self.user.userprofile.role.name
+        except Exception:
+            pass
+
+        tenant_id = getattr(connection, 'schema_name', 'public')
+        redirect_to = _role_redirect_path(role_name)
+        available_roles = [role_name] if role_name else []
+
+        try:
+            from school.models import AuditLog as _AuditLog
+            _AuditLog.objects.create(
+                user=self.user,
+                action='LOGIN',
+                model_name='User',
+                object_id=str(self.user.id),
+                details=json.dumps({
+                    'role': role_name,
+                    'tenant_id': tenant_id,
+                    'redirect_to': redirect_to,
+                    'event': 'login',
+                }),
+            )
+        except Exception:
+            pass
+
+        data['role'] = role_name
+        data['available_roles'] = available_roles
+        data['redirect_to'] = redirect_to
+        data['tenant_id'] = tenant_id
+        return data
 
     def validate(self, attrs):
         username = attrs.get(self.username_field, '')
@@ -4308,7 +4383,8 @@ class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Stage 1: normal Django username auth
         try:
-            return super().validate(attrs)
+            data = super().validate(attrs)
+            return self._enrich(data)
         except Exception:
             pass
 
@@ -4331,14 +4407,16 @@ class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
             )
             if user is not None:
                 attrs[self.username_field] = profile.user.username
-                return super().validate(attrs)
+                data = super().validate(attrs)
+                return self._enrich(data)
 
         # Stage 3: Student.admission_number → username == admission_number
         try:
             student = Student.objects.get(admission_number=username, is_active=True)
             attrs[self.username_field] = student.admission_number
             try:
-                return super().validate(attrs)
+                data = super().validate(attrs)
+                return self._enrich(data)
             except Exception:
                 pass
         except Student.DoesNotExist:
@@ -4350,6 +4428,63 @@ class SmartCampusTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class SmartCampusTokenObtainPairView(_BaseTokenView):
     serializer_class = SmartCampusTokenObtainPairSerializer
+
+
+class RoleSwitchView(APIView):
+    """
+    POST /auth/role-switch/
+    Body: { "role": "TEACHER" }
+    Validates the requested role is available to the authenticated user,
+    then returns new routing info. Logs the role switch in AuditLog.
+    For multi-role users, this switches the active role within the session.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        requested_role = request.data.get('role', '').strip().upper()
+        if not requested_role:
+            return Response({'error': 'role is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        current_role = None
+        try:
+            if hasattr(user, 'userprofile') and user.userprofile and user.userprofile.role:
+                current_role = user.userprofile.role.name
+        except Exception:
+            pass
+
+        available_roles = [current_role] if current_role else []
+        if requested_role not in available_roles:
+            return Response(
+                {'error': f'Role "{requested_role}" is not available for this account.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        tenant_id = getattr(connection, 'schema_name', 'public')
+        redirect_to = _role_redirect_path(requested_role)
+
+        try:
+            from school.models import AuditLog as _AuditLog
+            _AuditLog.objects.create(
+                user=user,
+                action='ROLE_SWITCH',
+                model_name='User',
+                object_id=str(user.id),
+                details=json.dumps({
+                    'from_role': current_role,
+                    'to_role': requested_role,
+                    'tenant_id': tenant_id,
+                }),
+            )
+        except Exception:
+            pass
+
+        return Response({
+            'role': requested_role,
+            'available_roles': available_roles,
+            'redirect_to': redirect_to,
+            'tenant_id': tenant_id,
+        })
 
 
 class DashboardRoutingView(APIView):
@@ -4368,22 +4503,26 @@ class DashboardRoutingView(APIView):
             return Response({
                 "user": request.user.username,
                 "role": role_name,
+                "available_roles": [role_name],
                 "permissions": ["parent-portal:access"],
                 "module_count": 1,
                 "modules": [{"key": "PARENTS", "name": "Parent Portal"}],
                 "target": "PARENT_PORTAL",
                 "target_module": "PARENTS",
+                "redirect_path": _role_redirect_path(role_name),
             })
 
         if role_name == 'STUDENT':
             return Response({
                 "user": request.user.username,
                 "role": role_name,
+                "available_roles": [role_name],
                 "permissions": ["student-portal:access"],
                 "module_count": 1,
                 "modules": [{"key": "STUDENT_PORTAL", "name": "Student Portal"}],
                 "target": "STUDENT_PORTAL",
                 "target_module": "STUDENT_PORTAL",
+                "redirect_path": _role_redirect_path(role_name),
             })
 
         if role_name in ['ADMIN', 'TENANT_SUPER_ADMIN']:
@@ -4409,11 +4548,13 @@ class DashboardRoutingView(APIView):
         return Response({
             "user": request.user.username,
             "role": role_name,
+            "available_roles": [role_name] if role_name else [],
             "permissions": self._build_permissions(role_name, modules),
             "module_count": module_count,
             "modules": modules,
             "target": target,
-            "target_module": target_module
+            "target_module": target_module,
+            "redirect_path": _role_redirect_path(role_name),
         })
 
     @staticmethod
