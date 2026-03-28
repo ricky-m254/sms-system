@@ -4,6 +4,40 @@ from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
+def _tenant_aware_login_view(request):
+    """
+    Login endpoint that works for BOTH public-schema requests and tenant requests.
+    When X-Tenant-ID header is present, delegates to the full SmartCampusTokenObtainPairView
+    (which handles student admission-number fallback, role enrichment, etc.).
+    Falls back to the standard JWT view for public-schema logins (platform admin, etc.).
+    """
+    from django.db import connection
+    from django_tenants.utils import get_public_schema_name
+    from clients.models import Tenant
+
+    header_name = getattr(settings, "TENANT_HEADER_NAME", "X-Tenant-ID")
+    tenant_id_header = (request.headers.get(header_name) or "").strip()
+
+    if tenant_id_header:
+        try:
+            tenant = Tenant.objects.get(schema_name=tenant_id_header)
+            connection.set_tenant(tenant)
+            # Import the smart view within tenant context so all models resolve correctly
+            from school.views import SmartCampusTokenObtainPairView
+            return SmartCampusTokenObtainPairView.as_view()(request)
+        except Tenant.DoesNotExist:
+            return JsonResponse(
+                {"detail": f"Unknown School ID: '{tenant_id_header}'."},
+                status=400,
+            )
+        except Exception as exc:
+            # Unexpected error — fall through to standard view
+            pass
+
+    # No tenant header or fallback: use standard JWT view (public schema users only)
+    return TokenObtainPairView.as_view()(request)
+
+
 def ping_view(request):
     """Public health check. Accessible from any origin before tenant isolation."""
     return JsonResponse({"status": "ok", "service": "sms_backend", "schema": "public"})
@@ -78,7 +112,7 @@ urlpatterns = [
     path("health", ping_view),
 
     # 2. Authentication (Login + Refresh)
-    path("api/auth/login/", TokenObtainPairView.as_view()),
+    path("api/auth/login/", _tenant_aware_login_view),
     path("api/auth/refresh/", TokenRefreshView.as_view()),
 
     # 3. Tenant Info (subdomain/header auto-detection for login page)
