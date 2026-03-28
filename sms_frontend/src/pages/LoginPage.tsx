@@ -196,26 +196,35 @@ export default function LoginPage() {
     setError(null)
     setIsLoading(true)
     try {
-      setTenant(tenantId.trim() || null)
+      const tid = tenantId.trim() || null
+      setTenant(tid)
       setAuthMode('tenant')
       setUsername(username.trim())
 
+      // Explicit tenant header on every call — do not rely solely on the
+      // Zustand-store interceptor which may read stale state on first render.
+      const tenantHeaders = tid ? { 'X-Tenant-ID': tid } : {}
+
       // 1. Login — response now includes role, available_roles, redirect_to, tenant_id
-      const loginRes = await apiClient.post<LoginResponse>('/auth/login/', {
-        username: username.trim(),
-        password,
-      })
+      const loginRes = await apiClient.post<LoginResponse>(
+        '/auth/login/',
+        { username: username.trim(), password },
+        { headers: tenantHeaders },
+      )
       setTokens(loginRes.data.access, loginRes.data.refresh)
       if (loginRes.data.role) setRole(loginRes.data.role)
-      if (loginRes.data.tenant_id) setTenant(loginRes.data.tenant_id || tenantId.trim() || null)
+      const resolvedTenantId = loginRes.data.tenant_id || tid
+      if (resolvedTenantId) setTenant(resolvedTenantId)
+
+      const authHeaders = resolvedTenantId ? { 'X-Tenant-ID': resolvedTenantId } : {}
 
       // 2. Fetch routing (permissions + module list)
-      const routing = await apiClient.get<RoutingResponse>('/dashboard/routing/')
+      const routing = await apiClient.get<RoutingResponse>('/dashboard/routing/', { headers: authHeaders })
       setPermissions(routing.data.permissions ?? [])
 
       // 3. Fetch full profile (authoritative role + module keys)
       try {
-        const me = await apiClient.get<{ role: string; assigned_module_keys: string[] }>('/auth/me/')
+        const me = await apiClient.get<{ role: string; assigned_module_keys: string[] }>('/auth/me/', { headers: authHeaders })
         setAssignedModules(me.data.assigned_module_keys ?? [])
         if (me.data.role) setRole(me.data.role)
       } catch { /* fall back to login role */ }
@@ -245,8 +254,17 @@ export default function LoginPage() {
 
       navigate(resolveRedirect(routing.data, loginRes.data.redirect_to))
     } catch (err) {
-      const msg = (err as { response?: { data?: LoginError } })?.response?.data?.detail
-      setError(msg ?? 'Invalid credentials. Please check your details.')
+      const errResp = (err as { response?: { data?: LoginError; status?: number } })?.response
+      const msg = errResp?.data?.detail
+      if (msg) {
+        setError(msg)
+      } else if (errResp?.status === 400) {
+        setError('Invalid School ID or request. Please check and try again.')
+      } else if (!errResp) {
+        setError('Cannot reach the server. Check your network connection and try again.')
+      } else {
+        setError('Invalid credentials. Please check your details.')
+      }
     } finally {
       setIsLoading(false)
     }
