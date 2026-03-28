@@ -115,6 +115,7 @@ const SettingsSecurityPage = lazy(() => import('./pages/settings/SettingsSecurit
 const SettingsSeedPage = lazy(() => import('./pages/settings/SettingsSeedPage'))
 const SettingsAdmissionPage = lazy(() => import('./pages/settings/SettingsAdmissionPage'))
 const SettingsImportExportPage = lazy(() => import('./pages/settings/SettingsImportExportPage'))
+const SettingsDomainPage = lazy(() => import('./pages/settings/SettingsDomainPage'))
 const SettingsFinancePage = lazy(() => import('./pages/settings/SettingsFinancePage'))
 const ParentsLayout = lazy(() => import('./pages/parents/ParentsLayout'))
 const ParentsSummaryPage = lazy(() => import('./pages/parents/ParentsSummaryPage'))
@@ -242,6 +243,7 @@ const PlatformApiIntegrationsPage = lazy(() => import('./pages/platform/Platform
 const PlatformRevenueAnalyticsPage = lazy(() => import('./pages/platform/PlatformRevenueAnalyticsPage'))
 const PlatformWorkflowMonitorPage = lazy(() => import('./pages/platform/PlatformWorkflowMonitorPage'))
 const PlatformGlobalReportsPage = lazy(() => import('./pages/platform/PlatformGlobalReportsPage'))
+const PlatformDomainRequestsPage = lazy(() => import('./pages/platform/PlatformDomainRequestsPage'))
 const StoreLayout = lazy(() => import('./pages/store/StoreLayout'))
 const StoreDashboardPage = lazy(() => import('./pages/store/StoreDashboardPage'))
 const StoreItemsPage = lazy(() => import('./pages/store/StoreItemsPage'))
@@ -495,6 +497,7 @@ function App() {
           <Route path="revenue-analytics" element={<PlatformRevenueAnalyticsPage />} />
           <Route path="workflow-monitor" element={<PlatformWorkflowMonitorPage />} />
           <Route path="global-reports" element={<PlatformGlobalReportsPage />} />
+          <Route path="domain-requests" element={<PlatformDomainRequestsPage />} />
         </Route>
         <Route
           path="/modules"
@@ -729,6 +732,7 @@ function App() {
           <Route path="transport" element={<SettingsTransportConfigPage />} />
           <Route path="hostel" element={<SettingsHostelConfigPage />} />
           <Route path="security" element={<SettingsSecurityPage />} />
+          <Route path="domain" element={<SettingsDomainPage />} />
           <Route path="seed-data" element={<SettingsSeedPage />} />
           <Route path="users" element={<SettingsUsersPage />} />
           <Route path="roles" element={<SettingsRolesPage />} />

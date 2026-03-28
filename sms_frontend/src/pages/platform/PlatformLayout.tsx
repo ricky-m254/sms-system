@@ -7,6 +7,7 @@ const navItems = [
   { to: '/platform/tenants', label: 'Tenants' },
   { to: '/platform/workflow-monitor', label: 'Workflow Monitor' },
   { to: '/platform/global-reports', label: 'Global Reports' },
+  { to: '/platform/domain-requests', label: 'Domain Requests' },
   { to: '/platform/billing', label: 'Subscription & Billing' },
   { to: '/platform/revenue-analytics', label: 'Revenue Analytics' },
   { to: '/platform/support', label: 'Support' },

@@ -208,6 +208,50 @@ class Domain(DomainMixin):
     pass
 
 
+class CustomDomainRequest(models.Model):
+    """
+    Tracks a school's self-service request to connect a custom domain.
+    Lives in the public schema alongside Tenant/Domain.
+    """
+    STATUS_PENDING = "PENDING"
+    STATUS_VERIFIED = "VERIFIED"
+    STATUS_ACTIVE = "ACTIVE"
+    STATUS_FAILED = "FAILED"
+    STATUS_REJECTED = "REJECTED"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending DNS verification"),
+        (STATUS_VERIFIED, "DNS verified — awaiting activation"),
+        (STATUS_ACTIVE, "Active"),
+        (STATUS_FAILED, "Verification failed"),
+        (STATUS_REJECTED, "Rejected by platform"),
+    ]
+
+    tenant = models.ForeignKey(
+        "clients.Tenant",
+        on_delete=models.CASCADE,
+        related_name="custom_domain_requests",
+    )
+    requested_domain = models.CharField(max_length=255)
+    verification_token = models.CharField(max_length=64, unique=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    verification_attempts = models.PositiveSmallIntegerField(default=0)
+    last_verification_attempt = models.DateTimeField(null=True, blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    activated_at = models.DateTimeField(null=True, blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True)
+    requested_by_username = models.CharField(max_length=150, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.tenant.schema_name} → {self.requested_domain} [{self.status}]"
+
+
 class SupportTicket(models.Model):
     CATEGORY_TECHNICAL = "TECHNICAL"
     CATEGORY_BILLING = "BILLING"

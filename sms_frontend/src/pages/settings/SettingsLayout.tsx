@@ -59,6 +59,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     items: [
       { key: 'users', label: 'User Management', route: '/settings/users' },
       { key: 'roles', label: 'Roles & Permissions', route: '/settings/roles' },
+      { key: 'domain', label: 'Custom Domain', route: '/settings/domain' },
     ],
   },
   {

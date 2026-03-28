@@ -27,6 +27,11 @@ from .rbac_views import (
     RbacUserOverrideListView,
     RbacUserOverrideDeleteView,
 )
+from .domain_views import (
+    SchoolDomainStatusView,
+    SchoolDomainRequestView,
+    SchoolDomainVerifyView,
+)
 from .views import (
     EnrollmentViewSet, ExpenseViewSet, FeeStructureViewSet, MessageViewSet, 
     StaffViewSet, StudentViewSet, InvoiceViewSet, PaymentViewSet, 
@@ -320,5 +325,10 @@ urlpatterns = [
     path('rbac/users/<int:user_id>/permissions/', RbacUserEffectivePermissionsView.as_view(), name='rbac_user_effective_permissions'),
     path('rbac/users/<int:user_id>/overrides/',   RbacUserOverrideListView.as_view(),         name='rbac_user_overrides'),
     path('rbac/users/<int:user_id>/overrides/<int:permission_id>/', RbacUserOverrideDeleteView.as_view(), name='rbac_user_override_delete'),
+    # ─────────────────────────────────────────────────────────────────────────
+    # ── Custom Domain Onboarding ─────────────────────────────────────────────
+    path('settings/domain/',                SchoolDomainStatusView.as_view(),   name='school_domain_status'),
+    path('settings/domain/request/',        SchoolDomainRequestView.as_view(),  name='school_domain_request'),
+    path('settings/domain/verify/',         SchoolDomainVerifyView.as_view(),   name='school_domain_verify'),
     # ─────────────────────────────────────────────────────────────────────────
 ]

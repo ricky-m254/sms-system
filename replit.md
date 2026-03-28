@@ -4,6 +4,31 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
 
 ## Recently Added Modules
 
+### Custom Domain Onboarding (clients migration 0014 + dnspython)
+- **Model**: `CustomDomainRequest` (public schema) — tracks domain, verification token, status (PENDING/VERIFIED/ACTIVE/FAILED/REJECTED), timestamps, attempts
+- **Service**: `clients/domain_service.py` — `initiate_domain_request()`, `verify_domain_request()` (DNS TXT lookup via dnspython), `activate_domain_request()`, `reject_domain_request()`, `get_current_request()`
+- **School-Admin API** (tenant-scoped via `schema_context("public")`):
+  - `GET /api/settings/domain/` — current request status + DNS instructions
+  - `POST /api/settings/domain/request/` — submit domain (validates: reserved names, length, cross-tenant conflicts)
+  - `POST /api/settings/domain/verify/` — trigger DNS TXT record check
+  - `DELETE /api/settings/domain/` — cancel pending request
+- **Platform-Admin API** (`IsGlobalSuperAdmin` protected):
+  - `GET /api/platform/domain-requests/?status=VERIFIED` — list all requests (filterable)
+  - `GET /api/platform/domain-requests/{id}/` — detail
+  - `POST /api/platform/domain-requests/{id}/approve/` — activate (creates Domain record, updates tenant.custom_domain)
+  - `POST /api/platform/domain-requests/{id}/reject/` — reject with reason
+- **Frontend pages**:
+  - `pages/settings/SettingsDomainPage.tsx` — school admin self-service: submit domain, view DNS TXT instructions with copy button, trigger verification, see status badges, cancel/retry
+  - `pages/platform/PlatformDomainRequestsPage.tsx` — platform admin: list all requests, filter by status, Activate/Reject with reason modal, full audit logging
+- **Routes**: `/settings/domain`, `/platform/domain-requests`
+- **Sidebars**: "Custom Domain" added to Settings → Access Control; "Domain Requests" added to Platform nav
+
+### Multi-Tenant Subdomain Routing (Prompt 1 — completed)
+- Backend: `TenantContextGuardMiddleware` enhanced with subdomain fallback detection, `RESERVED_SUBDOMAINS` frozenset
+- `GET /api/tenant/info/` added to both public and tenant URL configs
+- Frontend: `useTenantDetection.ts` hook — auto-detects school subdomain, resolves tenant info
+- `LoginPage.tsx`: auto-fill + lock tenant field, school name banner, suspended/not-found error screens
+
 ### Transfer System (migration 0046)
 - Models: `CrossTenantTransfer`, `TransferPackage`, `StudentHistory`, `StaffHistory`
 - 11 API endpoints covering: initiate, approve-from, approve-to, execute, reject, cancel, package, history

@@ -5,6 +5,7 @@ from clients.platform_views import (
     PlatformBackupJobViewSet,
     PlatformComplianceReportViewSet,
     PlatformDeploymentReleaseViewSet,
+    PlatformDomainRequestViewSet,
     PlatformFeatureFlagViewSet,
     PlatformMaintenanceWindowViewSet,
     PlatformActionLogViewSet,
@@ -43,6 +44,7 @@ router.register(r"backup/jobs", PlatformBackupJobViewSet, basename="platform-bac
 router.register(r"backup/restores", PlatformRestoreJobViewSet, basename="platform-restore-job")
 router.register(r"security/incidents", PlatformSecurityIncidentViewSet, basename="platform-security-incident")
 router.register(r"security/compliance-reports", PlatformComplianceReportViewSet, basename="platform-compliance-report")
+router.register(r"domain-requests", PlatformDomainRequestViewSet, basename="platform-domain-request")
 
 urlpatterns = [
     path("", include(router.urls)),

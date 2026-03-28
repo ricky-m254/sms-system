@@ -30,6 +30,7 @@ from clients.models import (
     BackupJob,
     BackupExecutionRun,
     ComplianceReport,
+    CustomDomainRequest,
     DeploymentHookRun,
     DeploymentRelease,
     Domain,
@@ -3003,3 +3004,96 @@ class PlatformComplianceReportViewSet(viewsets.ModelViewSet):
         )
         _platform_audit(user=request.user, action="GENERATE", model_name="PlatformComplianceReport", object_id=row.id, details=f"type={report_type}", request=request)
         return Response(ComplianceReportSerializer(row).data, status=status.HTTP_201_CREATED)
+
+
+from rest_framework import mixins as drf_mixins
+
+class PlatformDomainRequestViewSet(
+    drf_mixins.ListModelMixin,
+    drf_mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Platform-admin endpoint for managing school custom domain requests.
+
+    GET  /api/platform/domain-requests/              — list all
+    GET  /api/platform/domain-requests/{id}/         — detail
+    POST /api/platform/domain-requests/{id}/approve/ — activate verified domain
+    POST /api/platform/domain-requests/{id}/reject/  — reject request
+    """
+    permission_classes = [IsAuthenticated, IsGlobalSuperAdmin]
+    queryset = CustomDomainRequest.objects.select_related("tenant").order_by("-created_at")
+
+    def _serialize(self, req) -> dict:
+        return {
+            "id": req.pk,
+            "tenant_schema": req.tenant.schema_name,
+            "tenant_name": req.tenant.name,
+            "requested_domain": req.requested_domain,
+            "verification_token": req.verification_token,
+            "status": req.status,
+            "status_display": req.get_status_display(),
+            "verification_attempts": req.verification_attempts,
+            "last_verification_attempt": req.last_verification_attempt.isoformat() if req.last_verification_attempt else None,
+            "verified_at": req.verified_at.isoformat() if req.verified_at else None,
+            "activated_at": req.activated_at.isoformat() if req.activated_at else None,
+            "rejected_at": req.rejected_at.isoformat() if req.rejected_at else None,
+            "rejection_reason": req.rejection_reason,
+            "requested_by_username": req.requested_by_username,
+            "created_at": req.created_at.isoformat(),
+        }
+
+    def list(self, request):
+        status_filter = request.query_params.get("status")
+        qs = self.get_queryset()
+        if status_filter:
+            qs = qs.filter(status=status_filter.upper())
+        return Response([self._serialize(r) for r in qs])
+
+    def retrieve(self, request, pk=None):
+        req = self.get_object()
+        return Response(self._serialize(req))
+
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, pk=None):
+        from clients import domain_service as ds
+        try:
+            result = ds.activate_domain_request(
+                request_id=int(pk),
+                platform_admin_username=request.user.username,
+            )
+        except (CustomDomainRequest.DoesNotExist, ValueError) as exc:
+            return Response({"error": str(exc)}, status=400)
+
+        _platform_audit(
+            user=request.user,
+            action="APPROVE_DOMAIN",
+            model_name="CustomDomainRequest",
+            object_id=int(pk),
+            details=f"domain={result['requested_domain']}",
+            request=request,
+        )
+        return Response(result)
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        from clients import domain_service as ds
+        reason = str(request.data.get("reason", "")).strip()
+        try:
+            result = ds.reject_domain_request(
+                request_id=int(pk),
+                reason=reason,
+                platform_admin_username=request.user.username,
+            )
+        except (CustomDomainRequest.DoesNotExist, ValueError) as exc:
+            return Response({"error": str(exc)}, status=400)
+
+        _platform_audit(
+            user=request.user,
+            action="REJECT_DOMAIN",
+            model_name="CustomDomainRequest",
+            object_id=int(pk),
+            details=f"domain={result['requested_domain']} reason={reason}",
+            request=request,
+        )
+        return Response(result)
