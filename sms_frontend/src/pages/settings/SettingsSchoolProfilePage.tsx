@@ -14,6 +14,8 @@ interface ProfileData {
   website: string
   county: string
   country: string
+  timezone: string
+  language: string
   currency: string
   tax_percentage: string
   receipt_prefix: string
@@ -26,6 +28,24 @@ interface ProfileData {
   font_family: string
 }
 
+const TIMEZONES = [
+  'Africa/Nairobi', 'Africa/Lagos', 'Africa/Johannesburg', 'Africa/Cairo',
+  'Africa/Accra', 'Africa/Addis_Ababa', 'Africa/Dar_es_Salaam', 'Africa/Kampala',
+  'Europe/London', 'Europe/Paris', 'America/New_York', 'America/Chicago',
+  'America/Los_Angeles', 'Asia/Dubai', 'Asia/Kolkata', 'UTC',
+]
+
+const LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'sw', label: 'Swahili (Kiswahili)' },
+  { value: 'fr', label: 'French (Français)' },
+  { value: 'ar', label: 'Arabic (العربية)' },
+  { value: 'am', label: 'Amharic (አማርኛ)' },
+  { value: 'yo', label: 'Yoruba' },
+  { value: 'ha', label: 'Hausa' },
+  { value: 'ig', label: 'Igbo' },
+]
+
 const DEFAULTS: ProfileData = {
   school_name: '',
   logo_url: null,
@@ -36,6 +56,8 @@ const DEFAULTS: ProfileData = {
   website: '',
   county: '',
   country: 'Kenya',
+  timezone: 'Africa/Nairobi',
+  language: 'en',
   currency: 'KES',
   tax_percentage: '0.00',
   receipt_prefix: 'RCT-',
@@ -86,6 +108,8 @@ export default function SettingsSchoolProfilePage() {
           website: p.website ?? '',
           county: p.county ?? '',
           country: p.country ?? 'Kenya',
+          timezone: p.timezone ?? 'Africa/Nairobi',
+          language: p.language ?? 'en',
           currency: p.currency ?? 'KES',
           tax_percentage: String(p.tax_percentage ?? '0.00'),
           receipt_prefix: p.receipt_prefix ?? 'RCT-',
@@ -333,6 +357,18 @@ export default function SettingsSchoolProfilePage() {
           <div>
             <label className="text-xs text-slate-400 mb-1 block font-semibold uppercase tracking-widest">Country</label>
             <input value={form.country} onChange={e => setF('country', e.target.value)} placeholder="Kenya" className={cls} />
+          </div>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block font-semibold uppercase tracking-widest">Timezone</label>
+            <select value={form.timezone} onChange={e => setF('timezone', e.target.value)} className={cls}>
+              {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block font-semibold uppercase tracking-widest">System Language</label>
+            <select value={form.language} onChange={e => setF('language', e.target.value)} className={cls}>
+              {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+            </select>
           </div>
         </div>
       </section>

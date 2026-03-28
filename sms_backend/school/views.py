@@ -7807,3 +7807,173 @@ class StaffBulkImportView(APIView):
             'errors': commit_errors[:25],
             'committed': True,
         }, status=status.HTTP_201_CREATED)
+
+
+# ═══════════════════════════════════════════════════════════════
+# TENANT SETTINGS KV STORE
+# ═══════════════════════════════════════════════════════════════
+
+class TenantSettingsView(APIView):
+    """
+    GET  /settings/          → return all settings as {key: value} dict, grouped by category
+    POST /settings/          → upsert one or many {key, value, description?, category?} entries
+    DELETE /settings/{key}/  → delete a setting key
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from .models import TenantSettings
+        category = request.query_params.get('category', '')
+        qs = TenantSettings.objects.all()
+        if category:
+            qs = qs.filter(category=category)
+
+        # Return as flat dict AND grouped structure
+        flat = {}
+        grouped = {}
+        for s in qs:
+            flat[s.key] = s.value
+            grouped.setdefault(s.category, {})[s.key] = {
+                'value': s.value,
+                'description': s.description,
+                'updated_at': s.updated_at,
+            }
+
+        return Response({
+            'settings': flat,
+            'grouped': grouped,
+            'count': qs.count(),
+        })
+
+    def post(self, request):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+        from .models import TenantSettings, AuditLog
+        data = request.data
+
+        # Accept a single dict OR a list
+        if isinstance(data, dict) and 'key' in data:
+            entries = [data]
+        elif isinstance(data, list):
+            entries = data
+        elif isinstance(data, dict):
+            # Shorthand: {key: value, key2: value2}  (no 'key' field, just a flat mapping)
+            entries = [{'key': k, 'value': v} for k, v in data.items() if k != 'key']
+        else:
+            return Response({'error': 'Expected a dict or list of {key, value} entries.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        upserted = []
+        for entry in entries:
+            key = str(entry.get('key', '')).strip()
+            if not key:
+                continue
+            obj, _ = TenantSettings.objects.update_or_create(
+                key=key,
+                defaults={
+                    'value': entry.get('value'),
+                    'description': entry.get('description', ''),
+                    'category': entry.get('category', 'general'),
+                    'updated_by': request.user,
+                },
+            )
+            upserted.append(key)
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='UPSERT',
+            model_name='TenantSettings',
+            object_id='bulk',
+            details=f"Updated keys: {', '.join(upserted[:20])}",
+        )
+        return Response({'upserted': upserted, 'count': len(upserted)})
+
+
+class TenantSettingDeleteView(APIView):
+    """DELETE /settings/<key>/ — remove a single setting key."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, setting_key):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+        from .models import TenantSettings
+        deleted, _ = TenantSettings.objects.filter(key=setting_key).delete()
+        return Response({'deleted': deleted, 'key': setting_key})
+
+
+class FinanceSettingsView(APIView):
+    """
+    GET/PATCH finance-specific settings from SchoolProfile:
+    currency, tax_percentage, receipt_prefix, invoice_prefix,
+    late_fee_grace_days, late_fee_type, late_fee_value, late_fee_max,
+    accepted_payment_methods.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    _FINANCE_FIELDS = [
+        'currency', 'tax_percentage', 'receipt_prefix', 'invoice_prefix',
+        'late_fee_grace_days', 'late_fee_type', 'late_fee_value', 'late_fee_max',
+        'accepted_payment_methods',
+    ]
+
+    def _get_profile(self):
+        profile = SchoolProfile.objects.filter(is_active=True).first()
+        if not profile:
+            tenant = None
+            profile = SchoolProfile.objects.create(school_name='School', is_active=True)
+        return profile
+
+    def get(self, request):
+        profile = self._get_profile()
+        data = {f: getattr(profile, f) for f in self._FINANCE_FIELDS}
+        # Include late fee rules list
+        from .models import LateFeeRule
+        rules = list(LateFeeRule.objects.filter(is_active=True).values(
+            'id', 'grace_days', 'fee_type', 'value', 'max_fee', 'is_active'
+        ))
+        data['late_fee_rules'] = rules
+        return Response(data)
+
+    def patch(self, request):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+        profile = self._get_profile()
+        for field in self._FINANCE_FIELDS:
+            if field in request.data:
+                setattr(profile, field, request.data[field])
+        profile.save(update_fields=self._FINANCE_FIELDS + ['updated_at'])
+        data = {f: getattr(profile, f) for f in self._FINANCE_FIELDS}
+        return Response({'detail': 'Finance settings updated.', **data})
+
+
+class GeneralSettingsView(APIView):
+    """
+    GET/PATCH general school settings: timezone, language, default_date_format
+    and school identity (name, motto, address, phone, email, website, country, county).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    _GENERAL_FIELDS = [
+        'school_name', 'motto', 'address', 'phone', 'email_address',
+        'website', 'county', 'country',
+        'timezone', 'language', 'default_date_format',
+    ]
+
+    def get(self, request):
+        profile = SchoolProfile.objects.filter(is_active=True).first()
+        if not profile:
+            return Response({f: '' for f in self._GENERAL_FIELDS})
+        data = {f: getattr(profile, f) for f in self._GENERAL_FIELDS}
+        data['logo_url'] = request.build_absolute_uri(profile.logo.url) if profile.logo else None
+        return Response(data)
+
+    def patch(self, request):
+        if not _is_admin_like(request.user):
+            return Response({'error': 'Admin only.'}, status=status.HTTP_403_FORBIDDEN)
+        profile = SchoolProfile.objects.filter(is_active=True).first()
+        if not profile:
+            profile = SchoolProfile.objects.create(school_name='School', is_active=True)
+        for field in self._GENERAL_FIELDS:
+            if field in request.data:
+                setattr(profile, field, request.data[field])
+        profile.save(update_fields=self._GENERAL_FIELDS + ['updated_at'])
+        return Response({'detail': 'General settings updated.'})

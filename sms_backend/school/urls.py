@@ -14,6 +14,8 @@ from .views import (
     AdmissionSettingsView, AdmissionNumberPreviewView,
     MediaUploadView, MediaFileListView,
     ImportTemplateDownloadView, StudentsBulkImportView, StaffBulkImportView,
+    TenantSettingsView, TenantSettingDeleteView,
+    FinanceSettingsView, GeneralSettingsView,
 )
 from .rbac_views import (
     RbacPermissionListView,
@@ -304,6 +306,10 @@ urlpatterns = [
     path('settings/import/<str:module>/template/', ImportTemplateDownloadView.as_view(), name='import_template'),
     path('settings/import/students/',       StudentsBulkImportView.as_view(),       name='students_bulk_import'),
     path('settings/import/staff/',          StaffBulkImportView.as_view(),          name='staff_bulk_import'),
+    path('settings/finance/',               FinanceSettingsView.as_view(),          name='finance_settings'),
+    path('settings/general/',               GeneralSettingsView.as_view(),          name='general_settings'),
+    path('settings/',                       TenantSettingsView.as_view(),           name='tenant_settings'),
+    path('settings/kv/<str:setting_key>/',  TenantSettingDeleteView.as_view(),      name='tenant_setting_delete'),
     # ─────────────────────────────────────────────────────────────────────────
     path('rbac/permissions/',               RbacPermissionListView.as_view(),   name='rbac_permission_list'),
     path('rbac/permissions/seed/',          RbacPermissionSeedView.as_view(),   name='rbac_permission_seed'),

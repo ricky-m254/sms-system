@@ -10,9 +10,10 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
 - Frontend: `pages/transfers/` (Dashboard, Initiate, Detail pages)
 - Supports cross-tenant and internal (class/stream) transfers with JSON data snapshots
 
-### Settings & Admission System (migration 0047)
-- Models: `AdmissionSettings` (sequence tracking, year, padding, transfer policy, reset policy), `MediaFile` (file upload registry)
-- 7 new API endpoints:
+### Settings & Admission System (migrations 0047, 0048)
+- Models: `AdmissionSettings` (sequence tracking, year, padding, transfer policy, reset policy), `MediaFile` (file upload registry), `TenantSettings` (generic KV store)
+- `SchoolProfile` extended with: `timezone`, `language`, `default_date_format`, `late_fee_grace_days`, `late_fee_type`, `late_fee_value`, `late_fee_max`, `accepted_payment_methods`
+- 12 new API endpoints:
   - `GET/PATCH /settings/admission/` — admission number configuration
   - `GET /settings/admission/preview/` — preview next admission number without consuming it
   - `POST /settings/media/upload/` — multipart file upload with module tagging
@@ -20,8 +21,13 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
   - `GET /settings/import/{module}/template/` — download blank CSV template (students/staff/fees/payments)
   - `POST /settings/import/students/` — bulk CSV import with validate-only dry-run support
   - `POST /settings/import/staff/` — bulk CSV import for HR employees
-- Frontend: `pages/settings/SettingsAdmissionPage.tsx`, `pages/settings/SettingsImportExportPage.tsx`
-- Sidebar: "Admission Numbers" added to School Setup; "Import & Export" added under new Data Management group
+  - `GET/POST /settings/` — generic KV store (bulk upsert list `[{key,value,category}]` or flat dict)
+  - `DELETE /settings/kv/{key}/` — delete a KV setting by key
+  - `GET/PATCH /settings/finance/` — finance config (currency, tax, prefixes, late fees, payment methods)
+  - `GET/PATCH /settings/general/` — general school config (name, address, timezone, language, date format)
+- Frontend: `pages/settings/SettingsAdmissionPage.tsx`, `pages/settings/SettingsImportExportPage.tsx`, `pages/settings/SettingsFinancePage.tsx`
+- `SettingsSchoolProfilePage.tsx` updated with Timezone and System Language dropdowns
+- Sidebar: "Admission Numbers" added to School Setup; "Import & Export" added under new Data Management group; "Finance" wired to dedicated SettingsFinancePage
 
 ## Architecture
 

@@ -40,6 +40,18 @@ class SchoolProfile(models.Model):
     admission_number_prefix = models.CharField(max_length=20, default="ADM-")
     admission_number_padding = models.PositiveIntegerField(default=4)
 
+    # --- Locale Settings ---
+    timezone = models.CharField(max_length=60, default='Africa/Nairobi', help_text='IANA timezone e.g. Africa/Nairobi')
+    language = models.CharField(max_length=10, default='en', help_text='BCP-47 language tag e.g. en, sw')
+    default_date_format = models.CharField(max_length=20, default='DD/MM/YYYY')
+
+    # --- Finance Settings ---
+    late_fee_grace_days = models.PositiveIntegerField(default=0, help_text='Days after due date before late fee applies')
+    late_fee_type = models.CharField(max_length=10, choices=[('FLAT', 'Flat'), ('PERCENT', 'Percent')], default='FLAT')
+    late_fee_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    late_fee_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    accepted_payment_methods = models.JSONField(default=list, blank=True, help_text='e.g. ["Cash","MPesa","Bank Transfer"]')
+
     # --- Communication Settings ---
     smtp_host = models.CharField(max_length=255, blank=True)
     smtp_port = models.PositiveIntegerField(default=587)
@@ -2040,6 +2052,29 @@ class AdmissionSettings(models.Model):
         if self.include_year:
             return f"{self.prefix}{self.year}-{seq_str}"
         return f"{self.prefix}{seq_str}"
+
+
+class TenantSettings(models.Model):
+    """
+    Generic key-value settings store per tenant.
+    Complements SchoolProfile for arbitrary, schema-free configuration.
+    Values are stored as JSON to support any data type.
+    """
+    key         = models.CharField(max_length=100, unique=True, help_text='Dot-path key e.g. admission.format')
+    value       = models.JSONField(default=None, null=True, blank=True)
+    description = models.CharField(max_length=255, blank=True)
+    category    = models.CharField(max_length=50, default='general',
+                                   help_text='Grouping e.g. general, finance, academic, communication')
+    updated_at  = models.DateTimeField(auto_now=True)
+    updated_by  = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ['category', 'key']
+        verbose_name = 'Tenant Setting'
+        verbose_name_plural = 'Tenant Settings'
+
+    def __str__(self):
+        return f"{self.key} = {self.value}"
 
 
 class MediaFile(models.Model):
