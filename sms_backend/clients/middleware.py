@@ -12,6 +12,20 @@ RESERVED_SUBDOMAINS = frozenset({
     "ftp", "static", "media", "cdn", "status", "help",
 })
 
+# Two-level TLDs where the base app URL is already 3 parts
+# (e.g. sms-system.replit.app).  A tenant subdomain on these domains
+# requires a 4th part: demo_school.sms-system.replit.app.
+COMPOUND_TLDS = frozenset({
+    "replit.app", "replit.dev",
+    "co.ke", "or.ke", "ac.ke", "go.ke", "ne.ke",
+    "co.uk", "org.uk", "me.uk", "net.uk",
+    "com.au", "net.au", "org.au",
+    "co.za", "org.za",
+    "co.nz", "org.nz",
+    "com.ng", "org.ng",
+    "com.gh", "org.gh",
+})
+
 
 class HealthCheckMiddleware:
     """
@@ -113,11 +127,22 @@ class TenantContextGuardMiddleware:
 
         # Subdomain-based resolution (fallback):
         # If still in public schema and no header, try to detect tenant from hostname subdomain.
-        # Supports wildcard domains like *.smartcampus.co.ke
+        # Supports wildcard domains like *.smartcampus.co.ke and *.sms-system.replit.app
         tenant_schema_now = getattr(getattr(request, "tenant", None), "schema_name", None)
         if not header_value and tenant_schema_now in {None, public_schema} and not is_local_dev_host:
             parts = host.split(".")
-            if len(parts) >= 3:
+            tld2 = f"{parts[-2]}.{parts[-1]}" if len(parts) >= 2 else ""
+            # Replit dev workspace: {hash}.{cluster}.replit.dev (4 parts = base URL)
+            # → tenant would need 5 parts.
+            # Other compound TLDs (replit.app, co.ke, co.uk …): need 4 parts.
+            # Standard single TLD: 3 parts.
+            if tld2 == "replit.dev":
+                min_parts = 5
+            elif tld2 in COMPOUND_TLDS:
+                min_parts = 4
+            else:
+                min_parts = 3
+            if len(parts) >= min_parts:
                 subdomain = parts[0]
                 if subdomain and subdomain not in RESERVED_SUBDOMAINS:
                     resolved = (

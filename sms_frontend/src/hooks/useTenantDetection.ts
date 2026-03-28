@@ -6,6 +6,22 @@ const RESERVED_SUBDOMAINS = new Set([
   'ftp', 'static', 'media', 'cdn', 'status', 'help',
 ])
 
+/**
+ * Two-level TLDs where the base app URL already uses 3 parts
+ * (e.g. sms-system.replit.app).  A tenant subdomain on these
+ * domains requires a 4th part: demo_school.sms-system.replit.app.
+ */
+const COMPOUND_TLDS = new Set([
+  'replit.app', 'replit.dev',
+  'co.ke', 'or.ke', 'ac.ke', 'go.ke', 'ne.ke',
+  'co.uk', 'org.uk', 'me.uk', 'net.uk',
+  'com.au', 'net.au', 'org.au',
+  'co.za', 'org.za',
+  'co.nz', 'org.nz',
+  'com.ng', 'org.ng',
+  'com.gh', 'org.gh',
+])
+
 export type TenantDetectionState = {
   loading: boolean
   detected: boolean
@@ -20,7 +36,25 @@ export type TenantDetectionState = {
 function extractSubdomain(hostname: string): string | null {
   if (!hostname) return null
   const parts = hostname.split('.')
-  if (parts.length < 3) return null
+  if (parts.length < 2) return null
+
+  const tld2 = `${parts[parts.length - 2]}.${parts[parts.length - 1]}`
+
+  // Replit dev workspace URLs are {hash}.{cluster}.replit.dev (4 parts = base URL).
+  // A tenant URL would need a 5th part: tenant.hash.cluster.replit.dev.
+  // Replit app (prod) URLs are {appname}.replit.app (3 parts = base URL).
+  // A tenant URL would need a 4th part: tenant.appname.replit.app.
+  let minParts: number
+  if (tld2 === 'replit.dev') {
+    minParts = 5
+  } else if (COMPOUND_TLDS.has(tld2)) {
+    minParts = 4
+  } else {
+    minParts = 3
+  }
+
+  if (parts.length < minParts) return null
+
   const sub = parts[0].toLowerCase()
   if (RESERVED_SUBDOMAINS.has(sub)) return null
   if (sub === 'localhost' || sub === '127') return null
