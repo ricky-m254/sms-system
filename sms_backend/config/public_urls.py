@@ -1,9 +1,11 @@
 from django.urls import include, path, re_path
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
+@csrf_exempt
 def _tenant_aware_login_view(request):
     """
     Login endpoint that works for BOTH public-schema requests and tenant requests.
