@@ -272,6 +272,8 @@ urlpatterns = [
     path('communication/', include('communication.urls')),
     path('library/', include('library.urls')),
     path('parent-portal/', include('parent_portal.urls')),
+    path('student-portal/', include('parent_portal.student_portal_urls')),
+    path('portal/', include('parent_portal.student_portal_portal_urls')),
     path('reporting/', include('reporting.urls')),
     path('clockin/', include('clockin.urls')),
     path('timetable/', include('timetable.urls')),

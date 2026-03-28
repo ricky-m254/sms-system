@@ -21,7 +21,7 @@ export default function StudentPortalDashboardPage() {
 
   useEffect(() => {
     let mounted = true
-    apiClient.get<DashData>('/parent-portal/dashboard/')
+    apiClient.get<DashData>('/student-portal/dashboard/')
       .then(res => { if (mounted) setData(res.data) })
       .catch(() => { if (mounted) setError('Unable to load your dashboard. Please try again.') })
     return () => { mounted = false }

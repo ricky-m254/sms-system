@@ -27,8 +27,8 @@ export default function StudentPortalAttendancePage() {
   useEffect(() => {
     let mounted = true
     Promise.allSettled([
-      apiClient.get<AttendanceSummary | { summary: AttendanceSummary }>('/parent-portal/attendance/summary/'),
-      apiClient.get<AttendanceRecord[] | { records: AttendanceRecord[] }>('/parent-portal/attendance/calendar/'),
+      apiClient.get<AttendanceSummary | { summary: AttendanceSummary }>('/student-portal/attendance/summary/'),
+      apiClient.get<AttendanceRecord[] | { records: AttendanceRecord[] }>('/student-portal/attendance/calendar/'),
     ]).then(([sumRes, recRes]) => {
       if (!mounted) return
       if (sumRes.status === 'fulfilled') {

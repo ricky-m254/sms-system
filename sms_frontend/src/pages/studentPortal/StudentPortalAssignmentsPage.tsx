@@ -29,7 +29,7 @@ export default function StudentPortalAssignmentsPage() {
 
   useEffect(() => {
     let mounted = true
-    apiClient.get<{ assignments: Assignment[] } | Assignment[]>('/parent-portal/assignments/')
+    apiClient.get<{ assignments: Assignment[] } | Assignment[]>('/student-portal/assignments/')
       .then(res => {
         if (!mounted) return
         const raw = res.data

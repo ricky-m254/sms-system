@@ -21,7 +21,7 @@ export default function StudentPortalTimetablePage() {
 
   useEffect(() => {
     let mounted = true
-    apiClient.get<{ timetable: TimetableEntry[] } | TimetableEntry[]>('/parent-portal/timetable/')
+    apiClient.get<{ timetable: TimetableEntry[] } | TimetableEntry[]>('/student-portal/timetable/')
       .then(res => {
         if (!mounted) return
         const raw = res.data

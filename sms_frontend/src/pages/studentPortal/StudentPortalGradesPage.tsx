@@ -33,8 +33,8 @@ export default function StudentPortalGradesPage() {
     let mounted = true
     setIsLoading(true)
     Promise.allSettled([
-      apiClient.get<{ grades: GradeEntry[] }>('/parent-portal/academics/grades/'),
-      apiClient.get<{ report_cards: ReportCard[] }>('/parent-portal/academics/report-cards/'),
+      apiClient.get<{ grades: GradeEntry[] }>('/student-portal/academics/grades/'),
+      apiClient.get<{ report_cards: ReportCard[] }>('/student-portal/academics/report-cards/'),
     ]).then(([gradesRes, reportsRes]) => {
       if (!mounted) return
       if (gradesRes.status === 'fulfilled') setGrades(gradesRes.value.data.grades ?? [])

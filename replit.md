@@ -4,6 +4,23 @@ A multi-tenant school management system built by Rynatyspace Technologies. Djang
 
 ## Recently Added Modules
 
+### Student Portal & Parent Portal — Full Fix (2026-03)
+**Student Portal (all 8 pages now functional):**
+- **Root cause fixed**: Student role (`STUDENT_PORTAL` module) was being rejected by `/api/parent-portal/` endpoints which require `PARENTS` module. Created a dedicated `/api/student-portal/` namespace with `StudentPortalAccessMixin` (`module_key = "STUDENT_PORTAL"`)
+- **New backend**: `parent_portal/student_portal_views.py` — `StudentDashboardView`, `StudentAcademicsGradesView`, `StudentReportCardsView`, `StudentAttendanceSummaryView`, `StudentAttendanceCalendarView`, `StudentAssignmentsView`, `StudentTimetableView`, `MyInvoicesView`, `MyPaymentsView`
+- **New URLs** (mounted in `school/urls.py`):
+  - `/api/student-portal/dashboard/`, `academics/grades/`, `academics/report-cards/`, `attendance/summary/`, `attendance/calendar/`, `assignments/`, `timetable/`
+  - `/api/portal/my-invoices/`, `/api/portal/my-payments/` — previously missing, now fixed for StudentPortalFeesPage
+- **Student lookup**: `_student_from_request(user)` — finds student by `admission_number == username` (primary), then `ParentStudentLink` (fallback)
+- **Frontend**: All 5 broken StudentPortal pages updated: `Dashboard`, `Grades`, `Timetable`, `Assignments`, `Attendance` — all now call `/student-portal/` endpoints
+
+**Parent Portal (5 stub pages rebuilt with full UI):**
+- `ParentPortalAcademicsPage` — grades table with PASS/FAIL badges, grade color coding, report cards list; uses `/parent-portal/academics/grades/` + `report-cards/`
+- `ParentPortalFinancePage` — KPI cards (total billed/paid/outstanding), invoices list with status badges, payments table; uses `/parent-portal/finance/summary/`, `invoices/`, `payments/`
+- `ParentPortalAttendancePage` — attendance rate progress bar, stats grid, behavior incidents with severity badges; uses `/parent-portal/attendance/summary/` + `behavior/incidents/`
+- `ParentPortalCommunicationPage` — tabbed view (notifications/announcements/messages) with unread count badges; uses `/parent-portal/messages/`, `announcements/`, `notifications/`
+- `ParentPortalSchedulePage` — calendar events with color-coded event types and past/upcoming indicators, assessments list; uses `/parent-portal/timetable/` + `calendar/`
+
 ### Smart Attendance & Access Control — Phase 1: Device Capture (clockin migration 0006)
 - **Extends** existing `clockin` module (DO NOT rewrite — extend only)
 - **`BiometricDevice`** extended with `use_context` field: `gate` / `classroom` / `staff_terminal`
