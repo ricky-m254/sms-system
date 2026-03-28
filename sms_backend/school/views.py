@@ -6540,7 +6540,7 @@ class ModuleSeedView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        if not _is_school_admin(request.user):
+        if not _is_admin_like(request.user):
             return Response(
                 {'detail': 'Admin access required to seed data.'},
                 status=status.HTTP_403_FORBIDDEN,
