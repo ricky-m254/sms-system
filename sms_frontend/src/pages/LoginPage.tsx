@@ -5,8 +5,10 @@ import { useAuthStore } from '../store/auth'
 import {
   Eye, EyeOff, ArrowRight, Loader2, GraduationCap, Shield,
   BarChart3, Globe, Zap, Lock, Users, BookOpen, ChevronRight,
+  Building2, AlertTriangle, WifiOff,
 } from 'lucide-react'
 import brandLogo from '@/assets/brand/rynatyschool-logo.png'
+import { useTenantDetection } from '../hooks/useTenantDetection'
 
 type LoginResponse = {
   access: string
@@ -155,6 +157,8 @@ export default function LoginPage() {
     tenantId: storedTenant,
   } = useAuthStore()
 
+  const subdomainTenant = useTenantDetection()
+
   const [mode,          setMode]          = useState<LoginMode>('staff')
   const [username,      setUsernameInput] = useState('')
   const [password,      setPassword]      = useState('')
@@ -168,6 +172,13 @@ export default function LoginPage() {
   const [roleSwitching, setRoleSwitching] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
+
+  // Auto-fill tenant when resolved from subdomain
+  useEffect(() => {
+    if (subdomainTenant.detected && subdomainTenant.tenantId) {
+      setTenantId(subdomainTenant.tenantId)
+    }
+  }, [subdomainTenant.detected, subdomainTenant.tenantId])
 
   const activeMode = MODES.find(m => m.key === mode)!
 
@@ -362,9 +373,83 @@ export default function LoginPage() {
               <img src={brandLogo} alt="RynatySchool SmartCampus" className="h-12 w-auto object-contain object-left select-none" draggable={false} />
             </div>
 
+            {/* Suspended tenant screen */}
+            {subdomainTenant.errorCode === 'TENANT_SUSPENDED' && (
+              <div className="flex flex-col items-center text-center py-6">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                  <Lock size={28} className="text-red-400" />
+                </div>
+                <h2 className="text-[22px] font-display font-bold text-white mb-2">Account Suspended</h2>
+                <p className="text-slate-400 text-[13px] leading-relaxed mb-1">
+                  {subdomainTenant.tenantName && <strong className="text-white">{subdomainTenant.tenantName}</strong>}
+                  {subdomainTenant.tenantName ? "'s" : "This school's"} account has been suspended.
+                </p>
+                <p className="text-slate-500 text-[12px] mb-6">
+                  Please contact the RynatySpace support team or your school administrator to resolve this.
+                </p>
+                <a
+                  href="mailto:support@rynatyspace.com"
+                  className="rounded-xl px-5 py-2.5 text-[12px] font-semibold text-white"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                >
+                  Contact Support
+                </a>
+                <p className="mt-4 text-[11px] text-slate-700">
+                  Subdomain: <code className="text-slate-600">{subdomainTenant.subdomain}</code>
+                </p>
+              </div>
+            )}
+
+            {/* Not found tenant screen */}
+            {subdomainTenant.subdomain && subdomainTenant.errorCode === 'TENANT_NOT_FOUND' && !subdomainTenant.loading && (
+              <div className="flex flex-col items-center text-center py-6">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  <WifiOff size={28} className="text-amber-400" />
+                </div>
+                <h2 className="text-[22px] font-display font-bold text-white mb-2">School Not Found</h2>
+                <p className="text-slate-400 text-[13px] leading-relaxed mb-1">
+                  No school is registered at{' '}
+                  <code className="text-amber-300 text-[12px]">{subdomainTenant.subdomain}</code>.
+                </p>
+                <p className="text-slate-500 text-[12px] mb-6">
+                  Please check your link or contact your school to confirm the correct address.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => window.location.href = '/'}
+                  className="rounded-xl px-5 py-2.5 text-[12px] font-semibold text-white"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                >
+                  Go to SmartCampus Home
+                </button>
+              </div>
+            )}
+
+            {/* Normal login form — hidden when showing error states */}
+            {!subdomainTenant.errorCode && (
+            <>
             <div className="mb-6">
-              <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-1">Welcome back</h2>
-              <p className="text-slate-500 text-[13px]">Sign in to your SmartCampus account.</p>
+              {subdomainTenant.detected && subdomainTenant.tenantName ? (
+                <>
+                  <div className="flex items-center gap-2.5 mb-3 px-3 py-2.5 rounded-xl"
+                    style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.18)' }}>
+                    <Building2 size={15} className="text-emerald-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-[11px] text-emerald-400 font-semibold uppercase tracking-widest">School detected</p>
+                      <p className="text-[13px] font-bold text-white">{subdomainTenant.tenantName}</p>
+                    </div>
+                  </div>
+                  <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-1">Welcome back</h2>
+                  <p className="text-slate-500 text-[13px]">Sign in to your SmartCampus account.</p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-[28px] font-display font-bold text-white leading-tight mb-1">Welcome back</h2>
+                  <p className="text-slate-500 text-[13px]">Sign in to your SmartCampus account.</p>
+                </>
+              )}
             </div>
 
             {/* ── Login type tabs ── */}
@@ -397,27 +482,37 @@ export default function LoginPage() {
 
             {/* Form */}
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-              {/* Tenant ID */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-[0.12em]">
-                  School ID
-                </label>
-                <input
-                  value={tenantId}
-                  onChange={e => setTenantId(e.target.value)}
-                  placeholder="demo_school"
-                  autoComplete="organization"
-                  className="w-full rounded-xl px-4 py-3 text-[13px] text-white placeholder-slate-600 outline-none transition-all duration-200"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}
-                  onFocus={e => { e.target.style.borderColor = 'rgba(16,185,129,0.5)'; e.target.style.background = 'rgba(16,185,129,0.04)' }}
-                  onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; e.target.style.background = 'rgba(255,255,255,0.04)' }}
-                />
-                {(mode === 'student' || mode === 'parent') && (
-                  <p className="text-[10px] text-slate-600 mt-1.5">
-                    Your school's unique ID — printed on your fee invoice or letter. Ask the school office if unsure.
-                  </p>
-                )}
-              </div>
+              {/* Tenant ID — locked when auto-detected from subdomain */}
+              {!subdomainTenant.detected && (
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-[0.12em]">
+                    School ID
+                  </label>
+                  {subdomainTenant.loading ? (
+                    <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-[13px] text-slate-500"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                      <Loader2 size={13} className="animate-spin" />
+                      <span>Detecting school…</span>
+                    </div>
+                  ) : (
+                    <input
+                      value={tenantId}
+                      onChange={e => setTenantId(e.target.value)}
+                      placeholder="demo_school"
+                      autoComplete="organization"
+                      className="w-full rounded-xl px-4 py-3 text-[13px] text-white placeholder-slate-600 outline-none transition-all duration-200"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}
+                      onFocus={e => { e.target.style.borderColor = 'rgba(16,185,129,0.5)'; e.target.style.background = 'rgba(16,185,129,0.04)' }}
+                      onBlur={e  => { e.target.style.borderColor = 'rgba(255,255,255,0.09)'; e.target.style.background = 'rgba(255,255,255,0.04)' }}
+                    />
+                  )}
+                  {(mode === 'student' || mode === 'parent') && !subdomainTenant.loading && (
+                    <p className="text-[10px] text-slate-600 mt-1.5">
+                      Your school's unique ID — printed on your fee invoice or letter. Ask the school office if unsure.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Username / Admission No */}
               <div>
@@ -522,6 +617,8 @@ export default function LoginPage() {
                 Super Admin login →
               </button>
             </p>
+            </>
+            )}
           </div>
         </div>
       </div>

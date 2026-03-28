@@ -6,6 +6,12 @@ from django_tenants.utils import get_public_schema_name
 
 from clients.models import Tenant
 
+# Subdomains that are never tenant identifiers — reserved for infrastructure.
+RESERVED_SUBDOMAINS = frozenset({
+    "www", "api", "admin", "platform", "app", "mail", "smtp",
+    "ftp", "static", "media", "cdn", "status", "help",
+})
+
 
 class HealthCheckMiddleware:
     """
@@ -105,6 +111,43 @@ class TenantContextGuardMiddleware:
             # different from a school-specific domain.
             request._tenant_from_header = True
 
+        # Subdomain-based resolution (fallback):
+        # If still in public schema and no header, try to detect tenant from hostname subdomain.
+        # Supports wildcard domains like *.smartcampus.co.ke
+        tenant_schema_now = getattr(getattr(request, "tenant", None), "schema_name", None)
+        if not header_value and tenant_schema_now in {None, public_schema} and not is_local_dev_host:
+            parts = host.split(".")
+            if len(parts) >= 3:
+                subdomain = parts[0]
+                if subdomain and subdomain not in RESERVED_SUBDOMAINS:
+                    resolved = (
+                        Tenant.objects.filter(schema_name=subdomain).first()
+                        or Tenant.objects.filter(subdomain=subdomain).first()
+                    )
+                    if resolved:
+                        if resolved.status in {Tenant.STATUS_SUSPENDED}:
+                            return JsonResponse(
+                                {
+                                    "error": "This school account is currently suspended.",
+                                    "code": "TENANT_SUSPENDED",
+                                    "tenant_name": resolved.name,
+                                },
+                                status=403,
+                            )
+                        if resolved.status in {Tenant.STATUS_CANCELLED, Tenant.STATUS_ARCHIVED}:
+                            return JsonResponse(
+                                {
+                                    "error": "This school account is no longer active.",
+                                    "code": "TENANT_INACTIVE",
+                                    "tenant_name": resolved.name,
+                                },
+                                status=403,
+                            )
+                        request.tenant = resolved
+                        connection.set_tenant(resolved)
+                        request.urlconf = settings.ROOT_URLCONF
+                        request._tenant_from_subdomain = True
+
         tenant = getattr(request, "tenant", None)
         tenant_schema = getattr(tenant, "schema_name", None)
         is_public_request = not tenant_schema or tenant_schema == public_schema
@@ -137,7 +180,7 @@ class TenantContextGuardMiddleware:
                 status=400,
             )
 
-        if getattr(settings, "TENANT_ENFORCE_HOST_MATCH", True) and not getattr(request, "_tenant_from_header", False):
+        if getattr(settings, "TENANT_ENFORCE_HOST_MATCH", True) and not getattr(request, "_tenant_from_header", False) and not getattr(request, "_tenant_from_subdomain", False):
             tenant_domains = {
                 domain.lower()
                 for domain in tenant.domains.values_list("domain", flat=True)

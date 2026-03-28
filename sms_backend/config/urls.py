@@ -20,6 +20,11 @@ def _serve_react_app(request, path=""):
     return JsonResponse({"status": "ok", "detail": "API running — frontend not built yet"})
 
 
+def _tenant_info_view(request):
+    from config.public_urls import tenant_info_view
+    return tenant_info_view(request)
+
+
 urlpatterns = [
     # 0. Health check (must return 200 for deployment probes)
     path("health", _health_check),
@@ -28,10 +33,13 @@ urlpatterns = [
     # 1. Admin Panel (For School Admins)
     path("admin/", admin.site.urls),
 
-    # 2. School API Modules (Students, Finance, etc.)
+    # 2. Tenant info (subdomain auto-detection — available in tenant schema context too)
+    path("api/tenant/info/", _tenant_info_view),
+
+    # 3. School API Modules (Students, Finance, etc.)
     path("api/", include("school.urls")),
 
-    # 3. Catch-all: serve the React SPA for any non-API route
+    # 4. Catch-all: serve the React SPA for any non-API route
     re_path(r"^(?!api/|admin/|static/|media/|health).*$", _serve_react_app),
 ]
 
